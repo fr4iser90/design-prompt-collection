@@ -94,12 +94,19 @@ Produce the complete index.html now.`;
 }
 
 async function buildOne(cfg, entry, { dryRun, slug }) {
-  console.log(`Building ${entry.rel} → runs/${slug}/ (${cfg.model}) [timeout 1h, no mid-job retry]`);
+  const mode = [
+    cfg.stream ? "stream" : "oneshot",
+    cfg.thinkingEnabled ? "thinking=on" : "thinking=off",
+    "timeout=1h",
+  ].join(", ");
+  console.log(`Building ${entry.rel} → runs/${slug}/ (${cfg.model}) [${mode}]`);
   const content = await chatCompletions({
     ...cfg,
     messages: buildMessages(entry, cfg.model),
     temperature: 0.65,
     jsonMode: false,
+    stream: cfg.stream !== false,
+    thinkingEnabled: Boolean(cfg.thinkingEnabled),
     timeoutMs: ONE_HOUR_MS,
     queueRetries: 10,
     heartbeatMs: 30_000,

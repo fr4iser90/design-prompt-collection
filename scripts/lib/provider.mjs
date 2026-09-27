@@ -3,6 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { CATEGORIES, PROVIDER_BASES, loadEnvFile, today } from "./helpers.mjs";
 
+function envFlag(name, defaultValue = false) {
+  const v = process.env[name];
+  if (v === undefined || v === "") return defaultValue;
+  return /^(1|true|yes|on)$/i.test(String(v).trim());
+}
+
 export function resolveAiConfig(root) {
   loadEnvFile(path.join(root, ".env"));
   const provider = (process.env.AI_PROVIDER || "openrouter").toLowerCase();
@@ -19,24 +25,100 @@ export function resolveAiConfig(root) {
       `Unknown AI_PROVIDER="${provider}". Use openai|openrouter|groq|custom + AI_BASE_URL`
     );
   }
+  const thinkingEnabled = envFlag("THINKING_ENABLED", false);
+  // Stream keeps the connection alive on long builds; default on.
+  // Thinking text is only printed when THINKING_ENABLED=true.
+  const stream = envFlag("AI_STREAM", true);
   return {
     provider,
     apiKey,
     model, // stored in run meta + folder slug
     modelApi, // request body "model"
     baseUrl: baseUrl.replace(/\/$/, ""),
+    thinkingEnabled,
+    stream,
   };
 }
 
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 
+async function readSseChatStream(
+  res,
+  { showThinking = false, showContentTicks = false, onThinking, onContent } = {}
+) {
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let content = "";
+  let thinking = "";
+  let sawThinking = false;
+  let sawContent = false;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n");
+    buffer = parts.pop() || "";
+
+    for (const line of parts) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith(":")) continue;
+      if (!trimmed.startsWith("data:")) continue;
+      const payload = trimmed.slice(5).trim();
+      if (payload === "[DONE]") continue;
+      let json;
+      try {
+        json = JSON.parse(payload);
+      } catch {
+        continue;
+      }
+      const delta = json.choices?.[0]?.delta || {};
+      const t =
+        delta.reasoning_content ||
+        delta.reasoning ||
+        delta.thinking ||
+        (typeof delta.reasoning_details === "string" ? delta.reasoning_details : "");
+      const c = delta.content || "";
+      if (t) {
+        thinking += t;
+        if (showThinking) {
+          if (!sawThinking) {
+            process.stderr.write("\n  ── thinking ──\n");
+            sawThinking = true;
+          }
+          process.stderr.write(t);
+        }
+        onThinking?.(t);
+      }
+      if (c) {
+        content += c;
+        if (showContentTicks) {
+          if (!sawContent) {
+            process.stderr.write("\n  ── content ──\n");
+            sawContent = true;
+          }
+          if (content.length % 2000 < c.length) process.stderr.write("·");
+        }
+        onContent?.(c);
+      }
+    }
+  }
+
+  if ((showThinking && sawThinking) || (showContentTicks && sawContent)) {
+    process.stderr.write("\n");
+  }
+  return { content, thinking };
+}
+
 /**
  * Chat completion.
  *
- * IMPORTANT for long HTML builds:
  * - timeout defaults to 1 hour
- * - NEVER auto-retry network drops (that starts a competing job while the LLM still runs)
- * - Only retry HTTP 503 queue_timeout (request was rejected; no job started)
+ * - AI_STREAM=true (default): SSE stream (keepalive); quiet unless THINKING_ENABLED
+ * - THINKING_ENABLED=true: print model thinking tokens live
+ * - NEVER auto-retry network drops mid-job
+ * - Only retry HTTP 503 queue_timeout (request rejected; no job started)
  */
 export async function chatCompletions({
   baseUrl,
@@ -47,8 +129,9 @@ export async function chatCompletions({
   messages,
   temperature = 0.7,
   jsonMode = false,
+  stream = true,
+  thinkingEnabled = false,
   timeoutMs = ONE_HOUR_MS,
-  /** Max waits when gateway returns 503 queue busy (no job started). */
   queueRetries = 10,
   heartbeatMs = 30_000,
 }) {
@@ -60,7 +143,16 @@ export async function chatCompletions({
     headers["HTTP-Referer"] = "https://github.com/local/design-prompt-collection";
     headers["X-Title"] = "design-prompt-collection";
   }
-  const body = { model: modelApi || model, temperature, messages };
+
+  // json_object + stream is flaky on many gateways — force non-stream for jsonMode
+  const useStream = stream && !jsonMode;
+
+  const body = {
+    model: modelApi || model,
+    temperature,
+    messages,
+    stream: useStream,
+  };
   if (jsonMode) body.response_format = { type: "json_object" };
 
   const url = `${baseUrl}/chat/completions`;
@@ -68,10 +160,19 @@ export async function chatCompletions({
 
   for (let attempt = 0; attempt <= queueRetries; attempt++) {
     const started = Date.now();
+    let gotBytes = false;
     const heartbeat = setInterval(() => {
+      if (gotBytes && (thinkingEnabled || !useStream)) return;
+      if (gotBytes && useStream && !thinkingEnabled) {
+        // quiet stream: occasional progress only
+        const sec = Math.round((Date.now() - started) / 1000);
+        console.log(`  … streaming ${sec}s`);
+        return;
+      }
+      if (gotBytes) return;
       const sec = Math.round((Date.now() - started) / 1000);
       const max = Math.round(timeoutMs / 1000);
-      console.log(`  … waiting for model ${sec}s / ${max}s (no retry while job runs)`);
+      console.log(`  … waiting for first token ${sec}s / ${max}s`);
     }, heartbeatMs);
 
     try {
@@ -81,9 +182,9 @@ export async function chatCompletions({
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      const raw = await res.text();
 
       if (!res.ok) {
+        const raw = await res.text();
         let retryAfterSec = null;
         try {
           const j = JSON.parse(raw);
@@ -103,20 +204,39 @@ export async function chatCompletions({
           res.status === 503 &&
           /queue|busy|capacity|slots|source_queue/i.test(raw);
 
-        // Only safe to retry when the gateway refused the job (never started).
         if (queueRejected && attempt < queueRetries) {
           const waitSec = Math.min(Math.max(retryAfterSec || 30, 5), 120);
           console.warn(
-            `  queue full (503) — waiting ${waitSec}s then retry ${attempt + 1}/${queueRetries} (no parallel job)`
+            `  queue full (503) — waiting ${waitSec}s then retry ${attempt + 1}/${queueRetries}`
           );
           lastErr = new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
           await new Promise((r) => setTimeout(r, waitSec * 1000));
           continue;
         }
-
         throw new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
       }
 
+      if (useStream) {
+        const { content, thinking } = await readSseChatStream(res, {
+          showThinking: thinkingEnabled,
+          showContentTicks: thinkingEnabled,
+          onThinking: () => {
+            gotBytes = true;
+          },
+          onContent: () => {
+            gotBytes = true;
+          },
+        });
+        const out =
+          (content && content.trim()) ||
+          (thinking && thinking.trim()) ||
+          "";
+        if (!out) throw new Error("Empty streamed model content");
+        return out;
+      }
+
+      const raw = await res.text();
+      gotBytes = true;
       const data = JSON.parse(raw);
       const msg = data.choices?.[0]?.message || {};
       const content =
@@ -132,13 +252,12 @@ export async function chatCompletions({
           `Model timed out after ${Math.round(timeoutMs / 1000)}s (1 request, no retry)`
         );
       }
-      // Network drop mid-generation: DO NOT retry — server may still be working.
       const cause = err.cause
         ? ` (${err.cause.code || err.cause.message || err.cause})`
         : "";
       if (/fetch failed|ECONNRESET|EPIPE|UND_ERR/i.test(String(err.message) + cause)) {
         throw new Error(
-          `${err.message}${cause} — NOT retrying (LLM may still be running on the server; retry would start a competing job)`
+          `${err.message}${cause} — NOT retrying (LLM may still be running on the server)`
         );
       }
       throw err instanceof Error ? err : new Error(String(err));
