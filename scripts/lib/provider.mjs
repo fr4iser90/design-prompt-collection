@@ -1,13 +1,8 @@
 // Shared OpenAI-compatible chat + entry filesystem helpers.
 import fs from "node:fs";
 import path from "node:path";
-import { CATEGORIES, PROVIDER_BASES, loadEnvFile, today } from "./helpers.mjs";
-
-function envFlag(name, defaultValue = false) {
-  const v = process.env[name];
-  if (v === undefined || v === "") return defaultValue;
-  return /^(1|true|yes|on)$/i.test(String(v).trim());
-}
+import { CATEGORIES, PROVIDER_BASES, loadEnvFile, today, envFlag } from "./helpers.mjs";
+import { waitForIdleSlot } from "./slots.mjs";
 
 export function resolveAiConfig(root) {
   loadEnvFile(path.join(root, ".env"));
@@ -29,6 +24,7 @@ export function resolveAiConfig(root) {
   // Stream keeps the connection alive on long builds; default on.
   // Thinking text is only printed when THINKING_ENABLED=true.
   const stream = envFlag("AI_STREAM", true);
+  const waitForSlot = envFlag("WAIT_FOR_SLOT", true);
   return {
     provider,
     apiKey,
@@ -37,6 +33,7 @@ export function resolveAiConfig(root) {
     baseUrl: baseUrl.replace(/\/$/, ""),
     thinkingEnabled,
     stream,
+    waitForSlot,
   };
 }
 
@@ -163,6 +160,7 @@ export async function chatCompletions({
   jsonMode = false,
   stream = true,
   thinkingEnabled = false,
+  waitForSlot = true,
   timeoutMs = ONE_HOUR_MS,
   queueRetries = 10,
   heartbeatMs = 30_000,
@@ -200,7 +198,6 @@ export async function chatCompletions({
     const heartbeat = setInterval(() => {
       if (gotBytes && (thinkingEnabled || !useStream)) return;
       if (gotBytes && useStream && !thinkingEnabled) {
-        // quiet stream: occasional progress only
         const sec = Math.round((Date.now() - started) / 1000);
         console.log(`  … streaming ${sec}s`);
         return;
@@ -217,6 +214,11 @@ export async function chatCompletions({
     );
 
     try {
+      await waitForIdleSlot(
+        { baseUrl, apiKey, model, modelApi, waitForSlot },
+        { need: 1, signal: shutdown.signal, label: modelApi || model }
+      );
+
       const res = await fetch(url, {
         method: "POST",
         headers,

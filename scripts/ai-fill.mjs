@@ -20,6 +20,7 @@ import {
   parseArgs,
   writeEntry,
   today,
+  envFlag,
 } from "./lib/helpers.mjs";
 import {
   buildCatalog,
@@ -30,6 +31,7 @@ import {
   seedToInt,
   LANES,
 } from "./lib/catalog.mjs";
+import { waitForIdleSlot } from "./lib/slots.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -62,6 +64,7 @@ function resolveConfig() {
     model,
     modelApi,
     baseUrl: baseUrl.replace(/\/$/, ""),
+    waitForSlot: envFlag("WAIT_FOR_SLOT", true),
   };
 }
 
@@ -364,6 +367,7 @@ async function generateForCategory(cfg, args, catalog, category) {
 
   let content;
   try {
+    await waitForIdleSlot(cfg, { need: 1, label: cfg.modelApi || cfg.model });
     content = await chatCompletions({
       ...cfg,
       messages,

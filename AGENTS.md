@@ -76,8 +76,12 @@ npm run pipeline                 # ai:build → shots → pages → build
 | `pages` | static site → `site/dist` |
 | `pipeline` | build demos + shots + pages + index |
 | `ship` | pipeline + completeness gate (one-shot) |
+| `worker` | autonomous loop: slot-wait → build → shots (optional fill) |
+| `slots` | print Gufo `slots_idle` / busy |
 | `check` | only finished entries? (pre-commit uses `--staged`) |
 | `hooks` | install git pre-commit |
+
+Multi-day: `npm run worker -- --fill --fill-n 10 --fill-when-below 1 --max-parallel 2 --commit` — stop with `touch STOP` or Ctrl+C. Details: `automation/README.md`.
 | `build` | validate + README + index + catalog only |
 
 Steer fill with `--mood`, `--lane`, `--seed`, `--avoid`. Details: `automation/README.md`.

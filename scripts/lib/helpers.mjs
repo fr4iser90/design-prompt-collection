@@ -4,6 +4,12 @@ import path from "node:path";
 
 export const CATEGORIES = ["landing-pages", "animations", "concepts", "experiments"];
 
+export function envFlag(name, defaultValue = false) {
+  const v = process.env[name];
+  if (v === undefined || v === "") return defaultValue;
+  return /^(1|true|yes|on)$/i.test(String(v).trim());
+}
+
 export const PROVIDER_BASES = {
   openai: "https://api.openai.com/v1",
   openrouter: "https://openrouter.ai/api/v1",

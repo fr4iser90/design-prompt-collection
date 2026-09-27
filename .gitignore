@@ -9,3 +9,6 @@ site/dist/
 .env.*.local
 test-results/
 playwright-report/
+.worker/
+STOP
+

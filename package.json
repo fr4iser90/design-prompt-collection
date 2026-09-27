@@ -19,7 +19,9 @@
     "shots": "node scripts/shots.mjs",
     "pages": "node scripts/pages.mjs",
     "pipeline": "node scripts/pipeline.mjs",
-    "ship": "node scripts/ship.mjs"
+    "ship": "node scripts/ship.mjs",
+    "worker": "node scripts/worker.mjs",
+    "slots": "node scripts/slots-status.mjs"
   },
   "engines": {
     "node": ">=18"
