@@ -63,7 +63,10 @@ function blockedSecretsStaged() {
   return r.stdout
     .split(/\r?\n/)
     .filter(Boolean)
-    .filter((f) => /(^|\/)\.env(\.|$)/.test(f) || f.endsWith("credentials.json"));
+    .filter((f) => {
+      if (/(^|\/)\.env\.example$/.test(f)) return false;
+      return /(^|\/)\.env(\.|$)/.test(f) || f.endsWith("credentials.json");
+    });
 }
 
 function inspect(entry) {
