@@ -42,6 +42,38 @@ export function resolveAiConfig(root) {
 
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 
+/** Shared abort for Ctrl+C — aborts in-flight fetch so the TCP stream closes. */
+const shutdown = new AbortController();
+let shutdownHooked = false;
+
+function ensureShutdownHook() {
+  if (shutdownHooked) return;
+  shutdownHooked = true;
+  const halt = (sig) => {
+    if (shutdown.signal.aborted) return;
+    console.error(`\n  ${sig} — aborting in-flight request (closing client stream)…`);
+    shutdown.abort(new Error(`aborted by ${sig}`));
+  };
+  process.once("SIGINT", () => halt("SIGINT"));
+  process.once("SIGTERM", () => halt("SIGTERM"));
+}
+
+function mergeAbortSignals(...signals) {
+  const out = new AbortController();
+  const onAbort = () => {
+    if (!out.signal.aborted) out.abort();
+  };
+  for (const s of signals) {
+    if (!s) continue;
+    if (s.aborted) {
+      out.abort();
+      return out.signal;
+    }
+    s.addEventListener("abort", onAbort, { once: true });
+  }
+  return out.signal;
+}
+
 async function readSseChatStream(
   res,
   { showThinking = false, showContentTicks = false, onThinking, onContent } = {}
@@ -155,10 +187,14 @@ export async function chatCompletions({
   };
   if (jsonMode) body.response_format = { type: "json_object" };
 
+  ensureShutdownHook();
   const url = `${baseUrl}/chat/completions`;
   let lastErr;
 
   for (let attempt = 0; attempt <= queueRetries; attempt++) {
+    if (shutdown.signal.aborted) {
+      throw new Error("Aborted before request (Ctrl+C)");
+    }
     const started = Date.now();
     let gotBytes = false;
     const heartbeat = setInterval(() => {
@@ -175,12 +211,17 @@ export async function chatCompletions({
       console.log(`  … waiting for first token ${sec}s / ${max}s`);
     }, heartbeatMs);
 
+    const signal = mergeAbortSignals(
+      AbortSignal.timeout(timeoutMs),
+      shutdown.signal
+    );
+
     try {
       const res = await fetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(timeoutMs),
+        signal,
       });
 
       if (!res.ok) {
@@ -247,6 +288,11 @@ export async function chatCompletions({
       return content;
     } catch (err) {
       lastErr = err;
+      if (shutdown.signal.aborted) {
+        throw new Error(
+          "Aborted by Ctrl+C — client stream closed. Server may still finish the current slot unless the gateway cancels on disconnect."
+        );
+      }
       if (err?.name === "TimeoutError" || err?.cause?.name === "TimeoutError") {
         throw new Error(
           `Model timed out after ${Math.round(timeoutMs / 1000)}s (1 request, no retry)`
@@ -255,7 +301,7 @@ export async function chatCompletions({
       const cause = err.cause
         ? ` (${err.cause.code || err.cause.message || err.cause})`
         : "";
-      if (/fetch failed|ECONNRESET|EPIPE|UND_ERR/i.test(String(err.message) + cause)) {
+      if (/fetch failed|ECONNRESET|EPIPE|UND_ERR|aborted/i.test(String(err.message) + cause)) {
         throw new Error(
           `${err.message}${cause} — NOT retrying (LLM may still be running on the server)`
         );

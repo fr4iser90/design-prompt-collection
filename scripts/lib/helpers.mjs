@@ -22,6 +22,13 @@ export function loadEnvFile(envPath) {
     if (eq === -1) continue;
     const key = trimmed.slice(0, eq).trim();
     let val = trimmed.slice(eq + 1).trim();
+    // Strip inline comments for unquoted values: true   # foo
+    if (
+      !(val.startsWith('"') || val.startsWith("'")) &&
+      val.includes("#")
+    ) {
+      val = val.replace(/\s+#.*$/, "").trim();
+    }
     if (
       (val.startsWith('"') && val.endsWith('"')) ||
       (val.startsWith("'") && val.endsWith("'"))
