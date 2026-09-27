@@ -1,0 +1,21 @@
+id: northline-fintech-clarity
+title: "Northline Fintech Clarity"
+category: landing-pages
+tags:
+  - fintech
+  - clarity
+  - light
+  - trust
+  - saas
+status: polished
+summary: "Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one clarity promise — no purple glow, no dashboard soup."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

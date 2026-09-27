@@ -1,0 +1,21 @@
+id: forge-and-roast-coffee-lab
+title: "Forge and Roast Coffee Lab"
+category: landing-pages
+tags:
+  - coffee
+  - retail
+  - product
+  - industrial
+  - landing
+status: polished
+summary: "A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

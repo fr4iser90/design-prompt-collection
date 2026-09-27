@@ -1,0 +1,2 @@
+# Obsidian Loom Mask Reveal
+Build a scroll-driven mask reveal for Obsidian Loom, a modular furniture studio. Use near-black background #09090B, graphite band #1D1D20, acid lime accent #D6FF57. Use Editorial New for display and Söhne Mono for captions. Split the headline Woven Forms into seven horizontal strips that reveal bottom to top with 70ms stagger while the product image behind moves at 0.2x parallax. Add grain, vignette, and a thin cursor trace. Deliver single HTML/CSS/JS with reduced-motion final state.

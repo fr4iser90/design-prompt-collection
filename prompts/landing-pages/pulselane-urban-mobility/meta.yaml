@@ -1,0 +1,21 @@
+id: pulselane-urban-mobility
+title: "PulseLane Urban Mobility"
+category: landing-pages
+tags:
+  - urban
+  - transit
+  - maps
+  - motion
+  - landing
+status: polished
+summary: "A city mobility landing page for PulseLane, featuring animated route paths, kinetic type, and a high-contrast asphalt palette."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

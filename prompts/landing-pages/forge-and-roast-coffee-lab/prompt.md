@@ -1,0 +1,3 @@
+# Forge and Roast Coffee Lab
+
+Design a landing page for Forge and Roast Coffee Lab, a small-batch roaster selling equipment and beans. Use a matte black base, ash-white text, and ember-red accents. Build a hard editorial grid with oversized product photography, no hero cards, and no cream terracotta mood. Type pairing: Futura for display, Neue Montreal for UI, Söhne Mono for roast specs. Deliver a responsive one-page HTML/CSS landing page with a hero, roast profile, shop modules, and footer. Add 2 to 3 motions: image reveal, numeric roast counter, and hover label shift. Do not use Inter, Roboto, Arial, or system as the display stack.

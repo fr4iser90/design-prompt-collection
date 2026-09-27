@@ -1,0 +1,30 @@
+{
+  "name": "design-prompt-collection",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "High-refined design prompts for landing pages, animations, and concepts",
+  "scripts": {
+    "prepare": "node scripts/install-hooks.mjs",
+    "hooks": "node scripts/install-hooks.mjs",
+    "scaffold": "node scripts/scaffold.mjs",
+    "generate": "node scripts/generate.mjs",
+    "validate": "node scripts/validate.mjs",
+    "check": "node scripts/check-complete.mjs",
+    "build": "node scripts/validate.mjs && node scripts/generate.mjs",
+    "ai:fill": "node scripts/ai-fill.mjs",
+    "ai:new": "node scripts/ai-fill.mjs",
+    "ai:lanes": "node scripts/ai-fill.mjs --list-lanes",
+    "ai:build": "node scripts/ai-build.mjs",
+    "shots": "node scripts/shots.mjs",
+    "pages": "node scripts/pages.mjs",
+    "pipeline": "node scripts/pipeline.mjs",
+    "ship": "node scripts/ship.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

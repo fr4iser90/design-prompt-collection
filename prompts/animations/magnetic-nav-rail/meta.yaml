@@ -1,0 +1,21 @@
+id: magnetic-nav-rail
+title: "Magnetic Nav Rail"
+category: animations
+tags:
+  - magnetic-nav
+  - cursor-interaction
+  - navigation
+  - ui-motion
+  - web-animation
+status: polished
+summary: "Cursor-bound navigation rail for Vector Harbor where items lean, scale, and magnetically dock under the pointer with elastic easing."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

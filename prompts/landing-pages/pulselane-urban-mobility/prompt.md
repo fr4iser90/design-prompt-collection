@@ -1,0 +1,3 @@
+# PulseLane Urban Mobility
+
+Design a landing page for PulseLane, a bike courier routing app for dense cities. Use an asphalt-blue background, fluorescent lime route accents, and electric blue secondary highlights. The hero should be a brand-first kinetic map line, not a card. Type pairing: Canela for display, Public Sans for body, IBM Plex Mono for route labels. Deliver a responsive HTML/CSS landing page with hero, route network, pricing, and city coverage. Add 2 to 3 motions: dashed path draw, cursor-following pin, and counter animation. Do not use Inter, Roboto, Arial, or system as the display stack.

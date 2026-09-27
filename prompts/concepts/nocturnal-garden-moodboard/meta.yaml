@@ -1,0 +1,21 @@
+id: nocturnal-garden-moodboard
+title: "Nocturnal Garden Moodboard"
+category: concepts
+tags:
+  - moodboard
+  - garden
+  - nocturnal
+  - atmosphere
+  - brand
+status: polished
+summary: "Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet dark, restrained type specimens."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

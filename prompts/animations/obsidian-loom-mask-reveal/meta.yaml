@@ -1,0 +1,21 @@
+id: obsidian-loom-mask-reveal
+title: "Obsidian Loom Mask Reveal"
+category: animations
+tags:
+  - mask-reveal
+  - scroll-reveal
+  - editorial
+  - typography
+  - web-animation
+status: polished
+summary: "Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold from dark ink bands into a high-contrast product story."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

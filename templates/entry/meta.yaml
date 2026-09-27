@@ -1,0 +1,17 @@
+id: {{ID}}
+title: "{{TITLE}}"
+category: {{CATEGORY}}
+tags:
+  - replace-me
+status: draft
+summary: "Write a sharp one-line teaser (20–220 chars) describing the design intent."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "{{DATE}}"
+updated: "{{DATE}}"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

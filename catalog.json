@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-09-27T21:45:59.733Z",
+  "count": 15,
+  "ids": [
+    "axiom-foundry-logo-morph",
+    "editorial-brutalist-system",
+    "forge-and-roast-coffee-lab",
+    "halyard-marine-forecast",
+    "kiln-commerce-drop",
+    "magnetic-cursor-orbit",
+    "magnetic-nav-rail",
+    "nocturnal-garden-moodboard",
+    "northline-fintech-clarity",
+    "obsidian-loom-mask-reveal",
+    "parallax-depth-layers",
+    "pulselane-urban-mobility",
+    "soft-industrial-toolkit",
+    "staggered-mask-reveal",
+    "tidal-studio-hero"
+  ],
+  "brands": [
+    "BLOCK",
+    "Hearthware",
+    "Kiln",
+    "Lumenflora",
+    "Northline",
+    "Tidal"
+  ],
+  "tag_frequency": {
+    "editorial": 4,
+    "landing": 3,
+    "motion": 3,
+    "product": 3,
+    "industrial": 2,
+    "scroll": 2,
+    "system": 2,
+    "typography": 2,
+    "web-animation": 2,
+    "agency": 1,
+    "atmosphere": 1,
+    "brand": 1,
+    "brand-motion": 1,
+    "brutalist": 1,
+    "clarity": 1,
+    "coffee": 1,
+    "commerce": 1,
+    "craft": 1,
+    "cursor": 1,
+    "cursor-interaction": 1,
+    "data-viz": 1,
+    "depth": 1,
+    "entrance": 1,
+    "fintech": 1,
+    "garden": 1,
+    "grid": 1,
+    "hero": 1,
+    "identity": 1,
+    "js": 1,
+    "landscape": 1,
+    "launch": 1,
+    "light": 1,
+    "logo-morph": 1,
+    "magnetic": 1,
+    "magnetic-nav": 1,
+    "maps": 1,
+    "maritime": 1,
+    "mask": 1,
+    "mask-reveal": 1,
+    "microinteraction": 1,
+    "moodboard": 1,
+    "nav": 1,
+    "navigation": 1,
+    "nocturnal": 1,
+    "ocean": 1,
+    "parallax": 1,
+    "path-animation": 1,
+    "performance": 1,
+    "retail": 1,
+    "saas": 1,
+    "scroll-reveal": 1,
+    "soft": 1,
+    "svg-animation": 1,
+    "tokens": 1,
+    "transit": 1,
+    "trust": 1,
+    "type": 1,
+    "ui-motion": 1,
+    "urban": 1,
+    "warm": 1,
+    "weather": 1
+  },
+  "niches": [
+    "landing-pages: Forge and Roast Coffee Lab — A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence.",
+    "landing-pages: Halyard Marine Forecast — A weather-intelligence landing page for Halyard, a marine routing startup, built around a live route ribbon and cold, technical typography.",
+    "landing-pages: Kiln Commerce Drop — Product-drop landing for Kiln ceramics: object as full-bleed hero, restrained type, one purchase CTA — craft heat without rustic cliché.",
+    "landing-pages: Northline Fintech Clarity — Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one clarity promise — no purple glow, no dashboard soup.",
+    "landing-pages: PulseLane Urban Mobility — A city mobility landing page for PulseLane, featuring animated route paths, kinetic type, and a high-contrast asphalt palette.",
+    "landing-pages: Tidal Studio Hero — Full-bleed coastal agency hero: brand-first, tide-line motion, no cards — only type, CTA, and water as the visual plane.",
+    "animations: Axiom Foundry Logo Morph — Brand motion for Axiom Foundry morphing a circular monogram into a wordmark with crisp SVG interpolation and metallic light sweep.",
+    "animations: Magnetic Cursor Orbit — Nav labels gently orbit/attract toward the cursor with spring damping — tactile, premium, never gimmicky.",
+    "animations: Magnetic Nav Rail — Cursor-bound navigation rail for Vector Harbor where items lean, scale, and magnetically dock under the pointer with elastic easing.",
+    "animations: Obsidian Loom Mask Reveal — Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold from dark ink bands into a high-contrast product story.",
+    "animations: Parallax Depth Layers — Three-plane scroll parallax with depth fog — landscape storytelling that stays smooth and reduced-motion safe.",
+    "animations: Staggered Mask Reveal — Editorial headline reveal via line masks and stagger — cinematic entrance without cheap fade templates.",
+    "concepts: Editorial Brutalist System — Art-direction system: modular editorial brutalism — concrete grid, ink type, rules as structure, not decoration.",
+    "concepts: Nocturnal Garden Moodboard — Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet dark, restrained type specimens.",
+    "concepts: Soft Industrial Toolkit — Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes."
+  ],
+  "by_category": {
+    "landing-pages": [
+      {
+        "id": "forge-and-roast-coffee-lab",
+        "title": "Forge and Roast Coffee Lab",
+        "tags": [
+          "coffee",
+          "retail",
+          "product",
+          "industrial",
+          "landing"
+        ],
+        "summary": "A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence.",
+        "brands": []
+      },
+      {
+        "id": "halyard-marine-forecast",
+        "title": "Halyard Marine Forecast",
+        "tags": [
+          "maritime",
+          "weather",
+          "data-viz",
+          "landing",
+          "motion"
+        ],
+        "summary": "A weather-intelligence landing page for Halyard, a marine routing startup, built around a live route ribbon and cold, technical typography.",
+        "brands": []
+      },
+      {
+        "id": "kiln-commerce-drop",
+        "title": "Kiln Commerce Drop",
+        "tags": [
+          "commerce",
+          "product",
+          "warm",
+          "craft",
+          "launch"
+        ],
+        "summary": "Product-drop landing for Kiln ceramics: object as full-bleed hero, restrained type, one purchase CTA — craft heat without rustic cliché.",
+        "brands": [
+          "Kiln"
+        ]
+      },
+      {
+        "id": "northline-fintech-clarity",
+        "title": "Northline Fintech Clarity",
+        "tags": [
+          "fintech",
+          "clarity",
+          "light",
+          "trust",
+          "saas"
+        ],
+        "summary": "Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one clarity promise — no purple glow, no dashboard soup.",
+        "brands": [
+          "Northline"
+        ]
+      },
+      {
+        "id": "pulselane-urban-mobility",
+        "title": "PulseLane Urban Mobility",
+        "tags": [
+          "urban",
+          "transit",
+          "maps",
+          "motion",
+          "landing"
+        ],
+        "summary": "A city mobility landing page for PulseLane, featuring animated route paths, kinetic type, and a high-contrast asphalt palette.",
+        "brands": []
+      },
+      {
+        "id": "tidal-studio-hero",
+        "title": "Tidal Studio Hero",
+        "tags": [
+          "agency",
+          "hero",
+          "ocean",
+          "editorial",
+          "motion"
+        ],
+        "summary": "Full-bleed coastal agency hero: brand-first, tide-line motion, no cards — only type, CTA, and water as the visual plane.",
+        "brands": [
+          "Tidal"
+        ]
+      }
+    ],
+    "animations": [
+      {
+        "id": "axiom-foundry-logo-morph",
+        "title": "Axiom Foundry Logo Morph",
+        "tags": [
+          "logo-morph",
+          "svg-animation",
+          "brand-motion",
+          "path-animation",
+          "identity"
+        ],
+        "summary": "Brand motion for Axiom Foundry morphing a circular monogram into a wordmark with crisp SVG interpolation and metallic light sweep.",
+        "brands": []
+      },
+      {
+        "id": "magnetic-cursor-orbit",
+        "title": "Magnetic Cursor Orbit",
+        "tags": [
+          "cursor",
+          "magnetic",
+          "microinteraction",
+          "nav",
+          "js"
+        ],
+        "summary": "Nav labels gently orbit/attract toward the cursor with spring damping — tactile, premium, never gimmicky.",
+        "brands": []
+      },
+      {
+        "id": "magnetic-nav-rail",
+        "title": "Magnetic Nav Rail",
+        "tags": [
+          "magnetic-nav",
+          "cursor-interaction",
+          "navigation",
+          "ui-motion",
+          "web-animation"
+        ],
+        "summary": "Cursor-bound navigation rail for Vector Harbor where items lean, scale, and magnetically dock under the pointer with elastic easing.",
+        "brands": []
+      },
+      {
+        "id": "obsidian-loom-mask-reveal",
+        "title": "Obsidian Loom Mask Reveal",
+        "tags": [
+          "mask-reveal",
+          "scroll-reveal",
+          "editorial",
+          "typography",
+          "web-animation"
+        ],
+        "summary": "Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold from dark ink bands into a high-contrast product story.",
+        "brands": []
+      },
+      {
+        "id": "parallax-depth-layers",
+        "title": "Parallax Depth Layers",
+        "tags": [
+          "parallax",
+          "scroll",
+          "depth",
+          "landscape",
+          "performance"
+        ],
+        "summary": "Three-plane scroll parallax with depth fog — landscape storytelling that stays smooth and reduced-motion safe.",
+        "brands": []
+      },
+      {
+        "id": "staggered-mask-reveal",
+        "title": "Staggered Mask Reveal",
+        "tags": [
+          "typography",
+          "mask",
+          "scroll",
+          "entrance",
+          "editorial"
+        ],
+        "summary": "Editorial headline reveal via line masks and stagger — cinematic entrance without cheap fade templates.",
+        "brands": []
+      }
+    ],
+    "concepts": [
+      {
+        "id": "editorial-brutalist-system",
+        "title": "Editorial Brutalist System",
+        "tags": [
+          "system",
+          "brutalist",
+          "editorial",
+          "type",
+          "grid"
+        ],
+        "summary": "Art-direction system: modular editorial brutalism — concrete grid, ink type, rules as structure, not decoration.",
+        "brands": [
+          "BLOCK"
+        ]
+      },
+      {
+        "id": "nocturnal-garden-moodboard",
+        "title": "Nocturnal Garden Moodboard",
+        "tags": [
+          "moodboard",
+          "garden",
+          "nocturnal",
+          "atmosphere",
+          "brand"
+        ],
+        "summary": "Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet dark, restrained type specimens.",
+        "brands": [
+          "Lumenflora"
+        ]
+      },
+      {
+        "id": "soft-industrial-toolkit",
+        "title": "Soft Industrial Toolkit",
+        "tags": [
+          "system",
+          "industrial",
+          "soft",
+          "product",
+          "tokens"
+        ],
+        "summary": "Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes.",
+        "brands": [
+          "Hearthware"
+        ]
+      }
+    ],
+    "experiments": []
+  }
+}

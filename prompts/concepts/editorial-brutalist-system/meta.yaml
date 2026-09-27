@@ -1,0 +1,21 @@
+id: editorial-brutalist-system
+title: "Editorial Brutalist System"
+category: concepts
+tags:
+  - system
+  - brutalist
+  - editorial
+  - type
+  - grid
+status: polished
+summary: "Art-direction system: modular editorial brutalism — concrete grid, ink type, rules as structure, not decoration."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

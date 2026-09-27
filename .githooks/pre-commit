@@ -1,0 +1,37 @@
+#!/usr/bin/env sh
+# Pre-commit: block secrets + incomplete prompt entries
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+# Block real secret env files — allow .env.example (template, no secrets)
+SECRET_HITS=$(
+  git diff --cached --name-only |
+    grep -E '(^|/)\.env(\.|$)|(^|/)credentials\.json$' |
+    grep -vE '(^|/)\.env\.example$' ||
+    true
+)
+if [ -n "$SECRET_HITS" ]; then
+  echo "pre-commit: refusing to commit secrets:"
+  echo "$SECRET_HITS"
+  exit 1
+fi
+
+# Only run heavy checks when prompts/ or indexes change
+if git diff --cached --name-only | grep -E '^(prompts/|README\.md|index\.json|catalog\.json)' >/dev/null 2>&1; then
+  echo "pre-commit: validate + completeness (staged entries)"
+  npm run validate
+  if [ "${SKIP_COMPLETE_CHECK:-}" = "1" ]; then
+    echo "pre-commit: SKIP_COMPLETE_CHECK=1 — skipping ship-ready gate"
+  else
+    npm run check -- --staged
+  fi
+  # Keep generated indexes in sync if prompts changed
+  if git diff --cached --name-only | grep -E '^prompts/' >/dev/null 2>&1; then
+    npm run generate
+    git add README.md index.json catalog.json 2>/dev/null || true
+  fi
+else
+  echo "pre-commit: no prompt/index changes — skip completeness"
+fi
+
+echo "pre-commit: ok"

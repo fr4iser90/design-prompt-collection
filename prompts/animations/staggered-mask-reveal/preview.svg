@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Staggered Mask Reveal">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1512"/>
+      <stop offset="100%" stop-color="#3b2f2a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="980" cy="140" r="180" fill="#f0e6d8" fill-opacity="0.18"/>
+  <circle cx="1080" cy="420" r="220" fill="#f0e6d8" fill-opacity="0.12"/>
+  <text x="64" y="250" fill="#f0e6d8" font-family="ui-monospace, monospace" font-size="20" letter-spacing="4">ANIMATIONS</text>
+  <text x="64" y="340" fill="#f7f3ea" font-family="Georgia, serif" font-size="58" font-weight="700">Staggered Mask Reveal</text>
+  <rect x="64" y="380" width="120" height="4" fill="#f0e6d8"/>
+</svg>

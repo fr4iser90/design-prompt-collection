@@ -1,0 +1,21 @@
+id: staggered-mask-reveal
+title: "Staggered Mask Reveal"
+category: animations
+tags:
+  - typography
+  - mask
+  - scroll
+  - entrance
+  - editorial
+status: polished
+summary: "Editorial headline reveal via line masks and stagger — cinematic entrance without cheap fade templates."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

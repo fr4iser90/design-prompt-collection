@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="{{TITLE}} preview placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1f2e"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="64" y="280" fill="#8b949e" font-family="ui-monospace, monospace" font-size="22">{{CATEGORY}}</text>
+  <text x="64" y="360" fill="#f0f6fc" font-family="Georgia, serif" font-size="56" font-weight="700">{{TITLE}}</text>
+  <text x="64" y="420" fill="#58a6ff" font-family="ui-monospace, monospace" font-size="18">preview placeholder  replace with real capture</text>
+</svg>

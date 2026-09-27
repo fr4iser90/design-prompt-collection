@@ -1,0 +1,2 @@
+# Magnetic Nav Rail
+Build a one-shot HTML/CSS/JS animation for a navigation rail titled Vector Harbor. Use deep navy background #0A1016, panel #13212B, amber accent #E8C468. Type display Space Grotesk, labels IBM Plex Mono. Create six vertical nav items that react to cursor within 160px: translate toward pointer, scale 1.06, stretch horizontally with elastic easing, and slide an amber capsule underline. Add a subtle magnetic field ring and staggered entrance. Keep motion under 400ms and provide reduced-motion static fallback. Deliver single HTML demo.

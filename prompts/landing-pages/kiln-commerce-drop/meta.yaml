@@ -1,0 +1,21 @@
+id: kiln-commerce-drop
+title: "Kiln Commerce Drop"
+category: landing-pages
+tags:
+  - commerce
+  - product
+  - warm
+  - craft
+  - launch
+status: polished
+summary: "Product-drop landing for Kiln ceramics: object as full-bleed hero, restrained type, one purchase CTA — craft heat without rustic cliché."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

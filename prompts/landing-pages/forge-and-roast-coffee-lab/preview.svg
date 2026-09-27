@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Forge and Roast Coffee Lab">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12100f"/>
+      <stop offset="100%" stop-color="#f1efe9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="980" cy="140" r="180" fill="#c8452b" fill-opacity="0.18"/>
+  <circle cx="1080" cy="420" r="220" fill="#c8452b" fill-opacity="0.12"/>
+  <text x="64" y="250" fill="#c8452b" font-family="ui-monospace, monospace" font-size="20" letter-spacing="4">LANDING-PAGES</text>
+  <text x="64" y="340" fill="#f7f3ea" font-family="Georgia, serif" font-size="52" font-weight="700">Forge and Roast Coffee Lab</text>
+  <rect x="64" y="380" width="120" height="4" fill="#c8452b"/>
+</svg>

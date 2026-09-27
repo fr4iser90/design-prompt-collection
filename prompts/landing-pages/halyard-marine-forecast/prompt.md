@@ -1,0 +1,3 @@
+# Halyard Marine Forecast
+
+Design a landing page for Halyard Marine Forecast, a marine weather and routing brand. Use a full-bleed dark chart hero with a luminous route ribbon, crisp nautical grid lines, and oversized brand type. No hero cards or glass panels. Palette: abyss navy, slate depth, signal orange. Type pairing: Neue Haas Grotesk Display for headlines, Tiempos for editorial body, Söhne Mono for data labels. Deliver a responsive single-page HTML/CSS landing page with semantic sections, 2 to 3 restrained motions: route line draw, ticker scroll, and subtle parallax on chart layers. Do not use Inter, Roboto, Arial, or system as the display stack.

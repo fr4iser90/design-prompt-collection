@@ -1,0 +1,24 @@
+id: tidal-studio-hero
+title: "Tidal Studio Hero"
+category: landing-pages
+tags:
+  - agency
+  - hero
+  - ocean
+  - editorial
+  - motion
+status: polished
+summary: "Full-bleed coastal agency hero: brand-first, tide-line motion, no cards — only type, CTA, and water as the visual plane."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/legacy/demo/index.html
+default_run: legacy
+source_model: null
+source_provider: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

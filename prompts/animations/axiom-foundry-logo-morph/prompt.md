@@ -1,0 +1,2 @@
+# Axiom Foundry Logo Morph
+Animate a 3-second brand motion for Axiom Foundry. Use forest ink background #0C1B16, deeper panel #17352B, molten gold accent #C9A227. Use PP Neue Montreal for the wordmark and IBM Plex Sans for UI text. Morph a circular monogram into the wordmark AXIOM with stroke draw, path collapse, letter counter opening, and a metallic light sweep. Add subtle dust particles and reduced-motion final wordmark. Deliver single HTML with inline SVG.

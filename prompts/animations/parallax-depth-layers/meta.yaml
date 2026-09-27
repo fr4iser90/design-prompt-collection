@@ -1,0 +1,21 @@
+id: parallax-depth-layers
+title: "Parallax Depth Layers"
+category: animations
+tags:
+  - parallax
+  - scroll
+  - depth
+  - landscape
+  - performance
+status: polished
+summary: "Three-plane scroll parallax with depth fog — landscape storytelling that stays smooth and reduced-motion safe."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-09-27"
+updated: "2026-09-27"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
