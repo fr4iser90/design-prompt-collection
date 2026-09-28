@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linen Fold Typography — a typographic system in cloth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Spline+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f5dc;
+  --paper-2:#ece7c9;
+  --linen:#d2b48c;
+  --linen-lite:#e3cba1;
+  --linen-deep:#bd9b6e;
+  --brown:#8b7355;
+  --brown-soft:#a8916f;
+  --ink:#5c4a34;
+  --ink-soft:#7a6850;
+  --serif:"Fraunces", Georgia, "Times New Roman", serif;
+  --sans:"Spline Sans", system-ui, -apple-system, sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+::selection{background:var(--linen);color:var(--ink)}
+
+/* ---------- atmosphere ---------- */
+.grain{
+  position:fixed;inset:0;z-index:90;pointer-events:none;
+  mix-blend-mode:multiply;opacity:.055;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed;inset:0;z-index:88;pointer-events:none;
+  background:radial-gradient(125% 95% at 50% 18%, transparent 55%, rgba(139,115,85,.16));
+}
+.spot{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(540px circle at var(--mx,50%) var(--my,40%), rgba(255,251,232,.6), transparent 62%);
+}
+.stain{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(46px)}
+.stain.a{width:460px;height:460px;top:-140px;right:-90px;background:radial-gradient(circle,rgba(210,180,140,.32),transparent 70%)}
+.stain.b{width:560px;height:560px;bottom:-180px;left:-160px;background:radial-gradient(circle,rgba(139,115,85,.16),transparent 70%)}
+.stain.c{width:380px;height:380px;top:46%;left:58%;background:radial-gradient(circle,rgba(210,180,140,.2),transparent 70%)}
+
+/* ---------- linen material ---------- */
+.linen{
+  position:relative;display:inline-block;
+  background:linear-gradient(158deg,var(--linen-lite) 0%,var(--linen) 42%,var(--linen-deep) 100%);
+  background-size:180% 180%;background-position:42% 42%;
+  background-blend-mode:overlay;
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  will-change:transform;
+}
+.linen::before{
+  content:attr(data-text);
+  position:absolute;left:0;top:0;
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;-webkit-text-fill-color:transparent;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,251,235,.11) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(-45deg, rgba(139,115,85,.13) 0 1px, transparent 1px 3px);
+  background-blend-mode:overlay;
+  pointer-events:none;
+}
+
+/* ---------- fold (shadow) layer ---------- */
+.fold{
+  position:relative;display:inline-block;
+  color:var(--brown);
+  text-shadow:
+    0 1px 0 rgba(255,250,235,.55),
+    2px 3px 4px rgba(139,115,85,.24),
+    0 8px 18px rgba(139,115,85,.16);
+  transition:transform .7s cubic-bezier(.2,.8,.2,1), text-shadow .7s ease, filter .7s ease;
+  will-change:transform;
+}
+.fold:hover{
+  transform:translateY(-8px);
+  text-shadow:
+    0 1px 0 rgba(255,250,235,.6),
+    3px 6px 9px rgba(139,115,85,.26),
+    0 22px 42px rgba(139,115,85,.24);
+}
+.linen-layer{
+  display:inline-block;
+  transition:transform .7s cubic-bezier(.2,.8,.2,1), background-size .7s ease, background-position .7s ease;
+}
+.fold:hover .linen-layer{
+  transform:translateY(-3px);
+  background-size:210% 210%;background-position:50% 50%;
+}
+.linen-layer .word{display:inline-block}
+.linen-layer .letter{display:inline-block}
+.linen-layer .space{display:inline-block;width:.3em}
+
+/* ---------- shared ---------- */
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,64px);position:relative;z-index:3}
+section{position:relative;z-index:3}
+.eyebrow{
+  font-family:var(--sans);font-weight:500;
+  font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;
+  color:var(--brown-soft);display:flex;align-items:center;gap:.85em;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--brown-soft);opacity:.7}
+.lead{font-size:clamp(1.05rem,1.6vw,1.32rem);line-height:1.72;color:var(--ink-soft);max-width:46ch;font-weight:300}
+.lead strong{font-weight:500;color:var(--ink)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity 1s ease, transform 1s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px clamp(20px,5vw,64px);
+  background:linear-gradient(to bottom, rgba(245,245,220,.94), rgba(245,245,220,.55) 70%, transparent);
+  backdrop-filter:blur(3px);
+}
+.brand{
+  font-family:var(--serif);font-weight:600;font-size:1.12rem;color:var(--ink);
+  display:flex;align-items:center;gap:.55em;letter-spacing:.01em;
+}
+.brand .mark{
+  width:12px;height:12px;border-radius:2px;
+  background:linear-gradient(135deg,var(--linen-lite),var(--linen-deep));
+  box-shadow:inset 0 0 0 1px rgba(139,115,85,.35), 1px 2px 4px rgba(139,115,85,.3);
+  transform:rotate(45deg);
+}
+.nav-meta{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--brown-soft)}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:120px 0 60px;position:relative;
+}
+.hero-title{
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:clamp(3.3rem,15.5vw,13.5rem);
+  line-height:.86;letter-spacing:-.02em;margin:0;
+}
+.hero-title .word{display:inline-block}
+.hero-title .word .letter{display:inline-block}
+.hero-title .word .space{display:inline-block;width:.26em}
+.hero-title .word{transition:transform .95s cubic-bezier(.2,.85,.2,1)}
+.hero-title .word.draped{transform:translateY(.44em) rotate(-2.2deg)}
+.hero-foot{
+  display:flex;flex-wrap:wrap;gap:28px 48px;align-items:flex-end;
+  justify-content:space-between;margin-top:clamp(30px,5vw,58px);
+}
+.hero-note{font-size:.82rem;letter-spacing:.05em;color:var(--brown-soft);max-width:34ch;line-height:1.6}
+.hero-note b{color:var(--ink);font-weight:500}
+.hint{display:flex;align-items:center;gap:10px;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brown-soft)}
+.hint .dot{width:7px;height:7px;border-radius:50%;background:var(--linen-deep);box-shadow:0 0 0 4px rgba(210,180,140,.35);animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.35);opacity:1}}
+
+/* ---------- weights ---------- */
+.weights{padding:clamp(90px,14vh,170px) 0}
+.weights-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(30px,6vw,80px);align-items:center}
+.w-eyebrow{margin-bottom:26px}
+.w-title{font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4vw,3.2rem);line-height:1.02;letter-spacing:-.01em;margin:0 0 22px;color:var(--ink)}
+.specimen{display:flex;flex-direction:column;gap:clamp(14px,2.4vw,26px)}
+.spec-row{display:flex;align-items:baseline;gap:clamp(16px,3vw,40px);padding-bottom:clamp(14px,2vw,22px);border-bottom:1px solid rgba(139,115,85,.16)}
+.spec-row:last-child{border-bottom:0}
+.spec-word{font-family:var(--serif);line-height:1;font-size:clamp(2.2rem,6.5vw,5rem);transition:transform .7s cubic-bezier(.2,.8,.2,1),text-shadow .7s ease}
+.spec-word:hover{transform:translateY(-6px)}
+.spec-meta{font-size:.78rem;letter-spacing:.06em;color:var(--brown-soft);white-space:nowrap;line-height:1.5}
+.spec-meta b{display:block;color:var(--ink);font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:.7rem}
+
+/* ---------- texture ---------- */
+.texture{padding:clamp(90px,14vh,170px) 0}
+.texture-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(34px,6vw,70px);align-items:center}
+.swatch{
+  position:relative;height:min(60vh,460px);border-radius:4px;overflow:hidden;
+  background-color:var(--linen);
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,251,235,.16) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(-45deg, rgba(139,115,85,.2) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(0deg, rgba(139,115,85,.05) 0 3px, transparent 3px 7px),
+    radial-gradient(120% 120% at 30% 20%, rgba(255,250,235,.5), transparent 60%);
+  box-shadow:inset 0 0 60px rgba(139,115,85,.22), 0 26px 50px rgba(139,115,85,.2);
+  transform-origin:center;
+  animation:breathe 11s ease-in-out infinite;
+}
+.swatch::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(140% 140% at 50% 40%, transparent 55%, rgba(139,115,85,.24));
+  pointer-events:none;
+}
+.swatch .tag{
+  position:absolute;left:22px;bottom:20px;z-index:2;
+  font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--brown);
+  background:rgba(245,245,220,.72);padding:7px 12px;border-radius:2px;backdrop-filter:blur(2px);
+}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
+.texture-copy h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.9rem,3.6vw,2.9rem);line-height:1.05;letter-spacing:-.01em;margin:18px 0 20px;color:var(--ink)}
+.swatches{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+.chip{display:flex;flex-direction:column;gap:8px;font-size:.66rem;letter-spacing:.1em;color:var(--brown-soft)}
+.chip i{width:52px;height:52px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(139,115,85,.25), 0 6px 14px rgba(139,115,85,.18)}
+
+/* ---------- weave ---------- */
+.weave{padding:clamp(80px,12vh,150px) 0}
+.weave-head{max-width:60ch;margin-bottom:clamp(40px,6vw,64px)}
+.weave-head h2{font-family:var(--serif);font-weight:500;font-size:clamp(2.1rem,5vw,4rem);line-height:1.02;letter-spacing:-.015em;margin:18px 0 20px;color:var(--ink)}
+.weave-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2.5vw,30px)}
+.weave-cell{
+  display:flex;flex-direction:column;justify-content:space-between;min-height:170px;
+  padding:22px;border-radius:3px;
+  background:linear-gradient(180deg, rgba(255,251,235,.5), rgba(210,180,140,.12));
+  box-shadow:0 14px 30px rgba(139,115,85,.12);
+  transition:transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .6s ease;
+}
+.weave-cell:hover{transform:translateY(-6px);box-shadow:0 24px 44px rgba(139,115,85,.2)}
+.weave-cell .idx{font-family:var(--serif);font-weight:500;font-size:2.4rem;line-height:1;color:var(--linen-deep)}
+.weave-cell .name{font-family:var(--serif);font-weight:500;font-size:1.35rem;color:var(--ink);margin-top:auto}
+.weave-cell .desc{font-size:.82rem;line-height:1.55;color:var(--brown-soft);margin-top:8px}
+
+/* ---------- quote ---------- */
+.quote{padding:clamp(100px,16vh,200px) 0}
+.quote blockquote{
+  margin:0;font-family:var(--serif);font-weight:400;font-style:italic;
+  font-size:clamp(1.8rem,4.6vw,3.6rem);line-height:1.22;letter-spacing:-.01em;
+  color:var(--brown);max-width:20ch;
+  text-shadow:0 1px 0 rgba(255,250,235,.5), 0 10px 26px rgba(139,115,85,.18);
+}
+.quote cite{display:block;margin-top:30px;font-family:var(--sans);font-style:normal;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--brown-soft)}
+
+/* ---------- footer ---------- */
+.foot{padding:clamp(70px,10vh,120px) 0 60px;border-top:1px solid rgba(139,115,85,.2)}
+.foot-word{font-family:var(--serif);font-weight:500;font-size:clamp(2.6rem,11vw,8rem);line-height:.9;letter-spacing:-.02em;margin:0}
+.foot-row{display:flex;flex-wrap:wrap;gap:14px 40px;justify-content:space-between;margin-top:40px;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brown-soft)}
+
+/* ---------- responsive ---------- */
+@media(max-width:860px){
+  .weights-grid,.texture-grid{grid-template-columns:1fr;gap:40px}
+  .texture-grid .swatch{order:-1}
+  .weave-grid{grid-template-columns:repeat(2,1fr)}
+  .hero-foot{gap:20px}
+}
+@media(max-width:520px){
+  .weave-grid{grid-template-columns:1fr}
+  .spec-row{flex-direction:column;gap:8px;align-items:flex-start}
+  .nav-meta{display:none}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important}
+  .reveal{opacity:1;transform:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="spot"></div>
+<div class="stain a"></div>
+<div class="stain b"></div>
+<div class="stain c"></div>
+
+<nav class="nav">
+  <div class="brand"><span class="mark"></span>Linen Fold</div>
+  <div class="nav-meta">A typographic system · in cloth</div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow reveal" style="--d:60ms">Folded type · woven light · soft edges</p>
+    <h1 class="hero-title fold" id="heroTitle">
+      <span class="word" data-text="Linen">Linen</span><span class="space"> </span><span class="word" data-text="Fold">Fold</span>
+    </h1>
+    <div class="hero-foot">
+      <p class="lead reveal" style="--d:220ms">Letters are not drawn here. They are <strong>pressed, creased and draped</strong> — each glyph a length of linen whose weight sets the depth of its shadow.</p>
+      <div class="reveal" style="--d:340ms">
+        <p class="hero-note">Weights read as <b>ply</b>. Lighter faces are single-ply and drape; heavier faces carry deeper creases.</p>
+        <p class="hint" style="margin-top:18px"><span class="dot"></span> Hover a letter to unfold · tap a word to drape</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- WEIGHTS -->
+<section class="weights">
+  <div class="wrap weights-grid">
+    <div>
+      <p class="eyebrow w-eyebrow reveal">01 — Weight as Ply</p>
+      <h2 class="w-title reveal" style="--d:80ms">The heavier the cloth, the deeper the crease.</h2>
+      <p class="lead reveal" style="--d:160ms">Weight is not a stroke width. It is fabric thickness — how many plies are folded together, and how far the shadow falls off the fold beneath.</p>
+    </div>
+    <div class="specimen">
+      <div class="spec-row reveal">
+        <span class="fold spec-word" style="font-weight:300;--d:0ms"><span class="linen-layer" style="font-weight:300"><span class="word" data-text="Air">Air</span></span></span>
+        <span class="spec-meta"><b>Single-ply</b>soft · draped · barely there</span>
+      </div>
+      <div class="spec-row reveal" style="--d:90ms">
+        <span class="fold spec-word" style="font-weight:450"><span class="linen-layer" style="font-weight:450"><span class="word" data-text="Linen">Linen</span></span></span>
+        <span class="spec-meta"><b>Double-ply</b>balanced · natural · warm</span>
+      </div>
+      <div class="spec-row reveal" style="--d:180ms">
+        <span class="fold spec-word" style="font-weight:650"><span class="linen-layer" style="font-weight:650"><span class="word" data-text="Weave">Weave</span></span></span>
+        <span class="spec-meta"><b>Triple-ply</b>structured · firm · pressed</span>
+      </div>
+      <div class="spec-row reveal" style="--d:270ms">
+        <span class="fold spec-word" style="font-weight:900"><span class="linen-layer" style="font-weight:900"><span class="word" data-text="Fold">Fold</span></span></span>
+        <span class="spec-meta"><b>Heavy weave</b>deep creases · long shadow</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEXTURE -->
+<section class="texture">
+  <div class="wrap texture-grid">
+    <div class="swatch reveal"><span class="tag">Weave · 40× · natural flax</span></div>
+    <div class="texture-copy">
+      <p class="eyebrow reveal">02 — The Weave</p>
+      <h2 class="reveal" style="--d:80ms">Zoom in and the threads appear.</h2>
+      <p class="lead reveal" style="--d:160ms">Every surface carries a cross-hatch of warp and weft. The texture is generated, not photographed — so it stays crisp at any magnification, catching light along the fold.</p>
+      <div class="swatches reveal" style="--d:240ms">
+        <span class="chip"><i style="background:linear-gradient(158deg,#e3cba1,#d2b48c)"></i>#D2B48C</span>
+        <span class="chip"><i style="background:linear-gradient(158deg,#d8c096,#bd9b6e)"></i>#BD9B6E</span>
+        <span class="chip"><i style="background:linear-gradient(158deg,#9c8566,#8b7355)"></i>#8B7355</span>
+        <span class="chip"><i style="background:linear-gradient(158deg,#f8f5e2,#ece7c9)"></i>#F5F5DC</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WEAVE / MOTION -->
+<section class="weave">
+  <div class="wrap">
+    <div class="weave-head">
+      <p class="eyebrow reveal">03 — The Cloth Moves</p>
+      <h2 class="reveal" style="--d:80ms">Four gestures, all soft.</h2>
+      <p class="lead reveal" style="--d:160ms">Nothing snaps. Fabric settles, lifts and falls with weight — motion borrowed from how real cloth behaves when you handle it.</p>
+    </div>
+    <div class="weave-grid">
+      <div class="weave-cell reveal"><span class="idx">01</span><div><div class="name">Unfold</div><div class="desc">Text rises from a flat sheet; creases ease into place on entrance.</div></div></div>
+      <div class="weave-cell reveal" style="--d:90ms"><span class="idx">02</span><div><div class="name">Breathe</div><div class="desc">A slow scale from 1.0 to 1.01 — the surface never quite still.</div></div></div>
+      <div class="weave-cell reveal" style="--d:180ms"><span class="idx">03</span><div><div class="name">Lift</div><div class="desc">Hover a letter: it rises, the shadow spreads soft, the weave sharpens.</div></div></div>
+      <div class="weave-cell reveal" style="--d:270ms"><span class="idx">04</span><div><div class="name">Drape</div><div class="desc">Tap a word and it falls over the next line, like cloth given up to gravity.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+  <div class="wrap">
+    <blockquote class="reveal">Type you can feel the grain of.</blockquote>
+    <cite class="reveal" style="--d:120ms">— Linen Fold, specimen study</cite>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="wrap">
+    <h2 class="foot-word fold" id="footWord">
+      <span class="word" data-text="Linen">Linen</span><span class="space"> </span><span class="word" data-text="Fold">Fold</span>
+    </h2>
+    <div class="foot-row">
+      <span>© Linen Fold Typography</span>
+      <span>Set in Fraunces &amp; Spline Sans</span>
+      <span>Palette · #F5F5DC / #D2B48C / #8B7355</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* split a .fold into linen layer + word spans */
+  function splitFold(el){
+    var text = el.textContent;
+    el.textContent = '';
+    var layer = document.createElement('span');
+    layer.className = 'linen-layer';
+    text.split(' ').forEach(function(word, wi, arr){
+      var w = document.createElement('span');
+      w.className = 'word';
+      w.setAttribute('data-text', word);
+      w.textContent = word;
+      layer.appendChild(w);
+      if(wi < arr.length - 1){
+        var sp = document.createElement('span');
+        sp.className = 'space';
+        sp.textContent = ' ';
+        layer.appendChild(sp);
+      }
+    });
+    el.appendChild(layer);
+    return layer;
+  }
+
+  /* hero: split into letters for entrance */
+  var hero = document.getElementById('heroTitle');
+  if(hero){
+    var hlayer = splitFold(hero);
+    var words = hlayer.querySelectorAll('.word');
+    words.forEach(function(w){
+      var t = w.textContent;
+      w.textContent = '';
+      t.split('').forEach(function(ch){
+        var s = document.createElement('span');
+        s.className = 'letter';
+        s.textContent = ch;
+        w.appendChild(s);
+      });
+    });
+    if(!reduce){
+      var letters = hlayer.querySelectorAll('.letter');
+      letters.forEach(function(l,i){
+        l.style.opacity = '0';
+        l.style.transform = 'translateY(.45em) rotate(-6deg)';
+        setTimeout(function(){
+          l.style.transition = 'transform .9s cubic-bezier(.2,.85,.2,1), opacity .8s ease';
+          l.style.opacity = '1';
+          l.style.transform = 'none';
+        }, 220 + i*55);
+      });
+    }
+    /* click a word to drape */
+    words.forEach(function(w){
+      w.addEventListener('click', function(e){
+        e.stopPropagation();
+        w.classList.toggle('draped');
+      });
+    });
+  }
+
+  /* spec words: click to drape */
+  document.querySelectorAll('.spec-word').forEach(function(el){
+    var layer = splitFold(el);
+    var word = layer.querySelector('.word');
+    el.addEventListener('click', function(){
+      word.classList.toggle('draped');
+    });
+  });
+
+  /* footer word: click to drape */
+  var foot = document.getElementById('footWord');
+  if(foot){
+    var flayer = splitFold(foot);
+    flayer.querySelectorAll('.word').forEach(function(w){
+      w.addEventListener('click', function(e){
+        e.stopPropagation();
+        w.classList.toggle('draped');
+      });
+    });
+  }
+
+  /* scroll reveal */
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:.16, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ambient spotlight follows pointer */
+  if(!reduce){
+    var raf = null, mx = 50, my = 40;
+    window.addEventListener('pointermove', function(e){
+      mx = e.clientX / window.innerWidth * 100;
+      my = e.clientY / window.innerHeight * 100;
+      if(!raf){ raf = requestAnimationFrame(function(){
+        document.documentElement.style.setProperty('--mx', mx + '%');
+        document.documentElement.style.setProperty('--my', my + '%');
+        raf = null;
+      }); }
+    }, {passive:true});
+  }
+})();
+</script>
+</body>
+</html>

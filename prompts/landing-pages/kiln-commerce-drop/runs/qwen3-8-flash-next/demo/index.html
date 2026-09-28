@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiln — Drop 01 · Vessel No. 01</title>
+<meta name="description" content="Kiln. One kiln load. Forty matte ember stoneware vessels. When the firing ends, the drop ends.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Archivo:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ tokens ============ */
+:root{
+  --kiln:#2a1a14;
+  --umber:#5c3317;
+  --bisque:#e7d5c0;
+  --ember:#e09f5a;
+  --ash:#8a7a6c;
+  --ink:#150c08;
+  --ink-deep:#0e0805;
+  --line:rgba(231,213,192,.16);
+  --line-soft:rgba(231,213,192,.09);
+
+  --display:"Fraunces", Georgia, serif;
+  --body:"Archivo", "Helvetica Neue", sans-serif;
+
+  --ease-settle:cubic-bezier(.19,.86,.22,1);
+  --max:1240px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink-deep);
+  color:var(--bisque);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--ember);color:var(--kiln)}
+
+/* chalk noise + graded dark edges over everything */
+body::before{
+  content:"";position:fixed;inset:0;z-index:60;pointer-events:none;
+  opacity:.055;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:59;pointer-events:none;
+  background:
+    radial-gradient(130% 110% at 50% 42%, transparent 46%, rgba(8,4,2,.55) 82%, rgba(6,3,2,.85) 100%);
+}
+
+/* ============ header ============ */
+.site-head{
+  position:absolute;top:0;left:0;right:0;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:clamp(18px,3vw,30px) clamp(20px,4vw,56px);
+}
+.mark{
+  font-family:var(--display);
+  font-optical-sizing:auto;
+  font-weight:600;
+  font-size:1.05rem;
+  letter-spacing:.01em;
+  color:var(--bisque);
+  text-decoration:none;
+}
+.mark sup{font-size:.5em;color:var(--ember);font-weight:500;top:-.9em}
+.head-meta{
+  display:flex;gap:clamp(14px,3vw,34px);
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ash);
+}
+.head-meta span b{color:var(--bisque);font-weight:500}
+.head-meta .dot{color:var(--ember)}
+@media (max-width:640px){ .head-meta span:nth-child(1){display:none} }
+
+/* ============ hero ============ */
+.hero{
+  position:relative;
+  min-height:100svh;
+  overflow:hidden;
+  display:grid;
+  align-items:end;
+  background:
+    radial-gradient(64% 58% at 74% 46%, rgba(224,159,90,.20), rgba(92,51,23,.10) 46%, transparent 68%),
+    radial-gradient(120% 130% at 78% 52%, #3a2113 0%, #241409 38%, var(--ink) 72%, var(--ink-deep) 100%);
+}
+/* ember floor heat */
+.hero .heat{
+  position:absolute;left:50%;bottom:-24%;width:120%;height:60%;
+  transform:translateX(-50%);
+  background:radial-gradient(50% 60% at 62% 100%, rgba(224,159,90,.16), transparent 70%);
+  pointer-events:none;
+}
+
+/* the vessel — full-bleed visual plane */
+.vessel-wrap{
+  position:absolute;top:50%;right:5.5%;
+  transform:translateY(-50%);
+  height:min(94svh,860px);
+  z-index:2;
+  pointer-events:none;
+  animation:vesselIn 1.5s var(--ease-settle) both .1s;
+}
+.vessel{height:100%;width:auto;display:block;overflow:visible}
+.spec{
+  transform-box:fill-box;transform-origin:center;
+  animation:breathe 7.5s ease-in-out infinite alternate;
+}
+.spec .core{animation:drift 11s ease-in-out infinite alternate}
+.ember-core{animation:breathe 7.5s ease-in-out infinite alternate-reverse}
+@keyframes breathe{
+  0%{opacity:.55;transform:translateY(6px) scale(.985)}
+  100%{opacity:.95;transform:translateY(-10px) scale(1.02)}
+}
+@keyframes drift{
+  0%{transform:translateY(14px)}
+  100%{transform:translateY(-16px)}
+}
+@keyframes vesselIn{
+  from{opacity:0;transform:translateY(calc(-50% + 26px)) scale(1.015)}
+  to{opacity:1;transform:translateY(-50%) scale(1)}
+}
+
+/* entrance exposure lift */
+.exposure{
+  position:absolute;inset:0;z-index:5;pointer-events:none;
+  background:#070302;
+  animation:expose 1.8s var(--ease-settle) both .05s;
+}
+@keyframes expose{from{opacity:.62}to{opacity:0}}
+
+/* type block — lower-left, scrim only under glyphs */
+.hero-copy{
+  position:relative;z-index:10;
+  max-width:var(--max);
+  width:100%;
+  margin:0 auto;
+  padding:0 clamp(20px,4vw,56px) clamp(40px,6svh,72px);
+}
+.hero-copy::before{
+  content:"";position:absolute;z-index:-1;
+  left:0;right:0;top:-38%;bottom:-30%;
+  background:linear-gradient(100deg, rgba(14,8,5,.94) 0%, rgba(14,8,5,.78) 34%, rgba(14,8,5,.28) 62%, transparent 84%);
+  pointer-events:none;
+}
+.eyebrow{
+  font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ember);
+  display:flex;align-items:center;gap:.8em;
+  margin-bottom:clamp(10px,1.6svh,18px);
+  animation:fadeUp .9s var(--ease-settle) both .35s;
+}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--ember);opacity:.6}
+
+.brand{
+  font-family:var(--display);
+  font-weight:600;
+  font-variation-settings:"SOFT" 0,"WONK" 1;
+  font-size:clamp(4.6rem,15.5vw,12.5rem);
+  line-height:.86;
+  color:var(--bisque);
+  letter-spacing:-.02em;
+  animation:trackingSettle 1.4s var(--ease-settle) both .15s;
+  text-shadow:0 0 90px rgba(224,159,90,.14);
+}
+.brand sup{
+  font-family:var(--body);
+  font-size:.11em;font-weight:500;letter-spacing:.06em;
+  color:var(--ember);top:-2.6em;
+}
+@keyframes trackingSettle{
+  0%{letter-spacing:.22em;opacity:0;filter:blur(6px)}
+  60%{opacity:1;filter:blur(0)}
+  100%{letter-spacing:-.02em;opacity:1;filter:blur(0)}
+}
+
+.headline{
+  font-family:var(--display);
+  font-style:italic;
+  font-weight:400;
+  font-size:clamp(1.25rem,2.6vw,2rem);
+  line-height:1.25;
+  max-width:22ch;
+  color:var(--bisque);
+  margin-top:clamp(14px,2.4svh,26px);
+  animation:fadeUp 1s var(--ease-settle) both .55s;
+}
+.headline em{font-style:normal;color:var(--ember)}
+.support{
+  max-width:44ch;
+  margin-top:clamp(10px,1.6svh,16px);
+  color:var(--ash);
+  font-size:clamp(.92rem,1.3vw,1.02rem);
+  animation:fadeUp 1s var(--ease-settle) both .7s;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* CTA group */
+.cta{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  margin-top:clamp(22px,3.4svh,36px);
+  animation:fadeUp 1s var(--ease-settle) both .85s;
+}
+.btn{
+  font-family:var(--body);
+  font-size:.82rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:1.05em 2em;
+  border-radius:2px;
+  cursor:pointer;
+  border:1px solid transparent;
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:.7em;
+  transition:transform .12s var(--ease-settle), background .25s, color .25s, border-color .25s, box-shadow .25s;
+  will-change:transform;
+}
+.btn-buy{
+  background:var(--ember);color:#221208;
+  box-shadow:0 10px 34px -10px rgba(224,159,90,.5);
+}
+.btn-buy:hover{background:#ecb273;box-shadow:0 14px 44px -10px rgba(224,159,90,.65)}
+.btn-buy:active{transform:translateY(1.5px) scale(.985);box-shadow:0 4px 16px -8px rgba(224,159,90,.5)}
+.btn-notify{
+  background:transparent;color:var(--bisque);
+  border-color:rgba(231,213,192,.32);
+}
+.btn-notify:hover{border-color:var(--bisque);color:var(--ember)}
+.btn-notify:active{transform:translateY(1.5px) scale(.985)}
+.btn[disabled]{opacity:.55;pointer-events:none}
+.btn .price{font-weight:500;letter-spacing:.04em;opacity:.75}
+
+/* units meter */
+.units{
+  margin-top:clamp(20px,3svh,30px);
+  max-width:420px;
+  animation:fadeUp 1s var(--ease-settle) both 1s;
+}
+.units-row{
+  display:flex;justify-content:space-between;
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ash);
+  margin-bottom:9px;
+}
+.units-row b{color:var(--bisque);font-weight:500}
+.track{height:2px;background:var(--line);position:relative;overflow:hidden}
+.track i{
+  position:absolute;inset:0 auto 0 0;width:0;
+  background:linear-gradient(90deg,var(--umber),var(--ember));
+  transition:width 1.6s var(--ease-settle) .4s;
+}
+.toast{
+  margin-top:14px;font-size:.78rem;color:var(--ember);
+  opacity:0;transform:translateY(4px);transition:.4s var(--ease-settle);
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* scroll cue */
+.cue{
+  position:absolute;right:clamp(20px,4vw,56px);bottom:clamp(40px,6svh,72px);
+  z-index:10;
+  font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ash);
+  writing-mode:vertical-rl;
+  display:flex;align-items:center;gap:14px;
+  animation:fadeUp 1s var(--ease-settle) both 1.2s;
+}
+.cue::after{content:"";width:1px;height:52px;background:linear-gradient(var(--ash),transparent);animation:cue 2.6s ease-in-out infinite}
+@keyframes cue{0%,100%{opacity:.3;transform:scaleY(.7)}50%{opacity:.9;transform:scaleY(1)}}
+
+/* ============ ticker ============ */
+.ticker{
+  border-block:1px solid var(--line-soft);
+  background:var(--ink);
+  overflow:hidden;
+  padding:14px 0;
+  position:relative;z-index:10;
+}
+.ticker-track{display:flex;gap:0;width:max-content;animation:tick 38s linear infinite}
+.ticker-track span{
+  font-family:var(--display);font-style:italic;font-weight:400;
+  font-size:.95rem;color:var(--ash);white-space:nowrap;padding:0 2.2em;
+}
+.ticker-track span b{color:var(--ember);font-weight:400;font-style:normal;font-family:var(--body);font-size:.62rem;letter-spacing:.22em;vertical-align:middle}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ============ sections shared ============ */
+section{position:relative;z-index:10}
+.wrap{max-width:var(--max);margin:0 auto;padding:clamp(72px,12svh,140px) clamp(20px,4vw,56px)}
+.kicker{
+  font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ember);
+  display:flex;align-items:center;gap:.8em;margin-bottom:26px;
+}
+.kicker::before{content:"";width:34px;height:1px;background:var(--ember);opacity:.6}
+
+/* ============ craft ============ */
+.craft{background:linear-gradient(180deg,var(--ink) 0%,#1d110a 60%,var(--ink) 100%)}
+.craft-grid{
+  display:grid;grid-template-columns:1.15fr .85fr;
+  gap:clamp(40px,7vw,110px);align-items:start;
+}
+.craft h2{
+  font-family:var(--display);font-weight:500;
+  font-variation-settings:"SOFT" 0,"WONK" 1;
+  font-size:clamp(2.1rem,4.6vw,3.6rem);
+  line-height:1.06;letter-spacing:-.015em;
+  color:var(--bisque);
+  max-width:16ch;
+}
+.craft h2 em{font-style:italic;color:var(--ember)}
+.craft .prose{margin-top:30px;max-width:52ch;color:var(--ash);font-size:1rem}
+.craft .prose p+p{margin-top:1.1em}
+.craft .prose strong{color:var(--bisque);font-weight:500}
+.pull{
+  margin-top:38px;padding-left:22px;border-left:1px solid var(--ember);
+  font-family:var(--display);font-style:italic;font-size:1.2rem;color:var(--bisque);
+  max-width:34ch;line-height:1.4;
+}
+.spec-list{border-top:1px solid var(--line)}
+.spec-list div{
+  display:flex;justify-content:space-between;gap:24px;align-items:baseline;
+  padding:15px 0;border-bottom:1px solid var(--line-soft);
+}
+.spec-list dt{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ash)}
+.spec-list dd{font-family:var(--display);font-size:1.02rem;color:var(--bisque);text-align:right}
+.swatch{
+  margin-top:34px;display:flex;align-items:center;gap:16px;
+}
+.swatch .chip{
+  width:56px;height:56px;border-radius:50%;flex:none;
+  background:
+    radial-gradient(120% 100% at 32% 26%, rgba(231,213,192,.32), transparent 46%),
+    radial-gradient(140% 130% at 70% 80%, #7a4520, #4a2814 55%, #2a1a14 100%);
+  box-shadow:inset 0 0 0 1px rgba(231,213,192,.14), 0 10px 26px -12px rgba(0,0,0,.8);
+}
+.swatch p{font-size:.82rem;color:var(--ash);line-height:1.45}
+.swatch p b{display:block;color:var(--bisque);font-weight:500;font-size:.9rem}
+
+/* ============ drop band ============ */
+.drop{
+  background:
+    radial-gradient(80% 140% at 50% 130%, rgba(224,159,90,.14), transparent 60%),
+    var(--ink-deep);
+  border-top:1px solid var(--line-soft);
+}
+.drop-inner{
+  display:grid;grid-template-columns:1fr auto;gap:clamp(34px,6vw,80px);
+  align-items:end;
+}
+.drop h2{
+  font-family:var(--display);font-weight:500;
+  font-size:clamp(1.9rem,4vw,3rem);line-height:1.08;letter-spacing:-.015em;
+  max-width:18ch;color:var(--bisque);
+}
+.drop .fine{margin-top:22px;color:var(--ash);font-size:.9rem;max-width:46ch}
+.drop .fine b{color:var(--bisque);font-weight:500}
+.price-block{text-align:right}
+.price{
+  font-family:var(--display);font-weight:600;
+  font-size:clamp(3rem,7vw,5.4rem);line-height:.9;
+  color:var(--ember);letter-spacing:-.02em;
+}
+.price small{font-family:var(--body);font-size:.28em;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ash);vertical-align:middle;margin-left:.6em}
+.price-block .btn{margin-top:22px;width:100%;justify-content:center}
+.price-block .note{margin-top:14px;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+
+/* ============ footer ============ */
+footer{
+  border-top:1px solid var(--line-soft);
+  background:var(--ink-deep);
+}
+.foot{
+  max-width:var(--max);margin:0 auto;
+  padding:clamp(40px,7svh,72px) clamp(20px,4vw,56px);
+  display:flex;flex-wrap:wrap;gap:28px;align-items:center;justify-content:space-between;
+}
+.foot .mark{font-size:1.4rem}
+.foot nav{display:flex;gap:26px;flex-wrap:wrap}
+.foot a{color:var(--ash);text-decoration:none;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;transition:color .25s}
+.foot a:hover{color:var(--ember)}
+.foot .legal{width:100%;font-size:.68rem;color:rgba(138,122,108,.6);letter-spacing:.08em;padding-top:8px;border-top:1px solid var(--line-soft)}
+
+/* reveals */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease-settle),transform .9s var(--ease-settle)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============ mobile ============ */
+@media (max-width:900px){
+  .vessel-wrap{right:50%;transform:translate(50%,-56%);height:62svh}
+  @keyframes vesselIn{
+    from{opacity:0;transform:translate(50%,calc(-56% + 22px)) scale(1.02)}
+    to{opacity:1;transform:translate(50%,-56%) scale(1)}
+  }
+  .hero{align-items:end}
+  .hero-copy::before{top:-55%;bottom:-20%;background:linear-gradient(180deg,transparent,rgba(12,7,4,.6) 22%,rgba(12,7,4,.96) 58%)}
+  .cue{display:none}
+  .craft-grid{grid-template-columns:1fr}
+  .drop-inner{grid-template-columns:1fr}
+  .price-block{text-align:left}
+  .price-block .btn{width:auto}
+}
+@media (max-width:640px){
+  .cta{width:100%}
+  .btn{width:100%;justify-content:center}
+  .headline{max-width:26ch}
+}
+
+/* ============ reduced motion ============ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  .exposure{opacity:0}
+  .brand{letter-spacing:-.02em;opacity:1}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <a class="mark" href="#">Kiln<sup>®</sup></a>
+  <div class="head-meta">
+    <span>Drop <b>01</b></span>
+    <span class="dot">·</span>
+    <span><b>40</b> units</span>
+    <span class="dot">·</span>
+    <span>Ships <b>14 Nov</b></span>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" aria-label="Kiln — Vessel No. 01 drop">
+  <div class="heat" aria-hidden="true"></div>
+
+  <div class="vessel-wrap" aria-hidden="true">
+    <svg class="vessel" viewBox="0 0 400 620" role="img" aria-label="Matte ember stoneware vessel">
+      <defs>
+        <clipPath id="vaseClip">
+          <path d="M172 58 L172 78 C176 112 152 150 112 210 C72 270 58 322 66 382 C74 442 92 502 104 546 C106 557 111 563 118 565 L282 565 C289 563 294 557 296 546 C308 502 326 442 334 382 C342 322 328 270 288 210 C248 150 224 112 228 78 L228 58 Z"/>
+        </clipPath>
+        <linearGradient id="cyl" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0"   stop-color="#120a06"/>
+          <stop offset=".16" stop-color="#3a2113"/>
+          <stop offset=".40" stop-color="#7a4520"/>
+          <stop offset=".52" stop-color="#8a5228"/>
+          <stop offset=".68" stop-color="#55301a"/>
+          <stop offset=".88" stop-color="#241409"/>
+          <stop offset="1"   stop-color="#100905"/>
+        </linearGradient>
+        <linearGradient id="vert" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="rgba(20,11,7,.55)"/>
+          <stop offset=".28" stop-color="rgba(20,11,7,0)"/>
+          <stop offset=".82" stop-color="rgba(10,5,3,.35)"/>
+          <stop offset="1" stop-color="rgba(8,4,2,.7)"/>
+        </linearGradient>
+        <radialGradient id="emberBottom" cx=".55" cy=".88" r=".7">
+          <stop offset="0" stop-color="rgba(224,159,90,.34)"/>
+          <stop offset=".55" stop-color="rgba(224,159,90,.08)"/>
+          <stop offset="1" stop-color="rgba(224,159,90,0)"/>
+        </radialGradient>
+        <linearGradient id="rimLight" x1=".5" y1="0" x2="1" y2="0">
+          <stop offset=".62" stop-color="rgba(224,159,90,0)"/>
+          <stop offset=".96" stop-color="rgba(224,159,90,.55)"/>
+          <stop offset="1" stop-color="rgba(231,213,192,.75)"/>
+        </linearGradient>
+        <linearGradient id="mouth" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0c0604"/>
+          <stop offset="1" stop-color="#3a2113"/>
+        </linearGradient>
+        <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="16"/>
+        </filter>
+        <filter id="soft2" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+        <filter id="speckle">
+          <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="2" seed="11" stitchTiles="stitch" result="t"/>
+          <feColorMatrix in="t" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.7 0.7 0.7 0 -0.42"/>
+        </filter>
+      </defs>
+
+      <!-- ground shadow -->
+      <ellipse cx="206" cy="572" rx="158" ry="20" fill="#060302" opacity=".75" filter="url(#soft)"/>
+      <!-- warm bounce -->
+      <ellipse cx="206" cy="566" rx="96" ry="10" fill="rgba(224,159,90,.16)" filter="url(#soft)"/>
+
+      <g clip-path="url(#vaseClip)">
+        <rect x="0" y="0" width="400" height="620" fill="url(#cyl)"/>
+        <rect x="0" y="0" width="400" height="620" fill="url(#vert)"/>
+        <rect class="ember-core" x="0" y="0" width="400" height="620" fill="url(#emberBottom)"/>
+        <!-- speckled stoneware -->
+        <rect x="0" y="0" width="400" height="620" filter="url(#speckle)" opacity=".38" style="mix-blend-mode:multiply"/>
+        <!-- drifting specular highlight -->
+        <g class="spec">
+          <ellipse class="core" cx="148" cy="268" rx="30" ry="158" fill="rgba(244,228,208,.20)" filter="url(#soft)"/>
+          <ellipse class="core" cx="140" cy="252" rx="10" ry="96" fill="rgba(255,244,230,.26)" filter="url(#soft2)"/>
+        </g>
+        <!-- ember rim on right -->
+        <rect x="0" y="0" width="400" height="620" fill="url(#rimLight)"/>
+        <!-- foot shading -->
+        <rect x="0" y="548" width="400" height="20" fill="rgba(8,4,2,.5)"/>
+      </g>
+
+      <!-- mouth -->
+      <ellipse cx="200" cy="58" rx="28" ry="7.5" fill="url(#mouth)"/>
+      <ellipse cx="200" cy="59" rx="24" ry="5" fill="rgba(224,159,90,.14)"/>
+      <path d="M172 58 a28 7.5 0 0 0 56 0" fill="none" stroke="rgba(231,213,192,.4)" stroke-width="1"/>
+      <!-- contour whisper -->
+      <path d="M172 58 L172 78 C176 112 152 150 112 210 C72 270 58 322 66 382 C74 442 92 502 104 546 C106 557 111 563 118 565 L282 565 C289 563 294 557 296 546 C308 502 326 442 334 382 C342 322 328 270 288 210 C248 150 224 112 228 78 L228 58"
+            fill="none" stroke="rgba(231,213,192,.12)" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="exposure" aria-hidden="true"></div>
+
+  <div class="hero-copy">
+    <p class="eyebrow">Drop 01 — One kiln load</p>
+    <h1 class="brand">Kiln<sup>®</sup></h1>
+    <p class="headline">Vessel No.&nbsp;01 — matte <em>ember</em> stoneware, thrown to the edge of the fire.</p>
+    <p class="support">Hand-thrown in a single firing of forty. Numbered, never reissued. When the load cools, the drop closes.</p>
+
+    <div class="cta">
+      <a href="#" class="btn btn-buy" id="buyBtn">Buy — <span class="price">$148</span></a>
+      <a href="#" class="btn btn-notify" id="notifyBtn">Notify me</a>
+    </div>
+
+    <div class="units" aria-live="polite">
+      <div class="units-row"><span>Claimed</span><span><b id="claimed">31</b> / 40 units</span></div>
+      <div class="track"><i id="trackFill"></i></div>
+      <p class="toast" id="toast"></p>
+    </div>
+  </div>
+
+  <div class="cue" aria-hidden="true">The craft</div>
+</section>
+
+<!-- ================= TICKER ================= -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker">
+    <span>Hand-thrown <b>◆</b></span><span>Matte ember glaze <b>◆</b></span><span>Single firing <b>◆</b></span><span>Cone 6 stoneware <b>◆</b></span><span>Numbered 01–40 <b>◆</b></span><span>No reissue <b>◆</b></span>
+    <span>Hand-thrown <b>◆</b></span><span>Matte ember glaze <b>◆</b></span><span>Single firing <b>◆</b></span><span>Cone 6 stoneware <b>◆</b></span><span>Numbered 01–40 <b>◆</b></span><span>No reissue <b>◆</b></span>
+  </div>
+</div>
+
+<!-- ================= CRAFT ================= -->
+<section class="craft" id="craft">
+  <div class="wrap craft-grid">
+    <div class="reveal">
+      <p class="kicker">The making</p>
+      <h2>Fired once.<br>Never <em>twice.</em></h2>
+      <div class="prose">
+        <p><strong>Vessel No. 01</strong> begins as a single ball of speckled stoneware, centred and pulled on the wheel until the wall reads the light without holding it. The matte ember surface is not a colour — it is a temperature, reached only at the rim of the kiln where the flame passes closest.</p>
+        <p>Forty vessels share one load. Where each sits decides its tone: deeper umber in the shade, a faint bisque blush where the heat grazes the shoulder. We don't correct that. The firing is the author.</p>
+      </div>
+      <p class="pull">“Material honesty means the mark of the making stays on the thing.”</p>
+    </div>
+
+    <div class="reveal">
+      <dl class="spec-list">
+        <div><dt>Material</dt><dd>Speckled stoneware</dd></div>
+        <div><dt>Surface</dt><dd>Matte ember, unlined</dd></div>
+        <div><dt>Dimensions</dt><dd>H 26 cm · Ø 14 cm</dd></div>
+        <div><dt>Weight</dt><dd>1.1 kg</dd></div>
+        <div><dt>Firing</dt><dd>Cone 6 · single load</dd></div>
+        <div><dt>Edition</dt><dd>40 · no reissue</dd></div>
+      </dl>
+      <div class="swatch">
+        <span class="chip" aria-hidden="true"></span>
+        <p><b>Ember / Kiln matte</b>Food-safe interior seal. Hand wash; the surface will soften honestly with use.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DROP BAND ================= -->
+<section class="drop" id="drop">
+  <div class="wrap drop-inner">
+    <div class="reveal">
+      <p class="kicker">The drop</p>
+      <h2>One vessel. Forty numbers. Then silence.</h2>
+      <p class="fine">Each unit ships in a felted crate with its firing number and the kiln position it occupied. <b>Free shipping within the EU &amp; UK</b> · 30-day return on unbroken clay.</p>
+    </div>
+    <div class="price-block reveal">
+      <p class="price">$148<small>USD</small></p>
+      <a href="#" class="btn btn-buy buy-2">Buy Vessel No. 01</a>
+      <p class="note">Remaining units ship 14 November</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <a class="mark" href="#">Kiln<sup>®</sup></a>
+    <nav>
+      <a href="#craft">The making</a>
+      <a href="#drop">The drop</a>
+      <a href="#">Care</a>
+      <a href="#">Contact</a>
+    </nav>
+    <p class="legal">© 2025 Kiln Ceramics — thrown, glazed and fired in one small workshop. Drop 01 closes when the edition sells out.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* units meter fill on load */
+  var fill = document.getElementById('trackFill');
+  var claimed = 31, total = 40;
+  function paint(){ fill.style.width = (claimed/total*100) + '%'; }
+  if(reduced){ paint(); } else { setTimeout(paint, 700); }
+
+  /* scroll reveals */
+  var els = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    },{threshold:.18, rootMargin:'0px 0px -8% 0px'});
+    els.forEach(function(el){ io.observe(el); });
+  } else {
+    els.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* CTA micro-interactions */
+  var toast = document.getElementById('toast');
+  function say(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(say._t);
+    say._t = setTimeout(function(){ toast.classList.remove('show'); }, 3200);
+  }
+
+  var buy = document.getElementById('buyBtn');
+  buy.addEventListener('click', function(ev){
+    ev.preventDefault();
+    if(claimed < total){
+      claimed++;
+      document.getElementById('claimed').textContent = claimed;
+      paint();
+      buy.innerHTML = 'Reserved — <span class="price">1 of 1</span>';
+      say('Unit ' + claimed + ' held for 10 minutes. Checkout opens at 10:00 CET.');
+      setTimeout(function(){ buy.innerHTML = 'Buy — <span class="price">$148</span>'; }, 3400);
+    } else {
+      say('The firing is full. Join the notify list for the next load.');
+    }
+  });
+
+  var notify = document.getElementById('notifyBtn');
+  notify.addEventListener('click', function(ev){
+    ev.preventDefault();
+    notify.textContent = 'You’re on the list';
+    notify.style.borderColor = 'var(--ember)';
+    notify.style.color = 'var(--ember)';
+    say('We’ll send one letter when the kiln is loaded again.');
+  });
+
+  document.querySelectorAll('.buy-2').forEach(function(b){
+    b.addEventListener('click', function(ev){ ev.preventDefault(); buy.click(); window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'}); });
+  });
+})();
+</script>
+</body>
+</html>

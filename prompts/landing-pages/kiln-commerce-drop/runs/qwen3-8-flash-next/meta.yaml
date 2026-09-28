@@ -1,0 +1,17 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-27"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+duration_ms: 5152
+review_score: 9
+review_summary: "Exceptional adherence to the brief with a strong, atmospheric hero that perfectly captures the 'kiln heat' mood."
+reviewed_at: "2026-09-28T06:22:34.954Z"
+review_issues:
+  - "Minor: The 'Claimed' progress bar is a slight deviation from the strict 'one CTA group' rule, though it serves the 'sell the drop' intent well."

@@ -1,0 +1,19 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 5650
+review_score: 9
+review_summary: "Excellent execution of the 'night-watch bridge' aesthetic with a strong, functional radar hero and perfect adherence to the color and typography constraints."
+reviewed_at: "2026-09-28T07:22:33.568Z"
+review_issues:
+  - "Typography choice (Montserrat) is clean but arguably less 'expressive' than the prompt's general rule, though it perfectly fits the specific brief."

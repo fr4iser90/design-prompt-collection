@@ -7,14 +7,17 @@ tags:
   - editorial
   - type
   - grid
-status: polished
+status: draft
 summary: "Art-direction system: modular editorial brutalism — concrete grid, ink type, rules as structure, not decoration."
-preview: preview.svg
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
-demo: null
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

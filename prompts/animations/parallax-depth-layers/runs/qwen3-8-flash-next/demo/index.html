@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mistwood — Parallax Depth Layers</title>
+  <meta name="description" content="A three-plane misty canopy parallax section built with native scroll, CSS fog, and reduced-motion fallback.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Archivo:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      background: #0c1210;
+      color: #e7efe9;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: "Archivo", system-ui, -apple-system, Segoe UI, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    main {
+      display: block;
+      width: 100%;
+    }
+
+    .scene {
+      position: relative;
+      height: 100vh;
+      height: 100svh;
+      min-height: 520px;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(112% 82% at 50% 12%, rgba(143, 191, 159, 0.10), rgba(143, 191, 159, 0) 58%),
+        linear-gradient(180deg, #13231d 0%, #0c1210 58%, #070b09 100%);
+    }
+
+    .layer {
+      position: absolute;
+      left: -4vw;
+      right: -4vw;
+      top: -10vh;
+      bottom: -22vh;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .layer svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .far {
+      z-index: 1;
+      opacity: 0.78;
+    }
+
+    .mid {
+      z-index: 2;
+      opacity: 0.94;
+    }
+
+    .near {
+      z-index: 3;
+    }
+
+    .layer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .far::after {
+      background:
+        radial-gradient(105% 72% at 50% 70%, rgba(143, 191, 159, 0.20), rgba(143, 191, 159, 0.06) 42%, rgba(12, 18, 16, 0) 72%);
+      opacity: 0.82;
+      animation: fogBreath 28s ease-in-out infinite;
+    }
+
+    .mid::after {
+      background:
+        linear-gradient(180deg, rgba(143, 191, 159, 0.14) 0%, rgba(143, 191, 159, 0.05) 36%, rgba(12, 18, 16, 0.22) 68%, rgba(12, 18, 16, 0.48) 100%);
+      opacity: 0.88;
+      animation: fogBreath 42s ease-in-out infinite reverse;
+    }
+
+    .near::after {
+      background:
+        linear-gradient(180deg, rgba(12, 18, 16, 0) 34%, rgba(12, 18, 16, 0.38) 62%, rgba(7, 11, 9, 0.88) 100%);
+    }
+
+    @keyframes fogBreath {
+      0%,
+      100% {
+        opacity: 0.72;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    .brand {
+      position: absolute;
+      z-index: 10;
+      top: clamp(28px, 6vw, 76px);
+      left: clamp(24px, 5vw, 84px);
+      right: clamp(24px, 5vw, 84px);
+      max-width: min(720px, calc(100% - 2rem));
+    }
+
+    .wordmark {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      font-optical-sizing: auto;
+      font-weight: 700;
+      font-size: clamp(3rem, 8.5vw, 7rem);
+      line-height: 0.88;
+      letter-spacing: -0.045em;
+      color: #e7efe9;
+      text-shadow:
+        0 12px 48px rgba(7, 11, 9, 0.72),
+        0 2px 14px rgba(7, 11, 9, 0.55);
+    }
+
+    .tagline {
+      margin: clamp(0.75rem, 1.6vw, 1.2rem) 0 0;
+      font-size: clamp(0.72rem, 1.1vw, 0.96rem);
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: rgba(231, 239, 233, 0.70);
+      text-shadow: 0 6px 24px rgba(7, 11, 9, 0.70);
+    }
+
+    .after {
+      position: relative;
+      min-height: 90vh;
+      min-height: 90svh;
+      display: grid;
+      align-items: center;
+      padding: 14vh clamp(24px, 7vw, 110px) 18vh;
+      background:
+        linear-gradient(180deg, #070b09 0%, #0c1210 28%, #080d0b 100%);
+      overflow: hidden;
+    }
+
+    .after::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22vh;
+      background: linear-gradient(180deg, rgba(143, 191, 159, 0.09), rgba(143, 191, 159, 0));
+      pointer-events: none;
+    }
+
+    .quiet {
+      position: relative;
+      max-width: 680px;
+    }
+
+    .quiet h2 {
+      margin: 0 0 1.1rem;
+      font-family: "Fraunces", Georgia, serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-size: clamp(1.8rem, 3.4vw, 2.9rem);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+    }
+
+    .quiet p {
+      margin: 0 0 1.1rem;
+      font-size: clamp(1rem, 1.3vw, 1.12rem);
+      line-height: 1.75;
+      color: rgba(231, 239, 233, 0.68);
+    }
+
+    .meta {
+      font-size: 0.8rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(143, 191, 159, 0.58);
+    }
+
+    @media (max-width: 760px) {
+      .layer {
+        left: -2vw;
+        right: -2vw;
+        top: -8vh;
+        bottom: -30vh;
+      }
+
+      .brand {
+        top: 24px;
+        left: 22px;
+        right: 22px;
+      }
+
+      .wordmark {
+        letter-spacing: -0.035em;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .far {
+        transform: translate3d(0, -12px, 0) !important;
+      }
+
+      .mid {
+        transform: translate3d(0, -42px, 0) !important;
+      }
+
+      .near {
+        transform: translate3d(0, -86px, 0) !important;
+      }
+
+      .layer {
+        will-change: auto;
+      }
+
+      .far::after,
+      .mid::after {
+        animation: none !important;
+        opacity: 0.86 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="scene" id="scene" aria-label="Misty canopy depth">
+      <div class="layer far" aria-hidden="true"></div>
+      <div class="layer mid" aria-hidden="true"></div>
+      <div class="layer near" aria-hidden="true"></div>
+
+      <header class="brand">
+        <h1 class="wordmark">Mistwood</h1>
+        <p class="tagline">A walk into the canopy</p>
+      </header>
+    </section>
+
+    <section class="after">
+      <div class="quiet">
+        <h2>Depth, measured in breaths</h2>
+        <p>
+          The distant canopy barely stirs, the ridge follows, and the ferns at the path’s edge
+          slide past. Fog is not a separate object—it is the distance between things.
+        </p>
+        <p class="meta">Three planes · native scroll · reduced-motion fallback</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var scene = document.getElementById("scene");
+      var far = document.querySelector(".far");
+      var mid = document.querySelector(".mid");
+      var near = document.querySelector(".near");
+      var svgNS = "http://www.w3.org/2000/svg";
+      var W = 1440;
+      var H = 900;
+
+      function rand(n) {
+        var s = Math.sin(n * 127.1) * 43758.5453;
+        return s - Math.floor(s);
+      }
+
+      function make(tag, attrs, parent) {
+        var node = document.createElementNS(svgNS, tag);
+        for (var key in attrs) {
+          if (Object.prototype.hasOwnProperty.call(attrs, key)) {
+            node.setAttribute(key, attrs[key]);
+          }
+        }
+        if (parent) parent.appendChild(node);
+        return node;
+      }
+
+      function baseSVG() {
+        return make("svg", {
+          viewBox: "0 0 " + W + " " + H,
+          preserveAspectRatio: "xMidYMax slice",
+          "aria-hidden": "true"
+        });
+      }
+
+      function buildFar() {
+        var svg = baseSVG();
+        var defs = make("defs", {}, svg);
+        var grad = make("linearGradient", { id: "farGrad", x1: "0", y1: "0", x2: "0", y2: "1" }, defs);
+        make("stop", { offset: "0", "stop-color": "#2a5546", "stop-opacity": ".38" }, grad);
+        make("stop", { offset: ".52", "stop-color": "#1f3d32", "stop-opacity": ".62" }, grad);
+        make("stop", { offset: "1", "stop-color": "#0e1815", "stop-opacity": ".92" }, grad);
+
+        make("path", {
+          d:
+            "M0 " + H +
+            " L0 760 C 260 720 430 780 720 745 C 1010 710 1230 775 1440 735 L1440 " + H + " Z",
+          fill: "#12241e",
+          opacity: ".55"
+        }, svg);
+
+        var g = make("g", { fill: "url(#farGrad)" }, svg);
+        for (var i = 0; i < 32; i++) {
+          var x = -90 + i * 52 + (rand(i) * 26 - 13);
+          var y = 675 + Math.sin(i * 0.73) * 42 + Math.cos(i * 1.19) * 22;
+          var rx = 76 + rand(i + 9) * 44;
+          var ry = 108 + rand(i + 17) * 58;
+          make("ellipse", {
+            cx: x.toFixed(1),
+            cy: y.toFixed(1),
+            rx: rx.toFixed(1),
+            ry: ry.toFixed(1)
+          }, g);
+        }
+
+        return svg;
+      }
+
+      function ridgeY(x) {
+        return 540 + Math.sin(x / 168) * 76 + Math.cos(x / 84) * 26 + Math.sin(x / 43) * 10;
+      }
+
+      function buildMid() {
+        var svg = baseSVG();
+        var defs = make("defs", {}, svg);
+        var grad = make("linearGradient", { id: "midGrad", x1: "0", y1: "0", x2: "0", y2: "1" }, defs);
+        make("stop", { offset: "0", "stop-color": "#275142", "stop-opacity": ".72" }, grad);
+        make("stop", { offset: ".45", "stop-color": "#1b3a2f", "stop-opacity": ".9" }, grad);
+        make("stop", { offset: "1", "stop-color": "#0b1310", "stop-opacity": ".98" }, grad);
+
+        var d = "M0 " + H + " L0 " + ridgeY(0).toFixed(1);
+        for (var x = 48; x <= W; x += 48) {
+          d += " L " + x + " " + ridgeY(x).toFixed(1);
+        }
+        d += " L " + W + " " + H + " Z";
+        make("path", { d: d, fill: "url(#midGrad)" }, svg);
+
+        var g = make("g", { fill: "#10231c" }, svg);
+        for (var tx = -12; tx <= W + 12; tx += 38) {
+          var j = rand(tx);
+          var ty = ridgeY(tx) + 18;
+          var th = 48 + j * 46;
+          var tw = 15 + rand(tx + 3) * 11;
+          var ox = (rand(tx + 7) - 0.5) * 18;
+          make("path", {
+            d:
+              "M" + (tx - tw + ox).toFixed(1) + " " + (ty + th).toFixed(1) +
+              " L" + (tx + ox).toFixed(1) + " " + (ty - th).toFixed(1) +
+              " L" + (tx + tw + ox).toFixed(1) + " " + (ty + th).toFixed(1) + " Z"
+          }, g);
+        }
+
+        var g2 = make("g", { fill: "#163026", opacity: ".78" }, svg);
+        for (var bx = -30; bx <= W + 30; bx += 74) {
+          var bj = rand(bx + 11);
+          var by = ridgeY(bx) + 34;
+          var bh = 30 + bj * 26;
+          var bw = 11 + bj * 7;
+          var box = (rand(bx + 13) - 0.5) * 24;
+          make("path", {
+            d:
+              "M" + (bx - bw + box).toFixed(1) + " " + (by + bh).toFixed(1) +
+              " L" + (bx + box).toFixed(1) + " " + (by - bh).toFixed(1) +
+              " L" + (bx + bw + box).toFixed(1) + " " + (by + bh).toFixed(1) + " Z"
+          }, g2);
+        }
+
+        return svg;
+      }
+
+      function buildNear() {
+        var svg = baseSVG();
+        var defs = make("defs", {}, svg);
+        var grad = make("linearGradient", { id: "nearGrad", x1: "0", y1: "0", x2: "0", y2: "1" }, defs);
+        make("stop", { offset: "0", "stop-color": "#0a1411", "stop-opacity": ".82" }, grad);
+        make("stop", { offset: "1", "stop-color": "#030706", "stop-opacity": "1" }, grad);
+
+        make("path", {
+          d:
+            "M0 " + H +
+            " L0 772 C 150 706 252 796 402 736 C 542 680 660 782 812 716" +
+            " C 952 656 1072 756 1212 696 C 1332 646 1392 722 1440 676 L1440 " + H + " Z",
+          fill: "url(#nearGrad)"
+        }, svg);
+
+        var g = make("g", { fill: "#050b09" }, svg);
+
+        function frond(x, y, angle, len, side, seed) {
+          var rad = angle * Math.PI / 180;
+          var x2 = x + Math.cos(rad) * len;
+          var y2 = y + Math.sin(rad) * len;
+          var bend = 0.24 * side;
+          var cx = x + Math.cos(rad) * len * 0.5 - Math.sin(rad) * len * bend;
+          var cy = y + Math.sin(rad) * len * 0.5 + Math.cos(rad) * len * bend;
+
+          make("path", {
+            d:
+              "M" + x.toFixed(1) + " " + y.toFixed(1) +
+              " Q" + cx.toFixed(1) + " " + cy.toFixed(1) +
+              " " + x2.toFixed(1) + " " + y2.toFixed(1),
+            stroke: "#050b09",
+            "stroke-width": "9",
+            fill: "none",
+            "stroke-linecap": "round"
+          }, g);
+
+          var steps = 10;
+          for (var i = 1; i <= steps; i++) {
+            var t = i / steps;
+            var px = (1 - t) * (1 - t) * x + 2 * (1 - t) * t * cx + t * t * x2;
+            var py = (1 - t) * (1 - t) * y + 2 * (1 - t) * t * cy + t * t * y2;
+
+            for (var s = -1; s <= 1; s += 2) {
+              var la = rad + s * (Math.PI / 2 - 0.2) + Math.sin(i * 0.75 + seed) * 0.18;
+              var ll = (40 * (1 - t) + 13) * (0.7 + rand(seed + i + Math.abs(s)) * 0.5);
+              var ecx = px + Math.cos(la) * ll * 0.5;
+              var ecy = py + Math.sin(la) * ll * 0.5;
+              var rx = ll * 0.58;
+              var ry = ll * 0.16;
+              var deg = la * 180 / Math.PI;
+
+              make("ellipse", {
+                cx: ecx.toFixed(1),
+                cy: ecy.toFixed(1),
+                rx: rx.toFixed(1),
+                ry: ry.toFixed(1),
+                transform: "rotate(" + deg.toFixed(1) + " " + ecx.toFixed(1) + " " + ecy.toFixed(1) + ")",
+                fill: "#050b09"
+              }, g);
+            }
+          }
+        }
+
+        frond(95, 895, -66, 430, 1, 1);
+        frond(235, 895, -83, 365, 1, 2);
+        frond(55, 895, -44, 290, 1, 3);
+        frond(1345, 895, -114, 440, -1, 4);
+        frond(1205, 895, -97, 360, -1, 5);
+        frond(1390, 895, -136, 295, -1, 6);
+        frond(700, 895, -76, 250, 1, 7);
+        frond(760, 895, -104, 250, -1, 8);
+
+        return svg;
+      }
+
+      far.appendChild(buildFar());
+      mid.appendChild(buildMid());
+      near.appendChild(buildNear());
+
+      var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      var ticking = false;
+
+      function setTransform(layer, y) {
+        layer.style.transform = "translate3d(0, " + y.toFixed(2) + "px, 0)";
+      }
+
+      function update() {
+        if (mq.matches) return;
+
+        var rect = scene.getBoundingClientRect();
+        var h = Math.max(520, rect.height);
+        var p = -rect.top / h;
+
+        if (p < 0) p = 0;
+        if (p > 1) p = 1;
+
+        var mobile = window.innerWidth < 760;
+        var scale = (mobile ? 0.55 : 1) * Math.min(1, Math.max(0.68, h / 760));
+
+        setTransform(far, -18 * p * scale);
+        setTransform(mid, -64 * p * scale);
+        setTransform(near, -135 * p * scale);
+      }
+
+      function requestTick() {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(function () {
+            update();
+            ticking = false;
+          });
+        }
+      }
+
+      function applyMotion() {
+        if (mq.matches) {
+          far.style.transform = "";
+          mid.style.transform = "";
+          near.style.transform = "";
+        } else {
+          update();
+        }
+      }
+
+      window.addEventListener("scroll", requestTick, { passive: true });
+      window.addEventListener("resize", requestTick);
+
+      if (mq.addEventListener) {
+        mq.addEventListener("change", applyMotion);
+      } else if (mq.addListener) {
+        mq.addListener(applyMotion);
+      }
+
+      applyMotion();
+    })();
+  </script>
+</body>
+</html>

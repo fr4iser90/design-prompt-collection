@@ -1,113 +1,659 @@
 {
-  "generated_at": "2026-09-27T21:45:59.733Z",
-  "count": 15,
+  "generated_at": "2026-09-28T20:22:48.634Z",
+  "count": 75,
   "ids": [
     "axiom-foundry-logo-morph",
+    "beacon-signal-nav",
+    "bioluminescent-spore-dispersion",
+    "bone-dust-spiral",
+    "cactus-core-eco",
+    "carbon-fiber-weave-configurator",
+    "chime-resonance-brand",
+    "code-canvas-dev-tool",
+    "codex-leaf-gold-illumination",
+    "cold-chain-logistics",
+    "dune-strata-geology-map",
     "editorial-brutalist-system",
+    "fermentation-vault",
+    "fibrous-paper-tear",
     "forge-and-roast-coffee-lab",
+    "glazed-porcelain-crackle",
+    "glyph-foundry-typespecimen",
+    "gridlock-transit-alert",
+    "halftone-moir-scan",
     "halyard-marine-forecast",
+    "hammered-copper-pulse",
+    "hammered-tin-hull",
+    "hazard-tape-peel-reveal",
+    "high-voltage-grid",
+    "index-card-sort-system",
+    "ink-brush-lifting",
     "kiln-commerce-drop",
+    "kiln-fired-glaze-sample",
+    "knife-grit-surface",
+    "ledger-blueprint-reconciliation",
+    "letterpress-emboss-deform",
+    "linen-fold-typography",
+    "linen-press-tension",
+    "load-bearing-structure",
     "magnetic-cursor-orbit",
+    "magnetic-morph-wordmark",
     "magnetic-nav-rail",
+    "microfiche-scan-archive",
+    "mirage-fabric-studio",
+    "mirage-optical-illusion-kit",
+    "molten-glass-pour",
+    "night-blooming-time-lapse",
     "nocturnal-garden-moodboard",
     "northline-fintech-clarity",
     "obsidian-loom-mask-reveal",
+    "obsidian-sheer-slice",
+    "oxidized-brass-tarnish",
+    "oxidized-coin-valuation",
     "parallax-depth-layers",
+    "pressure-gauge-needle-sync",
     "pulselane-urban-mobility",
+    "radio-scan-archive",
+    "resonant-vowel-visualizer",
+    "riso-registration-shift",
+    "saffron-watercolor-bloom",
+    "salt-pan-crystallization",
+    "slaked-lime-cure-timer",
     "soft-industrial-toolkit",
+    "solaris-energy-dune",
+    "sous-vide-precision-lab",
     "staggered-mask-reveal",
-    "tidal-studio-hero"
+    "stainless-brushed-light-sweep",
+    "stamped-manifest-alignment",
+    "steam-circuit-kitchen",
+    "structural-load-report",
+    "sun-bleached-textile-swatches",
+    "sun-cracked-mud-heal",
+    "terra-forma-adobe",
+    "tidal-studio-hero",
+    "typographic-tidal-lock",
+    "vault-archive-stamp",
+    "velour-cinema-poster",
+    "wet-leaf-surface-tension",
+    "woven-reed-flex",
+    "woven-wire-loom-grid"
   ],
   "brands": [
+    "Accent",
+    "Adhesive Effect",
+    "Adjacent Letters",
     "BLOCK",
+    "Base State",
+    "Card",
+    "Center Letter",
+    "Click",
+    "Concept",
+    "Constraints",
+    "Deliverable",
+    "Distant Letters",
     "Hearthware",
+    "High Frequencies",
+    "Hover",
+    "Interaction",
     "Kiln",
+    "Kinetic Behavior",
+    "Layout",
     "Lumenflora",
+    "Magnetic Field",
+    "Metal",
+    "Mid Frequencies",
+    "Morphing",
+    "Motion",
     "Northline",
-    "Tidal"
+    "Orbit Mechanics",
+    "Patina",
+    "Physics",
+    "Reaction Zone",
+    "Rest",
+    "Rest State",
+    "Reveal",
+    "Rotation",
+    "Shake",
+    "Snap Back",
+    "Steam Effect",
+    "Structure",
+    "Style",
+    "The Gauges",
+    "The Ink Effect",
+    "The Interaction",
+    "The Needles",
+    "The Overlay",
+    "The Paper",
+    "The Peel",
+    "The Stamp",
+    "The Sync",
+    "Tidal",
+    "Typography",
+    "Visual Metaphor",
+    "Visual Rules"
   ],
   "tag_frequency": {
-    "editorial": 4,
-    "landing": 3,
+    "tactile": 8,
+    "landing": 7,
+    "texture": 7,
+    "industrial": 6,
+    "minimalist": 6,
+    "warning": 6,
+    "arid": 5,
+    "editorial": 5,
+    "macro": 5,
+    "monospace": 5,
+    "organic": 5,
+    "physics": 5,
+    "craft": 4,
+    "desert": 4,
+    "grid": 4,
+    "infrastructure": 4,
+    "kinetic-type": 4,
+    "minimal": 4,
+    "nocturnal": 4,
+    "product": 4,
+    "trust": 4,
+    "typography": 4,
+    "botanical": 3,
+    "haptic": 3,
+    "high-contrast": 3,
+    "identity": 3,
+    "material": 3,
+    "metal": 3,
     "motion": 3,
-    "product": 3,
-    "industrial": 2,
+    "steam": 3,
+    "textile": 3,
+    "utility": 3,
+    "archive": 2,
+    "audit": 2,
+    "blueprint": 2,
+    "clarity": 2,
+    "construction": 2,
+    "dark-mode": 2,
+    "data": 2,
+    "energy": 2,
+    "engineering": 2,
+    "experimental": 2,
+    "fashion": 2,
+    "fluid-sim": 2,
+    "generative": 2,
+    "glaze": 2,
+    "interaction": 2,
+    "interactive": 2,
+    "light": 2,
+    "linen": 2,
+    "logistics": 2,
+    "loop": 2,
+    "maritime": 2,
+    "navigation": 2,
+    "noir": 2,
+    "oxidation": 2,
+    "paper": 2,
+    "patina": 2,
     "scroll": 2,
+    "signal": 2,
+    "soft": 2,
+    "stamps": 2,
+    "stone": 2,
+    "structure": 2,
+    "surface-tension": 2,
+    "sustainable": 2,
     "system": 2,
-    "typography": 2,
+    "tech": 2,
+    "technical": 2,
+    "time": 2,
+    "time-lapse": 2,
+    "transit": 2,
+    "viscosity": 2,
+    "weave": 2,
     "web-animation": 2,
+    "3d-transform": 1,
+    "access": 1,
+    "accounting": 1,
+    "acoustic": 1,
+    "adhesive": 1,
+    "adobe": 1,
     "agency": 1,
+    "amber": 1,
+    "analog-gauge": 1,
+    "animation": 1,
+    "architecture": 1,
     "atmosphere": 1,
+    "audio": 1,
+    "audio-reactive": 1,
+    "bioluminescence": 1,
+    "black-sheen": 1,
+    "bone-white": 1,
     "brand": 1,
     "brand-motion": 1,
+    "branding": 1,
+    "brass": 1,
+    "brushed-steel": 1,
     "brutalist": 1,
-    "clarity": 1,
+    "bureaucracy": 1,
+    "calligraphy": 1,
+    "calm": 1,
+    "carbon-fiber": 1,
+    "carbonation": 1,
+    "ceramic": 1,
+    "ceramics": 1,
+    "chef-tools": 1,
+    "cinema": 1,
+    "circuit": 1,
+    "circular-text": 1,
+    "clerk": 1,
+    "code": 1,
     "coffee": 1,
+    "coin": 1,
+    "cold-chain": 1,
+    "color-picker": 1,
+    "color-theory": 1,
     "commerce": 1,
-    "craft": 1,
+    "composite": 1,
+    "compression": 1,
+    "conchoidal": 1,
+    "concrete": 1,
+    "configurator": 1,
+    "copper": 1,
+    "crackle": 1,
+    "cracks": 1,
+    "crystallization": 1,
+    "css-animation": 1,
+    "culinary": 1,
+    "culinary-art": 1,
     "cursor": 1,
     "cursor-interaction": 1,
+    "cyan": 1,
+    "cyan-magenta-yellow": 1,
+    "dark-ui": 1,
+    "data-visualization": 1,
     "data-viz": 1,
+    "deboss": 1,
+    "dents": 1,
     "depth": 1,
+    "desaturated": 1,
+    "developer": 1,
+    "diffusion": 1,
+    "digital": 1,
+    "digital-archive": 1,
+    "dispersion": 1,
+    "document": 1,
+    "dune": 1,
+    "duotone": 1,
+    "dust": 1,
+    "earth": 1,
+    "earthy": 1,
+    "eco": 1,
+    "editorial-print": 1,
+    "electric": 1,
+    "emboss": 1,
     "entrance": 1,
+    "evaporation": 1,
+    "fabric": 1,
+    "fermentation": 1,
+    "fiber": 1,
+    "film": 1,
+    "finance": 1,
     "fintech": 1,
+    "flexibility": 1,
+    "fluid": 1,
+    "fold": 1,
+    "fracture": 1,
     "garden": 1,
-    "grid": 1,
+    "geology": 1,
+    "geometry": 1,
+    "glass": 1,
+    "glitch-art": 1,
+    "glow": 1,
+    "gold-leaf": 1,
+    "gravity": 1,
+    "halftone": 1,
+    "hammered": 1,
+    "hammering": 1,
+    "handwritten": 1,
+    "hazard": 1,
+    "hazard-tape": 1,
+    "healing": 1,
+    "heat-haze": 1,
     "hero": 1,
-    "identity": 1,
+    "high-end": 1,
+    "historical-tech": 1,
+    "hot": 1,
+    "illuminated-manuscript": 1,
+    "index-card": 1,
+    "industrial-craft": 1,
+    "ink": 1,
+    "ink-bleed": 1,
+    "interactive-map": 1,
     "js": 1,
+    "kiln": 1,
+    "knife": 1,
+    "kobo": 1,
+    "lab-glass": 1,
     "landscape": 1,
     "launch": 1,
-    "light": 1,
+    "ledger": 1,
+    "letterpress": 1,
+    "library": 1,
+    "lifting": 1,
+    "lighting": 1,
+    "linguistics": 1,
+    "liquid": 1,
+    "liquid-metal": 1,
     "logo-morph": 1,
+    "logo-motion": 1,
+    "long-shadows": 1,
     "magnetic": 1,
+    "magnetic-interaction": 1,
     "magnetic-nav": 1,
+    "manual": 1,
     "maps": 1,
-    "maritime": 1,
     "mask": 1,
     "mask-reveal": 1,
+    "material-aging": 1,
+    "material-physics": 1,
+    "mechanical": 1,
+    "metal-forming": 1,
+    "micro-detail": 1,
+    "microbial": 1,
+    "microfiche": 1,
     "microinteraction": 1,
+    "moir-pattern": 1,
+    "monochrome": 1,
     "moodboard": 1,
+    "moonlight": 1,
+    "mud": 1,
+    "natural-light": 1,
+    "nature": 1,
     "nav": 1,
-    "navigation": 1,
-    "nocturnal": 1,
+    "negative-space": 1,
+    "night-blooming": 1,
     "ocean": 1,
+    "optical-art": 1,
+    "optical-illusion": 1,
+    "orbital": 1,
+    "organization": 1,
+    "paper-compression": 1,
+    "paper-texture": 1,
     "parallax": 1,
+    "particle-system": 1,
+    "particles": 1,
     "path-animation": 1,
+    "peel-motion": 1,
     "performance": 1,
+    "perspective": 1,
+    "physical": 1,
+    "planetary": 1,
+    "porcelain": 1,
+    "poster": 1,
+    "precision": 1,
+    "pressure": 1,
+    "print-misalignment": 1,
+    "print-process": 1,
+    "progress": 1,
+    "radio": 1,
+    "raster": 1,
+    "red": 1,
+    "reflection": 1,
+    "reflective": 1,
+    "refraction": 1,
+    "research": 1,
     "retail": 1,
+    "retro": 1,
+    "retro-modern": 1,
+    "retro-tech": 1,
+    "reveal": 1,
+    "reverse": 1,
+    "risograph": 1,
+    "rotational": 1,
+    "rubber-stamp": 1,
     "saas": 1,
+    "salt": 1,
+    "sample": 1,
+    "scanline": 1,
+    "science": 1,
+    "screen-print": 1,
     "scroll-reveal": 1,
-    "soft": 1,
+    "search": 1,
+    "serif": 1,
+    "shadow-play": 1,
+    "sharp": 1,
+    "sharp-edge": 1,
+    "sharpening": 1,
+    "simulation": 1,
+    "site-survey": 1,
+    "slow-motion": 1,
+    "soft-body": 1,
+    "soft-metal": 1,
+    "solar": 1,
+    "sonic": 1,
+    "sous-vide": 1,
+    "space": 1,
+    "specimen": 1,
+    "specular": 1,
+    "spice": 1,
+    "spore": 1,
+    "spring-physics": 1,
+    "stack": 1,
+    "stamp": 1,
+    "static": 1,
+    "steamboat": 1,
+    "steel": 1,
+    "stencil": 1,
+    "sticky": 1,
+    "stop-motion": 1,
+    "surface": 1,
     "svg-animation": 1,
+    "svg-morphing": 1,
+    "swatch": 1,
+    "sync": 1,
+    "tear": 1,
+    "terminal": 1,
+    "texture-animation": 1,
+    "tin": 1,
     "tokens": 1,
-    "transit": 1,
-    "trust": 1,
+    "topography": 1,
+    "traditional-art": 1,
+    "transparency": 1,
     "type": 1,
+    "typeface": 1,
+    "ui": 1,
+    "ui-component": 1,
+    "ui-kit": 1,
     "ui-motion": 1,
+    "unfurl": 1,
     "urban": 1,
+    "vector": 1,
+    "verification": 1,
+    "vibration": 1,
+    "volcanic-glass": 1,
     "warm": 1,
-    "weather": 1
+    "water": 1,
+    "weather": 1,
+    "white-desert": 1,
+    "wicker": 1,
+    "wind": 1,
+    "wire": 1
   },
   "niches": [
+    "landing-pages: Beacon Signal Nav — A dark-mode navigation landing page using rotating light beams, radar-like interfaces, and high-visibility safety greens.",
+    "landing-pages: Cactus Core Eco — A landing page for 'Cactus Core', an eco-conscious product brand using cactus-based materials. Features organic shapes, vibrant cactus-green accents, and macro photography of plant textures on a clay background.",
+    "landing-pages: Chime Resonance Brand — A sonic branding landing page for Chime, where typography vibrates with audio frequencies and letters act as resonant chambers.",
+    "landing-pages: Code Canvas Dev Tool — A landing page for 'Code Canvas', a new developer tool. The hero is a live code editor simulation where comments turn into UI elements.",
+    "landing-pages: Codex Leaf Gold Illumination — A landing page for a digital manuscript archive, featuring gold-leaf drop caps, vellum textures, and static, dignified typography that evokes the permanence of handwritten records.",
+    "landing-pages: Cold Chain Logistics — A utility landing page for 'FrostLine', a temperature-sensitive logistics provider, using frost patterns, warning labels, and industrial stencil typography.",
+    "landing-pages: Fermentation Vault — Landing page for 'Microbe & Time', a fermentation supply brand. Dark, mysterious aesthetic with glowing amber lights inside glass jars, emphasizing the slow, living process.",
     "landing-pages: Forge and Roast Coffee Lab — A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence.",
+    "landing-pages: Glyph Foundry Typespecimen — A typeface foundry landing page for 'Glyph', where the hero is a live, editable specimen. Users can change weight, width, and case in real-time.",
+    "landing-pages: Gridlock Transit Alert — A high-contrast transit disruption landing page using hazard stripes, monospaced status labels, and urgent but calm signal logic.",
     "landing-pages: Halyard Marine Forecast — A weather-intelligence landing page for Halyard, a marine routing startup, built around a live route ribbon and cold, technical typography.",
+    "landing-pages: High Voltage Grid — A landing page for 'VoltEdge', an energy grid management software, featuring hazard stripes, electrical warning icons, and a stark, high-contrast utility aesthetic.",
+    "landing-pages: Index Card Sort System — A landing page for \\\\\\\"SortWell,\\\\\\\" a research organization tool, using a stacked index card aesthetic, hand-drawn underlines, and a clean, paper-like background to evoke organized thinking.",
     "landing-pages: Kiln Commerce Drop — Product-drop landing for Kiln ceramics: object as full-bleed hero, restrained type, one purchase CTA — craft heat without rustic cliché.",
+    "landing-pages: Knife & Grit Surface — Landing page for 'Edge & Stone', a knife sharpening and blade care brand. Focuses on the tactile experience of steel and stone with high-contrast macro photography and sharp geometry.",
+    "landing-pages: Ledger Blueprint Reconciliation — A landing page for \\\\\\\"VeriLedger,\\\\\\\" an audit software platform, using blueprint grid lines, checkmark animations, and a clean, white-paper aesthetic to convey financial transparency.",
+    "landing-pages: Load Bearing Structure — An engineering firm landing page using blueprint aesthetics, visible grid systems, and annotated technical diagrams.",
+    "landing-pages: Microfiche Scan Archive — A landing page for \\\\\\\"MicroSearch,\\\\\\\" a digital archive service, using a high-contrast black-and-white aesthetic with scanline effects, search bars that mimic microfiche readers, and a sense of discovery.",
+    "landing-pages: Mirage Fabric Studio — A landing page for 'Mirage Fabric Studio', a luxury textile designer. Uses heat-haze effects, flowing fabric animations, and a palette of sand, sun-bleached white, and deep shadow to evoke desert fashion.",
     "landing-pages: Northline Fintech Clarity — Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one clarity promise — no purple glow, no dashboard soup.",
     "landing-pages: PulseLane Urban Mobility — A city mobility landing page for PulseLane, featuring animated route paths, kinetic type, and a high-contrast asphalt palette.",
+    "landing-pages: Radio Scan Archive — A landing page for 'ScanArchive', a digital radio signal archive, using CRT scanlines, tuning dials, and 'Signal Found' status indicators in a retro-utility style.",
+    "landing-pages: Solaris Energy Dune — A landing page for Solaris Energy, a desert-focused solar power startup, using dune-like curves, bright solar-yellow accents, and data-driven visuals against a bone-white background.",
+    "landing-pages: Sous-Vide Precision Lab — Landing page for 'Vapor & Steel', a sous-vide equipment brand. Features vacuum-sealed aesthetics, digital temperature overlays, and a sterile, high-tech kitchen atmosphere.",
+    "landing-pages: Steam Circuit Kitchen — Landing page for 'Circuit & Steam', a modern steamboat restaurant. Merges traditional steam imagery with digital circuit board motifs, creating a 'network of heat' aesthetic.",
+    "landing-pages: Structural Load Report — A landing page for 'LoadSafe', a structural monitoring service, using blueprint grids, load-bearing warnings, and 'Approved' stamp aesthetics in a technical utility style.",
+    "landing-pages: Terra Forma Adobe — A landing page for Terra Forma, an adobe-brick architectural studio, using raw material textures, warm earth tones, and stark, geometric layouts inspired by desert vernacular.",
     "landing-pages: Tidal Studio Hero — Full-bleed coastal agency hero: brand-first, tide-line motion, no cards — only type, CTA, and water as the visual plane.",
+    "landing-pages: Vault Archive Stamp — A digital archive landing page featuring rubber-stamp aesthetics, paper-textured backgrounds, and stamped verification badges.",
+    "landing-pages: Velour Cinema Poster — A movie release landing page for 'Velour', a noir film. The hero is a dynamic poster where title text interacts with light beams and shadows.",
     "animations: Axiom Foundry Logo Morph — Brand motion for Axiom Foundry morphing a circular monogram into a wordmark with crisp SVG interpolation and metallic light sweep.",
+    "animations: Bone Dust Spiral — Microscopic bone-white dust particles caught in a thermal updraft, spiraling upward in a dense, tactile column against a blurred dune background.",
+    "animations: Fibrous Paper Tear — A heavy, textured paper layer tears open to reveal a hidden layer, emphasizing the fibrous, tactile nature of the tear edge.",
+    "animations: Glazed Porcelain Crackle — Macro animation of white porcelain cooling, revealing intricate crackle glaze patterns with a shifting subsurface light reflection.",
+    "animations: Halftone Moiré Scan — Overlapping CMYK halftone dot grids rotate slowly, creating hypnotic moiré interference patterns that resolve into a clear image or text.",
+    "animations: Hammered Copper Pulse — A sheet of hammered copper reacts to invisible forces, rippling with liquid-metal physics and catching warm, industrial light.",
+    "animations: Hammered Tin Hull — Close-up of soft tin sheet being hammered into a curved hull, showing progressive dents, stretching, and dull metallic sheen.",
+    "animations: Ink Brush Lifting — The precise moment an ink brush lifts from paper, showing the ink's viscosity, the thread-like strand breaking, and the wet texture of the stroke.",
+    "animations: Letterpress Emboss Deform — Simulating the physical compression of paper under a heavy letterpress block. Text presses into the substrate, creating dynamic shadows and highlights.",
+    "animations: Linen Press Tension — A macro animation of high-thread-count linen being pressed by a clean, white ceramic plate. The fabric compresses, creating soft shadows and revealing the weave.",
     "animations: Magnetic Cursor Orbit — Nav labels gently orbit/attract toward the cursor with spring damping — tactile, premium, never gimmicky.",
     "animations: Magnetic Nav Rail — Cursor-bound navigation rail for Vector Harbor where items lean, scale, and magnetically dock under the pointer with elastic easing.",
+    "animations: Molten Glass Pour — High-speed slow-motion visualization of molten glass pouring, emphasizing extreme viscosity, light refraction, and thermal glow.",
     "animations: Obsidian Loom Mask Reveal — Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold from dark ink bands into a high-contrast product story.",
+    "animations: Obsidian Sheer Slice — A block of obsidian fractures along conchoidal lines, revealing razor-sharp edges with high-contrast specular highlights and internal sheen.",
+    "animations: Oxidized Brass Tarnish — A time-lapse animation of polished brass tarnishing, where dark verdigris blooms across the surface in organic, liquid-like patterns.",
     "animations: Parallax Depth Layers — Three-plane scroll parallax with depth fog — landscape storytelling that stays smooth and reduced-motion safe.",
+    "animations: Riso Registration Shift — A continuous loop of two-color screen print shifting in and out of perfect registration, mimicking the tactile imperfection of Riso duplication.",
+    "animations: Saffron Watercolor Bloom — A macro animation of saffron threads dissolving in clear water, creating intricate red and gold pigment blooms against a sterile white backdrop.",
+    "animations: Salt Pan Crystallization — A macro view of salt crystals rapidly forming from evaporating brine in a desert pan, creating sharp geometric spikes and white ridges.",
     "animations: Staggered Mask Reveal — Editorial headline reveal via line masks and stagger — cinematic entrance without cheap fade templates.",
+    "animations: Stainless Brushed Light Sweep — A macro shot of a brushed stainless steel surface where a moving light source reveals the micro-texture and anisotropic reflections of the metal.",
+    "animations: Sun-Cracked Mud Heal — A reverse-animation of sun-baked mud cracking, where the fissures knit themselves back together, smoothing out into wet, pliable earth.",
+    "animations: Woven Reed Flex — A macro animation of woven reed strips bending under tension, showcasing the elasticity and interlocking tension of natural materials.",
+    "concepts: Bioluminescent Spore Dispersion — A generative visual where bioluminescent spores drift upward in a dark void, reacting to mouse proximity with gentle repulsion and light scattering.",
+    "concepts: Carbon Fiber Weave Configurator — A product configurator where users change the layup of carbon fiber, with real-time texture shifts and directional light reflections indicating fiber orientation.",
+    "concepts: Dune Strata Geology Map — An interactive topographical visualization of desert strata, featuring long, sharp shadows and heat-haze distortion on a bone-white background.",
     "concepts: Editorial Brutalist System — Art-direction system: modular editorial brutalism — concrete grid, ink type, rules as structure, not decoration.",
+    "concepts: Hazard Tape Peel Reveal — A UI layer covered in diagonal hazard tape that peels away to reveal safe, clean content underneath, emphasizing physical adhesive resistance and tearing physics.",
+    "concepts: Kiln-Fired Glaze Sample — A color selection interface where hues are represented by physical ceramic glaze chips, with heat-warp transitions and kiln-lighting ambiance.",
+    "concepts: Linen Fold Typography — Typography that behaves like folded linen. Text is printed on fabric that creases, folds, and drapes, creating soft shadows and depth.",
+    "concepts: Magnetic Morph Wordmark — A brand wordmark where letters act like magnetic poles. On hover, adjacent letters are pulled toward the cursor, distorting the geometry before snapping back into perfect alignment.",
+    "concepts: Mirage Optical Illusion Kit — A UI component library where elements appear to dissolve or warp due to simulated heat haze and optical refraction on a sun-bleached canvas.",
+    "concepts: Night Blooming Time-Lapse — A seamless loop animation of a night-blooming flower (like a Moonflower) unfurling under a moonlit sky, with soft focus and slow, deliberate motion.",
     "concepts: Nocturnal Garden Moodboard — Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet dark, restrained type specimens.",
-    "concepts: Soft Industrial Toolkit — Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes."
+    "concepts: Oxidized Coin Valuation — A data card where the 'value' is revealed by cleaning a tarnished coin. Scrubbing the patina reveals the underlying metal and a numerical value.",
+    "concepts: Pressure Gauge Needle Sync — A multi-gauge dashboard where mechanical needles vibrate and sync based on simulated pressure loads. Steam bursts occur at critical thresholds, shaking the UI.",
+    "concepts: Resonant Vowel Visualizer — Typography that reacts to vocal frequency. Letters expand, contract, and distort based on real-time audio input, visualizing the physics of sound through kinetic type.",
+    "concepts: Slaked Lime Cure Timer — A status indicator that visualizes the slow carbonation of slaked lime, where a rough grey patch transforms into smooth white stone over time.",
+    "concepts: Soft Industrial Toolkit — Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes.",
+    "concepts: Stamped Manifest Alignment — A digital document verification interface where users must manually align and 'stamp' approval marks. The stamp leaves an imperfect, ink-bleeding impression on textured paper.",
+    "concepts: Sun-Bleached Textile Swatches — A digital fabric swatch selector featuring high-res textures of desert-worn textiles, with long shadows and natural light simulation.",
+    "concepts: Typographic Tidal Lock — Celestial mechanics meets typography. Text orbits a central point, with speed and scale dictated by simulated gravity wells. A study in circular motion and hierarchical focus.",
+    "concepts: Wet Leaf Surface Tension — Macro-view of dark, glossy leaves where water droplets form, merge, and roll off, revealing sharp reflections of moonlight and distorted background colors.",
+    "concepts: Woven Wire Loom Grid — A navigation grid where links are represented by taut steel wires that vibrate and weave over/under each other when hovered, mimicking a loom's tension."
   ],
   "by_category": {
     "landing-pages": [
+      {
+        "id": "beacon-signal-nav",
+        "title": "Beacon Signal Nav",
+        "tags": [
+          "maritime",
+          "navigation",
+          "signal",
+          "light",
+          "minimalist"
+        ],
+        "summary": "A dark-mode navigation landing page using rotating light beams, radar-like interfaces, and high-visibility safety greens.",
+        "brands": []
+      },
+      {
+        "id": "cactus-core-eco",
+        "title": "Cactus Core Eco",
+        "tags": [
+          "botanical",
+          "desert",
+          "eco",
+          "product",
+          "nature"
+        ],
+        "summary": "A landing page for 'Cactus Core', an eco-conscious product brand using cactus-based materials. Features organic shapes, vibrant cactus-green accents, and macro photography of plant textures on a clay background.",
+        "brands": []
+      },
+      {
+        "id": "chime-resonance-brand",
+        "title": "Chime Resonance Brand",
+        "tags": [
+          "audio",
+          "haptic",
+          "sonic",
+          "identity",
+          "landing",
+          "kinetic-type"
+        ],
+        "summary": "A sonic branding landing page for Chime, where typography vibrates with audio frequencies and letters act as resonant chambers.",
+        "brands": []
+      },
+      {
+        "id": "code-canvas-dev-tool",
+        "title": "Code Canvas Dev Tool",
+        "tags": [
+          "developer",
+          "code",
+          "monospace",
+          "terminal",
+          "landing",
+          "dark-mode"
+        ],
+        "summary": "A landing page for 'Code Canvas', a new developer tool. The hero is a live code editor simulation where comments turn into UI elements.",
+        "brands": []
+      },
+      {
+        "id": "codex-leaf-gold-illumination",
+        "title": "Codex Leaf Gold Illumination",
+        "tags": [
+          "illuminated-manuscript",
+          "gold-leaf",
+          "digital-archive",
+          "historical-tech",
+          "trust",
+          "serif",
+          "static"
+        ],
+        "summary": "A landing page for a digital manuscript archive, featuring gold-leaf drop caps, vellum textures, and static, dignified typography that evokes the permanence of handwritten records.",
+        "brands": []
+      },
+      {
+        "id": "cold-chain-logistics",
+        "title": "Cold Chain Logistics",
+        "tags": [
+          "logistics",
+          "cold-chain",
+          "utility",
+          "warning",
+          "infrastructure",
+          "monospace",
+          "stencil"
+        ],
+        "summary": "A utility landing page for 'FrostLine', a temperature-sensitive logistics provider, using frost patterns, warning labels, and industrial stencil typography.",
+        "brands": []
+      },
+      {
+        "id": "fermentation-vault",
+        "title": "Fermentation Vault",
+        "tags": [
+          "fermentation",
+          "kobo",
+          "dark-mode",
+          "time",
+          "microbial",
+          "craft",
+          "amber"
+        ],
+        "summary": "Landing page for 'Microbe & Time', a fermentation supply brand. Dark, mysterious aesthetic with glowing amber lights inside glass jars, emphasizing the slow, living process.",
+        "brands": []
+      },
       {
         "id": "forge-and-roast-coffee-lab",
         "title": "Forge and Roast Coffee Lab",
@@ -119,6 +665,33 @@
           "landing"
         ],
         "summary": "A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence.",
+        "brands": []
+      },
+      {
+        "id": "glyph-foundry-typespecimen",
+        "title": "Glyph Foundry Typespecimen",
+        "tags": [
+          "typography",
+          "typeface",
+          "editorial",
+          "specimen",
+          "landing",
+          "minimalist"
+        ],
+        "summary": "A typeface foundry landing page for 'Glyph', where the hero is a live, editable specimen. Users can change weight, width, and case in real-time.",
+        "brands": []
+      },
+      {
+        "id": "gridlock-transit-alert",
+        "title": "Gridlock Transit Alert",
+        "tags": [
+          "transit",
+          "utility",
+          "warning",
+          "infrastructure",
+          "high-contrast"
+        ],
+        "summary": "A high-contrast transit disruption landing page using hazard stripes, monospaced status labels, and urgent but calm signal logic.",
         "brands": []
       },
       {
@@ -135,6 +708,37 @@
         "brands": []
       },
       {
+        "id": "high-voltage-grid",
+        "title": "High Voltage Grid",
+        "tags": [
+          "energy",
+          "infrastructure",
+          "warning",
+          "hazard",
+          "electric",
+          "monospace",
+          "stamps"
+        ],
+        "summary": "A landing page for 'VoltEdge', an energy grid management software, featuring hazard stripes, electrical warning icons, and a stark, high-contrast utility aesthetic.",
+        "brands": []
+      },
+      {
+        "id": "index-card-sort-system",
+        "title": "Index Card Sort System",
+        "tags": [
+          "index-card",
+          "research",
+          "physical",
+          "stack",
+          "handwritten",
+          "organization",
+          "minimal",
+          "trust"
+        ],
+        "summary": "A landing page for \\\\\\\"SortWell,\\\\\\\" a research organization tool, using a stacked index card aesthetic, hand-drawn underlines, and a clean, paper-like background to evoke organized thinking.",
+        "brands": []
+      },
+      {
         "id": "kiln-commerce-drop",
         "title": "Kiln Commerce Drop",
         "tags": [
@@ -148,6 +752,79 @@
         "brands": [
           "Kiln"
         ]
+      },
+      {
+        "id": "knife-grit-surface",
+        "title": "Knife & Grit Surface",
+        "tags": [
+          "knife",
+          "steel",
+          "sharpening",
+          "stone",
+          "sharp",
+          "craft",
+          "monochrome"
+        ],
+        "summary": "Landing page for 'Edge & Stone', a knife sharpening and blade care brand. Focuses on the tactile experience of steel and stone with high-contrast macro photography and sharp geometry.",
+        "brands": []
+      },
+      {
+        "id": "ledger-blueprint-reconciliation",
+        "title": "Ledger Blueprint Reconciliation",
+        "tags": [
+          "ledger",
+          "blueprint",
+          "accounting",
+          "trust",
+          "grid",
+          "technical",
+          "audit",
+          "clarity"
+        ],
+        "summary": "A landing page for \\\\\\\"VeriLedger,\\\\\\\" an audit software platform, using blueprint grid lines, checkmark animations, and a clean, white-paper aesthetic to convey financial transparency.",
+        "brands": []
+      },
+      {
+        "id": "load-bearing-structure",
+        "title": "Load Bearing Structure",
+        "tags": [
+          "construction",
+          "engineering",
+          "blueprint",
+          "grid",
+          "technical"
+        ],
+        "summary": "An engineering firm landing page using blueprint aesthetics, visible grid systems, and annotated technical diagrams.",
+        "brands": []
+      },
+      {
+        "id": "microfiche-scan-archive",
+        "title": "Microfiche Scan Archive",
+        "tags": [
+          "microfiche",
+          "retro-tech",
+          "library",
+          "scanline",
+          "high-contrast",
+          "search",
+          "noir",
+          "access"
+        ],
+        "summary": "A landing page for \\\\\\\"MicroSearch,\\\\\\\" a digital archive service, using a high-contrast black-and-white aesthetic with scanline effects, search bars that mimic microfiche readers, and a sense of discovery.",
+        "brands": []
+      },
+      {
+        "id": "mirage-fabric-studio",
+        "title": "Mirage Fabric Studio",
+        "tags": [
+          "textile",
+          "fashion",
+          "desert",
+          "minimal",
+          "texture"
+        ],
+        "summary": "A landing page for 'Mirage Fabric Studio', a luxury textile designer. Uses heat-haze effects, flowing fabric animations, and a palette of sand, sun-bleached white, and deep shadow to evoke desert fashion.",
+        "brands": []
       },
       {
         "id": "northline-fintech-clarity",
@@ -178,6 +855,92 @@
         "brands": []
       },
       {
+        "id": "radio-scan-archive",
+        "title": "Radio Scan Archive",
+        "tags": [
+          "radio",
+          "archive",
+          "signal",
+          "warning",
+          "monospace",
+          "retro",
+          "ui"
+        ],
+        "summary": "A landing page for 'ScanArchive', a digital radio signal archive, using CRT scanlines, tuning dials, and 'Signal Found' status indicators in a retro-utility style.",
+        "brands": []
+      },
+      {
+        "id": "solaris-energy-dune",
+        "title": "Solaris Energy Dune",
+        "tags": [
+          "energy",
+          "solar",
+          "dune",
+          "tech",
+          "sustainable"
+        ],
+        "summary": "A landing page for Solaris Energy, a desert-focused solar power startup, using dune-like curves, bright solar-yellow accents, and data-driven visuals against a bone-white background.",
+        "brands": []
+      },
+      {
+        "id": "sous-vide-precision-lab",
+        "title": "Sous-Vide Precision Lab",
+        "tags": [
+          "culinary",
+          "science",
+          "sous-vide",
+          "lab-glass",
+          "precision",
+          "chef-tools",
+          "cyan"
+        ],
+        "summary": "Landing page for 'Vapor & Steel', a sous-vide equipment brand. Features vacuum-sealed aesthetics, digital temperature overlays, and a sterile, high-tech kitchen atmosphere.",
+        "brands": []
+      },
+      {
+        "id": "steam-circuit-kitchen",
+        "title": "Steam Circuit Kitchen",
+        "tags": [
+          "steam",
+          "steamboat",
+          "circuit",
+          "digital",
+          "hot",
+          "minimal",
+          "red"
+        ],
+        "summary": "Landing page for 'Circuit & Steam', a modern steamboat restaurant. Merges traditional steam imagery with digital circuit board motifs, creating a 'network of heat' aesthetic.",
+        "brands": []
+      },
+      {
+        "id": "structural-load-report",
+        "title": "Structural Load Report",
+        "tags": [
+          "engineering",
+          "warning",
+          "infrastructure",
+          "monospace",
+          "stamps",
+          "data",
+          "utility"
+        ],
+        "summary": "A landing page for 'LoadSafe', a structural monitoring service, using blueprint grids, load-bearing warnings, and 'Approved' stamp aesthetics in a technical utility style.",
+        "brands": []
+      },
+      {
+        "id": "terra-forma-adobe",
+        "title": "Terra Forma Adobe",
+        "tags": [
+          "architecture",
+          "adobe",
+          "sustainable",
+          "earthy",
+          "minimal"
+        ],
+        "summary": "A landing page for Terra Forma, an adobe-brick architectural studio, using raw material textures, warm earth tones, and stark, geometric layouts inspired by desert vernacular.",
+        "brands": []
+      },
+      {
         "id": "tidal-studio-hero",
         "title": "Tidal Studio Hero",
         "tags": [
@@ -191,6 +954,33 @@
         "brands": [
           "Tidal"
         ]
+      },
+      {
+        "id": "vault-archive-stamp",
+        "title": "Vault Archive Stamp",
+        "tags": [
+          "archive",
+          "document",
+          "stamp",
+          "bureaucracy",
+          "retro-modern"
+        ],
+        "summary": "A digital archive landing page featuring rubber-stamp aesthetics, paper-textured backgrounds, and stamped verification badges.",
+        "brands": []
+      },
+      {
+        "id": "velour-cinema-poster",
+        "title": "Velour Cinema Poster",
+        "tags": [
+          "cinema",
+          "film",
+          "poster",
+          "noir",
+          "kinetic-type",
+          "landing"
+        ],
+        "summary": "A movie release landing page for 'Velour', a noir film. The hero is a dynamic poster where title text interacts with light beams and shadows.",
+        "brands": []
       }
     ],
     "animations": [
@@ -205,6 +995,141 @@
           "identity"
         ],
         "summary": "Brand motion for Axiom Foundry morphing a circular monogram into a wordmark with crisp SVG interpolation and metallic light sweep.",
+        "brands": []
+      },
+      {
+        "id": "bone-dust-spiral",
+        "title": "Bone Dust Spiral",
+        "tags": [
+          "dust",
+          "particles",
+          "wind",
+          "arid",
+          "micro-detail",
+          "physics",
+          "desert"
+        ],
+        "summary": "Microscopic bone-white dust particles caught in a thermal updraft, spiraling upward in a dense, tactile column against a blurred dune background.",
+        "brands": []
+      },
+      {
+        "id": "fibrous-paper-tear",
+        "title": "Fibrous Paper Tear",
+        "tags": [
+          "paper",
+          "tear",
+          "fiber",
+          "stop-motion",
+          "texture",
+          "organic",
+          "reveal"
+        ],
+        "summary": "A heavy, textured paper layer tears open to reveal a hidden layer, emphasizing the fibrous, tactile nature of the tear edge.",
+        "brands": []
+      },
+      {
+        "id": "glazed-porcelain-crackle",
+        "title": "Glazed Porcelain Crackle",
+        "tags": [
+          "porcelain",
+          "crackle",
+          "glaze",
+          "texture-animation",
+          "ceramic",
+          "macro",
+          "haptic"
+        ],
+        "summary": "Macro animation of white porcelain cooling, revealing intricate crackle glaze patterns with a shifting subsurface light reflection.",
+        "brands": []
+      },
+      {
+        "id": "halftone-moir-scan",
+        "title": "Halftone Moiré Scan",
+        "tags": [
+          "halftone",
+          "moir-pattern",
+          "rotational",
+          "optical-art",
+          "print-process",
+          "cyan-magenta-yellow",
+          "raster"
+        ],
+        "summary": "Overlapping CMYK halftone dot grids rotate slowly, creating hypnotic moiré interference patterns that resolve into a clear image or text.",
+        "brands": []
+      },
+      {
+        "id": "hammered-copper-pulse",
+        "title": "Hammered Copper Pulse",
+        "tags": [
+          "copper",
+          "metal",
+          "hammered",
+          "liquid-metal",
+          "physics",
+          "tactile",
+          "industrial"
+        ],
+        "summary": "A sheet of hammered copper reacts to invisible forces, rippling with liquid-metal physics and catching warm, industrial light.",
+        "brands": []
+      },
+      {
+        "id": "hammered-tin-hull",
+        "title": "Hammered Tin Hull",
+        "tags": [
+          "tin",
+          "metal-forming",
+          "hammering",
+          "soft-metal",
+          "dents",
+          "industrial-craft",
+          "reflective"
+        ],
+        "summary": "Close-up of soft tin sheet being hammered into a curved hull, showing progressive dents, stretching, and dull metallic sheen.",
+        "brands": []
+      },
+      {
+        "id": "ink-brush-lifting",
+        "title": "Ink Brush Lifting",
+        "tags": [
+          "calligraphy",
+          "ink",
+          "paper",
+          "lifting",
+          "viscosity",
+          "traditional-art",
+          "negative-space"
+        ],
+        "summary": "The precise moment an ink brush lifts from paper, showing the ink's viscosity, the thread-like strand breaking, and the wet texture of the stroke.",
+        "brands": []
+      },
+      {
+        "id": "letterpress-emboss-deform",
+        "title": "Letterpress Emboss Deform",
+        "tags": [
+          "letterpress",
+          "deboss",
+          "emboss",
+          "paper-compression",
+          "tactile",
+          "3d-transform",
+          "shadow-play"
+        ],
+        "summary": "Simulating the physical compression of paper under a heavy letterpress block. Text presses into the substrate, creating dynamic shadows and highlights.",
+        "brands": []
+      },
+      {
+        "id": "linen-press-tension",
+        "title": "Linen Press Tension",
+        "tags": [
+          "fabric",
+          "linen",
+          "physics",
+          "texture",
+          "compression",
+          "craft",
+          "soft-body"
+        ],
+        "summary": "A macro animation of high-thread-count linen being pressed by a clean, white ceramic plate. The fabric compresses, creating soft shadows and revealing the weave.",
         "brands": []
       },
       {
@@ -234,6 +1159,21 @@
         "brands": []
       },
       {
+        "id": "molten-glass-pour",
+        "title": "Molten Glass Pour",
+        "tags": [
+          "glass",
+          "viscosity",
+          "refraction",
+          "fluid-sim",
+          "transparency",
+          "tactile",
+          "slow-motion"
+        ],
+        "summary": "High-speed slow-motion visualization of molten glass pouring, emphasizing extreme viscosity, light refraction, and thermal glow.",
+        "brands": []
+      },
+      {
         "id": "obsidian-loom-mask-reveal",
         "title": "Obsidian Loom Mask Reveal",
         "tags": [
@@ -244,6 +1184,36 @@
           "web-animation"
         ],
         "summary": "Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold from dark ink bands into a high-contrast product story.",
+        "brands": []
+      },
+      {
+        "id": "obsidian-sheer-slice",
+        "title": "Obsidian Sheer Slice",
+        "tags": [
+          "volcanic-glass",
+          "fracture",
+          "sharp-edge",
+          "black-sheen",
+          "conchoidal",
+          "macro",
+          "high-contrast"
+        ],
+        "summary": "A block of obsidian fractures along conchoidal lines, revealing razor-sharp edges with high-contrast specular highlights and internal sheen.",
+        "brands": []
+      },
+      {
+        "id": "oxidized-brass-tarnish",
+        "title": "Oxidized Brass Tarnish",
+        "tags": [
+          "brass",
+          "oxidation",
+          "time-lapse",
+          "material-aging",
+          "surface-tension",
+          "tactile",
+          "patina"
+        ],
+        "summary": "A time-lapse animation of polished brass tarnishing, where dark verdigris blooms across the surface in organic, liquid-like patterns.",
         "brands": []
       },
       {
@@ -260,6 +1230,51 @@
         "brands": []
       },
       {
+        "id": "riso-registration-shift",
+        "title": "Riso Registration Shift",
+        "tags": [
+          "risograph",
+          "print-misalignment",
+          "duotone",
+          "screen-print",
+          "glitch-art",
+          "editorial-print",
+          "loop"
+        ],
+        "summary": "A continuous loop of two-color screen print shifting in and out of perfect registration, mimicking the tactile imperfection of Riso duplication.",
+        "brands": []
+      },
+      {
+        "id": "saffron-watercolor-bloom",
+        "title": "Saffron Watercolor Bloom",
+        "tags": [
+          "fluid-sim",
+          "spice",
+          "color-theory",
+          "macro",
+          "culinary-art",
+          "diffusion",
+          "high-end"
+        ],
+        "summary": "A macro animation of saffron threads dissolving in clear water, creating intricate red and gold pigment blooms against a sterile white backdrop.",
+        "brands": []
+      },
+      {
+        "id": "salt-pan-crystallization",
+        "title": "Salt Pan Crystallization",
+        "tags": [
+          "salt",
+          "crystallization",
+          "evaporation",
+          "geometry",
+          "white-desert",
+          "loop",
+          "arid"
+        ],
+        "summary": "A macro view of salt crystals rapidly forming from evaporating brine in a desert pan, creating sharp geometric spikes and white ridges.",
+        "brands": []
+      },
+      {
         "id": "staggered-mask-reveal",
         "title": "Staggered Mask Reveal",
         "tags": [
@@ -271,9 +1286,101 @@
         ],
         "summary": "Editorial headline reveal via line masks and stagger — cinematic entrance without cheap fade templates.",
         "brands": []
+      },
+      {
+        "id": "stainless-brushed-light-sweep",
+        "title": "Stainless Brushed Light Sweep",
+        "tags": [
+          "metal",
+          "brushed-steel",
+          "lighting",
+          "surface",
+          "minimalist",
+          "industrial",
+          "specular"
+        ],
+        "summary": "A macro shot of a brushed stainless steel surface where a moving light source reveals the micro-texture and anisotropic reflections of the metal.",
+        "brands": []
+      },
+      {
+        "id": "sun-cracked-mud-heal",
+        "title": "Sun-Cracked Mud Heal",
+        "tags": [
+          "mud",
+          "cracks",
+          "healing",
+          "reverse",
+          "earth",
+          "texture",
+          "arid"
+        ],
+        "summary": "A reverse-animation of sun-baked mud cracking, where the fissures knit themselves back together, smoothing out into wet, pliable earth.",
+        "brands": []
+      },
+      {
+        "id": "woven-reed-flex",
+        "title": "Woven Reed Flex",
+        "tags": [
+          "wicker",
+          "flexibility",
+          "physics",
+          "organic",
+          "macro",
+          "tactile",
+          "structure"
+        ],
+        "summary": "A macro animation of woven reed strips bending under tension, showcasing the elasticity and interlocking tension of natural materials.",
+        "brands": []
       }
     ],
     "concepts": [
+      {
+        "id": "bioluminescent-spore-dispersion",
+        "title": "Bioluminescent Spore Dispersion",
+        "tags": [
+          "bioluminescence",
+          "spore",
+          "particle-system",
+          "nocturnal",
+          "dispersion",
+          "glow",
+          "organic",
+          "simulation"
+        ],
+        "summary": "A generative visual where bioluminescent spores drift upward in a dark void, reacting to mouse proximity with gentle repulsion and light scattering.",
+        "brands": []
+      },
+      {
+        "id": "carbon-fiber-weave-configurator",
+        "title": "Carbon Fiber Weave Configurator",
+        "tags": [
+          "carbon-fiber",
+          "composite",
+          "configurator",
+          "tech",
+          "tactile",
+          "weave",
+          "industrial"
+        ],
+        "summary": "A product configurator where users change the layup of carbon fiber, with real-time texture shifts and directional light reflections indicating fiber orientation.",
+        "brands": []
+      },
+      {
+        "id": "dune-strata-geology-map",
+        "title": "Dune Strata Geology Map",
+        "tags": [
+          "geology",
+          "minimalist",
+          "topography",
+          "arid",
+          "interactive-map",
+          "data-visualization",
+          "bone-white",
+          "long-shadows"
+        ],
+        "summary": "An interactive topographical visualization of desert strata, featuring long, sharp shadows and heat-haze distortion on a bone-white background.",
+        "brands": []
+      },
       {
         "id": "editorial-brutalist-system",
         "title": "Editorial Brutalist System",
@@ -288,6 +1395,121 @@
         "brands": [
           "BLOCK"
         ]
+      },
+      {
+        "id": "hazard-tape-peel-reveal",
+        "title": "Hazard Tape Peel Reveal",
+        "tags": [
+          "hazard-tape",
+          "peel-motion",
+          "construction",
+          "sticky",
+          "adhesive",
+          "warning",
+          "site-survey",
+          "material-physics"
+        ],
+        "summary": "A UI layer covered in diagonal hazard tape that peels away to reveal safe, clean content underneath, emphasizing physical adhesive resistance and tearing physics.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "The Overlay",
+          "The Peel",
+          "Adhesive Effect",
+          "Typography",
+          "Physics",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "kiln-fired-glaze-sample",
+        "title": "Kiln-Fired Glaze Sample",
+        "tags": [
+          "ceramics",
+          "glaze",
+          "color-picker",
+          "material",
+          "tactile",
+          "kiln",
+          "sample"
+        ],
+        "summary": "A color selection interface where hues are represented by physical ceramic glaze chips, with heat-warp transitions and kiln-lighting ambiance.",
+        "brands": []
+      },
+      {
+        "id": "linen-fold-typography",
+        "title": "Linen Fold Typography",
+        "tags": [
+          "linen",
+          "textile",
+          "typography",
+          "fold",
+          "soft",
+          "texture",
+          "organic"
+        ],
+        "summary": "Typography that behaves like folded linen. Text is printed on fabric that creases, folds, and drapes, creating soft shadows and depth.",
+        "brands": []
+      },
+      {
+        "id": "magnetic-morph-wordmark",
+        "title": "Magnetic Morph Wordmark",
+        "tags": [
+          "logo-motion",
+          "svg-morphing",
+          "magnetic-interaction",
+          "branding",
+          "fluid",
+          "interactive",
+          "vector",
+          "identity"
+        ],
+        "summary": "A brand wordmark where letters act like magnetic poles. On hover, adjacent letters are pulled toward the cursor, distorting the geometry before snapping back into perfect alignment.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "Base State",
+          "Magnetic Field",
+          "Center Letter",
+          "Adjacent Letters",
+          "Distant Letters",
+          "Morphing",
+          "Snap Back",
+          "Accent",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "mirage-optical-illusion-kit",
+        "title": "Mirage Optical Illusion Kit",
+        "tags": [
+          "optical-illusion",
+          "minimalist",
+          "interactive",
+          "desert",
+          "heat-haze",
+          "ui-kit",
+          "experimental",
+          "perspective"
+        ],
+        "summary": "A UI component library where elements appear to dissolve or warp due to simulated heat haze and optical refraction on a sun-bleached canvas.",
+        "brands": []
+      },
+      {
+        "id": "night-blooming-time-lapse",
+        "title": "Night Blooming Time-Lapse",
+        "tags": [
+          "time-lapse",
+          "botanical",
+          "night-blooming",
+          "animation",
+          "nocturnal",
+          "unfurl",
+          "moonlight",
+          "organic"
+        ],
+        "summary": "A seamless loop animation of a night-blooming flower (like a Moonflower) unfurling under a moonlit sky, with soft focus and slow, deliberate motion.",
+        "brands": []
       },
       {
         "id": "nocturnal-garden-moodboard",
@@ -305,6 +1527,105 @@
         ]
       },
       {
+        "id": "oxidized-coin-valuation",
+        "title": "Oxidized Coin Valuation",
+        "tags": [
+          "coin",
+          "oxidation",
+          "data",
+          "finance",
+          "texture",
+          "patina",
+          "interaction",
+          "haptic"
+        ],
+        "summary": "A data card where the 'value' is revealed by cleaning a tarnished coin. Scrubbing the patina reveals the underlying metal and a numerical value.",
+        "brands": [
+          "Visual Metaphor",
+          "Interaction",
+          "Reveal",
+          "Style",
+          "Patina",
+          "Metal",
+          "Card",
+          "Motion",
+          "Constraints"
+        ]
+      },
+      {
+        "id": "pressure-gauge-needle-sync",
+        "title": "Pressure Gauge Needle Sync",
+        "tags": [
+          "analog-gauge",
+          "pressure",
+          "steam",
+          "mechanical",
+          "sync",
+          "industrial",
+          "steam",
+          "vibration"
+        ],
+        "summary": "A multi-gauge dashboard where mechanical needles vibrate and sync based on simulated pressure loads. Steam bursts occur at critical thresholds, shaking the UI.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "The Gauges",
+          "The Needles",
+          "The Sync",
+          "Steam Effect",
+          "Shake",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "resonant-vowel-visualizer",
+        "title": "Resonant Vowel Visualizer",
+        "tags": [
+          "acoustic",
+          "kinetic-type",
+          "audio-reactive",
+          "generative",
+          "linguistics",
+          "spring-physics",
+          "dark-ui",
+          "experimental"
+        ],
+        "summary": "Typography that reacts to vocal frequency. Letters expand, contract, and distort based on real-time audio input, visualizing the physics of sound through kinetic type.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "Base State",
+          "Reaction Zone",
+          "Kinetic Behavior",
+          "Mid Frequencies",
+          "High Frequencies",
+          "Rest State",
+          "Accent",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "slaked-lime-cure-timer",
+        "title": "Slaked Lime Cure Timer",
+        "tags": [
+          "material",
+          "time",
+          "stone",
+          "progress",
+          "carbonation",
+          "concrete",
+          "calm",
+          "ui-component"
+        ],
+        "summary": "A status indicator that visualizes the slow carbonation of slaked lime, where a rough grey patch transforms into smooth white stone over time.",
+        "brands": [
+          "Visual Metaphor",
+          "Layout",
+          "Motion",
+          "Constraints"
+        ]
+      },
+      {
         "id": "soft-industrial-toolkit",
         "title": "Soft Industrial Toolkit",
         "tags": [
@@ -317,6 +1638,111 @@
         "summary": "Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes.",
         "brands": [
           "Hearthware"
+        ]
+      },
+      {
+        "id": "stamped-manifest-alignment",
+        "title": "Stamped Manifest Alignment",
+        "tags": [
+          "rubber-stamp",
+          "ink-bleed",
+          "logistics",
+          "paper-texture",
+          "verification",
+          "manual",
+          "clerk",
+          "audit"
+        ],
+        "summary": "A digital document verification interface where users must manually align and 'stamp' approval marks. The stamp leaves an imperfect, ink-bleeding impression on textured paper.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "The Paper",
+          "The Stamp",
+          "The Interaction",
+          "The Ink Effect",
+          "Rotation",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "sun-bleached-textile-swatches",
+        "title": "Sun-Bleached Textile Swatches",
+        "tags": [
+          "textile",
+          "material",
+          "desaturated",
+          "texture",
+          "swatch",
+          "fashion",
+          "arid",
+          "natural-light"
+        ],
+        "summary": "A digital fabric swatch selector featuring high-res textures of desert-worn textiles, with long shadows and natural light simulation.",
+        "brands": []
+      },
+      {
+        "id": "typographic-tidal-lock",
+        "title": "Typographic Tidal Lock",
+        "tags": [
+          "orbital",
+          "kinetic-type",
+          "circular-text",
+          "planetary",
+          "minimalist",
+          "css-animation",
+          "space",
+          "gravity"
+        ],
+        "summary": "Celestial mechanics meets typography. Text orbits a central point, with speed and scale dictated by simulated gravity wells. A study in circular motion and hierarchical focus.",
+        "brands": [
+          "Concept",
+          "Visual Rules",
+          "Structure",
+          "Orbit Mechanics",
+          "Typography",
+          "Interaction",
+          "Deliverable"
+        ]
+      },
+      {
+        "id": "wet-leaf-surface-tension",
+        "title": "Wet Leaf Surface Tension",
+        "tags": [
+          "surface-tension",
+          "liquid",
+          "botanical",
+          "nocturnal",
+          "reflection",
+          "macro",
+          "physics",
+          "water"
+        ],
+        "summary": "Macro-view of dark, glossy leaves where water droplets form, merge, and roll off, revealing sharp reflections of moonlight and distorted background colors.",
+        "brands": []
+      },
+      {
+        "id": "woven-wire-loom-grid",
+        "title": "Woven Wire Loom Grid",
+        "tags": [
+          "wire",
+          "weave",
+          "grid",
+          "tactile",
+          "interaction",
+          "metal",
+          "structure",
+          "generative"
+        ],
+        "summary": "A navigation grid where links are represented by taut steel wires that vibrate and weave over/under each other when hovered, mimicking a loom's tension.",
+        "brands": [
+          "Visual Metaphor",
+          "Interaction",
+          "Hover",
+          "Click",
+          "Rest",
+          "Style",
+          "Constraints"
         ]
       }
     ],

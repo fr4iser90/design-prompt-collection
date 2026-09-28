@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halyard Marine Forecast — Weather Intelligence for Commercial Shipping</title>
+<meta name="description" content="Halyard routes commercial and offshore fleets with the weather, not against it. Marine forecasts, sea-state analysis and optimized North Atlantic crossings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#071118;
+  --depth:#0c1c28;
+  --slate:#162a3a;
+  --line:rgba(143,166,184,.16);
+  --line-soft:rgba(143,166,184,.09);
+  --ink:#eef4f8;
+  --body:#a3b7c6;
+  --dim:#64798b;
+  --signal:#ff7a18;
+  --signal-soft:rgba(255,122,24,.14);
+  --disp:"Neue Haas Grotesk Display","Archivo","Helvetica Neue",sans-serif;
+  --serif:"Tiempos Text","Tiempos",Georgia,"Times New Roman",serif;
+  --mono:"Söhne Mono","IBM Plex Mono",ui-monospace,"SFMono-Regular",monospace;
+  --pad:clamp(20px,4vw,48px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--abyss);
+  color:var(--body);
+  font-family:var(--serif);
+  font-size:16.5px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--signal);color:var(--abyss)}
+a{color:inherit;text-decoration:none}
+img,svg{display:block}
+button,input{font:inherit;color:inherit}
+
+.mono{font-family:var(--mono);font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--dim)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 var(--pad)}
+
+/* ============ NAV ============ */
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:transparent;
+  transition:background .35s ease,border-color .35s ease;
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{background:rgba(7,17,24,.92);border-bottom-color:var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:72px;max-width:1320px;margin:0 auto;padding:0 var(--pad)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:.02em;color:var(--ink)}
+.brand .mark{width:12px;height:12px;background:var(--signal);transform:rotate(45deg);flex:none}
+.nav-links{display:flex;gap:34px;list-style:none}
+.nav-links a{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);transition:color .25s}
+.nav-links a:hover,.nav-links a:focus-visible{color:var(--signal)}
+.nav-cta{display:flex;align-items:center;gap:22px}
+.btn{
+  display:inline-block;font-family:var(--mono);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  background:var(--signal);color:var(--abyss);padding:13px 22px;border:1px solid var(--signal);cursor:pointer;
+  transition:transform .25s ease,box-shadow .25s ease,background .25s;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,122,24,.28)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{border-color:var(--signal);color:var(--signal);box-shadow:none}
+.nav .btn{padding:10px 18px}
+.link-quiet{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.link-quiet:hover{color:var(--ink)}
+
+/* ============ HERO ============ */
+.hero{position:relative;min-height:min(92vh,860px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;padding-top:clamp(48px,8vh,96px)}
+.chart{position:absolute;inset:0;z-index:0}
+.chart .grid-bg{
+  position:absolute;inset:-6%;
+  background-image:
+    repeating-linear-gradient(to right,rgba(143,166,184,.07) 0 1px,transparent 1px 80px),
+    repeating-linear-gradient(to bottom,rgba(143,166,184,.07) 0 1px,transparent 1px 80px),
+    repeating-linear-gradient(to right,rgba(143,166,184,.13) 0 1px,transparent 1px 400px),
+    repeating-linear-gradient(to bottom,rgba(143,166,184,.13) 0 1px,transparent 1px 400px);
+  will-change:transform;
+}
+.chart svg{position:absolute;inset:0;width:100%;height:100%}
+.chart .contours{will-change:transform}
+.chart .route-layer{will-change:transform}
+.vignette{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 78% 18%,rgba(255,122,24,.07),transparent 55%),
+  radial-gradient(140% 110% at 50% 120%,rgba(7,17,24,.85),transparent 60%),
+  linear-gradient(to bottom,rgba(7,17,24,.35),transparent 30%,transparent 70%,var(--abyss));
+  pointer-events:none}
+
+.route-path{fill:none;stroke:url(#ribbonGrad);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.6s cubic-bezier(.5,0,.2,1) .5s forwards}
+.route-glow{fill:none;stroke:var(--signal);stroke-width:7;stroke-linecap:round;opacity:.35;filter:url(#softGlow);stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.6s cubic-bezier(.5,0,.2,1) .5s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.contour{fill:none;stroke:#1d3850;stroke-width:1}
+.contour.dash{stroke-dasharray:2 7;stroke:#27465f}
+.low-arc{fill:none;stroke:rgba(255,122,24,.22);stroke-width:1;stroke-dasharray:3 6}
+
+.wp{cursor:pointer;outline:none}
+.wp .dot{fill:var(--abyss);stroke:var(--signal);stroke-width:2;transition:r .25s}
+.wp .pulse{fill:none;stroke:var(--signal);opacity:0;transform-origin:center;transform-box:fill-box}
+.wp:hover .dot,.wp:focus-visible .dot{r:6}
+.wp:hover .pulse,.wp:focus-visible .pulse{animation:pulse 1.7s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:.8}100%{transform:scale(3.2);opacity:0}}
+.wp .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;fill:var(--ink);opacity:0;transition:opacity .25s;text-transform:uppercase}
+.wp .tag line{stroke:var(--signal);stroke-width:1}
+.wp:hover .tag,.wp:focus-visible .tag{opacity:1}
+.tick-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;fill:var(--dim);opacity:0;animation:tickFade 1.2s ease forwards}
+.tick-label:nth-child(odd){animation-delay:.9s}
+.tick-label:nth-child(even){animation-delay:1.3s}
+@keyframes tickFade{to{opacity:.75}}
+
+.hero-in{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:48px;align-items:end;max-width:1320px;width:100%;margin:0 auto;padding:0 var(--pad)}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.eyebrow .dia{width:7px;height:7px;background:var(--signal);transform:rotate(45deg)}
+h1.brand-name{
+  font-family:var(--disp);font-weight:800;color:var(--ink);
+  font-size:clamp(4.2rem,14.5vw,11.5rem);line-height:.84;letter-spacing:-.045em;
+  display:flex;flex-wrap:wrap;
+}
+h1.brand-name span{display:inline-block;transform:translateY(115%);opacity:0;animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i)*55ms + 150ms)}
+@keyframes rise{to{transform:translateY(0);opacity:1}}
+.brand-sub{
+  font-family:var(--disp);font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+  font-size:clamp(.85rem,2.2vw,1.5rem);color:transparent;-webkit-text-stroke:1px rgba(163,183,198,.55);
+  margin:18px 0 26px;
+}
+.hero-lede{font-size:clamp(1.05rem,1.6vw,1.3rem);max-width:46ch;color:var(--body)}
+.hero-lede em{color:var(--ink);font-style:italic}
+.hero-actions{display:flex;align-items:center;gap:26px;margin-top:36px;flex-wrap:wrap}
+.hero-actions .arrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--signal);padding-bottom:4px;transition:color .25s}
+.hero-actions .arrow:hover{color:var(--signal)}
+
+/* telemetry */
+.telemetry{border-top:1px solid var(--line);padding-top:14px}
+.telemetry .t-head{display:flex;justify-content:space-between;margin-bottom:6px}
+.t-row{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.t-row .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.t-row .v{font-family:var(--mono);font-size:13px;color:var(--ink);letter-spacing:.04em}
+.t-row .v .u{color:var(--dim);font-size:11px}
+.meter{height:3px;background:var(--slate);margin-top:6px;position:relative;overflow:hidden}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--signal);transform-origin:left;transform:scaleX(0);animation:meterIn 1.4s cubic-bezier(.2,.7,.2,1) 1.2s forwards}
+@keyframes meterIn{to{transform:scaleX(var(--w,1))}}
+.t-live{display:flex;align-items:center;gap:8px;margin-top:16px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--signal)}
+.t-live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--signal);animation:blink 2.4s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.hero-foot{position:relative;z-index:2;margin-top:clamp(40px,7vh,80px);border-top:1px solid var(--line)}
+.hero-foot .wrap{display:flex;justify-content:space-between;align-items:center;padding-top:14px;padding-bottom:14px;gap:20px;flex-wrap:wrap}
+.scroll-note{display:flex;align-items:center;gap:12px}
+.scroll-note i{display:block;width:44px;height:1px;background:var(--signal);position:relative;overflow:hidden}
+.scroll-note i::after{content:"";position:absolute;inset:0;background:var(--abyss);animation:retract 2.2s ease infinite}
+@keyframes retract{0%{transform:translateX(0)}60%,100%{transform:translateX(100%)}}
+
+/* ============ TICKER ============ */
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--depth);overflow:hidden;position:relative}
+.ticker::before,.ticker::after{content:"";position:absolute;top:0;bottom:0;width:90px;z-index:2;pointer-events:none}
+.ticker::before{left:0;background:linear-gradient(to right,var(--depth),transparent)}
+.ticker::after{right:0;background:linear-gradient(to left,var(--depth),transparent)}
+.ticker-track{display:flex;width:max-content;animation:scroll 46s linear infinite}
+.ticker-track span{display:flex;align-items:center;white-space:nowrap;padding:13px 0;font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--body)}
+.ticker-track b{color:var(--signal);font-weight:600;margin:0 26px 0 8px}
+.ticker-track .sep{color:var(--signal);margin:0 26px;opacity:.7}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.ticker:hover .ticker-track{animation-play-state:paused}
+
+/* ============ SECTIONS SHARED ============ */
+section{position:relative}
+.sec-head{display:grid;grid-template-columns:64px minmax(0,1fr);gap:24px;align-items:baseline;margin-bottom:clamp(36px,5vw,64px)}
+.sec-num{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--signal);padding-top:10px}
+.sec-title{font-family:var(--disp);font-weight:700;color:var(--ink);font-size:clamp(1.7rem,3.6vw,2.9rem);line-height:1.05;letter-spacing:-.02em}
+.sec-note{font-family:var(--serif);font-style:italic;color:var(--dim);margin-top:10px;font-size:1.02rem}
+.rule{height:1px;background:var(--line)}
+
+[data-reveal]{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+[data-reveal].in{opacity:1;transform:none}
+
+/* ============ FORECAST ============ */
+.forecast{padding:clamp(72px,10vw,130px) 0}
+.fc-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(32px,5vw,72px);align-items:start}
+table{width:100%;border-collapse:collapse}
+caption{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding-bottom:12px}
+th{font-family:var(--mono);font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);text-align:left;padding:10px 14px 12px 0;border-bottom:1px solid var(--line)}
+td{padding:15px 14px 15px 0;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:12.5px;color:var(--body);letter-spacing:.03em;vertical-align:middle}
+tr{transition:background .25s}
+tbody tr:hover{background:rgba(22,42,58,.55)}
+td.wp-name{color:var(--ink);font-weight:600;position:relative;padding-left:16px}
+td.wp-name::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:2px;background:transparent;transition:background .25s}
+tbody tr:hover td.wp-name::before{background:var(--signal)}
+.split{border-left:1px solid var(--line);padding-left:16px !important}
+th.split{border-left:1px solid var(--line)}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border:1px solid}
+.pill.clear{color:#7fd6b3;border-color:rgba(127,214,179,.35)}
+.pill.watch{color:var(--signal);border-color:rgba(255,122,24,.4);background:var(--signal-soft)}
+.pill.gale{color:#ff5a5a;border-color:rgba(255,90,90,.4)}
+.adv-list{list-style:none;border-top:1px solid var(--line)}
+.adv-list li{padding:18px 0;border-bottom:1px solid var(--line-soft);display:grid;grid-template-columns:52px 1fr;gap:16px}
+.adv-list .t{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--signal);padding-top:4px}
+.adv-list h4{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);letter-spacing:.01em;margin-bottom:4px}
+.adv-list p{font-size:.92rem;line-height:1.55;color:var(--dim)}
+
+/* ============ CASE ============ */
+.case{padding:clamp(72px,10vw,130px) 0;background:linear-gradient(to bottom,var(--abyss),var(--depth) 30%,var(--depth) 70%,var(--abyss))}
+.case-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(36px,5vw,72px);align-items:center}
+.case-copy p{margin-bottom:20px;max-width:52ch}
+.case-copy p:first-of-type::first-letter{font-family:var(--disp);font-weight:800;color:var(--signal);font-size:3.1em;float:left;line-height:.8;padding:6px 12px 0 0}
+.case-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:34px}
+.case-stats div{background:var(--depth);padding:18px 16px}
+.case-stats .v{font-family:var(--disp);font-weight:700;font-size:clamp(1.2rem,2.2vw,1.7rem);color:var(--ink);letter-spacing:-.01em}
+.case-stats .v b{color:var(--signal);font-weight:700}
+.case-stats .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-top:6px}
+.case-chart{border:1px solid var(--line);background:
+  radial-gradient(90% 90% at 70% 20%,rgba(22,42,58,.8),var(--abyss)),
+  repeating-linear-gradient(to right,rgba(143,166,184,.06) 0 1px,transparent 1px 40px),
+  repeating-linear-gradient(to bottom,rgba(143,166,184,.06) 0 1px,transparent 1px 40px);
+  position:relative}
+.case-chart .cc-head{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:14px 18px;z-index:2}
+.case-chart svg{width:100%;height:auto}
+.cc-legend{position:absolute;bottom:0;left:0;right:0;display:flex;gap:26px;padding:14px 18px;z-index:2;flex-wrap:wrap}
+.cc-legend span{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.cc-legend i{width:16px;height:2px;background:var(--signal)}
+.cc-legend i.alt{background:#3d5a70}
+
+/* ============ CTA ============ */
+.cta{padding:clamp(80px,11vw,150px) 0;border-top:1px solid var(--line);position:relative;overflow:hidden}
+.cta::before{content:"";position:absolute;left:50%;bottom:-40%;width:120%;height:120%;transform:translateX(-50%);background:radial-gradient(50% 50% at 50% 50%,rgba(255,122,24,.09),transparent 65%);pointer-events:none}
+.cta-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(36px,5vw,72px);align-items:end}
+.cta h2{font-family:var(--disp);font-weight:800;color:var(--ink);font-size:clamp(2.2rem,5.4vw,4.4rem);line-height:.98;letter-spacing:-.03em}
+.cta h2 u{text-decoration:none;box-shadow:inset 0 -4px 0 var(--signal)}
+.cta p{margin-top:22px;max-width:44ch;font-size:1.05rem}
+.cta-form{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.field{flex:1;min-width:220px}
+.field label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.field input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);padding:12px 2px;font-family:var(--mono);font-size:14px;color:var(--ink);letter-spacing:.04em;transition:border-color .25s}
+.field input:focus{outline:none;border-color:var(--signal)}
+.field input::placeholder{color:var(--dim)}
+.cta-form .btn{padding:14px 26px}
+.cta-fine{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:16px}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line);background:var(--abyss)}
+.foot-grid{display:grid;grid-template-columns:minmax(0,3fr) repeat(3,minmax(0,2fr));gap:clamp(28px,4vw,56px);padding:clamp(52px,7vw,84px) 0 48px}
+.foot-brand .brand{margin-bottom:18px}
+.foot-brand p{font-size:.95rem;max-width:30ch}
+.foot-coord{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--signal);margin-top:18px}
+.foot-col h5{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:20px}
+.foot-col ul{list-style:none}
+.foot-col li{margin-bottom:11px}
+.foot-col a{font-size:.95rem;color:var(--body);transition:color .2s;position:relative}
+.foot-col a:hover{color:var(--signal)}
+.foot-bar{border-top:1px solid var(--line-soft)}
+.foot-bar .wrap{display:flex;justify-content:space-between;gap:18px;padding-top:20px;padding-bottom:26px;flex-wrap:wrap}
+.foot-bar p,.foot-bar a{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.foot-bar a:hover{color:var(--ink)}
+
+:focus-visible{outline:2px solid var(--signal);outline-offset:3px}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1020px){
+  .hero-in{grid-template-columns:1fr;align-items:start;gap:36px}
+  .telemetry{max-width:520px}
+  .fc-grid,.case-grid,.cta-grid{grid-template-columns:1fr}
+  .case-chart{order:-1}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:720px){
+  .nav-in{height:60px}
+  .nav-links,.link-quiet{display:none}
+  .nav .btn{padding:9px 15px}
+  .hero{min-height:auto;padding-top:64px;padding-bottom:8px}
+  .hero-actions .btn{width:100%;text-align:center}
+  .hero-actions{gap:18px}
+  .hero-foot .wrap{gap:10px}
+  .hero-foot .wrap .mono:nth-child(3){display:none}
+  .case-stats{grid-template-columns:1fr 1fr}
+  .opt{display:none}
+  td,th{padding-right:10px}
+  .foot-grid{grid-template-columns:1fr}
+  .cta-form{flex-direction:column;align-items:stretch}
+  .cta-form .btn{width:100%}
+}
+@media (max-width:420px){
+  .case-stats{grid-template-columns:1fr}
+}
+
+/* ============ REDUCED MOTION ============ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
+  [data-reveal]{opacity:1;transform:none}
+  .route-path,.route-glow{stroke-dashoffset:0}
+  h1.brand-name span{transform:none;opacity:1}
+  .tick-label{opacity:.75}
+  .meter i{transform:scaleX(var(--w,1))}
+  .ticker-track{transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="nav" id="top">
+  <div class="nav-in">
+    <a class="brand" href="#top" aria-label="Halyard Marine Forecast — home">
+      <span class="mark" aria-hidden="true"></span>HALYARD
+    </a>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="#forecast">Forecast</a></li>
+        <li><a href="#routing">Routing</a></li>
+        <li><a href="#case">Case Log</a></li>
+        <li><a href="#access">Access</a></li>
+      </ul>
+    </nav>
+    <div class="nav-cta">
+      <a class="link-quiet" href="#access">Sign in</a>
+      <a class="btn" href="#access">Request access</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ================= HERO ================= -->
+<section class="hero" aria-label="Halyard Marine Forecast — brand and live chart">
+  <div class="chart" aria-hidden="true">
+    <div class="grid-bg" data-depth="0.018"></div>
+
+    <svg class="contours" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice" data-depth="0.045">
+      <path class="contour" d="M-40 190 C 280 120 540 268 800 214 S 1220 118 1520 196"/>
+      <path class="contour dash" d="M-40 300 C 260 246 560 386 830 332 S 1250 250 1520 322"/>
+      <path class="contour" d="M-40 764 C 320 706 610 786 900 726 S 1290 662 1520 704"/>
+      <circle class="low-arc" cx="1180" cy="180" r="70"/>
+      <circle class="low-arc" cx="1180" cy="180" r="120"/>
+      <circle class="low-arc" cx="1180" cy="180" r="172"/>
+      <text class="tick-label" x="1148" y="184">L · 992 hPa</text>
+    </svg>
+
+    <svg class="route-layer" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice" data-depth="0.022">
+      <path class="route-glow" pathLength="1" d="M-60 706 C 200 612 300 470 470 452 C 640 434 700 562 860 542 C 1020 522 1060 362 1210 320 C 1330 286 1430 238 1520 208"/>
+      <path class="route-path" pathLength="1" d="M-60 706 C 200 612 300 470 470 452 C 640 434 700 562 860 542 C 1020 522 1060 362 1210 320 C 1330 286 1430 238 1520 208"/>
+
+      <g class="wp" tabindex="0" aria-label="Waypoint North Hinder">
+        <circle class="pulse" cx="252" cy="562" r="6"/>
+        <circle class="dot" cx="252" cy="562" r="4.5"/>
+        <g class="tag"><line x1="252" y1="562" x2="252" y2="606"/><text x="252" y="624" text-anchor="middle">N Hinder</text></g>
+      </g>
+      <g class="wp" tabindex="0" aria-label="Waypoint Fair Isle">
+        <circle class="pulse" cx="520" cy="452" r="6"/>
+        <circle class="dot" cx="520" cy="452" r="4.5"/>
+        <g class="tag"><line x1="520" y1="452" x2="520" y2="410"/><text x="520" y="398" text-anchor="middle">Fair Isle</text></g>
+      </g>
+      <g class="wp" tabindex="0" aria-label="Waypoint Rockall Crest">
+        <circle class="pulse" cx="862" cy="542" r="6"/>
+        <circle class="dot" cx="862" cy="542" r="4.5"/>
+        <g class="tag"><line x1="862" y1="542" x2="862" y2="586"/><text x="862" y="604" text-anchor="middle">Rockall Crest</text></g>
+      </g>
+      <g class="wp" tabindex="0" aria-label="Waypoint Sable Island">
+        <circle class="pulse" cx="1188" cy="328" r="6"/>
+        <circle class="dot" cx="1188" cy="328" r="4.5"/>
+        <g class="tag"><line x1="1188" y1="328" x2="1188" y2="286"/><text x="1188" y="274" text-anchor="middle">Sable Island</text></g>
+      </g>
+      <g class="wp" tabindex="0" aria-label="Waypoint Halifax approach">
+        <circle class="pulse" cx="1404" cy="240" r="6"/>
+        <circle class="dot" cx="1404" cy="240" r="4.5"/>
+        <g class="tag"><line x1="1404" y1="240" x2="1404" y2="198"/><text x="1404" y="186" text-anchor="middle">Halifax</text></g>
+      </g>
+
+      <text class="tick-label" x="80" y="40">04°W</text>
+      <text class="tick-label" x="480" y="40">02°W</text>
+      <text class="tick-label" x="880" y="40">00°</text>
+      <text class="tick-label" x="1280" y="40">02°E</text>
+      <text class="tick-label" x="24" y="204">60°N</text>
+      <text class="tick-label" x="24" y="456">56°N</text>
+      <text class="tick-label" x="24" y="708">52°N</text>
+    </svg>
+
+    <div class="vignette"></div>
+  </div>
+
+  <div class="hero-in">
+    <div>
+      <div class="eyebrow"><span class="dia" aria-hidden="true"></span><span class="mono">Est. 2019 — Marine Weather Intelligence · North Atlantic</span></div>
+      <h1 class="brand-name" aria-label="Halyard">
+        <span style="--i:0">H</span><span style="--i:1">A</span><span style="--i:2">L</span><span style="--i:3">Y</span><span style="--i:4">A</span><span style="--i:5">R</span><span style="--i:6">D</span>
+      </h1>
+      <p class="brand-sub">Marine Forecast &amp; Routing</p>
+      <p class="hero-lede">Precision weather intelligence for commercial shipping and offshore teams. <em>We chart the crossing before the sea does.</em></p>
+      <div class="hero-actions">
+        <a class="btn" href="#access">Request a routing pass</a>
+        <a class="arrow" href="#forecast">View live analysis &rarr;</a>
+      </div>
+    </div>
+
+    <aside class="telemetry" aria-label="Live vessel telemetry">
+      <div class="t-head"><span class="mono">Live Telemetry</span><span class="mono" style="color:var(--ink)">FV HALYARD ONE</span></div>
+      <div class="t-row"><span class="k">Position</span><span class="v">51°55.2′N&nbsp;&nbsp;004°22.4′W</span></div>
+      <div class="t-row"><span class="k">SOG / HDG</span><span class="v">14.2 <span class="u">kn</span> / 262°</span></div>
+      <div class="t-row"><span class="k">Sea / Swell</span><span class="v">3 <span class="u">Bft</span> / 1.8 <span class="u">m</span></span></div>
+      <div class="t-row"><span class="k">Wind</span><span class="v">22 <span class="u">kn NNE</span></span></div>
+      <div class="meter" aria-hidden="true"><i style="--w:.58"></i></div>
+      <div class="t-row"><span class="k">Baro</span><span class="v">1008 <span class="u">hPa ▼</span></span></div>
+      <div class="t-row"><span class="k">Next pass</span><span class="v">04:00 <span class="u">UTC</span></span></div>
+      <div class="t-live">Uplink nominal — 6 min refresh</div>
+    </aside>
+  </div>
+
+  <div class="hero-foot">
+    <div class="wrap">
+      <div class="scroll-note"><i aria-hidden="true"></i><span class="mono">Scroll — 72 h surface analysis</span></div>
+      <span class="mono">Chart datum WGS-84 · Mercator</span>
+      <span class="mono">NORTH ATLANTIC · ZONE 27</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TICKER ================= -->
+<div class="ticker" aria-label="Marine data ticker">
+  <div class="ticker-track" id="ticker">
+    <span><b>⚑ Gale warning</b>Fair Isle — wind 45 kn NNE, veering NW<span class="sep">◆</span><b>Sea state 5</b>Rockall trough — significant swell 3.4 m<span class="sep">◆</span><b>Routing</b>North Hinder → Halifax — fuel model +3.1% vs great circle<span class="sep">◆</span><b>Barometry</b>Falling 4 hPa / 3 h — low 992 tracking east<span class="sep">◆</span><b>Ice</b>Laborador current — berg limit 46°N advisory<span class="sep">◆</span><b>Buoy network</b>112 of 114 reporting nominal<span class="sep">◆</span></span>
+  </div>
+</div>
+
+<!-- ================= FORECAST ================= -->
+<section class="forecast" id="forecast" aria-labelledby="fc-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <span class="sec-num">01</span>
+      <div>
+        <h2 class="sec-title" id="fc-title">Surface analysis — 72-hour split</h2>
+        <p class="sec-note">Wind and sea-state fields resolved per waypoint, refreshed on the six-hour model cycle.</p>
+      </div>
+    </div>
+
+    <div class="fc-grid">
+      <div data-reveal>
+        <table>
+          <caption>ROTTERDAM → HALIFAX · DEPARTURE WINDOW 14 NOV 06:00 UTC</caption>
+          <thead>
+            <tr>
+              <th scope="col">Waypoint</th>
+              <th scope="col">ETA +d</th>
+              <th scope="col" class="split">Wind kn</th>
+              <th scope="col" class="opt">Gust kn</th>
+              <th scope="col">Sea Bft</th>
+              <th scope="col" class="opt">Swell m</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="wp-name">NORTH HINDER</td><td>+0.4</td><td class="split">18 NNE</td><td class="opt">26</td><td>4</td><td class="opt">1.4</td><td><span class="pill clear">Clear</span></td></tr>
+            <tr><td class="wp-name">FAIR ISLE</td><td>+1.2</td><td class="split">34 NNE</td><td class="opt">45</td><td>6</td><td class="opt">2.8</td><td><span class="pill gale">Gale</span></td></tr>
+            <tr><td class="wp-name">ROCKALL CREST</td><td>+2.3</td><td class="split">27 N</td><td class="opt">36</td><td>5</td><td class="opt">3.4</td><td><span class="pill watch">Watch</span></td></tr>
+            <tr><td class="wp-name">LABRADOR SEA</td><td>+4.1</td><td class="split">22 NW</td><td class="opt">30</td><td>4</td><td class="opt">2.2</td><td><span class="pill watch">Watch</span></td></tr>
+            <tr><td class="wp-name">SABLE ISLAND</td><td>+6.0</td><td class="split">16 W</td><td class="opt">22</td><td>3</td><td class="opt">1.6</td><td><span class="pill clear">Clear</span></td></tr>
+            <tr><td class="wp-name">HALIFAX APPR.</td><td>+6.8</td><td class="split">12 SW</td><td class="opt">17</td><td>2</td><td class="opt">0.9</td><td><span class="pill clear">Clear</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div data-reveal>
+        <p class="mono" style="margin-bottom:18px">Advisories — last 24 h</p>
+        <ul class="adv-list">
+          <li><span class="t">12:04</span><div><h4>DEEP LOW 992 — ROCKALL TROUGH</h4><p>Frontal system accelerating east at 38 kt. Halyard recommends a 14 NM southerly offset through waypoint 3.</p></div></li>
+          <li><span class="t">08:41</span><div><h4>FOG BANK — IRISH SEA APPROACHES</h4><p>Visibility &lt; 0.5 NM expected 02:00–09:00 UTC. Speed reduction advisory issued for congested TSS.</p></div></li>
+          <li><span class="t">03:17</span><div><h4>BERG LIMIT MOVED TO 46°N</h4><p>Ice service reports two growlers in the Cabot Strait approaches. Routing corridors adjusted north of limit.</p></div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- ================= CASE STUDY ================= -->
+<section class="case" id="case" aria-labelledby="case-title">
+  <div class="wrap">
+    <div class="sec-head" data-reveal>
+      <span class="sec-num">02</span>
+      <div>
+        <h2 class="sec-title" id="case-title">Case log — winter crossing, Rotterdam → Halifax</h2>
+        <p class="sec-note">Route 04 · 11–18 November · 2,940 NM · 68,000 dwt bulk carrier.</p>
+      </div>
+    </div>
+
+    <div class="case-grid">
+      <div class="case-copy" data-reveal>
+        <p>The great-circle track ran straight into a 992-hectopascal low building over the Rockall Trough. Halyard's routing engine held the vessel 14 nautical miles south through the first two waypoints, trading distance against a two-day window of 45-knot gusts.</p>
+        <p>Mid-ocean, the engine re-solved the track twice against falling barometric readings from the vessel's own sensors — a feedback loop between forecast and observed sea state that no static chart offers. The crossing finished with a net fuel saving and a materially calmer ride for cargo and crew.</p>
+        <div class="case-stats" role="list">
+          <div role="listitem"><div class="v"><b>−112</b> NM</div><div class="k">Distance vs GC</div></div>
+          <div role="listitem"><div class="v"><b>−3.4</b> t</div><div class="k">Fuel saved</div></div>
+          <div role="listitem"><div class="v"><b>+0.4</b> d</div><div class="k">ETA delta</div></div>
+          <div role="listitem"><div class="v"><b>+18</b> %</div><div class="k">Comfort index</div></div>
+        </div>
+      </div>
+
+      <div class="case-chart" data-reveal>
+        <div class="cc-head"><span class="mono">ROUTE 04 — COMPARATIVE TRACK</span><span class="mono" style="color:var(--signal)">OPTIMIZED</span></div>
+        <svg viewBox="0 0 640 420" role="img" aria-label="Comparative chart of great-circle track versus Halyard optimized track">
+          <path d="M40 340 C 180 300 260 250 340 236 C 440 218 520 150 610 96" fill="none" stroke="#3d5a70" stroke-width="1.5" stroke-dasharray="4 6"/>
+          <path class="route-path" pathLength="1" d="M40 344 C 170 322 250 300 330 268 C 430 228 520 138 610 92"/>
+          <g class="wp" tabindex="0" aria-label="Departure Rotterdam">
+            <circle class="pulse" cx="40" cy="344" r="5"/><circle class="dot" cx="40" cy="344" r="4"/>
+            <g class="tag"><text x="40" y="372" text-anchor="middle">Depart</text></g>
+          </g>
+          <g class="wp" tabindex="0" aria-label="Decision point Rockall offset">
+            <circle class="pulse" cx="330" cy="268" r="5"/><circle class="dot" cx="330" cy="268" r="4"/>
+            <g class="tag"><text x="330" y="296" text-anchor="middle">Offset +14 NM</text></g>
+          </g>
+          <g class="wp" tabindex="0" aria-label="Re-solve point mid ocean">
+            <circle class="pulse" cx="470" cy="182" r="5"/><circle class="dot" cx="470" cy="182" r="4"/>
+            <g class="tag"><text x="470" y="166" text-anchor="middle">Re-solve 02</text></g>
+          </g>
+          <g class="wp" tabindex="0" aria-label="Arrival Halifax">
+            <circle class="pulse" cx="610" cy="92" r="5"/><circle class="dot" cx="610" cy="92" r="4"/>
+            <g class="tag"><text x="600" y="76" text-anchor="end">Arrive</text></g>
+          </g>
+        </svg>
+        <div class="cc-legend">
+          <span><i aria-hidden="true"></i>Halyard optimized</span>
+          <span><i class="alt" aria-hidden="true"></i>Great circle</span>
+          <span>Hover waypoints — decision log</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="cta" id="access" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div class="cta-grid">
+      <div data-reveal>
+        <span class="mono" style="color:var(--signal)">03 — Conversion</span>
+        <h2 id="cta-title" style="margin-top:18px">Route with the weather,<br><u>not against it.</u></h2>
+        <p>Fleet managers and offshore operators receive a six-hourly forecast pass, waypoint-level sea-state fields, and an optimized track for every assigned voyage.</p>
+      </div>
+      <div data-reveal>
+        <form class="cta-form" onsubmit="return false">
+          <div class="field">
+            <label for="email">Work email</label>
+            <input id="email" type="email" name="email" placeholder="ops@yourfleet.com" autocomplete="email">
+          </div>
+          <button class="btn" type="submit">Request access</button>
+        </form>
+        <p class="cta-fine">Trial pass — 30 days · full telemetry · no card required</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top"><span class="mark" aria-hidden="true"></span>HALYARD</a>
+        <p>Marine weather intelligence for commercial shipping and offshore operations.</p>
+        <p class="foot-coord">ROTTERDAM · HALIFAX · BERGEN — 51°55.2′N 004°22.4′W</p>
+      </div>
+      <nav class="foot-col" aria-label="Platform">
+        <h5>Platform</h5>
+        <ul>
+          <li><a href="#forecast">Surface forecast</a></li>
+          <li><a href="#routing">Routing engine</a></li>
+          <li><a href="#">Telemetry API</a></li>
+          <li><a href="#">Chart viewer</a></li>
+          <li><a href="#">System status</a></li>
+        </ul>
+      </nav>
+      <nav class="foot-col" aria-label="Data sources">
+        <h5>Data feeds</h5>
+        <ul>
+          <li><a href="#">ECMWF HRES</a></li>
+          <li><a href="#">WaveWatch III</a></li>
+          <li><a href="#">Buoy network</a></li>
+          <li><a href="#">AIS traffic</a></li>
+          <li><a href="#">Ice service</a></li>
+        </ul>
+      </nav>
+      <nav class="foot-col" aria-label="Company">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+          <li><a href="#access">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+  <div class="foot-bar">
+    <div class="wrap">
+      <p>© 2025 Halyard Marine Forecast B.V.</p>
+      <p>Built for the North Atlantic</p>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Ticker: duplicate content for seamless loop */
+  var track = document.getElementById('ticker');
+  if (track) track.appendChild(track.firstElementChild.cloneNode(true));
+
+  /* Nav hairline on scroll */
+  var nav = document.querySelector('.nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 24); };
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* Entrance reveals */
+  var els = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:.15, rootMargin:'0px 0px -8% 0px'});
+    els.forEach(function(el){ io.observe(el); });
+  } else {
+    els.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* Subtle parallax on hero chart layers */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches){
+    var layers = Array.prototype.slice.call(document.querySelectorAll('.chart [data-depth]'));
+    var tx=0, ty=0, cx=0, cy=0, raf=null;
+    var hero = document.querySelector('.hero');
+    hero.addEventListener('mousemove', function(ev){
+      var r = hero.getBoundingClientRect();
+      tx = (ev.clientX - r.width/2);
+      ty = (ev.clientY - r.height/2);
+      if(!raf) raf = requestAnimationFrame(tick);
+    });
+    hero.addEventListener('mouseleave', function(){ tx=0; ty=0; if(!raf) raf=requestAnimationFrame(tick); });
+    function tick(){
+      cx += (tx-cx)*0.06; cy += (ty-cy)*0.06;
+      layers.forEach(function(l){
+        var d = parseFloat(l.getAttribute('data-depth'))||0;
+        l.style.transform = 'translate3d('+(-cx*d)+'px,'+(-cy*d)+'px,0)';
+      });
+      if (Math.abs(tx-cx)>0.2 || Math.abs(ty-cy)>0.2){ raf=requestAnimationFrame(tick); } else { raf=null; }
+    }
+  }
+})();
+</script>
+</body>
+</html>

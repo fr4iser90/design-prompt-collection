@@ -17,10 +17,15 @@
     "ai:lanes": "node scripts/ai-fill.mjs --list-lanes",
     "ai:build": "node scripts/ai-build.mjs",
     "shots": "node scripts/shots.mjs",
+    "playwright:install": "node node_modules/playwright/cli.js install chromium",
+    "review": "node scripts/review.mjs",
     "pages": "node scripts/pages.mjs",
+    "pages:deploy": "node scripts/deploy-pages.mjs",
     "pipeline": "node scripts/pipeline.mjs",
     "ship": "node scripts/ship.mjs",
     "worker": "node scripts/worker.mjs",
+    "worker:status": "node scripts/worker.mjs --status",
+    "stop": "node scripts/stop-worker.mjs",
     "slots": "node scripts/slots-status.mjs"
   },
   "engines": {

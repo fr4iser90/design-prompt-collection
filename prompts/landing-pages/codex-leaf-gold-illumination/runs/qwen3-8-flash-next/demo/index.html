@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelia Archives — Illuminated Manuscripts, Preserved</title>
+<meta name="description" content="Aurelia Archives is a high-end digital repository for rare historical manuscripts, preserved with the dignity of the page itself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --vellum:#fdfbf7;
+    --ink:#2c241b;
+    --gold:#d4af37;
+    --gold-deep:#a8801f;
+    --leather:#8b7355;
+    --hair:rgba(139,115,85,.30);
+    --maxw:800px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--vellum);
+    color:var(--ink);
+    font-family:'EB Garamond',Georgia,'Times New Roman',serif;
+    font-size:19px;
+    line-height:1.78;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---- Aged vellum texture (pure CSS, no images, no animation) ---- */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #fffdf9 0%, rgba(253,251,247,0) 55%),
+      radial-gradient(130% 120% at 50% 118%, rgba(139,115,85,.10) 0%, rgba(253,251,247,0) 55%),
+      radial-gradient(60% 45% at 12% 8%, rgba(212,175,55,.05) 0%, rgba(253,251,247,0) 60%),
+      radial-gradient(55% 40% at 92% 88%, rgba(139,115,85,.07) 0%, rgba(253,251,247,0) 60%);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    opacity:.55;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    background-size:200px 200px;
+  }
+
+  ::selection{background:rgba(212,175,55,.28);color:var(--ink);}
+
+  a{
+    color:var(--ink);
+    text-decoration:none;
+    background-image:linear-gradient(currentColor,currentColor);
+    background-repeat:no-repeat;
+    background-size:0% 1px;
+    background-position:0 100%;
+    transition:color .5s ease, background-size .5s ease;
+  }
+  a:hover,a:focus-visible{color:var(--gold-deep);background-size:100% 1px;}
+  a:focus-visible{outline:none;}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+
+  /* ---- Ornate rules ---- */
+  .rule{display:flex;align-items:center;gap:16px;color:var(--leather);margin:0;}
+  .rule::before,.rule::after{content:"";flex:1;height:1px;background:var(--hair);}
+  .rule .orn{color:var(--gold);font-size:.9rem;line-height:1;}
+
+  /* ---- Header / nav ---- */
+  header{position:relative;}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 0 20px;
+  }
+  .wordmark{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:1.28rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink);
+    background:none;
+  }
+  .wordmark .g{color:var(--gold-deep);}
+  nav ul{list-style:none;display:flex;gap:26px;margin:0;padding:0;}
+  nav a{
+    font-size:.94rem;letter-spacing:.05em;
+    color:var(--leather);
+  }
+  nav a:hover{color:var(--gold-deep);}
+  .hairline{height:1px;background:var(--hair);}
+
+  /* ---- Hero ---- */
+  .hero{padding:82px 0 60px;text-align:center;}
+  .eyebrow{
+    font-size:.74rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--leather);margin:0 0 26px;font-weight:500;
+  }
+  .hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:500;
+    font-size:clamp(3.4rem,11vw,6.6rem);
+    line-height:.98;
+    letter-spacing:.005em;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hero h1 .amp{
+    display:block;
+    font-style:italic;font-weight:400;
+    font-size:.42em;letter-spacing:.02em;
+    color:var(--gold-deep);
+    margin:6px 0 2px;
+  }
+  .hero .lede{
+    max-width:44ch;margin:26px auto 0;
+    font-size:1.16rem;color:var(--ink);line-height:1.72;
+  }
+  .hero .lede em{font-style:italic;color:var(--gold-deep);}
+
+  .cta{
+    display:inline-block;margin-top:34px;
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:1.02rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold-deep);
+    border:1px solid var(--gold);
+    padding:14px 34px;
+    background:linear-gradient(currentColor,currentColor);
+    background-size:0% 1px;background-position:0 100%;background-repeat:no-repeat;
+    transition:color .5s ease, background-size .5s ease;
+  }
+  .cta:hover,.cta:focus-visible{color:var(--ink);background-size:100% 1px;}
+
+  /* ---- Sections ---- */
+  section{padding:64px 0;}
+  .sec-head{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:clamp(1.7rem,4.5vw,2.35rem);
+    line-height:1.15;margin:0 0 34px;color:var(--ink);
+  }
+  .sec-head .kicker{
+    display:block;font-family:'EB Garamond',serif;font-weight:500;
+    font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--leather);margin-bottom:12px;
+  }
+  p{margin:0 0 20px;}
+  .muted{color:var(--leather);}
+
+  /* ---- Drop cap with gold leaf ---- */
+  .gold-leaf{
+    font-family:'Cormorant Garamond',serif;font-weight:700;
+    float:left;
+    font-size:4.1rem;line-height:.78;
+    padding:6px 14px 0 0;
+    background:linear-gradient(140deg,#7c5a12 0%,#d4af37 30%,#f6e39a 50%,#c99a2b 72%,#8a651a 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    -webkit-box-decoration-break:clone;box-decoration-break:clone;
+  }
+
+  /* ---- Quote ---- */
+  blockquote{
+    margin:0;text-align:center;
+    font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:400;
+    font-size:clamp(1.5rem,4vw,2.05rem);
+    line-height:1.4;color:var(--ink);
+    max-width:30ch;margin-left:auto;margin-right:auto;
+  }
+  blockquote .mark{color:var(--gold);font-style:normal;}
+  cite{
+    display:block;margin-top:22px;
+    font-family:'EB Garamond',serif;font-style:normal;font-weight:500;
+    font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--leather);
+  }
+
+  /* ---- Catalogue list ---- */
+  .catalogue{list-style:none;margin:0;padding:0;}
+  .catalogue li{
+    display:flex;align-items:baseline;gap:14px;
+    padding:16px 0;border-bottom:1px solid var(--hair);
+  }
+  .catalogue li:first-child{border-top:1px solid var(--hair);}
+  .cat-name{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:1.3rem;color:var(--ink);white-space:nowrap;
+  }
+  .cat-name a{color:var(--ink);}
+  .cat-name a:hover{color:var(--gold-deep);}
+  .cat-dots{flex:1;border-bottom:1px dotted var(--hair);transform:translateY(-4px);}
+  .cat-date{font-size:.9rem;color:var(--leather);letter-spacing:.04em;white-space:nowrap;}
+
+  /* ---- Collection / stats ---- */
+  .stats{
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:14px 46px;margin:0;padding:0;list-style:none;
+  }
+  .stats li{text-align:center;}
+  .stats .num{
+    display:block;font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:clamp(2.2rem,6vw,3rem);line-height:1;
+    background:linear-gradient(140deg,#8a651a 0%,#d4af37 45%,#f6e39a 60%,#a8801f 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+  }
+  .stats .lbl{
+    display:block;margin-top:8px;font-size:.72rem;
+    letter-spacing:.22em;text-transform:uppercase;color:var(--leather);
+  }
+
+  /* ---- Access / request form ---- */
+  .access{text-align:center;}
+  .access p{max-width:46ch;margin:0 auto 28px;}
+  .request{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:12px;
+    max-width:520px;margin:0 auto;
+  }
+  .request input{
+    flex:1 1 240px;min-width:0;
+    font-family:'EB Garamond',serif;font-size:1.05rem;
+    color:var(--ink);background:transparent;
+    border:none;border-bottom:1px solid var(--leather);
+    padding:12px 4px;
+  }
+  .request input::placeholder{color:var(--leather);}
+  .request input:focus{outline:none;border-bottom-color:var(--gold);}
+  .request button{
+    font-family:'Cormorant Garamond',serif;font-weight:600;
+    font-size:1rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold-deep);background:transparent;cursor:pointer;
+    border:1px solid var(--gold);padding:12px 28px;
+    transition:color .5s ease;
+  }
+  .request button:hover{color:var(--ink);}
+  .note{margin-top:22px;font-size:.86rem;color:var(--leather);font-style:italic;}
+
+  /* ---- Footer ---- */
+  footer{padding:56px 0 72px;text-align:center;}
+  footer .wordmark{display:inline-block;margin-bottom:18px;background:none;}
+  .foot-links{
+    display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px;
+    list-style:none;margin:0 0 26px;padding:0;
+  }
+  .foot-links a{font-size:.9rem;color:var(--leather);letter-spacing:.04em;}
+  .foot-links a:hover{color:var(--gold-deep);}
+  .colophon{font-size:.82rem;color:var(--leather);line-height:1.7;max-width:44ch;margin:22px auto 0;}
+  .colophon .g{color:var(--gold-deep);}
+
+  /* ---- Entrance: light slowly illuminating the page ---- */
+  @keyframes reveal{
+    from{opacity:0;transform:translateY(10px);}
+    to{opacity:1;transform:none;}
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .reveal{opacity:0;animation:reveal 1.4s ease forwards;}
+    .d1{animation-delay:.05s;} .d2{animation-delay:.28s;}
+    .d3{animation-delay:.5s;} .d4{animation-delay:.72s;}
+    .d5{animation-delay:.94s;}
+  }
+
+  @media (max-width:640px){
+    body{font-size:18px;}
+    .topbar{flex-direction:column;gap:16px;}
+    nav ul{gap:20px;flex-wrap:wrap;justify-content:center;}
+    .hero{padding:56px 0 46px;}
+    .gold-leaf{font-size:3.3rem;}
+    .catalogue li{flex-wrap:wrap;}
+    .cat-dots{display:none;}
+    .cat-date{margin-left:auto;}
+    .stats{gap:24px 34px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="topbar reveal d1">
+    <a href="#top" class="wordmark">Aurelia <span class="g">Archives</span></a>
+    <nav aria-label="Primary">
+      <ul>
+        <li><a href="#collection">Collection</a></li>
+        <li><a href="#provenance">Provenance</a></li>
+        <li><a href="#access">Access</a></li>
+      </ul>
+    </nav>
+  </div>
+  <div class="hairline reveal d1"></div>
+</header>
+
+<main class="wrap" id="top">
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow reveal d2">A digital repository for rare manuscripts</p>
+    <h1 id="hero-title" class="reveal d2">Aurelia<span class="amp">Archives</span></h1>
+    <p class="lede reveal d3">Where the fragile hand of the scribe is kept whole — <em>every leaf, every gold-leaf initial, every margin note</em> — preserved in light and set in type.</p>
+    <a href="#access" class="cta reveal d4">Request access to the reading room</a>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❧</span></div>
+
+  <!-- ETHOS -->
+  <section id="ethos">
+    <h2 class="sec-head reveal"><span class="kicker">The Keeping</span>On the dignity of the page</h2>
+    <p class="reveal"><span class="gold-leaf">W</span>e hold that a manuscript is not merely information to be retrieved, but an object to be revered. Each volume in the Aurelia collection is captured at archival resolution, its vellum grain, its iron-gall ink, and the burnished gleam of its illumination rendered with the fidelity the original deserves. Nothing is flattened for speed. The interface recedes so the page may speak.</p>
+    <p class="reveal muted">Our method is patient by design. Scans are calibrated against the physical leaf; colour is managed under controlled light; provenance is recorded alongside the image. What you read here is the manuscript as it endures — quiet, permanent, and true.</p>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❦</span></div>
+
+  <!-- QUOTE -->
+  <section>
+    <blockquote class="reveal">
+      <span class="mark">“</span>
+      A book is a garden carried in the pocket; an archive is a garden kept in perpetuity.
+      <span class="mark">”</span>
+      <cite>— Motto of the Aurelia reading room</cite>
+    </blockquote>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❧</span></div>
+
+  <!-- COLLECTION -->
+  <section id="collection">
+    <h2 class="sec-head reveal"><span class="kicker">Selected leaves</span>From the collection</h2>
+    <ul class="catalogue reveal">
+      <li>
+        <span class="cat-name"><a href="#access">Codex Aurelianus</a></span>
+        <span class="cat-dots" aria-hidden="true"></span>
+        <span class="cat-date">c. 1180 · Illuminated Gospels</span>
+      </li>
+      <li>
+        <span class="cat-name"><a href="#access">The Verdant Herbal</a></span>
+        <span class="cat-dots" aria-hidden="true"></span>
+        <span class="cat-date">c. 1440 · Botanical treatise</span>
+      </li>
+      <li>
+        <span class="cat-name"><a href="#access">Book of Hours, Use of Aurelia</a></span>
+        <span class="cat-dots" aria-hidden="true"></span>
+        <span class="cat-date">c. 1475 · Devotional</span>
+      </li>
+      <li>
+        <span class="cat-name"><a href="#access">Chronicle of the Amber Coast</a></span>
+        <span class="cat-dots" aria-hidden="true"></span>
+        <span class="cat-date">c. 1520 · Chronicle</span>
+      </li>
+    </ul>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❦</span></div>
+
+  <!-- PROVENANCE -->
+  <section id="provenance">
+    <h2 class="sec-head reveal"><span class="kicker">Provenance</span>A chain of custody, unbroken</h2>
+    <p class="reveal"><span class="gold-leaf">E</span>very object in the archive carries its own record of ownership, conservation, and capture. We publish the full lineage of each manuscript — from the scriptorium that first set quill to parchment, through the libraries and collectors who sheltered it, to the bench where our imaging was performed. Trust, for us, is not a promise; it is a document.</p>
+    <p class="reveal muted">Should a leaf ever be returned to its source community, the digital record follows, credited and attributed in perpetuity.</p>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❧</span></div>
+
+  <!-- STATS -->
+  <section id="by-the-numbers">
+    <ul class="stats reveal">
+      <li><span class="num">12,480</span><span class="lbl">Leaves digitised</span></li>
+      <li><span class="num">316</span><span class="lbl">Manuscripts</span></li>
+      <li><span class="num">8</span><span class="lbl">Centuries spanned</span></li>
+      <li><span class="num">600</span><span class="lbl">DPI archival</span></li>
+    </ul>
+  </section>
+
+  <div class="rule" aria-hidden="true"><span class="orn">❦</span></div>
+
+  <!-- ACCESS -->
+  <section id="access" class="access">
+    <h2 class="sec-head reveal" style="text-align:center"><span class="kicker">Access</span>Enter the reading room</h2>
+    <p class="reveal">The collection is open to scholars, students, and the simply curious. Leave your address and the keeper of the archive will send you the key.</p>
+    <form class="request reveal" onsubmit="return false;">
+      <label for="email" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">Email address</label>
+      <input id="email" type="email" placeholder="your.name@institution.edu" autocomplete="email">
+      <button type="submit">Request access</button>
+    </form>
+    <p class="note reveal">No account to manage. No feed to scroll. Only the page, and the light upon it.</p>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="hairline reveal" style="margin-bottom:44px;"></div>
+  <a href="#top" class="wordmark reveal">Aurelia <span class="g">Archives</span></a>
+  <ul class="foot-links reveal">
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#provenance">Provenance</a></li>
+    <li><a href="#access">Access</a></li>
+    <li><a href="#top">The Keeping</a></li>
+  </ul>
+  <p class="colophon reveal">Set in <span class="g">Cormorant Garamond</span> &amp; <span class="g">EB Garamond</span>. Preserved in iron-gall ink and burnished gold. © MMXXV Aurelia Archives — a repository for the permanence of recorded knowledge.</p>
+</footer>
+
+<script>
+  // Extremely subtle: reveal-on-scroll for sections below the fold,
+  // respecting prefers-reduced-motion (no animation at all when reduced).
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var items = document.querySelectorAll('main section, footer, .rule');
+    if(reduce || !('IntersectionObserver' in window)){
+      items.forEach(function(el){ el.style.opacity = 1; });
+      return;
+    }
+    items.forEach(function(el){
+      if(el.classList.contains('reveal')) return; // hero already animated
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.style.opacity = 1;
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    // Apply a gentle fade to non-hero reveal elements as they enter.
+    document.querySelectorAll('main .reveal, footer .reveal').forEach(function(el){
+      var cs = getComputedStyle(el);
+      // Hero elements (d1-d5) already animate via keyframes; skip them.
+      if(el.classList.contains('d1')||el.classList.contains('d2')||el.classList.contains('d3')||el.classList.contains('d4')||el.classList.contains('d5')) return;
+      el.style.opacity = 0;
+      el.style.transition = 'opacity 1.2s ease';
+      io.observe(el);
+    });
+  })();
+</script>
+
+</body>
+</html>

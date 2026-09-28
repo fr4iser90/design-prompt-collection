@@ -1,0 +1,20 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 5900
+review_score: 8
+review_summary: "Strong atmospheric moodboard hero with expressive serif type and bioluminescent glow that perfectly captures the 'nocturnal botanicals' brief."
+reviewed_at: "2026-09-28T06:23:27.796Z"
+review_issues:
+  - "Background is very dark, potentially obscuring subtle texture details"
+  - "Hero text glow effect is effective but could be slightly more refined to avoid looking like a standard neon effect"

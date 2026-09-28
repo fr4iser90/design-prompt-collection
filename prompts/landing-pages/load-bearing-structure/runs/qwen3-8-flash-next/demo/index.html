@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Load Bearing — Structural Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#003366;
+  --blue-deep:#002347;
+  --ink:#ffffff;
+  --orange:#ff9900;
+  --grey:#e0e0e0;
+  --guide:rgba(224,224,224,.16);
+  --guide2:rgba(224,224,224,.30);
+  --sans:'IBM Plex Sans','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --mono:'IBM Plex Mono','Consolas','Courier New',monospace;
+  --gut:clamp(18px,4vw,48px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background-color:var(--blue);
+  background-image:
+    radial-gradient(rgba(255,255,255,.055) 1px, transparent 1.4px),
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:28px 28px, 140px 140px, 140px 140px;
+  background-position:center;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+.mono{font-family:var(--mono)}
+a{color:inherit;text-decoration:none}
+
+/* ---------- shared blueprint line helpers ---------- */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.15s cubic-bezier(.6,0,.2,1),stroke .35s ease,stroke-width .35s ease}
+.is-draw .draw{stroke-dashoffset:0}
+.draw:nth-of-type(1){transition-delay:.05s}
+.draw:nth-of-type(2){transition-delay:.15s}
+.draw:nth-of-type(3){transition-delay:.25s}
+.draw:nth-of-type(4){transition-delay:.35s}
+.draw:nth-of-type(5){transition-delay:.45s}
+.draw:nth-of-type(6){transition-delay:.55s}
+.draw:nth-of-type(7){transition-delay:.65s}
+.draw:nth-of-type(8){transition-delay:.75s}
+.draw:nth-of-type(9){transition-delay:.85s}
+.draw:nth-of-type(10){transition-delay:.95s}
+.draw:nth-of-type(11){transition-delay:1.05s}
+.draw:nth-of-type(12){transition-delay:1.15s}
+.node{fill:var(--orange);opacity:0;transition:opacity .5s ease}
+.is-draw .node{opacity:1}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- section chrome ---------- */
+section{
+  position:relative;
+  scroll-snap-align:start;
+  min-height:100vh;
+  padding:clamp(96px,13vh,140px) var(--gut) clamp(56px,8vh,80px);
+  border-top:1px solid var(--guide);
+  display:flex;flex-direction:column;justify-content:center;
+}
+#hero{border-top:none;scroll-snap-align:start}
+.sec-tag{
+  position:absolute;top:clamp(26px,4vh,44px);left:var(--gut);
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;
+  color:var(--grey);display:flex;align-items:center;gap:.7em;
+}
+.sec-tag::before{content:"";width:26px;height:1px;background:var(--orange)}
+.corner{position:absolute;top:clamp(26px,4vh,44px);right:var(--gut);font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;color:var(--guide2)}
+
+/* ---------- header ---------- */
+.topbar{
+  position:fixed;inset:0 0 auto 0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px var(--gut);
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;
+  background:rgba(0,42,84,.82);backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--guide);
+}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:600}
+.brand svg{width:22px;height:22px;flex:none}
+.brand .mark{color:var(--orange)}
+.nav{display:flex;gap:clamp(16px,3vw,34px);color:var(--grey)}
+.nav a{position:relative;padding:4px 0;transition:color .3s}
+.nav a:hover{color:var(--orange)}
+.nav a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--orange);transition:width .3s}
+.nav a:hover::after{width:100%}
+.status{display:flex;align-items:center;gap:8px;color:var(--grey)}
+.status .led{width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 0 0 rgba(255,153,0,.6);animation:led 2.4s infinite}
+@keyframes led{0%{box-shadow:0 0 0 0 rgba(255,153,0,.55)}70%{box-shadow:0 0 0 7px rgba(255,153,0,0)}100%{box-shadow:0 0 0 0 rgba(255,153,0,0)}}
+@media(max-width:820px){.nav{display:none}.status{display:none}}
+
+/* ---------- hero ---------- */
+#hero{justify-content:flex-start;padding-top:clamp(120px,17vh,180px)}
+.hero-grid{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,56px);
+  align-items:center;flex:1;
+}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.28em;color:var(--orange);margin-bottom:22px;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--orange)}
+h1{
+  font-weight:700;line-height:.92;letter-spacing:-.02em;
+  font-size:clamp(3rem,9vw,7.2rem);text-transform:uppercase;
+}
+h1 .thin{display:block;font-weight:300;color:var(--grey)}
+h1 .o{color:var(--orange)}
+.hero-lead{max-width:44ch;margin-top:26px;color:var(--grey);font-weight:300;font-size:clamp(1rem,1.4vw,1.15rem)}
+.hero-lead b{color:var(--ink);font-weight:500}
+.hero-meta{display:flex;flex-wrap:wrap;gap:14px 28px;margin-top:30px;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;color:var(--grey)}
+.hero-meta span{display:flex;align-items:center;gap:8px}
+.hero-meta span::before{content:"";width:6px;height:6px;border:1px solid var(--orange);transform:rotate(45deg)}
+
+/* hero diagram */
+.hero-fig{position:relative;width:100%}
+.hero-fig svg{width:100%;height:auto;display:block;overflow:visible}
+.truss-line{stroke:var(--ink);stroke-width:1.6;fill:none;stroke-linecap:round}
+.truss-line.beam{stroke-width:2.4}
+.truss-line.dim{stroke:var(--grey);stroke-width:1;stroke-dasharray:4 4}
+.node-ring{fill:none;stroke:var(--orange);stroke-width:1.4}
+.node-hit{fill:transparent;cursor:help}
+.joint-lbl{font-family:var(--mono);font-size:10px;fill:var(--grey);opacity:0;transition:opacity .4s ease}
+.is-draw .joint-lbl{opacity:1}
+.fig-cap{margin-top:14px;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:var(--grey);display:flex;justify-content:space-between;border-top:1px solid var(--guide);padding-top:8px}
+
+/* hover highlight on hero truss */
+.hero-fig .member{transition:stroke .3s ease,stroke-width .3s ease}
+.hero-fig:hover .member{stroke:var(--orange)}
+.hero-fig:hover .node-ring{stroke-width:2}
+
+/* scroll cue */
+.scroll-cue{position:absolute;left:var(--gut);bottom:clamp(20px,4vh,40px);font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;color:var(--grey);display:flex;align-items:center;gap:12px;z-index:3}
+.scroll-cue .bar{width:1px;height:40px;background:var(--guide2);position:relative;overflow:hidden}
+.scroll-cue .bar::after{content:"";position:absolute;top:-40px;left:0;width:1px;height:40px;background:var(--orange);animation:drop 2.2s cubic-bezier(.6,0,.2,1) infinite}
+@keyframes drop{0%{top:-40px}60%,100%{top:40px}}
+
+/* ---------- stats ---------- */
+#stats{min-height:auto;padding-block:clamp(56px,9vh,90px)}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--guide2);border-bottom:1px solid var(--guide2)}
+.stat{padding:34px 24px;border-left:1px solid var(--guide);position:relative}
+.stat:first-child{border-left:none}
+.stat .num{font-weight:700;font-size:clamp(2rem,4.4vw,3.4rem);line-height:1;letter-spacing:-.02em}
+.stat .num .suf{color:var(--orange);font-size:.5em;vertical-align:top;margin-left:2px}
+.stat .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;color:var(--grey);margin-top:12px}
+@media(max-width:760px){.stat-row{grid-template-columns:repeat(2,1fr)}.stat:nth-child(3){border-left:none}.stat:nth-child(3),.stat:nth-child(4){border-top:1px solid var(--guide)}}
+
+/* ---------- projects ---------- */
+.sec-head{max-width:900px;margin-bottom:clamp(30px,5vh,56px)}
+.sec-head h2{font-weight:700;font-size:clamp(1.9rem,4.6vw,3.4rem);line-height:1;text-transform:uppercase;letter-spacing:-.01em}
+.sec-head p{color:var(--grey);font-weight:300;margin-top:16px;max-width:52ch}
+.proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,24px)}
+.proj{position:relative;border:1px solid var(--guide2);background:rgba(0,35,71,.35);overflow:hidden;transition:border-color .4s ease,background .4s ease}
+.proj:hover{border-color:var(--orange);background:rgba(0,20,42,.7)}
+.proj-fig{position:relative;aspect-ratio:4/3;padding:22px}
+.proj-fig svg{width:100%;height:100%;display:block}
+.pl{stroke:var(--ink);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.pl.load{stroke:var(--orange);stroke-width:2.4}
+.pl.g{stroke:var(--grey);stroke-width:1;stroke-dasharray:3 4}
+.proj:hover .pl{stroke:var(--grey)}
+.proj:hover .pl.load{stroke:var(--orange)}
+.tip{
+  position:absolute;left:14px;right:14px;bottom:14px;
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;color:var(--grey);
+  background:rgba(0,20,42,.9);border:1px solid var(--orange);
+  padding:10px 12px;opacity:0;transform:translateY(8px);transition:opacity .35s ease,transform .35s ease;pointer-events:none;
+}
+.proj:hover .tip{opacity:1;transform:none}
+.proj-foot{border-top:1px solid var(--guide);padding:16px 20px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.proj-foot .name{font-weight:600;letter-spacing:.02em}
+.proj-foot .ref{font-family:var(--mono);font-size:.66rem;color:var(--grey)}
+.proj-foot .ref b{color:var(--orange);font-weight:500}
+@media(max-width:900px){.proj-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.proj-grid{grid-template-columns:1fr}}
+
+/* ---------- process ---------- */
+.proc-wrap{position:relative;margin-top:20px}
+.proc-beam{position:relative;height:2px;background:var(--guide2);margin:70px 0 40px}
+.proc-beam .fill{position:absolute;left:0;top:0;height:2px;background:var(--orange);width:0;transition:width 1.4s cubic-bezier(.6,0,.2,1)}
+.is-draw .proc-beam .fill{width:100%}
+.proc-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.step{position:relative;padding-top:0}
+.step .marker{position:absolute;top:-79px;left:0;width:16px;height:16px;border:2px solid var(--orange);background:var(--blue);transform:rotate(45deg)}
+.step .marker::after{content:"";position:absolute;inset:3px;background:var(--orange);opacity:0;transition:opacity .4s ease}
+.is-draw .step .marker::after{opacity:1}
+.step .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--orange)}
+.step h3{font-weight:600;font-size:1.15rem;margin:12px 0 8px;text-transform:uppercase;letter-spacing:.02em}
+.step p{color:var(--grey);font-weight:300;font-size:.9rem}
+@media(max-width:760px){.proc-beam{display:none}.proc-steps{grid-template-columns:1fr;gap:26px}.step{border-left:1px solid var(--guide2);padding-left:22px}.step .marker{top:6px;left:-9px}}
+
+/* ---------- footer ---------- */
+footer{
+  scroll-snap-align:start;
+  padding:clamp(90px,14vh,150px) var(--gut) clamp(40px,6vh,70px);
+  border-top:1px solid var(--guide2);
+  background:var(--blue-deep);
+  display:flex;flex-direction:column;justify-content:center;min-height:100vh;position:relative;
+}
+.foot-big{font-weight:700;text-transform:uppercase;font-size:clamp(2.4rem,8vw,6rem);line-height:.94;letter-spacing:-.02em}
+.foot-big .o{color:var(--orange)}
+.foot-actions{margin-top:34px;display:flex;flex-wrap:wrap;gap:18px}
+.btn{
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:15px 26px;border:1px solid var(--orange);color:var(--orange);
+  transition:background .3s ease,color .3s ease;
+}
+.btn:hover{background:var(--orange);color:var(--blue)}
+.btn.ghost{border-color:var(--guide2);color:var(--grey)}
+.btn.ghost:hover{border-color:var(--ink);color:var(--ink);background:transparent}
+.foot-cols{margin-top:clamp(50px,9vh,90px);display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:30px;border-top:1px solid var(--guide);padding-top:34px}
+.foot-cols h4{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;color:var(--orange);margin-bottom:16px}
+.foot-cols p,.foot-cols a{display:block;color:var(--grey);font-weight:300;font-size:.92rem;margin-bottom:8px;transition:color .3s}
+.foot-cols a:hover{color:var(--ink)}
+.foot-note{margin-top:40px;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--guide2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+@media(max-width:760px){.foot-cols{grid-template-columns:1fr 1fr}.foot-cols .c1{grid-column:1/-1}}
+
+/* ---------- responsive hero ---------- */
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:36px}
+  .hero-fig{order:-1;max-width:520px}
+  .joint-lbl{display:none}
+  .scroll-cue{display:none}
+}
+
+/* ---------- reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-snap-type:none}
+  *{animation:none!important;transition:none!important}
+  .draw{stroke-dashoffset:0!important}
+  .node,.joint-lbl,.step .marker::after{opacity:1!important}
+  .proc-beam .fill{width:100%!important}
+  .reveal{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#hero" aria-label="Load Bearing home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M2 20h20M4 20V8l8-5 8 5v12M4 8h16M8 20v-6h8v6"/>
+    </svg>
+    <span>LOAD<span class="mark">·</span>BEARING</span>
+  </a>
+  <nav class="nav">
+    <a href="#hero">Overview</a>
+    <a href="#stats">Capability</a>
+    <a href="#projects">Projects</a>
+    <a href="#process">Process</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <div class="status"><span class="led"></span> REV 04 · 2024</div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="sec-tag">SHEET 01 / OVERVIEW</div>
+    <div class="corner">SCALE 1:100 · N.T.S.</div>
+
+    <div class="hero-grid">
+      <div class="reveal">
+        <div class="eyebrow">STRUCTURAL ENGINEERING · EST. 1998</div>
+        <h1>Load<span class="thin">Bearing</span><span class="o">.</span></h1>
+        <p class="hero-lead">We design the <b>skeleton</b> that holds everything else up — steel, concrete and timber resolved into precise, verified geometry. Nothing decorative. Everything measured.</p>
+        <div class="hero-meta">
+          <span>STEEL · CONCRETE · TIMBER</span>
+          <span>SEISMIC &amp; WIND</span>
+          <span>FEA / BIM</span>
+        </div>
+      </div>
+
+      <div class="hero-fig" data-draw>
+        <svg viewBox="0 0 620 360" role="img" aria-label="Steel truss diagram">
+          <!-- ground hatching -->
+          <line class="draw truss-line dim" pathLength="1" x1="40" y1="322" x2="580" y2="322"/>
+          <g stroke="#e0e0e0" stroke-width="1">
+            <line x1="70" y1="322" x2="60" y2="334"/><line x1="110" y1="322" x2="100" y2="334"/>
+            <line x1="150" y1="322" x2="140" y2="334"/><line x1="190" y1="322" x2="180" y2="334"/>
+            <line x1="230" y1="322" x2="220" y2="334"/><line x1="270" y1="322" x2="260" y2="334"/>
+            <line x1="310" y1="322" x2="300" y2="334"/><line x1="350" y1="322" x2="340" y2="334"/>
+            <line x1="390" y1="322" x2="380" y2="334"/><line x1="430" y1="322" x2="420" y2="334"/>
+            <line x1="470" y1="322" x2="460" y2="334"/><line x1="510" y1="322" x2="500" y2="334"/>
+            <line x1="550" y1="322" x2="540" y2="334"/>
+          </g>
+          <!-- dimension line -->
+          <line class="draw truss-line dim" pathLength="1" x1="60" y1="30" x2="560" y2="30"/>
+          <line class="draw truss-line dim" pathLength="1" x1="60" y1="24" x2="60" y2="36"/>
+          <line class="draw truss-line dim" pathLength="1" x1="560" y1="24" x2="560" y2="36"/>
+          <text x="310" y="20" text-anchor="middle" class="joint-lbl">SPAN 24.0 m</text>
+
+          <!-- truss members (drawn) -->
+          <line class="draw truss-line beam member" pathLength="1" x1="60" y1="180" x2="560" y2="180"/>
+          <line class="draw truss-line beam member" pathLength="1" x1="60" y1="180" x2="160" y2="80"/>
+          <line class="draw truss-line beam member" pathLength="1" x1="160" y1="80" x2="260" y2="80"/>
+          <line class="draw truss-line beam member" pathLength="1" x1="260" y1="80" x2="360" y2="80"/>
+          <line class="draw truss-line beam member" pathLength="1" x1="360" y1="80" x2="460" y2="80"/>
+          <line class="draw truss-line beam member" pathLength="1" x1="460" y1="80" x2="560" y2="180"/>
+          <line class="draw truss-line member" pathLength="1" x1="60" y1="180" x2="160" y2="80"/>
+          <line class="draw truss-line member" pathLength="1" x1="160" y1="80" x2="160" y2="180"/>
+          <line class="draw truss-line member" pathLength="1" x1="160" y1="180" x2="260" y2="80"/>
+          <line class="draw truss-line member" pathLength="1" x1="260" y1="80" x2="260" y2="180"/>
+          <line class="draw truss-line member" pathLength="1" x1="260" y1="180" x2="360" y2="80"/>
+          <line class="draw truss-line member" pathLength="1" x1="360" y1="80" x2="360" y2="180"/>
+          <line class="draw truss-line member" pathLength="1" x1="360" y1="180" x2="460" y2="80"/>
+          <line class="draw truss-line member" pathLength="1" x1="460" y1="80" x2="460" y2="180"/>
+          <line class="draw truss-line member" pathLength="1" x1="460" y1="180" x2="560" y2="80"/>
+
+          <!-- nodes -->
+          <g>
+            <circle class="node node-ring" cx="60" cy="180" r="6"/>
+            <circle class="node node-ring" cx="160" cy="80" r="6"/>
+            <circle class="node node-ring" cx="260" cy="80" r="6"/>
+            <circle class="node node-ring" cx="360" cy="80" r="6"/>
+            <circle class="node node-ring" cx="460" cy="80" r="6"/>
+            <circle class="node node-ring" cx="560" cy="180" r="6"/>
+            <circle class="node" cx="160" cy="180" r="4"/>
+            <circle class="node" cx="260" cy="180" r="4"/>
+            <circle class="node" cx="360" cy="180" r="4"/>
+            <circle class="node" cx="460" cy="180" r="4"/>
+          </g>
+          <!-- joint labels -->
+          <text class="joint-lbl" x="44" y="176">A</text>
+          <text class="joint-lbl" x="156" y="70">B</text>
+          <text class="joint-lbl" x="256" y="70">C</text>
+          <text class="joint-lbl" x="356" y="70">D</text>
+          <text class="joint-lbl" x="456" y="70">E</text>
+          <text class="joint-lbl" x="566" y="176">F</text>
+        </svg>
+        <div class="fig-cap"><span>FIG. 01 — WARREN TRUSS, PRATT VARIANT</span><span>MAX DEFLECTION 12.4 mm</span></div>
+      </div>
+    </div>
+
+    <div class="scroll-cue"><span class="bar"></span> SCROLL / SHEET 02</div>
+  </section>
+
+  <!-- STATS -->
+  <section id="stats">
+    <div class="sec-tag">SHEET 02 / CAPABILITY</div>
+    <div class="corner">AGGREGATE DATA</div>
+    <div class="stat-row">
+      <div class="stat reveal"><div class="num" data-count="1240">0</div><div class="lbl">PROJECTS DELIVERED</div></div>
+      <div class="stat reveal"><div class="num"><span data-count="4.8" data-dec="1">0</span><span class="suf">M m²</span></div><div class="lbl">STRUCTURE ANALYSED</div></div>
+      <div class="stat reveal"><div class="num" data-count="19">0</div><div class="lbl">YEARS IN PRACTICE</div></div>
+      <div class="stat reveal"><div class="num"><span data-count="100">0</span><span class="suf">%</span></div><div class="lbl">CODE COMPLIANCE</div></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="sec-tag">SHEET 03 / PROJECTS</div>
+    <div class="corner">HOVER / TAP TO INSPECT</div>
+
+    <div class="sec-head reveal">
+      <h2>Selected Work</h2>
+      <p>Each structure is annotated with its governing load path. Hover a drawing to reveal the critical members and their design values.</p>
+    </div>
+
+    <div class="proj-grid">
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="20" y1="160" x2="220" y2="160"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="160" x2="60" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="180" y1="160" x2="180" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="40" x2="180" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="70" x2="180" y2="70"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="100" x2="180" y2="100"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="130" x2="180" y2="130"/>
+            <!-- load-bearing core -->
+            <line class="draw pl load" pathLength="1" x1="118" y1="160" x2="118" y2="40"/>
+            <line class="draw pl load" pathLength="1" x1="122" y1="160" x2="122" y2="40"/>
+            <rect class="draw pl" pathLength="1" x="112" y="34" width="16" height="10"/>
+          </svg>
+          <div class="tip">CORE SHEAR WALL · REBAR YIELD 500 MPa · Axial 12.4 MN</div>
+        </div>
+        <div class="proj-foot"><span class="name">Meridian Tower</span><span class="ref">REF <b>LB-221</b></span></div>
+      </article>
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="16" y1="150" x2="224" y2="150"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="150" x2="30" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="210" y1="150" x2="210" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="110" x2="210" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="110" x2="70" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="70" y1="50" x2="120" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="50" x2="170" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="170" y1="50" x2="210" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="70" y1="50" x2="70" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="50" x2="120" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="170" y1="50" x2="170" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="70" y1="110" x2="120" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="110" x2="170" y2="50"/>
+            <line class="draw pl load" pathLength="1" x1="30" y1="110" x2="120" y2="50"/>
+            <line class="draw pl load" pathLength="1" x1="210" y1="110" x2="120" y2="50"/>
+          </svg>
+          <div class="tip">TOP CHORD · S460 STEEL · TENSION 380 kN · Defl. 18 mm</div>
+        </div>
+        <div class="proj-foot"><span class="name">Cantilever Deck</span><span class="ref">REF <b>LB-118</b></span></div>
+      </article>
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="20" y1="150" x2="220" y2="150"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="150" x2="40" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="200" y1="150" x2="200" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="110" x2="200" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="110" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="40" x2="200" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="110" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="180" y1="110" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="110" x2="100" y2="72"/>
+            <line class="draw pl" pathLength="1" x1="100" y1="72" x2="140" y2="72"/>
+            <line class="draw pl" pathLength="1" x1="140" y1="72" x2="180" y2="110"/>
+            <line class="draw pl" pathLength="1" x1="100" y1="72" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="140" y1="72" x2="120" y2="40"/>
+            <!-- tie beam -->
+            <line class="draw pl load" pathLength="1" x1="40" y1="110" x2="200" y2="110"/>
+          </svg>
+          <div class="tip">TIE BEAM · S355 · TENSION 210 kN · Uplift resisted</div>
+        </div>
+        <div class="proj-foot"><span class="name">Vaulted Pavilion</span><span class="ref">REF <b>LB-309</b></span></div>
+      </article>
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="20" y1="150" x2="220" y2="150"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="150" x2="40" y2="30"/>
+            <line class="draw pl" pathLength="1" x1="200" y1="150" x2="200" y2="30"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="30" x2="200" y2="30"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="60" x2="200" y2="60"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="90" x2="200" y2="90"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="120" x2="200" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="60" x2="200" y2="90"/>
+            <line class="draw pl" pathLength="1" x1="200" y1="60" x2="40" y2="90"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="90" x2="200" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="200" y1="90" x2="40" y2="120"/>
+            <!-- base slab -->
+            <line class="draw pl load" pathLength="1" x1="20" y1="150" x2="220" y2="150"/>
+            <line class="draw pl load" pathLength="1" x1="20" y1="158" x2="220" y2="158"/>
+          </svg>
+          <div class="tip">RAFT FOUNDATION · C40/50 CONCRETE · 620 kN/m² bearing</div>
+        </div>
+        <div class="proj-foot"><span class="name">Deep Raft Base</span><span class="ref">REF <b>LB-077</b></span></div>
+      </article>
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="16" y1="150" x2="224" y2="150"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="150" x2="40" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="200" y1="150" x2="200" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="120" x2="200" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="40" y1="120" x2="60" y2="80"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="80" x2="90" y2="80"/>
+            <line class="draw pl" pathLength="1" x1="90" y1="80" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="40" x2="150" y2="80"/>
+            <line class="draw pl" pathLength="1" x1="150" y1="80" x2="180" y2="80"/>
+            <line class="draw pl" pathLength="1" x1="180" y1="80" x2="200" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="60" y1="80" x2="60" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="90" y1="80" x2="90" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="40" x2="120" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="150" y1="80" x2="150" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="180" y1="80" x2="180" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="90" y1="120" x2="120" y2="40"/>
+            <line class="draw pl" pathLength="1" x1="150" y1="120" x2="120" y2="40"/>
+            <!-- apex node -->
+            <circle class="draw pl load" pathLength="1" cx="120" cy="40" r="6"/>
+          </svg>
+          <div class="tip">APEX NODE · CAST STEEL · AXIAL 940 kN · 210 mm CHS</div>
+        </div>
+        <div class="proj-foot"><span class="name">Truss Apex</span><span class="ref">REF <b>LB-154</b></span></div>
+      </article>
+
+      <article class="proj reveal">
+        <div class="proj-fig" data-draw>
+          <svg viewBox="0 0 240 180">
+            <line class="draw pl g" pathLength="1" x1="20" y1="150" x2="220" y2="150"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="150" x2="30" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="210" y1="150" x2="210" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="120" x2="210" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="120" x2="120" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="50" x2="210" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="30" y1="120" x2="120" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="120" y1="120" x2="210" y2="120"/>
+            <line class="draw pl" pathLength="1" x1="50" y1="120" x2="120" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="70" y1="120" x2="120" y2="76"/>
+            <line class="draw pl" pathLength="1" x1="90" y1="120" x2="120" y2="98"/>
+            <line class="draw pl" pathLength="1" x1="190" y1="120" x2="120" y2="50"/>
+            <line class="draw pl" pathLength="1" x1="170" y1="120" x2="120" y2="76"/>
+            <line class="draw pl" pathLength="1" x1="150" y1="120" x2="120" y2="98"/>
+            <!-- cable -->
+            <line class="draw pl load" pathLength="1" x1="120" y1="50" x2="120" y2="120"/>
+            <line class="draw pl load" pathLength="1" x1="120" y1="50" x2="70" y2="120"/>
+            <line class="draw pl load" pathLength="1" x1="120" y1="50" x2="170" y2="120"/>
+          </svg>
+          <div class="tip">STAY CABLES · 7-WIRE STRAND · PRESTRESS 1.6 GPa</div>
+        </div>
+        <div class="proj-foot"><span class="name">Cable Stay</span><span class="ref">REF <b>LB-240</b></span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process">
+    <div class="sec-tag">SHEET 04 / PROCESS</div>
+    <div class="corner">LOAD PATH → DELIVERY</div>
+
+    <div class="sec-head reveal">
+      <h2>Method</h2>
+      <p>A single continuous beam from first load to final sign-off. Every phase is a verified node.</p>
+    </div>
+
+    <div class="proc-wrap" data-draw>
+      <div class="proc-beam"><span class="fill"></span></div>
+      <div class="proc-steps">
+        <div class="step reveal">
+          <span class="marker"></span>
+          <div class="k">PHASE 01</div>
+          <h3>Analysis</h3>
+          <p>Load cases, geometry and material behaviour modelled before a single line is drawn.</p>
+        </div>
+        <div class="step reveal">
+          <span class="marker"></span>
+          <div class="k">PHASE 02</div>
+          <h3>Design</h3>
+          <p>Member sizing and connection detail resolved to governing codes with margin.</p>
+        </div>
+        <div class="step reveal">
+          <span class="marker"></span>
+          <div class="k">PHASE 03</div>
+          <h3>Detail</h3>
+          <p>Fabrication drawings and schedules issued as verified, dimensioned line work.</p>
+        </div>
+        <div class="step reveal">
+          <span class="marker"></span>
+          <div class="k">PHASE 04</div>
+          <h3>Verify</h3>
+          <p>Site review and structural sign-off close the load path to the ground.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER / CONTACT -->
+<footer id="contact">
+  <div class="sec-tag">SHEET 05 / CONTACT</div>
+  <div class="corner">END OF DRAWING SET</div>
+
+  <div class="reveal">
+    <div class="foot-big">Bring us the<br>load.<span class="o">.</span></div>
+    <div class="foot-actions">
+      <a class="btn" href="mailto:studio@loadbearing.co">Request a review →</a>
+      <a class="btn ghost" href="#projects">View drawing set</a>
+    </div>
+  </div>
+
+  <div class="foot-cols">
+    <div class="c1 reveal">
+      <h4>STUDIO</h4>
+      <p>Load Bearing is a structural engineering practice designing the invisible geometry behind buildings, bridges and public works. Precision over decoration.</p>
+    </div>
+    <div class="reveal">
+      <h4>OFFICE</h4>
+      <p>Unit 14, Ironworks Yard<br>Bristol BS1 4XY<br>United Kingdom</p>
+    </div>
+    <div class="reveal">
+      <h4>CONTACT</h4>
+      <a href="mailto:studio@loadbearing.co">studio@loadbearing.co</a>
+      <a href="tel:+441170000000">+44 117 000 0000</a>
+      <a href="#">LinkedIn ↗</a>
+    </div>
+  </div>
+
+  <div class="foot-note">
+    <span>© 2024 LOAD BEARING · STRUCTURAL ENGINEERS</span>
+    <span>DRAWN BY LB · CHECKED · APPROVED · REV 04</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // draw-in observer for diagrams
+  var drawEls = document.querySelectorAll('[data-draw]');
+  if(reduce){
+    drawEls.forEach(function(el){ el.classList.add('is-draw'); });
+  } else {
+    var dObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('is-draw'); dObs.unobserve(e.target); }
+      });
+    }, {threshold:.25});
+    drawEls.forEach(function(el){ dObs.observe(el); });
+  }
+
+  // reveal observer
+  var revEls = document.querySelectorAll('.reveal');
+  if(reduce){
+    revEls.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var rObs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); rObs.unobserve(e.target); }
+      });
+    }, {threshold:.15});
+    revEls.forEach(function(el){ rObs.observe(el); });
+  }
+
+  // count-up
+  function animateCount(el){
+    var target = parseFloat(el.getAttribute('data-count'));
+    var dec = parseInt(el.getAttribute('data-dec')||'0',10);
+    if(reduce){ el.textContent = target.toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec}); return; }
+    var dur = 1400, start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/dur,1);
+      var eased = 1-Math.pow(1-p,3);
+      var val = target*eased;
+      el.textContent = val.toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec});
+      if(p<1) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec});
+    }
+    requestAnimationFrame(step);
+  }
+  var cObs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ animateCount(e.target); cObs.unobserve(e.target); }
+    });
+  }, {threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(function(el){ cObs.observe(el); });
+})();
+</script>
+</body>
+</html>

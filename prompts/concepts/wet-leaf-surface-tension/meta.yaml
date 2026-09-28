@@ -1,0 +1,27 @@
+id: wet-leaf-surface-tension
+title: "Wet Leaf Surface Tension"
+category: concepts
+tags:
+  - surface-tension
+  - liquid
+  - botanical
+  - nocturnal
+  - reflection
+  - macro
+  - physics
+  - water
+status: polished
+summary: "Macro-view of dark, glossy leaves where water droplets form, merge, and roll off, revealing sharp reflections of moonlight and distorted background colors."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

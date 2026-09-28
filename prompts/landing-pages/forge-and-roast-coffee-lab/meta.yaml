@@ -7,14 +7,17 @@ tags:
   - product
   - industrial
   - landing
-status: polished
+status: draft
 summary: "A dark, industrial coffee-roaster landing page with ember-red accents, hard grid rules, product close-ups, and a quiet scroll sequence."
 preview: preview.svg
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
+default_run: null
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

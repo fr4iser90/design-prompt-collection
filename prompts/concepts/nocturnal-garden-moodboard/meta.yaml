@@ -7,14 +7,17 @@ tags:
   - nocturnal
   - atmosphere
   - brand
-status: polished
+status: draft
 summary: "Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet dark, restrained type specimens."
 preview: preview.svg
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
+default_run: null
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

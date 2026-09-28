@@ -30,10 +30,11 @@ const argv = process.argv.slice(2);
 const skipBuild = argv.includes("--skip-build");
 const passthrough = argv.filter((a) => a !== "--skip-build");
 
-console.log("🚢 ship — full automate: demos → screenshots → pages → checks");
+console.log("🚢 ship — full automate: demos → screenshots → review → pages → checks");
 
 if (!skipBuild) run("ai:build", passthrough);
 run("shots", passthrough.filter((a) => a !== "--force"));
+run("review", ["--missing", ...passthrough.filter((a) => a !== "--force")]);
 run("pages");
 run("build");
 run("check", passthrough);

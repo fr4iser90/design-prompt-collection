@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molten Glass Pour — Liquid Light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0a09;
+    --ink:#f3ece0;
+    --dim:#8a8172;
+    --faint:#4a453b;
+    --amber:#ff9900;
+    --amber-soft:#ffcc00;
+    --line:rgba(243,236,224,.12);
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --serif:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--ink);
+    font-family:var(--sans);line-height:1.5;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  ::selection{background:var(--amber);color:#0b0a09}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;height:100vh;min-height:640px;
+    display:flex;flex-direction:column;
+    overflow:hidden;background:#000;
+  }
+  #gl{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .hero-grad{
+    position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:
+      linear-gradient(90deg,rgba(6,5,4,.86) 0%,rgba(6,5,4,.5) 26%,rgba(6,5,4,0) 52%),
+      radial-gradient(120% 80% at 50% 118%,rgba(255,153,0,.10),transparent 55%),
+      linear-gradient(0deg,rgba(6,5,4,.7),transparent 30%);
+  }
+  .hero-ui{position:relative;z-index:3;display:flex;flex-direction:column;flex:1;pointer-events:none}
+  .hero-ui a,.hero-ui button{pointer-events:auto}
+
+  .topbar{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:clamp(18px,3vw,34px) clamp(20px,4vw,56px);
+    gap:20px;
+  }
+  .wordmark{font-family:var(--mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink)}
+  .wordmark b{color:var(--amber);font-weight:500}
+  .top-meta{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--dim);text-align:right;text-transform:uppercase;line-height:1.9}
+
+  .hero-main{
+    flex:1;display:flex;align-items:flex-end;
+    padding:0 clamp(20px,4vw,56px) clamp(24px,4vw,44px);
+  }
+  .hero-inner{max-width:760px}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--amber);margin-bottom:22px;display:flex;align-items:center;gap:12px;
+  }
+  .eyebrow::before{content:"";width:38px;height:1px;background:var(--amber);display:inline-block}
+  .hero-title{
+    font-family:var(--serif);font-weight:300;
+    font-size:clamp(2.6rem,7.4vw,6.6rem);line-height:.92;letter-spacing:-.02em;
+    font-variation-settings:"opsz" 144;
+  }
+  .hero-title .amber{
+    color:var(--amber);font-style:italic;font-weight:500;
+    text-shadow:0 0 34px rgba(255,153,0,.55),0 0 90px rgba(255,120,0,.28);
+  }
+  .hero-sub{
+    margin-top:26px;max-width:52ch;color:#cfc7b8;font-size:clamp(1rem,1.5vw,1.18rem);
+    font-weight:300;
+  }
+  .hero-sub em{color:var(--ink);font-style:normal;font-weight:500}
+
+  .spec-strip{
+    display:flex;flex-wrap:wrap;gap:0;margin-top:34px;
+    border-top:1px solid var(--line);
+  }
+  .spec{padding:16px 26px 16px 0;margin-right:26px;border-right:1px solid var(--line)}
+  .spec:last-child{border-right:none}
+  .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+  .spec .v{font-family:var(--serif);font-size:1.35rem;font-weight:400;color:var(--ink);margin-top:4px}
+  .spec .v small{font-size:.8rem;color:var(--dim);font-family:var(--mono)}
+
+  .scrollcue{
+    position:absolute;right:clamp(20px,4vw,56px);bottom:clamp(24px,4vw,44px);z-index:4;
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+    display:flex;align-items:center;gap:10px;text-decoration:none;
+  }
+  .scrollcue span{display:inline-block;animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+  /* ---------- CONTENT ---------- */
+  .content{position:relative;z-index:5;background:var(--bg);padding:clamp(60px,10vw,130px) clamp(20px,4vw,56px)}
+  .wrap{max-width:1120px;margin:0 auto}
+  .lead{font-family:var(--serif);font-weight:300;font-size:clamp(1.6rem,3.4vw,2.9rem);line-height:1.18;letter-spacing:-.01em;max-width:22ch}
+  .lead .amber{color:var(--amber);font-style:italic}
+  .divider{height:1px;background:var(--line);margin:clamp(50px,8vw,90px) 0}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(40px,7vw,90px);align-items:start}
+  .section-label{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--amber);margin-bottom:20px}
+  .prose p{color:#b7af9f;font-weight:300;font-size:1.06rem;margin-bottom:18px;max-width:46ch}
+  .prose p strong{color:var(--ink);font-weight:500}
+
+  .readout{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,153,0,.04),transparent)}
+  .readout .row{display:flex;justify-content:space-between;align-items:baseline;padding:15px 20px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+  .readout .row:last-child{border-bottom:none}
+  .readout .row .lbl{color:var(--dim);letter-spacing:.05em}
+  .readout .row .val{color:var(--ink);letter-spacing:.02em}
+  .readout .row .val.hot{color:var(--amber)}
+
+  .coolbar{margin-top:34px}
+  .coolbar .bar{height:14px;border-radius:2px;background:linear-gradient(90deg,#ffffff 0%,#ffdd55 14%,#ff9900 34%,#7a5a2a 60%,rgba(240,248,255,.18) 100%);box-shadow:0 0 24px rgba(255,153,0,.25) inset}
+  .coolbar .scale{display:flex;justify-content:space-between;margin-top:9px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+  .footer{border-top:1px solid var(--line);padding:34px clamp(20px,4vw,56px);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;background:#080706}
+  .footer .fm{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .footer .fm b{color:var(--amber);font-weight:500}
+  .footer .tags{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr;gap:44px}
+    .top-meta{display:none}
+    .spec{padding-right:18px;margin-right:18px}
+    .scrollcue{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .scrollcue span{animation:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<section class="hero" id="hero">
+  <canvas id="gl"></canvas>
+  <div class="hero-grad"></div>
+
+  <div class="hero-ui">
+    <header class="topbar">
+      <div class="wordmark">MOLTEN <b>GLASS</b> POUR</div>
+      <div class="top-meta">WebGL / GLSL<br>Real-time refraction</div>
+    </header>
+
+    <div class="hero-main">
+      <div class="hero-inner">
+        <div class="eyebrow">Fluid Light · Study 01</div>
+        <h1 class="hero-title">Molten<br>Glass <span class="amber">Pour</span></h1>
+        <p class="hero-sub">A slow-motion study of viscous glass falling through space — <em>liquid light</em> cooling from a white-hot core to cold, clear glass, bending the world behind it.</p>
+
+        <div class="spec-strip">
+          <div class="spec"><div class="k">Viscosity</div><div class="v">1000<span style="font-family:var(--mono);font-size:.9rem;color:var(--dim)"> Pa·s</span></div></div>
+          <div class="spec"><div class="k">Refractive Index</div><div class="v">1.52 <small>n</small></div></div>
+          <div class="spec"><div class="k">Core Temp</div><div class="v">1400 <small>°C</small></div></div>
+          <div class="spec"><div class="k">Render</div><div class="v">GLSL <small>shader</small></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a class="scrollcue" href="#study">The Study <span>↓</span></a>
+</section>
+
+<section class="content" id="study">
+  <div class="wrap">
+    <h2 class="lead reveal">The star of the show is not the glass — it is the <span class="amber">light</span> that passes through it.</h2>
+
+    <div class="divider"></div>
+
+    <div class="grid">
+      <div class="prose reveal">
+        <div class="section-label">Behaviour</div>
+        <p>The pour moves like <strong>honey, not water</strong>. A thick, continuous ribbon descends from the ladle, twisting gently on internal currents, its surface tension rounding each drip into a slow, heavy bead.</p>
+        <p>Every object behind the stream is <strong>distorted and magnified</strong> — the refractive index of 1.52 bends the backdrop exactly as real glass would, so the falling liquid reads as a lens rather than a fill.</p>
+        <p>There are no bubbles, no particles — <strong>pure liquid</strong>, lit only by its own heat.</p>
+      </div>
+
+      <div class="reveal">
+        <div class="section-label">Live Readout</div>
+        <div class="readout">
+          <div class="row"><span class="lbl">Source</span><span class="val hot">Ladle · 1400°C</span></div>
+          <div class="row"><span class="lbl">Emission</span><span class="val hot">Emissive core</span></div>
+          <div class="row"><span class="lbl">Refraction</span><span class="val">IOR 1.52 · normal-mapped</span></div>
+          <div class="row"><span class="lbl">Bloom</span><span class="val">Unreal threshold 0.7</span></div>
+          <div class="row"><span class="lbl">Cooling</span><span class="val">White → Amber → Clear</span></div>
+        </div>
+
+        <div class="coolbar">
+          <div class="bar"></div>
+          <div class="scale"><span>1400°</span><span>800°</span><span>400°</span><span>20°</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid">
+      <div class="prose reveal">
+        <div class="section-label">The Cooling Gradient</div>
+        <p>Temperature is mapped to the vertical axis of the flow. At the mouth of the ladle the glass is <strong>pure white and emissive</strong>, throwing bloom into the dark. As it falls, heat bleeds into the air and the colour slides through <strong>amber and orange</strong>.</p>
+        <p>Near the pool it has lost its glow entirely — cooling to <strong>transparent, faintly cyan glass</strong>, where the only light is the refracted world passing through it.</p>
+      </div>
+      <div class="prose reveal">
+        <div class="section-label">The Pool</div>
+        <p>Where the ribbon meets the pool, ripples propagate slowly, damped by that same brutal viscosity. The pool glows faintly warm, reflecting the falling light back up the column — a closed loop of heat and reflection.</p>
+        <p>It is the contrast that sells it: <strong>hard finished glass</strong> against the <strong>fluidity of its origin</strong>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="fm">MOLTEN <b>GLASS</b> POUR — Liquid Light</div>
+  <div class="tags">glass · viscosity · refraction · fluid-sim · transparency · tactile · slow-motion</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Reveal on scroll ---------- */
+  var revs = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    },{threshold:.18});
+    revs.forEach(function(el){io.observe(el);});
+  } else { revs.forEach(function(el){el.classList.add('in');}); }
+
+  /* ---------- WebGL ---------- */
+  var canvas = document.getElementById('gl');
+  var hero = document.getElementById('hero');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var renderer, scene, camera, mesh, mat, bgTex, bgCanvas, bgCtx, bgW=512, bgH=512;
+  var mx=0,my=0,tmx=0,tmy=0;
+  var supportsWebGL = (function(){
+    try{ var c=document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl')||c.getContext('experimental-webgl'))); }
+    catch(e){ return false; }
+  })();
+
+  var VERT = [
+    "varying vec2 vUv;",
+    "void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }"
+  ].join("\n");
+
+  var FRAG = [
+    "precision highp float;",
+    "varying vec2 vUv;",
+    "uniform sampler2D uBg;",
+    "uniform vec2 uMouse;",
+    "uniform float uTime;",
+    "uniform float uSpeed;",
+
+    "float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }",
+    "float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); float a=hash(i); float b=hash(i+vec2(1.0,0.0)); float c=hash(i+vec2(0.0,1.0)); float d=hash(i+vec2(1.0,1.0)); vec2 u=f*f*(3.0-2.0*f); return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }",
+    "float fbm(vec2 p){ float v=0.0; float a=0.5; for(int i=0;i<5;i++){ v+=a*noise(p); p*=2.0; a*=0.5; } return v; }",
+
+    "vec3 bg(vec2 uv){ vec2 p=uv; p+=uMouse*0.02; p+=0.004*sin(vec2(p.y*7.0,p.x*6.0)+uTime*0.15); vec2 t=vec2(p.x*1.6,p.y*1.6); vec3 col=mix(vec3(0.045,0.05,0.06),vec3(0.15,0.15,0.165),fbm(t*3.0)); float streak=smoothstep(0.4,0.6,fbm(t*7.0+vec2(0.0,uTime*0.05))); col+=streak*vec3(0.02,0.02,0.024); float vign=smoothstep(1.1,0.25,length(p-0.5)); col*=mix(0.35,1.0,vign); float g=hash(floor(p*vec2(300.0,300.0))); col+=(g-0.5)*0.018; return col; }",
+
+    "float ribbon(float x,float y){ float cx=0.5+0.02*sin(y*3.1+uTime*0.35)+0.006*sin(y*9.0-uTime*0.2); float halfw=0.030+0.011*sin(y*1.6-uTime*0.18)+0.004*sin(y*5.0+uTime*0.3); float d=abs(x-cx); float body=smoothstep(halfw,halfw*0.55,d); float wob=smoothstep(0.02,0.0,abs(x-(cx+0.5*halfw*sin(y*6.0+uTime*0.8)))); return clamp(body+wob*0.25,0.0,1.0); }",
+
+    "vec3 heat(float t){ t=clamp(t,0.0,1.0); vec3 c=vec3(1.0,0.95,0.85); c=mix(c,vec3(1.0,0.72,0.20),smoothstep(0.0,0.45,t)); c=mix(c,vec3(0.95,0.42,0.06),smoothstep(0.45,0.78,t)); c=mix(c,vec3(0.72,0.80,0.86),smoothstep(0.78,1.0,t)); return c; }",
+
+    "void main(){",
+    "  vec2 uv=vUv; float x=uv.x; float y=uv.y;",
+    "  float m=ribbon(x,y);",
+    "  float temp=clamp(y/0.82,0.0,1.0);",
+    "  vec3 col=bg(uv);",
+    "  if(m>0.001){",
+    "    float d=abs(x-(0.5+0.02*sin(y*3.1+uTime*0.35)));",
+    "    float refrStrength=(0.05+0.05*temp)*(1.0-temp*0.55);",
+    "    vec2 refr=uv; refr.x+=(x-0.5)*refrStrength; refr.y+=0.006*sin(y*7.0+uTime*0.4);",
+    "    vec3 refrBg=bg(refr);",
+    "    float tint=smoothstep(0.7,0.0,temp);",
+    "    vec3 glass=refrBg*mix(1.0,0.55,tint)+mix(vec3(0.0),vec3(0.05,0.03,0.0),tint);",
+    "    float emiss=smoothstep(0.55,0.0,temp);",
+    "    float edge=smoothstep(0.0,0.5,m);",
+    "    glass+=heat(temp)*emiss*1.35*edge;",
+    "    glass+=heat(temp)*0.12*edge;",
+    "    float core=smoothstep(0.5,0.0,d/0.055);",
+    "    glass+=heat(temp)*core*emiss*0.8;",
+    "    float rim=smoothstep(0.0,0.5,m)*(1.0-smoothstep(0.5,1.0,m));",
+    "    glass+=vec3(0.5,0.45,0.4)*rim*0.15;",
+    "    col=mix(col,glass,m);",
+    "  }",
+    "  float poolY=0.15;",
+    "  if(y<poolY){",
+    "    float pm=smoothstep(0.62,0.35,abs(x-0.5));",
+    "    float ripple=sin((abs(x-0.5)*22.0)-y*30.0+uTime*0.6)*0.5+0.5;",
+    "    float rMask=smoothstep(0.55,0.0,abs(x-0.5))*smoothstep(poolY,poolY-0.05,y);",
+    "    vec2 puv=uv; puv.x+=(x-0.5)*0.04*ripple; puv.y+=0.004*sin(y*20.0+uTime*0.5);",
+    "    vec3 pool=bg(puv)*0.55;",
+    "    float poolTemp=smoothstep(0.0,0.22,y);",
+    "    pool+=heat(poolTemp)*poolTemp*0.5*pm;",
+    "    pool+=vec3(1.0,0.6,0.2)*0.15*ripple*rMask*0.5;",
+    "    col=mix(col,pool,pm);",
+    "  }",
+    "  float glow=smoothstep(0.12,0.0,abs(x-0.5))*(1.0-smoothstep(0.0,0.9,y));",
+    "  col+=vec3(1.0,0.55,0.15)*glow*0.12;",
+    "  float lad=smoothstep(0.95,0.9,y)*smoothstep(0.56,0.5,x)*smoothstep(0.44,0.5,x);",
+    "  if(lad>0.001){ col=mix(col,vec3(0.06,0.055,0.05),lad); col+=vec3(1.0,0.4,0.1)*smoothstep(0.93,0.89,y)*lad*0.5; }",
+    "  float bloom=smoothstep(0.0,0.5,m)*(1.0-smoothstep(0.0,0.55,temp));",
+    "  col+=heat(temp)*bloom*0.25;",
+    "  vec3 avg=vec3(dot(col,vec3(0.299,0.587,0.114)));",
+    "  col=mix(avg,col,1.12);",
+    "  float vig=smoothstep(1.25,0.4,length(uv-0.5));",
+    "  col*=mix(0.4,1.0,vig);",
+    "  col+=hash(uv*vec2(1920.0,1080.0)+fract(uTime))*0.02-0.01;",
+    "  col=clamp(col,0.0,1.0);",
+    "  gl_FragColor=vec4(col,1.0);",
+    "}"
+  ].join("\n");
+
+  function drawBackground(){
+    if(!bgCtx) return;
+    var w=bgW,h=bgH;
+    var g=bgCtx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,'#191922'); g.addColorStop(0.5,'#0c0c10'); g.addColorStop(1,'#050506');
+    bgCtx.fillStyle=g; bgCtx.fillRect(0,0,w,h);
+
+    var rg=bgCtx.createRadialGradient(w*0.5,h*0.18,0,w*0.5,h*0.18,h*0.9);
+    rg.addColorStop(0,'rgba(120,90,50,0.12)'); rg.addColorStop(1,'rgba(0,0,0,0)');
+    bgCtx.fillStyle=rg; bgCtx.fillRect(0,0,w,h);
+
+    bgCtx.strokeStyle='rgba(255,255,255,0.05)'; bgCtx.lineWidth=1;
+    for(var i=0;i<14;i++){ var x=w*(0.15+0.7*i/13); bgCtx.beginPath(); bgCtx.moveTo(x,h*0.12); bgCtx.lineTo(x,h*0.88); bgCtx.stroke(); }
+
+    bgCtx.strokeStyle='rgba(255,255,255,0.045)'; bgCtx.lineWidth=2;
+    bgCtx.beginPath(); bgCtx.arc(w*0.5,h*0.48,Math.min(w,h)*0.30,0,Math.PI*2); bgCtx.stroke();
+
+    bgCtx.fillStyle='rgba(255,200,120,0.5)';
+    bgCtx.beginPath(); bgCtx.arc(w*0.22,h*0.30,3,0,Math.PI*2); bgCtx.fill();
+    bgCtx.beginPath(); bgCtx.arc(w*0.78,h*0.68,2,0,Math.PI*2); bgCtx.fill();
+    bgCtx.fillStyle='rgba(200,230,255,0.35)';
+    bgCtx.beginPath(); bgCtx.arc(w*0.70,h*0.24,2,0,Math.PI*2); bgCtx.fill();
+
+    bgCtx.fillStyle='rgba(255,255,255,0.045)';
+    bgCtx.font='300 '+(h*0.13)+'px Georgia, serif'; bgCtx.textAlign='center'; bgCtx.textBaseline='middle';
+    bgCtx.fillText('1.52',w*0.5,h*0.48);
+
+    bgCtx.strokeStyle='rgba(255,255,255,0.06)'; bgCtx.lineWidth=2;
+    for(var j=0;j<6;j++){ var yy=h*(0.2+0.6*j/5); bgCtx.beginPath(); bgCtx.moveTo(w*0.30,yy); bgCtx.lineTo(w*0.70,yy); bgCtx.stroke(); }
+
+    var vg=bgCtx.createRadialGradient(w*0.5,h*0.5,Math.min(w,h)*0.2,w*0.5,h*0.5,Math.max(w,h)*0.7);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.65)');
+    bgCtx.fillStyle=vg; bgCtx.fillRect(0,0,w,h);
+  }
+
+  function initGL(){
+    if(!supportsWebGL || typeof THREE==='undefined'){ return; }
+    try{
+      renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});
+    }catch(e){ return; }
+    renderer.setClearColor(0x000000,1);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+
+    scene=new THREE.Scene();
+    camera=new THREE.OrthographicCamera(-1,1,1,-1,0.1,10);
+    camera.position.z=1;
+
+    bgCanvas=document.createElement('canvas'); bgCanvas.width=bgW; bgCanvas.height=bgH;
+    bgCtx=bgCanvas.getContext('2d');
+    drawBackground();
+    bgTex=new THREE.CanvasTexture(bgCanvas);
+    bgTex.minFilter=THREE.LinearFilter; bgTex.magFilter=THREE.LinearFilter;
+    bgTex.wrapS=THREE.ClampToEdgeWrapping; bgTex.wrapT=THREE.ClampToEdgeWrapping;
+
+    mat=new THREE.ShaderMaterial({
+      uniforms:{
+        uBg:{value:bgTex},
+        uMouse:{value:new THREE.Vector2(0,0)},
+        uTime:{value:0},
+        uSpeed:{value:reduce?0:1}
+      },
+      vertexShader:VERT,
+      fragmentShader:FRAG,
+      depthTest:false, depthWrite:false
+    });
+
+    mesh=new THREE.Mesh(new THREE.PlaneGeometry(2,2),mat);
+    mesh.frustumCulled=false;
+    scene.add(mesh);
+
+    resize();
+    window.addEventListener('resize',resize);
+    if(!reduce){
+      window.addEventListener('pointermove',function(e){
+        var r=hero.getBoundingClientRect();
+        if(e.clientY>r.bottom) return;
+        tmx=((e.clientX-r.left)/r.width)*2-1;
+        tmy=-(((e.clientY-r.top)/r.height)*2-1);
+      });
+    }
+    var last=performance.now();
+    function loop(now){
+      requestAnimationFrame(loop);
+      var dt=Math.min((now-last)/1000,0.05); last=now;
+      if(!reduce){
+        mat.uniforms.uTime.value+=dt;
+        mx+=(tmx-mx)*0.05; my+=(tmy-my)*0.05;
+        mat.uniforms.uMouse.value.set(mx,my);
+      }
+      renderer.render(scene,camera);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function resize(){
+    if(!renderer) return;
+    var w=hero.clientWidth, h=hero.clientHeight;
+    renderer.setSize(w,h,false);
+  }
+
+  initGL();
+})();
+</script>
+</body>
+</html>

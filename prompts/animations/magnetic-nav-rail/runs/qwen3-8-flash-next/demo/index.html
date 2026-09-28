@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Harbor — Magnetic Nav Rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1016;
+    --panel:#13212B;
+    --amber:#E8C468;
+    --amber-soft:rgba(232,196,104,.14);
+    --text:#EAF1F5;
+    --muted:#7C93A0;
+    --line:rgba(124,147,160,.16);
+    --ease-out:cubic-bezier(.2,.7,.2,1);
+    --ease-elastic:cubic-bezier(.34,1.56,.64,1);
+    --ease-spring:cubic-bezier(.34,1.45,.5,1);
+    --rail:248px;
+    --rail-icon:96px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    background:var(--navy);
+    color:var(--text);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+
+  /* ---------- Atmospheric background ---------- */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg-grad{position:absolute;inset:0;background:
+      radial-gradient(1200px 700px at 8% 12%, rgba(232,196,104,.05), transparent 60%),
+      radial-gradient(900px 900px at 85% 90%, rgba(40,80,110,.18), transparent 65%),
+      linear-gradient(160deg,#0A1016,#0b1620 55%,#0a1218);}
+  .bg-grid{position:absolute;inset:-2px;opacity:.5;
+      background-image:
+        linear-gradient(rgba(124,147,160,.05) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(124,147,160,.05) 1px,transparent 1px);
+      background-size:52px 52px;
+      -webkit-mask-image:radial-gradient(ellipse at 30% 40%,#000 0%,transparent 75%);
+              mask-image:radial-gradient(ellipse at 30% 40%,#000 0%,transparent 75%);}
+  .bg-scan{position:absolute;left:0;right:0;top:0;height:180px;
+      background:linear-gradient(180deg,transparent,rgba(232,196,104,.035),transparent);
+      animation:scan 9s linear infinite;}
+  @keyframes scan{0%{transform:translateY(-200px)}100%{transform:translateY(100vh)}}
+  .bg-vignette{position:absolute;inset:0;box-shadow:inset 0 0 220px 40px rgba(0,0,0,.55);}
+  .grain{position:absolute;inset:0;opacity:.045;mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* ---------- Rail ---------- */
+  .rail{
+    position:fixed;left:0;top:0;bottom:0;width:var(--rail-icon);z-index:20;
+    background:linear-gradient(180deg,rgba(19,33,43,.96),rgba(15,26,34,.98));
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;
+    transform:translateX(-18px);opacity:0;
+    transition:width .4s var(--ease-out),transform .5s var(--ease-out),opacity .5s var(--ease-out);
+  }
+  .rail.open{transform:translateX(0);opacity:1}
+  .rail:hover,.rail:focus-within{width:var(--rail)}
+  body.no-hover .rail{width:var(--rail)}
+
+  .brand{display:flex;align-items:center;gap:14px;padding:22px 20px 20px;position:relative}
+  .brand-mark{flex:0 0 auto;width:36px;height:36px;color:var(--amber);
+      filter:drop-shadow(0 0 10px rgba(232,196,104,.35))}
+  .brand-mark svg{width:100%;height:100%}
+  .brand-text{white-space:nowrap;overflow:hidden;
+      opacity:0;transform:translateX(-8px);transition:opacity .35s var(--ease-out),transform .35s var(--ease-out)}
+  .rail:hover .brand-text,.rail:focus-within .brand-text,body.no-hover .brand-text{opacity:1;transform:none}
+  .brand-name{font-weight:700;font-size:15px;letter-spacing:.14em;text-transform:uppercase}
+  .brand-sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--muted);margin-top:2px}
+
+  .rail-list{list-style:none;position:relative;padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex:1}
+  .rail-list::before{content:"";position:absolute;left:14px;top:14px;bottom:14px;width:1px;background:var(--line)}
+
+  .capsule{position:absolute;left:10px;width:calc(var(--rail) - 20px);height:52px;border-radius:14px;
+      background:linear-gradient(90deg,rgba(232,196,104,.16),rgba(232,196,104,.03));
+      border:1px solid rgba(232,196,104,.32);
+      transform:translateY(0);transition:transform .34s var(--ease-spring);pointer-events:none;z-index:0}
+  .capsule::before{content:"";position:absolute;left:-1px;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--amber);
+      box-shadow:0 0 12px rgba(232,196,104,.7)}
+
+  .nav-item{position:relative;z-index:1}
+  .nav-link{
+    position:relative;display:flex;align-items:center;gap:16px;height:52px;padding:0 14px;
+    border-radius:14px;color:var(--muted);text-decoration:none;will-change:transform;
+    -webkit-tap-highlight-color:transparent;cursor:pointer;
+  }
+  .nav-link:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .nav-ico{flex:0 0 auto;width:24px;height:24px;display:grid;place-items:center;color:inherit;
+      transition:color .25s var(--ease-out)}
+  .nav-ico svg{width:24px;height:24px}
+  .nav-label{white-space:nowrap;font-weight:500;font-size:14.5px;letter-spacing:.01em;color:inherit;
+      opacity:0;transform:translateX(-6px);transition:opacity .3s var(--ease-out),transform .3s var(--ease-out)}
+  .rail:hover .nav-label,.rail:focus-within .nav-label,body.no-hover .nav-label{opacity:1;transform:none}
+  .nav-link:hover .nav-ico,.nav-link:focus-visible .nav-ico{color:var(--text)}
+  .nav-link.is-active{color:var(--amber)}
+  .nav-link.is-active .nav-ico{color:var(--amber)}
+  .nav-link.is-active .nav-label{font-weight:600}
+
+  .nav-pulse{position:absolute;left:0;right:0;top:6px;bottom:6px;border-radius:14px;
+      border:1px solid var(--amber);opacity:0;pointer-events:none}
+  .nav-item.pulsing .nav-pulse{animation:pulse .18s var(--ease-out)}
+  @keyframes pulse{0%{opacity:.75;transform:scale(.9)}100%{opacity:0;transform:scale(1.12)}}
+
+  .rail-foot{padding:16px 20px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .status-dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--amber);
+      box-shadow:0 0 0 0 rgba(232,196,104,.5);animation:beat 2.4s ease-out infinite}
+  @keyframes beat{0%{box-shadow:0 0 0 0 rgba(232,196,104,.5)}70%,100%{box-shadow:0 0 0 8px rgba(232,196,104,0)}}
+  .foot-text{white-space:nowrap;overflow:hidden;opacity:0;transition:opacity .35s var(--ease-out)}
+  .rail:hover .foot-text,.rail:focus-within .foot-text,body.no-hover .foot-text{opacity:1}
+  .foot-line{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);letter-spacing:.04em}
+  .foot-sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted);letter-spacing:.14em;margin-top:2px}
+
+  /* ---------- Magnetic field ring ---------- */
+  .field-ring{position:fixed;left:0;top:0;width:170px;height:170px;border-radius:50%;z-index:15;
+      transform:translate(-50%,-50%);pointer-events:none;opacity:0;will-change:transform;
+      border:1px solid rgba(232,196,104,.22);
+      background:radial-gradient(circle,rgba(232,196,104,.10),rgba(232,196,104,.03) 55%,transparent 70%)}
+  .field-ring::after{content:"";position:absolute;inset:34%;border-radius:50%;
+      border:1px dashed rgba(232,196,104,.28);animation:spin 12s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- Tooltip ---------- */
+  .tooltip{position:fixed;left:0;top:0;z-index:40;pointer-events:none;opacity:0;
+      transform:translate(-50%,-50%);will-change:transform;transition:opacity .18s var(--ease-out)}
+  .tip-card{background:rgba(10,16,22,.92);border:1px solid rgba(232,196,104,.35);border-radius:10px;
+      padding:10px 12px;min-width:150px;backdrop-filter:blur(6px);box-shadow:0 18px 40px rgba(0,0,0,.5)}
+  .tip-name{font-weight:600;font-size:13px;letter-spacing:.02em}
+  .tip-coord{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);margin-top:4px;letter-spacing:.03em}
+  .tip-coord b{color:var(--amber);font-weight:500}
+
+  /* ---------- Stage / content ---------- */
+  .stage{position:relative;z-index:5;min-height:100vh;padding:64px 48px 80px;
+      padding-left:calc(var(--rail-icon) + 56px);max-width:1180px}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;
+      font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--amber);margin-bottom:26px;
+      opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease-out),transform .6s var(--ease-out)}
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--amber)}
+  .stage-head h1{font-size:clamp(2.6rem,6.2vw,5.4rem);line-height:.94;font-weight:700;letter-spacing:-.02em;
+      opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease-out) .08s,transform .7s var(--ease-out) .08s}
+  .stage-head h1 em{font-style:normal;color:var(--amber)}
+  .lede{margin-top:24px;max-width:560px;font-size:1.05rem;line-height:1.65;color:#B7C6CE;
+      opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease-out) .16s,transform .7s var(--ease-out) .16s}
+  .meta-row{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px;
+      opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease-out) .24s,transform .7s var(--ease-out) .24s}
+  .meta-chip{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;color:var(--muted);
+      border:1px solid var(--line);border-radius:999px;padding:7px 13px}
+  .meta-chip b{color:var(--text);font-weight:500}
+
+  .live{margin-top:56px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
+      opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease-out) .3s,transform .7s var(--ease-out) .3s}
+  .live-card{background:linear-gradient(180deg,rgba(19,33,43,.7),rgba(13,22,29,.7));
+      border:1px solid var(--line);border-radius:16px;padding:18px 18px 20px;position:relative;overflow:hidden}
+  .live-card::after{content:"";position:absolute;left:0;top:0;height:2px;width:100%;
+      background:linear-gradient(90deg,var(--amber),transparent);opacity:.5}
+  .live-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .live-val{font-size:1.9rem;font-weight:600;margin-top:12px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .live-val.amber{color:var(--amber)}
+  .live-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:.04em}
+  .meter{margin-top:14px;height:4px;border-radius:4px;background:rgba(124,147,160,.16);overflow:hidden}
+  .meter>i{display:block;height:100%;width:0%;border-radius:4px;
+      background:linear-gradient(90deg,var(--amber),rgba(232,196,104,.5));transition:width .12s linear}
+
+  .legend{margin-top:44px;display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center;
+      font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .sw-navy{background:#13212B;border:1px solid var(--line)}
+  .sw-amber{background:var(--amber)}
+
+  .hint{margin-top:40px;display:flex;align-items:center;gap:12px;color:var(--muted);
+      font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.05em}
+  .hint .arrow{color:var(--amber);animation:nudge 1.8s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+
+  /* ---------- Mobile bottom nav ---------- */
+  .bottom-nav{display:none}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .stage{padding:44px 24px 132px;padding-left:24px}
+    .live{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:860px){
+    .rail,.field-ring,.tooltip{display:none}
+    .stage{padding-bottom:150px}
+    .bottom-nav{
+      display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:30;
+      background:linear-gradient(180deg,rgba(19,33,43,.98),rgba(13,22,29,.99));
+      border:1px solid var(--line);border-radius:18px;padding:8px;gap:4px;
+      box-shadow:0 -10px 40px rgba(0,0,0,.5);
+      transform:translateY(20px);opacity:0;transition:transform .5s var(--ease-out),opacity .5s var(--ease-out)}
+    .bottom-nav.open{transform:none;opacity:1}
+    .bnav-item{flex:1;position:relative}
+    .bnav-link{display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 2px;border-radius:12px;
+        color:var(--muted);text-decoration:none;will-change:transform;transition:color .25s var(--ease-out)}
+    .bnav-link svg{width:22px;height:22px}
+    .bnav-link span{font-size:9px;font-family:'IBM Plex Mono',monospace;letter-spacing:.06em}
+    .bnav-link.is-active{color:var(--amber)}
+    .bnav-link.is-active::before{content:"";position:absolute;top:2px;left:50%;transform:translateX(-50%);
+        width:22px;height:3px;border-radius:3px;background:var(--amber);box-shadow:0 0 10px rgba(232,196,104,.7)}
+    .bnav-link:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important}
+    .rail,.eyebrow,.stage-head h1,.lede,.meta-row,.live,.bottom-nav{transform:none!important;opacity:1!important;transition:none!important}
+    .nav-label,.brand-text,.foot-text{opacity:1!important;transform:none!important}
+    .nav-link,.capsule{transition:none!important}
+    .field-ring{display:none}
+    .bg-scan{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grad"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-scan"></div>
+    <div class="bg-vignette"></div>
+    <div class="grain"></div>
+  </div>
+
+  <div class="field-ring" aria-hidden="true"></div>
+
+  <nav class="rail" aria-label="Primary">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <polygon points="15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5"></polygon>
+          <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">Vector Harbor</div>
+        <div class="brand-sub">MARINE OPS · 01</div>
+      </div>
+    </div>
+
+    <ul class="rail-list">
+      <li class="nav-item" data-index="0" data-name="Fleet" data-coord="LAT 47.606 · LON 122.332">
+        <a class="nav-link is-active" href="#" aria-current="page">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M12 5a2 2 0 100 4 2 2 0 000-4z"/><path d="M5 12H3l3 8a4 4 0 008 0l3-8h-2"/><path d="M8 12h8"/></svg></span>
+          <span class="nav-label">Fleet</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+      <li class="nav-item" data-index="1" data-name="Routes" data-coord="LAT 37.808 · LON 122.410">
+        <a class="nav-link" href="#">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 19H14a3.5 3.5 0 000-7H10a3.5 3.5 0 010-7h5.6"/></svg></span>
+          <span class="nav-label">Routes</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+      <li class="nav-item" data-index="2" data-name="Cargo" data-coord="LAT 51.507 · LON 0.128">
+        <a class="nav-link" href="#">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg></span>
+          <span class="nav-label">Cargo</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+      <li class="nav-item" data-index="3" data-name="Harbors" data-coord="LAT 35.689 · LON 139.692">
+        <a class="nav-link" href="#">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v13"/><path d="M5 12H3a9 9 0 0018 0h-2"/><path d="M8.5 10.5L12 7l3.5 3.5"/></svg></span>
+          <span class="nav-label">Harbors</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+      <li class="nav-item" data-index="4" data-name="Signals" data-coord="LAT 40.713 · LON 74.006">
+        <a class="nav-link" href="#">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-6"/><path d="M9 20V10"/><path d="M14 20V4"/><path d="M19 20v-9"/></svg></span>
+          <span class="nav-label">Signals</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+      <li class="nav-item" data-index="5" data-name="Ledger" data-coord="LAT 52.520 · LON 13.405">
+        <a class="nav-link" href="#">
+          <span class="nav-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h11l3 3v15H6z"/><path d="M9 8h7"/><path d="M9 12h7"/><path d="M9 16h4"/></svg></span>
+          <span class="nav-label">Ledger</span>
+          <span class="nav-pulse"></span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="rail-foot">
+      <span class="status-dot" aria-hidden="true"></span>
+      <div class="foot-text">
+        <div class="foot-line">SIGNAL LOCKED</div>
+        <div class="foot-sub">6 NODES · 0 FAULTS</div>
+      </div>
+    </div>
+  </nav>
+
+  <nav class="bottom-nav" aria-label="Primary mobile">
+    <div class="bnav-item" data-index="0" data-name="Fleet"><a class="bnav-link is-active" href="#" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M12 5a2 2 0 100 4 2 2 0 000-4z"/><path d="M5 12H3l3 8a4 4 0 008 0l3-8h-2"/><path d="M8 12h8"/></svg><span>Fleet</span></a></div>
+    <div class="bnav-item" data-index="1" data-name="Routes"><a class="bnav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.4"/><circle cx="18" cy="5" r="2.4"/><path d="M8.4 19H14a3.5 3.5 0 000-7H10a3.5 3.5 0 010-7h5.6"/></svg><span>Routes</span></a></div>
+    <div class="bnav-item" data-index="2" data-name="Cargo"><a class="bnav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg><span>Cargo</span></a></div>
+    <div class="bnav-item" data-index="3" data-name="Harbors"><a class="bnav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M12 7v13"/><path d="M5 12H3a9 9 0 0018 0h-2"/><path d="M8.5 10.5L12 7l3.5 3.5"/></svg><span>Harbors</span></a></div>
+    <div class="bnav-item" data-index="4" data-name="Signals"><a class="bnav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20v-6"/><path d="M9 20V10"/><path d="M14 20V4"/><path d="M19 20v-9"/></svg><span>Signals</span></a></div>
+    <div class="bnav-item" data-index="5" data-name="Ledger"><a class="bnav-link" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h11l3 3v15H6z"/><path d="M9 8h7"/><path d="M9 12h7"/><path d="M9 16h4"/></svg><span>Ledger</span></a></div>
+  </nav>
+
+  <div class="tooltip" aria-hidden="true">
+    <div class="tip-card">
+      <div class="tip-name">—</div>
+      <div class="tip-coord"><b id="tipX">0.00</b> · <b id="tipY">0.00</b> · <span id="tipD">0.00</span>px</div>
+    </div>
+  </div>
+
+  <main class="stage">
+    <div class="eyebrow">Marine Logistics Console</div>
+    <div class="stage-head">
+      <h1>Navigation that<br>leans toward <em>you.</em></h1>
+      <p class="lede">A magnetic rail for Vector Harbor. Move your cursor within 160 pixels of the left rail and the six stations feel the pull — translate, stretch, and slide an amber signal capsule toward the pointer. Quiet navy architecture, one amber current.</p>
+      <div class="meta-row">
+        <span class="meta-chip">RANGE <b>160px</b></span>
+        <span class="meta-chip">SCALE <b>1.06</b></span>
+        <span class="meta-chip">STRETCH <b>1.04</b></span>
+        <span class="meta-chip">EASING <b>elastic</b></span>
+        <span class="meta-chip">BUDGET <b>&lt; 400ms</b></span>
+      </div>
+    </div>
+
+    <section class="live" aria-label="Live magnetic telemetry">
+      <div class="live-card">
+        <div class="live-label">Active Station</div>
+        <div class="live-val amber" id="activeName">Fleet</div>
+        <div class="live-sub" id="activeCoord">LAT 47.606 · LON 122.332</div>
+      </div>
+      <div class="live-card">
+        <div class="live-label">Nearest Node</div>
+        <div class="live-val" id="nearestName">—</div>
+        <div class="live-sub" id="nearestDist">distance 0.00 px</div>
+        <div class="meter"><i id="proxMeter"></i></div>
+      </div>
+      <div class="live-card">
+        <div class="live-label">Field Strength</div>
+        <div class="live-val amber" id="fieldVal">0%</div>
+        <div class="live-sub">pull intensity</div>
+      </div>
+      <div class="live-card">
+        <div class="live-label">Signal Lock</div>
+        <div class="live-val">04:12</div>
+        <div class="live-sub">stable · 6 nodes</div>
+      </div>
+    </section>
+
+    <div class="legend">
+      <span><i class="sw-navy"></i> Graphite panel #13212B</span>
+      <span><i class="sw-amber"></i> Amber signal #E8C468</span>
+      <span>Space Grotesk / IBM Plex Mono</span>
+    </div>
+
+    <div class="hint"><span class="arrow">→</span> Move the cursor near the rail to feel the magnetism.</div>
+  </main>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if(!hover){ document.body.classList.add('no-hover'); }
+
+  var rail = document.querySelector('.rail');
+  var list = document.querySelector('.rail-list');
+  var capsule = document.createElement('div');
+  capsule.className = 'capsule';
+  list.insertBefore(capsule, list.firstChild);
+
+  var items = Array.prototype.slice.call(document.querySelectorAll('.rail-list .nav-item'));
+  var links = items.map(function(it){ return it.querySelector('.nav-link'); });
+  var field = document.querySelector('.field-ring');
+  var tooltip = document.querySelector('.tooltip');
+  var tipName = tooltip.querySelector('.tip-name');
+  var tipX = document.getElementById('tipX');
+  var tipY = document.getElementById('tipY');
+  var tipD = document.getElementById('tipD');
+
+  var activeName = document.getElementById('activeName');
+  var activeCoord = document.getElementById('activeCoord');
+  var nearestName = document.getElementById('nearestName');
+  var nearestDist = document.getElementById('nearestDist');
+  var proxMeter = document.getElementById('proxMeter');
+  var fieldVal = document.getElementById('fieldVal');
+
+  var RANGE = 160, MAXPULL = 24, SCALE = 1.06, STRETCH = 1.04;
+  var pointer = {x:-9999, y:-9999, active:false};
+  var fieldPos = {x:-9999, y:-9999};
+  var tipPos = {x:-9999, y:-9999};
+  var cur = items.map(function(){ return {x:0,y:0,s:1,sx:1}; });
+
+  var activeIndex = 0;
+  function setActive(i){
+    activeIndex = i;
+    links.forEach(function(l,k){
+      var on = k===i;
+      l.classList.toggle('is-active', on);
+      if(on){ l.setAttribute('aria-current','page'); } else { l.removeAttribute('aria-current'); }
+    });
+    var it = items[i];
+    activeName.textContent = it.dataset.name;
+    activeCoord.textContent = it.dataset.coord;
+  }
+
+  function positionCapsule(){
+    var lr = list.getBoundingClientRect();
+    var cr = links[activeIndex].getBoundingClientRect();
+    capsule.style.transform = 'translateY(' + (cr.top - lr.top) + 'px)';
+  }
+
+  links.forEach(function(l,i){
+    l.addEventListener('click', function(e){
+      e.preventDefault();
+      setActive(i);
+      positionCapsule();
+      var it = items[i];
+      it.classList.remove('pulsing'); void it.offsetWidth; it.classList.add('pulsing');
+    });
+  });
+
+  window.addEventListener('mousemove', function(e){
+    if(!hover || reduce) return;
+    pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
+  });
+  window.addEventListener('mouseout', function(e){
+    if(!e.relatedTarget){ pointer.active = false; }
+  });
+
+  function loop(){
+    if(hover && !reduce){
+      var nearest = {d:Infinity, i:0};
+      for(var i=0;i<items.length;i++){
+        var r = items[i].getBoundingClientRect();
+        var cx = r.left + r.width/2, cy = r.top + r.height/2;
+        var dx = pointer.x - cx, dy = pointer.y - cy;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < nearest.d){ nearest.d = dist; nearest.i = i; }
+        var target = {x:0,y:0,s:1,sx:1};
+        if(dist < RANGE){
+          var f = 1 - dist/RANGE;
+          target.x = dx*f*0.16;
+          target.y = dy*f*0.16;
+          if(target.x > MAXPULL) target.x = MAXPULL; if(target.x < -MAXPULL) target.x = -MAXPULL;
+          if(target.y > MAXPULL) target.y = MAXPULL; if(target.y < -MAXPULL) target.y = -MAXPULL;
+          target.s = 1 + 0.06*f;
+          target.sx = 1 + 0.04*f;
+        }
+        var c = cur[i];
+        c.x += (target.x - c.x)*0.18;
+        c.y += (target.y - c.y)*0.18;
+        c.s += (target.s - c.s)*0.18;
+        c.sx += (target.sx - c.sx)*0.18;
+        links[i].style.transform = 'translate(' + c.x.toFixed(2) + 'px,' + c.y.toFixed(2) + 'px) scale(' + c.s.toFixed(4) + ',' + (c.s/c.sx).toFixed(4) + ')';
+      }
+
+      // field ring
+      var tf = Math.max(0, 1 - nearest.d/RANGE);
+      fieldPos.x += (pointer.x - fieldPos.x)*0.16;
+      fieldPos.y += (pointer.y - fieldPos.y)*0.16;
+      var fs = 0.45 + tf*0.85;
+      field.style.transform = 'translate(' + fieldPos.x.toFixed(1) + 'px,' + fieldPos.y.toFixed(1) + 'px) translate(-50%,-50%) scale(' + fs.toFixed(3) + ')';
+      field.style.opacity = (tf*0.9).toFixed(3);
+
+      // tooltip
+      var showTip = tf > 0.04;
+      tipPos.x += (pointer.x + 16 - tipPos.x)*0.2;
+      tipPos.y += (pointer.y + 16 - tipPos.y)*0.2;
+      tooltip.style.transform = 'translate(' + tipPos.x.toFixed(1) + 'px,' + tipPos.y.toFixed(1) + 'px)';
+      tooltip.style.opacity = showTip ? '1' : '0';
+      if(showTip){
+        var ni = items[nearest.i];
+        tipName.textContent = ni.dataset.name;
+        tipX.textContent = pointer.x.toFixed(2);
+        tipY.textContent = pointer.y.toFixed(2);
+        tipD.textContent = nearest.d.toFixed(2);
+      }
+
+      // telemetry
+      nearestName.textContent = nearest.d < 9999 ? items[nearest.i].dataset.name : '—';
+      nearestDist.textContent = 'distance ' + nearest.d.toFixed(2) + ' px';
+      proxMeter.style.width = (tf*100).toFixed(1) + '%';
+      fieldVal.textContent = Math.round(tf*100) + '%';
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // entrance
+  requestAnimationFrame(function(){
+    rail.classList.add('open');
+    document.querySelector('.bottom-nav').classList.add('open');
+    document.querySelector('.eyebrow').style.cssText='';
+    ['eyebrow','stage-head h1','lede','meta-row','live'].forEach(function(sel){
+      var el = document.querySelector(sel);
+      if(el){ el.style.opacity='1'; el.style.transform='none'; }
+    });
+    items.forEach(function(it,i){
+      var l = links[i];
+      l.style.opacity='0'; l.style.transform='translateX(-16px)';
+      l.style.transition='opacity .5s var(--ease-out), transform .5s var(--ease-out)';
+      setTimeout(function(){ l.style.opacity='1'; l.style.transform=''; }, 160 + i*50);
+      // clear inline transition so magnetic loop can drive transform
+      setTimeout(function(){ l.style.transition=''; }, 160 + i*50 + 520);
+    });
+    positionCapsule();
+  });
+
+  window.addEventListener('resize', positionCapsule);
+  window.addEventListener('load', positionCapsule);
+
+  if(hover && !reduce){ requestAnimationFrame(loop); }
+})();
+</script>
+</body>
+</html>

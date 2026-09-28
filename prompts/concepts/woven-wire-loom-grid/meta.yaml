@@ -1,0 +1,27 @@
+id: woven-wire-loom-grid
+title: "Woven Wire Loom Grid"
+category: concepts
+tags:
+  - wire
+  - weave
+  - grid
+  - tactile
+  - interaction
+  - metal
+  - structure
+  - generative
+status: draft
+summary: "A navigation grid where links are represented by taut steel wires that vibrate and weave over/under each other when hovered, mimicking a loom's tension."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

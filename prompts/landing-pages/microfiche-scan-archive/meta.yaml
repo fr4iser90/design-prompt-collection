@@ -1,0 +1,27 @@
+id: microfiche-scan-archive
+title: "Microfiche Scan Archive"
+category: landing-pages
+tags:
+  - microfiche
+  - retro-tech
+  - library
+  - scanline
+  - high-contrast
+  - search
+  - noir
+  - access
+status: polished
+summary: "A landing page for \\\"MicroSearch,\\\" a digital archive service, using a high-contrast black-and-white aesthetic with scanline effects, search bars that mimic microfiche readers, and a sense of discovery."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

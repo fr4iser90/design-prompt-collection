@@ -1,0 +1,19 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: null
+status: abandoned
+build_attempts: 3
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 329165
+reject_reason: "build_fail:HTML contains planning/thinking prose — refusing to save"
+rejected_at: "2026-09-28T08:34:17.423Z"
+last_review_score: 4
+last_review_summary: "Visually clean and atmospheric, but the hero is missing the primary headline and value proposition, leaving the first viewport empty of text."
+last_reject_reason: "build_fail:HTML contains planning/thinking prose — refusing to save"

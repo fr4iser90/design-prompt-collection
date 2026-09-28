@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0b1c24" />
+  <meta name="description" content="Tidal is a coastal brand studio for founders who want art-directed websites, not templates." />
+  <title>Tidal — Coastal Brand Studio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200..700;1,9..144,200..700&family=Geist+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --tide: #0b1c24;
+      --kelp: #163a45;
+      --foam: #e8f1ef;
+      --mint: #7ec8c3;
+      --sand: #d4c4a8;
+
+      --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+      --font-mono: "Geist Mono", "SFMono-Regular", "Cascadia Mono", "Courier New", monospace;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--tide);
+      color: var(--foam);
+      font-family: var(--font-display);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    ::selection {
+      background: rgba(126, 200, 195, 0.35);
+      color: var(--foam);
+    }
+
+    .hero {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .ocean {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(110% 70% at 62% 57%, rgba(232, 241, 239, 0.22), transparent 52%),
+        radial-gradient(85% 55% at 68% 55%, rgba(212, 196, 168, 0.15), transparent 58%),
+        radial-gradient(120% 80% at 38% 59%, rgba(126, 200, 195, 0.16), transparent 62%),
+        linear-gradient(
+          180deg,
+          #071217 0%,
+          #0b1c24 26%,
+          #163a45 52%,
+          #12313a 68%,
+          #081820 88%,
+          #050f14 100%
+        );
+    }
+
+    .reflection {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 58%;
+      bottom: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(90% 65% at 62% 0%, rgba(212, 196, 168, 0.13), transparent 62%),
+        repeating-linear-gradient(
+          180deg,
+          rgba(232, 241, 239, 0.035) 0 1px,
+          transparent 1px 9px
+        );
+      -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 78%);
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 78%);
+      opacity: 0.65;
+    }
+
+    .tide {
+      position: absolute;
+      left: -15%;
+      right: -15%;
+      top: 58%;
+      height: 24%;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(120% 100% at 50% 0%, rgba(232, 241, 239, 0.10), transparent 68%),
+        linear-gradient(180deg, rgba(126, 200, 195, 0.08), transparent 60%);
+      -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, black, transparent 78%);
+      mask-image: radial-gradient(120% 100% at 50% 0%, black, transparent 78%);
+      transform-origin: top center;
+      animation: tideDrift 28s ease-in-out infinite alternate;
+    }
+
+    .horizon {
+      position: absolute;
+      left: -10%;
+      right: -10%;
+      top: 57%;
+      height: 1px;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(232, 241, 239, 0.55) 18%,
+          rgba(126, 200, 195, 0.78) 48%,
+          rgba(212, 196, 168, 0.46) 72%,
+          transparent
+        );
+      box-shadow:
+        0 0 34px rgba(126, 200, 195, 0.20),
+        0 0 80px rgba(232, 241, 239, 0.08);
+      filter: blur(0.2px);
+      transform-origin: center;
+      animation: horizonDrift 34s ease-in-out infinite;
+    }
+
+    .fog {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(80% 60% at 50% 55%, rgba(232, 241, 239, 0.08), transparent 70%);
+      mix-blend-mode: screen;
+    }
+
+    .scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          105deg,
+          rgba(11, 28, 36, 0.90) 0%,
+          rgba(11, 28, 36, 0.68) 34%,
+          rgba(11, 28, 36, 0.20) 60%,
+          rgba(11, 28, 36, 0.03) 78%,
+          transparent 100%
+        );
+    }
+
+    .vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(5, 15, 20, 0.42) 100%);
+    }
+
+    .grain {
+      position: absolute;
+      inset: -50%;
+      z-index: 6;
+      pointer-events: none;
+      opacity: 0.04;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 260px 260px;
+    }
+
+    .content {
+      position: relative;
+      z-index: 5;
+      width: min(100%, 1200px);
+      margin-inline: auto;
+      padding: clamp(1.75rem, 5vw, 4.25rem) clamp(1.75rem, 6vw, 5.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(1.1rem, 2.3vw, 1.9rem);
+    }
+
+    .brand {
+      margin: 0;
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(4.5rem, 14vw, 10.8rem);
+      line-height: 0.82;
+      letter-spacing: -0.045em;
+      color: var(--foam);
+      font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+    }
+
+    .headline {
+      margin: 0;
+      max-width: 24ch;
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-style: italic;
+      font-size: clamp(1.4rem, 2.55vw, 2.2rem);
+      line-height: 1.06;
+      letter-spacing: -0.012em;
+      color: rgba(232, 241, 239, 0.94);
+      font-variation-settings: "opsz" 48, "SOFT" 40, "WONK" 1;
+      text-wrap: balance;
+    }
+
+    .sentence {
+      margin: 0;
+      max-width: 48ch;
+      font-family: var(--font-mono);
+      font-weight: 300;
+      font-size: clamp(0.82rem, 1.05vw, 0.95rem);
+      line-height: 1.7;
+      letter-spacing: 0.04em;
+      color: rgba(232, 241, 239, 0.68);
+    }
+
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: clamp(1.1rem, 3vw, 2rem);
+      margin-top: clamp(0.4rem, 1.4vw, 1rem);
+    }
+
+    .cta-primary {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.05rem 1.75rem;
+      border-radius: 999px;
+      background: var(--foam);
+      color: var(--tide);
+      font-family: var(--font-mono);
+      font-weight: 500;
+      font-size: 0.88rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition:
+        transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+        box-shadow 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .cta-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 45px rgba(126, 200, 195, 0.18);
+    }
+
+    .cta-primary svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .cta-primary:hover svg {
+      transform: translateX(3px);
+    }
+
+    .cta-secondary {
+      position: relative;
+      display: inline-block;
+      padding: 0.75rem 0;
+      color: var(--foam);
+      font-family: var(--font-mono);
+      font-weight: 400;
+      font-size: 0.88rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .cta-secondary::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0.25rem;
+      height: 1px;
+      background: linear-gradient(90deg, var(--mint), rgba(212, 196, 168, 0.85));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition:
+        transform 0.65s cubic-bezier(0.2, 0.7, 0.2, 1),
+        height 0.65s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .cta-secondary:hover::after,
+    .cta-secondary:focus-visible::after {
+      transform: scaleX(1);
+      height: 2px;
+    }
+
+    .cta-primary:focus-visible,
+    .cta-secondary:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 5px;
+      border-radius: 2px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      filter: blur(12px);
+      animation: resolve 950ms cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+      animation-delay: var(--delay, 0ms);
+      will-change: opacity, transform, filter;
+    }
+
+    @keyframes resolve {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes horizonDrift {
+      0%,
+      100% {
+        transform: translateY(0) scaleY(1);
+        opacity: 0.68;
+      }
+      50% {
+        transform: translateY(-12px) scaleY(1.45);
+        opacity: 0.96;
+      }
+    }
+
+    @keyframes tideDrift {
+      from {
+        transform: translateY(0) scaleY(0.97);
+        opacity: 0.55;
+      }
+      to {
+        transform: translateY(10px) scaleY(1.03);
+        opacity: 0.80;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .content {
+        gap: 1rem;
+      }
+
+      .brand {
+        font-size: clamp(3.6rem, 18vw, 6.2rem);
+      }
+
+      .headline {
+        font-size: clamp(1.15rem, 5.4vw, 1.55rem);
+        max-width: 28ch;
+      }
+
+      .sentence {
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .cta-group {
+        gap: 1rem;
+      }
+
+      .cta-primary,
+      .cta-secondary {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .scrim {
+        background:
+          linear-gradient(
+            180deg,
+            rgba(11, 28, 36, 0.88) 0%,
+            rgba(11, 28, 36, 0.62) 42%,
+            rgba(11, 28, 36, 0.18) 74%,
+            transparent 100%
+          );
+      }
+    }
+
+    @media (max-height: 620px) and (min-width: 721px) {
+      .content {
+        gap: 0.75rem;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+      }
+
+      .brand {
+        font-size: clamp(3.5rem, 8vw, 6.5rem);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal {
+        animation: none !important;
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+
+      .horizon,
+      .tide {
+        animation: none !important;
+        transform: none !important;
+      }
+
+      .cta-primary,
+      .cta-primary svg,
+      .cta-secondary::after {
+        transition: none !important;
+      }
+    }
+
+    [data-motion="reduced"] .reveal {
+      animation: none !important;
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    [data-motion="reduced"] .horizon,
+    [data-motion="reduced"] .tide {
+      animation: none !important;
+      transform: none !important;
+    }
+
+    [data-motion="reduced"] .cta-primary,
+    [data-motion="reduced"] .cta-primary svg,
+    [data-motion="reduced"] .cta-secondary::after {
+      transition: none !important;
+    }
+  </style>
+</head>
+<body>
+  <main class="hero">
+    <div class="ocean" aria-hidden="true"></div>
+    <div class="reflection" aria-hidden="true"></div>
+    <div class="tide" aria-hidden="true"></div>
+    <div class="horizon" aria-hidden="true"></div>
+    <div class="fog" aria-hidden="true"></div>
+    <div class="scrim" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <section class="content">
+      <h1 class="brand reveal" style="--delay: 80ms">Tidal</h1>
+
+      <p class="headline reveal" style="--delay: 220ms">
+        Art-directed websites for founders who refuse templates.
+      </p>
+
+      <p class="sentence reveal" style="--delay: 360ms">
+        Coastal brand studio shaping identity, type, and motion with the patience of water.
+      </p>
+
+      <div class="cta-group reveal" style="--delay: 500ms">
+        <a class="cta-primary" href="#book">
+          <span>Book a discovery call</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </a>
+
+        <a class="cta-secondary" href="#work">Selected work</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      const applyMotionPreference = () => {
+        root.dataset.motion = mq.matches ? "reduced" : "full";
+      };
+
+      applyMotionPreference();
+
+      if (mq.addEventListener) {
+        mq.addEventListener("change", applyMotionPreference);
+      } else if (mq.addListener) {
+        mq.addListener(applyMotionPreference);
+      }
+    })();
+  </script>
+</body>
+</html>

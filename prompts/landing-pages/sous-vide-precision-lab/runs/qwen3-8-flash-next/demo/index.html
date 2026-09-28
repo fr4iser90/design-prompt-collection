@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vapor & Steel — Sous-Vide Precision Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F172A;
+    --bg-deep:#0B1220;
+    --bg-panel:#111E38;
+    --cyan:#06B6D4;
+    --cyan-bright:#22D3EE;
+    --cyan-dim:rgba(6,182,212,.14);
+    --white:#F8FAFC;
+    --slate:#94A3B8;
+    --line:rgba(148,163,184,.18);
+    --grid:8px;
+    --sans:'Inter',system-ui,-apple-system,sans-serif;
+    --mono:'Roboto Mono',ui-monospace,monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:var(--sans);
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Ambient background ---------- */
+  .atmos{
+    position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(120% 90% at 70% -10%, rgba(6,182,212,.10), transparent 55%),
+      radial-gradient(100% 80% at 10% 110%, rgba(6,182,212,.07), transparent 50%),
+      var(--bg);
+  }
+  .caustics{
+    position:fixed;inset:-20%;z-index:-1;pointer-events:none;opacity:.5;
+    background:
+      radial-gradient(28% 22% at 30% 30%, rgba(34,211,238,.16), transparent 60%),
+      radial-gradient(24% 20% at 75% 60%, rgba(6,182,212,.14), transparent 60%),
+      radial-gradient(30% 26% at 55% 85%, rgba(34,211,238,.10), transparent 60%);
+    filter:blur(30px);
+    animation:caustic 26s ease-in-out infinite alternate;
+  }
+  @keyframes caustic{
+    0%{transform:translate3d(0,0,0) scale(1)}
+    100%{transform:translate3d(-4%,3%,0) scale(1.08)}
+  }
+  .grain{
+    position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.035;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Layout helpers ---------- */
+  .wrap{width:min(1200px,92vw);margin-inline:auto}
+  section{position:relative;padding:calc(var(--grid)*14) 0}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--cyan);display:inline-flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--cyan);display:inline-block}
+  .sec-head{max-width:640px;margin-bottom:calc(var(--grid)*7)}
+  .sec-head h2{
+    font-size:clamp(30px,4.4vw,52px);font-weight:800;letter-spacing:-.02em;
+    line-height:1.02;text-transform:uppercase;margin:calc(var(--grid)*2) 0 calc(var(--grid)*2);
+  }
+  .sec-head p{color:var(--slate);font-size:16px;max-width:52ch}
+
+  /* ---------- Nav ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:40;
+    transition:background .4s ease,border-color .4s ease,backdrop-filter .4s;
+    border-bottom:1px solid transparent;
+  }
+  header.scrolled{background:rgba(11,18,32,.72);backdrop-filter:blur(14px);border-bottom-color:var(--line)}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.02em;font-size:17px}
+  .brand .mark{
+    width:26px;height:26px;border:1.5px solid var(--cyan);border-radius:6px;
+    display:grid;place-items:center;position:relative;
+  }
+  .brand .mark::after{content:"";width:8px;height:8px;background:var(--cyan);border-radius:50%;box-shadow:0 0 12px var(--cyan)}
+  .brand small{font-family:var(--mono);font-weight:400;color:var(--slate);font-size:10px;letter-spacing:.28em;display:block;text-transform:uppercase}
+  .nav-links{display:flex;gap:32px;align-items:center}
+  .nav-links a{color:var(--slate);text-decoration:none;font-size:13px;font-family:var(--mono);letter-spacing:.06em;transition:color .25s}
+  .nav-links a:hover{color:var(--cyan)}
+  .nav-cta{
+    font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    padding:11px 18px;border:1px solid var(--cyan);color:var(--cyan);border-radius:4px;
+    background:transparent;cursor:pointer;transition:all .3s;text-decoration:none;
+  }
+  .nav-cta:hover{background:var(--cyan);color:#03202a;box-shadow:0 0 24px rgba(6,182,212,.4)}
+
+  /* ---------- Hero ---------- */
+  .hero{min-height:100vh;display:flex;align-items:center;padding-top:120px;overflow:hidden}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:calc(var(--grid)*6);align-items:center;width:100%}
+  .hero-copy h1{
+    font-size:clamp(46px,7vw,92px);font-weight:800;letter-spacing:-.03em;line-height:.96;
+    text-transform:uppercase;
+  }
+  .hero-copy h1 .thin{font-weight:400;color:var(--slate);display:block;font-size:.42em;letter-spacing:.02em;margin-bottom:8px}
+  .hero-copy h1 .cyan{color:var(--cyan)}
+  .hero-copy p.lede{color:var(--slate);font-size:17px;max-width:46ch;margin:calc(var(--grid)*3) 0 calc(var(--grid)*5)}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .btn-primary{
+    font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+    padding:16px 26px;background:var(--cyan);color:#03202a;border:none;border-radius:4px;
+    cursor:pointer;font-weight:600;transition:transform .3s,box-shadow .3s;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(6,182,212,.35)}
+  .btn-ghost{
+    font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+    padding:16px 26px;background:transparent;color:var(--white);border:1px solid var(--line);
+    border-radius:4px;cursor:pointer;transition:border-color .3s,color .3s;text-decoration:none;
+  }
+  .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+
+  .hero-stats{display:flex;gap:calc(var(--grid)*5);margin-top:calc(var(--grid)*6);flex-wrap:wrap}
+  .hero-stats .stat b{font-family:var(--mono);font-size:24px;color:var(--cyan);font-weight:600;display:block}
+  .hero-stats .stat span{font-size:11px;color:var(--slate);letter-spacing:.14em;text-transform:uppercase;font-family:var(--mono)}
+
+  /* Hero visual: instrument + floating UI */
+  .hero-visual{position:relative;height:520px;display:grid;place-items:center}
+  .device{
+    width:200px;height:440px;border-radius:18px;position:relative;
+    background:linear-gradient(160deg,#1c2a44,#0d1526 60%);
+    border:1px solid rgba(148,163,184,.22);
+    box-shadow:0 40px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+    animation:float 7s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  .device .screen{
+    margin:22px auto 0;width:150px;height:150px;border-radius:14px;
+    background:radial-gradient(circle at 50% 40%,#04222c,#021119);
+    border:1px solid rgba(6,182,212,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:inset 0 0 30px rgba(6,182,212,.18);
+  }
+  .device .screen .temp{font-family:var(--mono);font-size:38px;font-weight:600;color:var(--cyan-bright);letter-spacing:-.02em}
+  .device .screen .unit{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.2em}
+  .device .screen .status{font-family:var(--mono);font-size:9px;color:var(--slate);letter-spacing:.24em;margin-top:6px}
+  .device .body{position:absolute;bottom:0;left:0;right:0;height:150px;background:linear-gradient(#0d1526,#0a1120);border-top:1px solid rgba(148,163,184,.14);border-radius:0 0 18px 18px}
+  .device .body .knob{position:absolute;top:24px;left:50%;transform:translateX(-50%);width:70px;height:70px;border-radius:50%;border:2px solid rgba(148,163,184,.25);box-shadow:inset 0 0 18px rgba(0,0,0,.6)}
+  .device .body .knob::after{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:3px;height:16px;background:var(--cyan);border-radius:2px;box-shadow:0 0 8px var(--cyan);animation:knobspin 12s linear infinite}
+  @keyframes knobspin{to{transform:translateX(-50%) rotate(360deg)}}
+  .device .leds{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:10px}
+  .device .leds i{width:8px;height:8px;border-radius:50%;background:var(--cyan);opacity:.35;box-shadow:0 0 8px var(--cyan);animation:led 2.4s ease-in-out infinite}
+  .device .leds i:nth-child(2){animation-delay:.4s}
+  .device .leds i:nth-child(3){animation-delay:.8s}
+  @keyframes led{0%,100%{opacity:.25}50%{opacity:1}}
+
+  .water{position:absolute;bottom:-6%;left:50%;transform:translateX(-50%);width:340px;height:120px;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 0%,rgba(6,182,212,.28),transparent 70%);filter:blur(6px);animation:float 9s ease-in-out infinite}
+
+  .ui-card{
+    position:absolute;background:rgba(15,23,42,.62);backdrop-filter:blur(10px);
+    border:1px solid rgba(6,182,212,.28);border-radius:10px;padding:14px 16px;
+    box-shadow:0 18px 40px rgba(0,0,0,.4);animation:breathe 5s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{transform:translateY(0);opacity:.92}50%{transform:translateY(-8px);opacity:1}}
+  .ui-card .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--slate);text-transform:uppercase}
+  .ui-card .val{font-family:var(--mono);font-size:18px;color:var(--cyan-bright);font-weight:600;margin-top:2px}
+  .ui-card .val small{font-size:11px;color:var(--slate)}
+  .card-a{top:6%;left:-4%}
+  .card-b{top:44%;right:-6%;animation-delay:1.4s}
+  .card-c{bottom:6%;left:2%;animation-delay:.7s}
+  .spark{width:120px;height:34px;margin-top:6px}
+
+  .hero-scroll{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--slate);text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .hero-scroll .line{width:1px;height:34px;background:linear-gradient(var(--cyan),transparent);animation:drop 2s ease-in-out infinite}
+  @keyframes drop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  /* ---------- Precision section ---------- */
+  .precision-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:calc(var(--grid)*8);align-items:center}
+  .precision-copy h2{font-size:clamp(30px,4.4vw,52px);font-weight:800;letter-spacing:-.02em;line-height:1.02;text-transform:uppercase}
+  .precision-copy h2 .cyan{color:var(--cyan)}
+  .precision-copy p{color:var(--slate);margin-top:calc(var(--grid)*3);max-width:46ch}
+  .spec-list{margin-top:calc(var(--grid)*5);display:flex;flex-direction:column;gap:2px}
+  .spec-row{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0;border-top:1px solid var(--line);font-family:var(--mono);transition:border-color .3s}
+  .spec-row:last-child{border-bottom:1px solid var(--line)}
+  .spec-row:hover{border-color:var(--cyan)}
+  .spec-row .k{color:var(--slate);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+  .spec-row .v{color:var(--white);font-size:16px;font-weight:500}
+  .spec-row .v em{color:var(--cyan);font-style:normal}
+
+  .graph-card{
+    background:linear-gradient(160deg,rgba(17,30,56,.9),rgba(11,18,32,.9));
+    border:1px solid var(--line);border-radius:16px;padding:calc(var(--grid)*4);position:relative;overflow:hidden;
+  }
+  .graph-card .gc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate)}
+  .graph-card .gc-head .live{color:var(--cyan);display:inline-flex;align-items:center;gap:7px}
+  .graph-card .gc-head .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:led 1.6s infinite}
+  .graph-svg{width:100%;height:auto;display:block}
+  .graph-svg .gridline{stroke:rgba(148,163,184,.12);stroke-width:1}
+  .graph-svg .target{stroke:var(--cyan);stroke-width:1.5;stroke-dasharray:5 5;opacity:.6}
+  .graph-svg .curve{fill:none;stroke:var(--cyan-bright);stroke-width:2.5;filter:drop-shadow(0 0 6px rgba(34,211,238,.5))}
+  .graph-svg .axis{fill:var(--slate);font-family:var(--mono);font-size:9px}
+  .graph-foot{display:flex;gap:24px;margin-top:18px;font-family:var(--mono)}
+  .graph-foot div span{display:block;font-size:10px;color:var(--slate);letter-spacing:.14em;text-transform:uppercase}
+  .graph-foot div b{font-size:20px;color:var(--cyan-bright);font-weight:600}
+
+  /* ---------- Seal section ---------- */
+  .seal{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(180deg,transparent,rgba(6,182,212,.03),transparent)}
+  .seal-grid{display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--grid)*8);align-items:center}
+  .bag{
+    position:relative;height:440px;border-radius:14px;overflow:hidden;
+    background:linear-gradient(150deg,#16324a,#0a1a2b);border:1px solid rgba(148,163,184,.2);
+    box-shadow:inset 0 0 60px rgba(0,0,0,.5);
+  }
+  .bag .food{position:absolute;inset:12%;border-radius:10px;background:
+    radial-gradient(circle at 40% 30%,#1e4a5e,#0d2637 70%);
+    border:1px solid rgba(6,182,212,.25);box-shadow:inset 0 0 40px rgba(6,182,212,.15)}
+  .bag .food::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.03) 0 2px,transparent 2px 9px);border-radius:10px}
+  .bag .gloss{position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.14) 45%,transparent 60%);mix-blend-mode:screen;animation:sheen 6s ease-in-out infinite}
+  @keyframes sheen{0%,100%{transform:translateX(-30%)}50%{transform:translateX(30%)}}
+  .bag .seal-line{position:absolute;top:0;left:0;right:0;height:22px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.4) 0 3px,transparent 3px 7px);border-bottom:1px solid rgba(148,163,184,.3)}
+  .bag .bubbles i{position:absolute;bottom:8%;width:6px;height:6px;border-radius:50%;background:rgba(34,211,238,.5);animation:rise 6s linear infinite}
+  .bag .bubbles i:nth-child(1){left:20%;animation-duration:5s}
+  .bag .bubbles i:nth-child(2){left:48%;width:4px;height:4px;animation-duration:7s;animation-delay:1s}
+  .bag .bubbles i:nth-child(3){left:72%;width:8px;height:8px;animation-duration:6s;animation-delay:2s}
+  .bag .bubbles i:nth-child(4){left:34%;width:3px;height:3px;animation-duration:8s;animation-delay:3s}
+  @keyframes rise{0%{transform:translateY(0);opacity:0}10%{opacity:.8}100%{transform:translateY(-360px);opacity:0}}
+  .bag .o2{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--mono);font-size:13px;letter-spacing:.2em;color:var(--cyan);border:1px solid var(--cyan);padding:6px 12px;border-radius:4px;background:rgba(15,23,42,.6)}
+
+  .seal-copy h2{font-size:clamp(30px,4.4vw,52px);font-weight:800;letter-spacing:-.02em;line-height:1.02;text-transform:uppercase}
+  .seal-copy h2 .strike{color:var(--slate);text-decoration:line-through;text-decoration-color:var(--cyan)}
+  .seal-copy p{color:var(--slate);margin-top:calc(var(--grid)*3);max-width:44ch}
+  .o2-meter{margin-top:calc(var(--grid)*5);font-family:var(--mono)}
+  .o2-meter .row{display:flex;justify-content:space-between;font-size:12px;color:var(--slate);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+  .o2-meter .row b{color:var(--cyan)}
+  .o2-track{height:8px;border-radius:4px;background:rgba(148,163,184,.15);overflow:hidden}
+  .o2-fill{height:100%;width:2%;background:linear-gradient(90deg,var(--cyan),var(--cyan-bright));border-radius:4px;box-shadow:0 0 14px rgba(6,182,212,.6);transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+
+  /* ---------- Recipe matrix ---------- */
+  .matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:calc(var(--grid)*3)}
+  .chip{
+    background:linear-gradient(165deg,rgba(17,30,56,.85),rgba(11,18,32,.85));
+    border:1px solid var(--line);border-radius:12px;padding:calc(var(--grid)*3);
+    transition:transform .35s cubic-bezier(.4,0,.2,1),border-color .35s,box-shadow .35s;cursor:default;
+    position:relative;overflow:hidden;
+  }
+  .chip::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 50% -20%,rgba(6,182,212,.12),transparent 60%);opacity:0;transition:opacity .35s}
+  .chip:hover{transform:translateY(-6px);border-color:var(--cyan);box-shadow:0 20px 44px rgba(0,0,0,.45)}
+  .chip:hover::before{opacity:1}
+  .chip .swatch{height:96px;border-radius:8px;margin-bottom:16px;position:relative;overflow:hidden;border:1px solid rgba(148,163,184,.15)}
+  .chip .swatch .t{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9px;color:var(--white);letter-spacing:.1em;background:rgba(2,17,25,.7);padding:3px 6px;border-radius:3px}
+  .sw1{background:linear-gradient(135deg,#2a4a3a,#12261d)}
+  .sw2{background:linear-gradient(135deg,#4a3a2a,#241710)}
+  .sw3{background:linear-gradient(135deg,#3a2a4a,#1c1226)}
+  .sw4{background:linear-gradient(135deg,#2a3a4a,#121f26)}
+  .chip h3{font-size:17px;font-weight:600;letter-spacing:-.01em}
+  .chip .meta{display:flex;gap:18px;margin-top:14px;font-family:var(--mono)}
+  .chip .meta div span{display:block;font-size:9px;color:var(--slate);letter-spacing:.16em;text-transform:uppercase}
+  .chip .meta div b{font-size:15px;color:var(--cyan-bright);font-weight:600}
+  .chip .outcome{margin-top:14px;font-size:12px;color:var(--slate);font-family:var(--mono);border-top:1px dashed var(--line);padding-top:12px}
+
+  /* ---------- CTA ---------- */
+  .cta{text-align:center}
+  .cta .panel{
+    background:linear-gradient(160deg,rgba(17,30,56,.9),rgba(11,18,32,.95));
+    border:1px solid rgba(6,182,212,.25);border-radius:20px;padding:calc(var(--grid)*9) calc(var(--grid)*5);
+    position:relative;overflow:hidden;
+  }
+  .cta .panel::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 120% at 50% 120%,rgba(6,182,212,.18),transparent 60%);pointer-events:none}
+  .cta h2{font-size:clamp(32px,5vw,60px);font-weight:800;letter-spacing:-.02em;text-transform:uppercase;line-height:1}
+  .cta p{color:var(--slate);margin:calc(var(--grid)*3) auto calc(var(--grid)*5);max-width:48ch;font-size:16px}
+  .cta .price{font-family:var(--mono);color:var(--cyan-bright);font-size:14px;letter-spacing:.14em;margin-bottom:calc(var(--grid)*4)}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:calc(var(--grid)*8) 0 calc(var(--grid)*5)}
+  .foot-grid{display:flex;justify-content:space-between;align-items:flex-start;gap:40px;flex-wrap:wrap}
+  .foot-grid .cols{display:flex;gap:calc(var(--grid)*8);flex-wrap:wrap}
+  .foot-col h4{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px}
+  .foot-col a{display:block;color:var(--slate);text-decoration:none;font-size:13px;margin-bottom:9px;transition:color .25s}
+  .foot-col a:hover{color:var(--white)}
+  .foot-bottom{margin-top:calc(var(--grid)*6);padding-top:calc(var(--grid)*3);border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;color:var(--slate);letter-spacing:.1em}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.4,0,.2,1),transform .8s cubic-bezier(.4,0,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:900px){
+    .hero-grid,.precision-grid,.seal-grid{grid-template-columns:1fr;gap:calc(var(--grid)*6)}
+    .hero{padding-top:110px}
+    .hero-visual{height:440px}
+    .matrix{grid-template-columns:repeat(2,1fr)}
+    .nav-links{display:none}
+    .seal-grid .bag{order:2}
+  }
+  @media(max-width:560px){
+    .matrix{grid-template-columns:1fr}
+    .card-a{left:0}.card-b{right:0}.card-c{left:0}
+    .hero-stats{gap:calc(var(--grid)*3)}
+    .foot-grid{flex-direction:column}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos"></div>
+  <div class="caustics"></div>
+  <div class="grain"></div>
+
+  <header id="hdr">
+    <div class="wrap">
+      <nav>
+        <div class="brand">
+          <span class="mark"></span>
+          <span>VAPOR&nbsp;&amp;&nbsp;STEEL<small>Precision Lab</small></span>
+        </div>
+        <div class="nav-links">
+          <a href="#precision">Precision</a>
+          <a href="#seal">The Seal</a>
+          <a href="#results">Results</a>
+          <a href="#specs">Specs</a>
+        </div>
+        <a href="#cta" class="nav-cta">Configure Unit</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">Immersion Circulator · Model VS-01</span>
+          <h1><span class="thin">Cook at the molecular</span><span class="cyan">Precision</span> of a lab.</h1>
+          <p class="lede">Vapor &amp; Steel holds water to ±0.1°C, indefinitely. No guesswork, no drift — just the exact temperature your protein needs, from first second to last.</p>
+          <div class="hero-actions">
+            <button class="btn-primary">Configure Unit</button>
+            <a href="#precision" class="btn-ghost">View the science</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><b>±0.1°C</b><span>Accuracy</span></div>
+            <div class="stat"><b>40 L</b><span>Max volume</span></div>
+            <div class="stat"><b>0.5–95°C</b><span>Range</span></div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="water"></div>
+          <div class="device">
+            <div class="screen">
+              <span class="temp" id="heroTemp">54.4</span>
+              <span class="unit">°C SET</span>
+              <span class="status">● STABLE</span>
+            </div>
+            <div class="body">
+              <div class="knob"></div>
+              <div class="leds"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+
+          <div class="ui-card card-a">
+            <div class="lbl">Water temp</div>
+            <div class="val" id="cardTemp">54.4 <small>°C</small></div>
+            <svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none">
+              <polyline points="0,26 12,20 24,24 36,14 48,18 60,10 72,15 84,9 96,13 108,8 120,11"
+                fill="none" stroke="#22D3EE" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="ui-card card-b">
+            <div class="lbl">Remaining</div>
+            <div class="val" id="timer">04:12:38</div>
+          </div>
+          <div class="ui-card card-c">
+            <div class="lbl">Flow rate</div>
+            <div class="val">8.0 <small>L/min</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">SCROLL<span class="line"></span></div>
+  </section>
+
+  <!-- PRECISION -->
+  <section id="precision">
+    <div class="wrap">
+      <div class="precision-grid">
+        <div class="precision-copy reveal">
+          <span class="eyebrow">The Science</span>
+          <h2>Stability you can <span class="cyan">trust</span> to the tenth of a degree.</h2>
+          <p>Conventional sous-vide drifts as it heats. Vapor &amp; Steel's PID controller samples the bath 20 times per second, correcting micro-fluctuations before they reach your food.</p>
+          <div class="spec-list">
+            <div class="spec-row"><span class="k">Control algorithm</span><span class="v"><em>PID</em> closed-loop</span></div>
+            <div class="spec-row"><span class="k">Sampling rate</span><span class="v">20 Hz</span></div>
+            <div class="spec-row"><span class="k">Thermal overshoot</span><span class="v"><em>&lt; 0.05°C</em></span></div>
+            <div class="spec-row"><span class="k">Heating element</span><span class="v">1200 W titanium</span></div>
+          </div>
+        </div>
+
+        <div class="graph-card reveal">
+          <div class="gc-head">
+            <span>Thermal stability · 24h soak</span>
+            <span class="live">LIVE FEED</span>
+          </div>
+          <svg class="graph-svg" viewBox="0 0 520 260" preserveAspectRatio="xMidYMid meet">
+            <!-- gridlines -->
+            <line class="gridline" x1="40" y1="40" x2="500" y2="40"/>
+            <line class="gridline" x1="40" y1="90" x2="500" y2="90"/>
+            <line class="gridline" x1="40" y1="140" x2="500" y2="140"/>
+            <line class="gridline" x1="40" y1="190" x2="500" y2="190"/>
+            <line class="gridline" x1="40" y1="220" x2="500" y2="220"/>
+            <!-- target -->
+            <line class="target" x1="40" y1="130" x2="500" y2="130"/>
+            <!-- curve -->
+            <path class="curve" d="M40,215 C90,150 120,108 160,128 C200,148 230,132 270,130 C310,128 340,134 380,130 C420,126 450,131 500,130"/>
+            <!-- axis labels -->
+            <text class="axis" x="8" y="44">56</text>
+            <text class="axis" x="8" y="94">55</text>
+            <text class="axis" x="8" y="144">54</text>
+            <text class="axis" x="8" y="194">53</text>
+            <text class="axis" x="40" y="240">0h</text>
+            <text class="axis" x="250" y="240">12h</text>
+            <text class="axis" x="470" y="240">24h</text>
+          </svg>
+          <div class="graph-foot">
+            <div><span>Mean temp</span><b>54.4°C</b></div>
+            <div><span>Deviation</span><b>±0.08°C</b></div>
+            <div><span>Corrections</span><b>1,728,000</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEAL -->
+  <section id="seal" class="seal">
+    <div class="wrap">
+      <div class="seal-grid">
+        <div class="bag reveal">
+          <div class="seal-line"></div>
+          <div class="food"></div>
+          <div class="gloss"></div>
+          <div class="bubbles"><i></i><i></i><i></i><i></i></div>
+          <div class="o2">O₂ → 0.02%</div>
+        </div>
+        <div class="seal-copy reveal">
+          <span class="eyebrow">The Seal</span>
+          <h2><span class="strike">Oxygen</span> is the enemy.</h2>
+          <p>Every degree of doneness lives or dies on contact with air. Our vacuum protocol evacuates to 0.02% residual oxygen, locking flavor, moisture, and color inside a crystal-clear barrier.</p>
+          <div class="o2-meter">
+            <div class="row"><span>Residual oxygen</span><b id="o2val">0.02%</b></div>
+            <div class="o2-track"><div class="o2-fill" id="o2fill" data-w="2"></div></div>
+          </div>
+          <div class="spec-list" style="margin-top:24px">
+            <div class="spec-row"><span class="k">Seal integrity</span><span class="v"><em>400 mbar</em> chamber</span></div>
+            <div class="spec-row"><span class="k">Bag clarity</span><span class="v">Optical-grade PA/PE</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">The Results</span>
+        <h2>Calibrated outcomes, not luck.</h2>
+        <p>Every result is a data point. Hover a specimen to inspect its thermal signature and texture profile.</p>
+      </div>
+      <div class="matrix">
+        <div class="chip reveal">
+          <div class="swatch sw1"><span class="t">SPEC-01</span></div>
+          <h3>Chicken Breast</h3>
+          <div class="meta"><div><span>Temp</span><b>63°C</b></div><div><span>Time</span><b>1h 30</b></div></div>
+          <div class="outcome">Outcome · Juicy, opaque, no rubber.</div>
+        </div>
+        <div class="chip reveal">
+          <div class="swatch sw2"><span class="t">SPEC-02</span></div>
+          <h3>Short Rib</h3>
+          <div class="meta"><div><span>Temp</span><b>56°C</b></div><div><span>Time</span><b>72h</b></div></div>
+          <div class="outcome">Outcome · Butter-soft, rosy core.</div>
+        </div>
+        <div class="chip reveal">
+          <div class="swatch sw3"><span class="t">SPEC-03</span></div>
+          <h3>Salmon Fillet</h3>
+          <div class="meta"><div><span>Temp</span><b>42°C</b></div><div><span>Time</span><b>38m</b></div></div>
+          <div class="outcome">Outcome · Silky, barely set.</div>
+        </div>
+        <div class="chip reveal">
+          <div class="swatch sw4"><span class="t">SPEC-04</span></div>
+          <h3>Egg Yolk</h3>
+          <div class="meta"><div><span>Temp</span><b>64.5°C</b></div><div><span>Time</span><b>45m</b></div></div>
+          <div class="outcome">Outcome · Custard-gel, jammy.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta" class="cta">
+    <div class="wrap">
+      <div class="panel reveal">
+        <span class="eyebrow" style="justify-content:center">Ready to calibrate</span>
+        <h2>Own the temperature.</h2>
+        <p>The Vapor &amp; Steel VS-01 ships with the vacuum chamber, recipe matrix, and lifetime firmware updates. Configure your unit and start cooking at the edge of physics.</p>
+        <div class="price">FROM $349 · FREE CALIBRATION CERT</div>
+        <div class="hero-actions" style="justify-content:center">
+          <button class="btn-primary">Configure Unit</button>
+          <a href="#specs" class="btn-ghost">Download spec sheet</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="specs">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <div class="brand" style="margin-bottom:14px"><span class="mark"></span><span>VAPOR&nbsp;&amp;&nbsp;STEEL<small>Precision Lab</small></span></div>
+          <p style="color:var(--slate);font-size:13px;max-width:34ch">Scientific-grade sous-vide for kitchens that treat cooking as measurement.</p>
+        </div>
+        <div class="cols">
+          <div class="foot-col">
+            <h4>Product</h4>
+            <a href="#precision">Precision</a>
+            <a href="#seal">The Seal</a>
+            <a href="#results">Results</a>
+            <a href="#cta">Configure</a>
+          </div>
+          <div class="foot-col">
+            <h4>Support</h4>
+            <a href="#">Calibration</a>
+            <a href="#">Firmware</a>
+            <a href="#">Manuals</a>
+            <a href="#">Contact</a>
+          </div>
+          <div class="foot-col">
+            <h4>Company</h4>
+            <a href="#">Lab</a>
+            <a href="#">Research</a>
+            <a href="#">Press</a>
+          </div>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2024 VAPOR &amp; STEEL — ALL VALUES VERIFIED</span>
+        <span>MODEL VS-01 · CAL 0.1°C · SERIAL #000000</span>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  // Header scroll state
+  const hdr = document.getElementById('hdr');
+  addEventListener('scroll', () => {
+    hdr.classList.toggle('scrolled', scrollY > 40);
+  }, {passive:true});
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        if (e.target.querySelector('#o2fill')) {
+          const f = e.target.querySelector('#o2fill');
+          f.style.width = f.dataset.w + '%';
+        }
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.18});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Ambient live readouts (respect reduced motion)
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const heroTemp = document.getElementById('heroTemp');
+  const cardTemp = document.getElementById('cardTemp');
+  const timerEl = document.getElementById('timer');
+
+  let secs = 4*3600 + 12*60 + 38;
+  function fmt(s){
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+    return [h,m,ss].map(n=>String(n).padStart(2,'0')).join(':');
+  }
+  function tick(){
+    if (secs > 0) secs--;
+    timerEl.textContent = fmt(secs);
+  }
+  function jitter(){
+    const t = (54.4 + (Math.random()-0.5)*0.12).toFixed(1);
+    heroTemp.textContent = t;
+    cardTemp.innerHTML = t + ' <small>°C</small>';
+  }
+  if (!reduce){
+    setInterval(tick, 1000);
+    setInterval(jitter, 2600);
+  }
+</script>
+</body>
+</html>

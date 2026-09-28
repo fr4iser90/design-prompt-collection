@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Wet Leaf — Surface Tension</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#e0f0ff;
+    --dim:#7d948a;
+    --emerald:#1a3b2a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:#020202;
+    overflow:hidden;
+    font-family:'Playfair Display',Georgia,serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{position:fixed;inset:0;width:100vw;height:100vh;display:block;cursor:crosshair}
+
+  .ui{position:fixed;inset:0;pointer-events:none;z-index:5}
+
+  .brand{
+    position:absolute;top:clamp(20px,3.6vw,44px);left:clamp(20px,3.6vw,48px);
+    max-width:min(46vw,480px);
+  }
+  .brand .kicker{
+    font-style:italic;font-weight:400;
+    font-size:clamp(10px,1.1vw,13px);letter-spacing:.34em;text-transform:uppercase;
+    color:var(--dim);opacity:.9;margin-bottom:.7em;
+  }
+  .brand h1{
+    font-weight:500;line-height:.9;letter-spacing:-.015em;
+    font-size:clamp(40px,7.4vw,94px);
+    color:var(--ink);
+    text-shadow:0 0 34px rgba(224,240,255,.16),0 2px 30px rgba(0,0,0,.6);
+  }
+  .brand h1 .thin{font-weight:400;font-style:italic;color:#b9d3e0}
+
+  .plate{
+    position:absolute;right:clamp(20px,3.6vw,48px);bottom:clamp(20px,3.2vw,40px);
+    text-align:right;max-width:min(60vw,420px);
+  }
+  .plate .rule{
+    height:1px;width:clamp(120px,18vw,220px);margin-left:auto;margin-bottom:14px;
+    background:linear-gradient(90deg,transparent,rgba(224,240,255,.5));
+  }
+  .plate .latin{font-style:italic;font-weight:400;font-size:clamp(12px,1.4vw,16px);color:#cfe0ea}
+  .plate .sub{font-style:italic;font-weight:400;font-size:clamp(10px,1.1vw,12.5px);color:var(--dim);margin-top:.5em;letter-spacing:.02em}
+  .plate .meta{font-style:normal;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:rgba(125,148,138,.7);margin-top:12px}
+
+  .hint{
+    position:absolute;left:50%;bottom:clamp(16px,2.6vw,28px);transform:translateX(-50%);
+    font-style:italic;font-size:clamp(10px,1.15vw,13px);letter-spacing:.16em;
+    color:rgba(224,240,255,.55);text-align:center;white-space:nowrap;
+    text-shadow:0 1px 14px rgba(0,0,0,.7);
+  }
+  .hint b{font-weight:500;color:rgba(224,240,255,.82);font-style:normal;letter-spacing:.04em}
+
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:4;
+    background:radial-gradient(120% 100% at 30% 22%,transparent 42%,rgba(0,0,0,.55) 100%);}
+
+  @media (max-width:640px){
+    .brand{max-width:78vw}
+    .plate{max-width:70vw}
+    .hint{white-space:normal;max-width:80vw}
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div class="vignette"></div>
+<div class="ui">
+  <div class="brand">
+    <div class="kicker">Macro Study · Nocturnal</div>
+    <h1>Wet <span class="thin">Leaf</span></h1>
+  </div>
+  <div class="plate">
+    <div class="rule"></div>
+    <div class="latin">Fig. I — Surface Tension</div>
+    <div class="sub">Dew resting upon a waxy cuticle under moonlight</div>
+    <div class="meta">n = 1.333 · contact angle ≈ 150°</div>
+  </div>
+  <div class="hint">Hover to <b>coalesce</b> &nbsp;·&nbsp; Click to <b>shake the dew loose</b></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas=document.getElementById('stage');
+  const ctx=canvas.getContext('2d',{alpha:false});
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,DPR=1,cx=0,cy=0,leafR=0;
+  let leafEdge={x:0,y:0,angle:0,nx:0,ny:0};
+  let bg=null;
+  let droplets=[];
+  let ripples=[];
+  let pointer={x:0,y:0,active:false};
+  let leafBreath=1;
+  let time=0;
+
+  const TAU=Math.PI*2;
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const rand=(a,b)=>a+Math.random()*(b-a);
+
+  function leafPath(g){
+    g.beginPath();
+    g.ellipse(cx,cy,leafR,leafR*0.86,0,0,TAU);
+  }
+
+  function buildBackground(){
+    bg=document.createElement('canvas');
+    bg.width=Math.max(1,W); bg.height=Math.max(1,H);
+    const g=bg.getContext('2d');
+    g.fillStyle='#020202'; g.fillRect(0,0,W,H);
+
+    // moonlight wash from top-left
+    let mg=g.createRadialGradient(W*0.12,-H*0.12,0,W*0.12,-H*0.12,Math.max(W,H)*1.15);
+    mg.addColorStop(0,'rgba(150,185,215,0.20)');
+    mg.addColorStop(0.35,'rgba(70,105,135,0.07)');
+    mg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=mg; g.fillRect(0,0,W,H);
+
+    // leaf body
+    g.save();
+    leafPath(g);
+    g.clip();
+    let lg=g.createRadialGradient(W*0.24,H*0.16,leafR*0.05,W*0.5,H*0.6,leafR*1.15);
+    lg.addColorStop(0,'#173527');
+    lg.addColorStop(0.28,'#0c2117');
+    lg.addColorStop(0.6,'#05100a');
+    lg.addColorStop(1,'#010202');
+    g.fillStyle=lg; g.fillRect(0,0,W,H);
+
+    // waxy sheen band
+    let sh=g.createLinearGradient(W*0.05,H*0.05,W*0.72,H*0.82);
+    sh.addColorStop(0,'rgba(150,195,165,0.16)');
+    sh.addColorStop(0.22,'rgba(90,140,110,0.05)');
+    sh.addColorStop(0.55,'rgba(0,0,0,0)');
+    g.fillStyle=sh; g.fillRect(0,0,W,H);
+
+    // veins
+    const veins=9;
+    for(let i=0;i<veins;i++){
+      const t=i/(veins-1);
+      const y=cy-leafR*0.62+leafR*1.24*t;
+      const amp=leafR*0.10;
+      g.beginPath();
+      g.moveTo(cx-leafR*0.98,y);
+      g.bezierCurveTo(cx-leafR*0.35,y-amp,cx+leafR*0.35,y+amp,cx+leafR*0.98,y-amp*0.3);
+      g.lineWidth=Math.max(1,leafR*0.006);
+      g.strokeStyle='rgba(150,200,170,0.05)';
+      g.stroke();
+      g.beginPath();
+      g.moveTo(cx-leafR*0.98,y+1.4);
+      g.bezierCurveTo(cx-leafR*0.35,y-amp+1.4,cx+leafR*0.35,y+amp+1.4,cx+leafR*0.98,y-amp*0.3+1.4);
+      g.lineWidth=Math.max(1,leafR*0.004);
+      g.strokeStyle='rgba(0,0,0,0.28)';
+      g.stroke();
+    }
+    // central vein
+    g.beginPath();
+    g.moveTo(cx-leafR,cy);
+    g.bezierCurveTo(cx-leafR*0.4,cy-leafR*0.03,cx+leafR*0.4,cy+leafR*0.03,cx+leafR,cy);
+    g.lineWidth=Math.max(2,leafR*0.016);
+    g.strokeStyle='rgba(160,210,180,0.07)';
+    g.stroke();
+
+    // edge shadow
+    g.restore();
+    g.save();
+    leafPath(g);
+    g.clip();
+    let es=g.createRadialGradient(cx,cy,leafR*0.55,cx,cy,leafR*1.02);
+    es.addColorStop(0,'rgba(0,0,0,0)');
+    es.addColorStop(1,'rgba(0,0,0,0.6)');
+    g.fillStyle=es; g.fillRect(0,0,W,H);
+    g.restore();
+
+    // rim light top-left
+    g.save();
+    leafPath(g);
+    g.lineWidth=Math.max(1.5,leafR*0.008);
+    g.strokeStyle='rgba(200,235,220,0.10)';
+    g.shadowColor='rgba(160,220,200,0.35)';
+    g.shadowBlur=leafR*0.05;
+    g.stroke();
+    g.restore();
+  }
+
+  function spawnDroplet(){
+    const a=rand(0,TAU), r=Math.sqrt(Math.random())*leafR*0.72;
+    return {
+      x:cx+Math.cos(a)*r,
+      y:cy+Math.sin(a)*r*0.86,
+      r:rand(4,10),
+      rx:0,ry:0,
+      vx:0,vy:0,
+      alive:true,
+      born:performance.now(),
+      grow:reduce?0:rand(4000,9000)
+    };
+  }
+
+  function initDroplets(){
+    droplets=[];
+    const N=clamp(Math.round((W*H)/26000),16,30);
+    for(let i=0;i<N;i++) droplets.push(spawnDroplet());
+  }
+
+  function computeLeafEdge(){
+    let best=null,bd=Infinity;
+    for(let i=0;i<40;i++){
+      const a=i/40*TAU;
+      const px=cx+Math.cos(a)*leafR;
+      const py=cy+Math.sin(a)*leafR*0.86;
+      const d=Math.hypot(px-W,py);
+      if(d<bd){bd=d;best={x:px,y:py,angle:a};}
+    }
+    const tx=-Math.sin(best.angle),ty=Math.cos(best.angle)*0.86;
+    let nx=tx,ny=ty;
+    const ox=W-best.x,oy=0-best.y;
+    if(nx*ox+ny*oy<0){nx=-nx;ny=-ny;}
+    const L=Math.hypot(nx,ny)||1; nx/=L; ny/=L;
+    leafEdge={x:best.x,y:best.y,angle:best.angle,nx,ny};
+  }
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    cx=W*0.5; cy=H*0.52;
+    leafR=Math.min(W,H)*0.62;
+    buildBackground();
+    computeLeafEdge();
+    if(!droplets.length) initDroplets();
+  }
+
+  function spawnRipple(x,y){
+    ripples.push({x,y,t0:performance.now(),max:Math.max(120,leafR*0.35)});
+  }
+
+  function dislodge(d){
+    d.alive=false;
+    const ex=leafEdge.x-d.x, ey=leafEdge.y-d.y;
+    const L=Math.hypot(ex,ey)||1;
+    d.vx=ex/L*2.4+rand(-0.4,0.4);
+    d.vy=ey/L*2.4+rand(-0.4,0.4);
+    spawnRipple(d.x,d.y);
+  }
+
+  function step(dt){
+    const now=performance.now();
+    const near=pointer.active?180:0;
+
+    for(let i=0;i<droplets.length;i++){
+      const d=droplets[i];
+      if(!d.alive) continue;
+      let ax=0,ay=0;
+      if(pointer.active){
+        const dx=pointer.x-d.x, dy=pointer.y-d.y;
+        const dist=Math.hypot(dx,dy)+0.001;
+        if(dist<near){
+          const f=(1-dist/near);
+          ax+=(dx/dist)*f*0.55;
+          ay+=(dy/dist)*f*0.55;
+        }
+      }
+      d.vx=(d.vx+ax)*0.86;
+      d.vy=(d.vy+ay)*0.86;
+      d.x+=d.vx*dt; d.y+=d.vy*dt;
+
+      const dx=d.x-cx, dy=(d.y-cy)/0.86;
+      const rr=Math.hypot(dx,dy);
+      if(rr>leafR*0.9){
+        const nx=dx/(rr||1), ny=dy/(rr||1);
+        const ex=leafEdge.x-d.x, ey=leafEdge.y-d.y;
+        if(nx*ex+ny*ey>0){ dislodge(d); }
+      }
+    }
+
+    // coalesce
+    for(let i=0;i<droplets.length;i++){
+      const a=droplets[i]; if(!a.alive) continue;
+      for(let j=i+1;j<droplets.length;j++){
+        const b=droplets[j]; if(!b.alive) continue;
+        const dx=b.x-a.x, dy=b.y-a.y;
+        const dist=Math.hypot(dx,dy)+0.001;
+        const thr=(a.r+b.r)*0.86;
+        if(dist<thr){
+          const wa=a.r*a.r*a.r, wb=b.r*b.r*b.r, tot=wa+wb;
+          a.x=(a.x*wa+b.x*wb)/tot;
+          a.y=(a.y*wa+b.y*wb)/tot;
+          a.vx=(a.vx*wa+b.vx*wb)/tot;
+          a.vy=(a.vy*wa+b.vy*wb)/tot;
+          a.r=Math.cbrt(tot);
+          b.alive=false;
+          spawnRipple(a.x,a.y);
+        }
+      }
+    }
+
+    // cleanup + respawn
+    const now2=performance.now();
+    droplets=droplets.filter(d=>{
+      if(!d.alive){
+        if(d.x<-40||d.x>W+40||d.y<-40||d.y>H+40) return false;
+        if(now2-d.born>14000) return false;
+      }
+      return true;
+    });
+    while(droplets.filter(d=>d.alive).length<20) droplets.push(spawnDroplet());
+
+    ripples=ripples.filter(r=>now-r.t0<1400);
+  }
+
+  function drawDroplet(d){
+    const now=performance.now();
+    let s=1;
+    if(!reduce && d.grow>0){
+      const p=clamp((now-d.born)/d.grow,0,1);
+      s=1-Math.pow(1-p,3);
+    }
+    const r=d.r*s;
+    if(r<0.6) return;
+    const rx=d.rx||r, ry=d.ry||r;
+    const x=d.x, y=d.y;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x,y,rx,ry,0,0,TAU);
+    ctx.clip();
+
+    const sx=x-rx*0.34, sy=y-ry*0.34, sw=rx*2.34, sh=ry*2.34;
+    ctx.drawImage(bg,sx,sy,sw,sh,x-rx,y-ry,rx*2,ry*2);
+
+    // refraction darkening
+    let rd=ctx.createRadialGradient(x,y,rx*0.15,x,y,rx);
+    rd.addColorStop(0,'rgba(0,0,0,0)');
+    rd.addColorStop(0.55,'rgba(0,0,0,0.06)');
+    rd.addColorStop(1,'rgba(0,0,0,0.42)');
+    ctx.fillStyle=rd; ctx.fillRect(x-rx,y-ry,rx*2,ry*2);
+
+    // caustic
+    let ca=ctx.createRadialGradient(x+rx*0.12,y+ry*0.16,0,x+rx*0.12,y+ry*0.16,rx*0.6);
+    ca.addColorStop(0,'rgba(220,240,255,0.12)');
+    ca.addColorStop(1,'rgba(220,240,255,0)');
+    ctx.fillStyle=ca; ctx.fillRect(x-rx,y-ry,rx*2,ry*2);
+
+    // moon specular
+    const mx=x-rx*0.36, my=y-ry*0.42, mr=Math.max(1.2,rx*0.24);
+    let sg=ctx.createRadialGradient(mx,my,0,mx,my,mr*2.2);
+    sg.addColorStop(0,'rgba(255,255,255,0.95)');
+    sg.addColorStop(0.4,'rgba(224,240,255,0.5)');
+    sg.addColorStop(1,'rgba(224,240,255,0)');
+    ctx.fillStyle=sg;
+    ctx.beginPath(); ctx.ellipse(mx,my,mr,mr*0.8,0,0,TAU); ctx.fill();
+
+    // rim reflection
+    ctx.lineWidth=Math.max(0.6,rx*0.05);
+    ctx.strokeStyle='rgba(190,225,240,0.22)';
+    ctx.beginPath(); ctx.ellipse(x,y,rx*0.92,ry*0.92,0,Math.PI*0.9,Math.PI*1.55); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.ellipse(x,y,rx*0.92,ry*0.92,0,Math.PI*1.05,Math.PI*1.4); ctx.stroke();
+
+    ctx.restore();
+
+    // cast shadow
+    ctx.save();
+    ctx.globalCompositeOperation='multiply';
+    let shg=ctx.createRadialGradient(x+rx*0.18,y+ry*0.3,rx*0.2,x+rx*0.18,y+ry*0.3,rx*1.35);
+    shg.addColorStop(0,'rgba(0,0,0,0.4)');
+    shg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=shg;
+    ctx.beginPath(); ctx.ellipse(x+rx*0.18,y+ry*0.3,rx*1.35,ry*1.1,0,0,TAU); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawRipples(){
+    const now=performance.now();
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    for(const r of ripples){
+      const p=(now-r.t0)/1400;
+      if(p>=1) continue;
+      const rad=r.max*p;
+      const alpha=(1-p)*0.22;
+      ctx.beginPath();
+      ctx.arc(r.x,r.y,rad,0,TAU);
+      ctx.lineWidth=Math.max(0.5,3*(1-p));
+      ctx.strokeStyle='rgba(200,235,255,'+alpha+')';
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.translate(cx,cy); ctx.scale(leafBreath,leafBreath); ctx.translate(-cx,-cy);
+    ctx.drawImage(bg,0,0);
+    ctx.restore();
+
+    drawRipples();
+    for(const d of droplets) drawDroplet(d);
+  }
+
+  let last=performance.now();
+  function loop(now){
+    let dt=(now-last)/16.667; last=now; dt=Math.min(dt,3);
+    time+=dt;
+    leafBreath=reduce?1:1+0.006*Math.sin(time*0.012);
+    step(dt);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // pointer
+  function setPointer(e){
+    pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true;
+  }
+  window.addEventListener('pointermove',setPointer,{passive:true});
+  window.addEventListener('pointerdown',e=>{
+    setPointer(e);
+    spawnRipple(e.clientX,e.clientY);
+    let best=null,bd=Infinity;
+    for(const d of droplets){
+      if(!d.alive) continue;
+      const dd=Math.hypot(d.x-e.clientX,d.y-e.clientY);
+      if(dd<bd){bd=dd;best=d;}
+    }
+    if(best&&bd<130) dislodge(best);
+  },{passive:true});
+  window.addEventListener('pointerleave',()=>{pointer.active=false;});
+
+  window.addEventListener('resize',()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(resize,150); });
+
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

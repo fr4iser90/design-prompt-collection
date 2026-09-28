@@ -72,16 +72,18 @@ npm run pipeline                 # ai:build → shots → pages → build
 |---------|------|
 | `ai:new` | new high-quality prompt briefs (uses `catalog.json`) |
 | `ai:build` | LLM implements each prompt as `runs/<model>/demo/index.html` |
-| `shots` | Playwright screenshots → `preview.png` + regenerate README |
+| `shots` | Playwright screenshots → `preview.png` + regenerate README (auto-installs Chromium if missing) |
+| `review` | vision score → README; score too low or broken shot → rebuild (max attempts then abandoned) |
 | `pages` | static site → `site/dist` |
 | `pipeline` | build demos + shots + pages + index |
 | `ship` | pipeline + completeness gate (one-shot) |
 | `worker` | autonomous loop: slot-wait → build → shots (optional fill) |
+| `stop` | STOP file + SIGTERM builds (`--force` kills hard) |
 | `slots` | print Gufo `slots_idle` / busy |
 | `check` | only finished entries? (pre-commit uses `--staged`) |
 | `hooks` | install git pre-commit |
 
-Multi-day: `npm run worker -- --fill --fill-n 10 --fill-when-below 1 --max-parallel 2 --commit` — stop with `touch STOP` or Ctrl+C. Details: `automation/README.md`.
+Multi-day: `npm run worker -- --fill --fill-n 10 --fill-when-below 1 --max-parallel 2 --commit --push` — stop with `npm run stop` (or `npm run stop -- --force`). Details: `automation/README.md`.
 | `build` | validate + README + index + catalog only |
 
 Steer fill with `--mood`, `--lane`, `--seed`, `--avoid`. Details: `automation/README.md`.
@@ -102,6 +104,6 @@ Steer fill with `--mood`, `--lane`, `--seed`, `--avoid`. Details: `automation/RE
 - Do not default to purple-glow SaaS or cream+terracotta clichés unless the brief intentionally targets that look
 - Do not add secrets, API keys, or binary bloat (keep previews lean)
 
-## GitHub Pages (later)
+## GitHub Pages
 
-`site/` is reserved. Pages should consume `index.json` + entry paths — do not fork content into a second tree.
+`npm run pages` → `site/dist`. Deploy: Settings → Pages → **GitHub Actions**, then `--gh-pages` after `--push` (or `npm run pages:deploy`). Workflow: `.github/workflows/pages.yml`.

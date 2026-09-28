@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arid Weave — Sun-Bleached Textile Swatches</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F0EBE1;
+    --ink:#3B332B;
+    --ink-soft:#6E6255;
+    --ink-faint:#9A8E7F;
+    --line:rgba(59,51,43,.16);
+    --line-soft:rgba(59,51,43,.09);
+    --clay:#CDB9A3;
+    --olive:#8A9A85;
+    --sand:#D4C5B0;
+    --iron:#7D6E5F;
+    --stone:#B0A89D;
+    --shadow:rgba(0,0,0,.05);
+    --shadow-strong:rgba(0,0,0,.08);
+    --display:'Playfair Display',Didot,'Bodoni MT','Times New Roman',serif;
+    --body:'Lato',system-ui,-apple-system,sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family:var(--body);
+    color:var(--ink);
+    background-color:var(--bg);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- Atmosphere ---------- */
+  .atmos{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 78% -10%, rgba(255,248,235,.9), rgba(255,248,235,0) 55%),
+      radial-gradient(90% 80% at 8% 105%, rgba(120,104,84,.10), rgba(120,104,84,0) 60%),
+      radial-gradient(140% 120% at 50% 50%, rgba(240,235,225,0) 55%, rgba(120,104,84,.07) 100%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 6s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}20%{transform:translate(-6%,4%)}40%{transform:translate(4%,-5%)}
+    60%{transform:translate(-3%,3%)}80%{transform:translate(5%,2%)}100%{transform:translate(0,0)}
+  }
+  .ambient{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+  .mote{position:absolute;border-radius:50%;background:rgba(255,252,245,.6);filter:blur(.5px);}
+  .mote.m1{width:6px;height:6px;top:22%;left:18%;animation:drift1 26s ease-in-out infinite;}
+  .mote.m2{width:4px;height:4px;top:60%;left:70%;animation:drift2 32s ease-in-out infinite;}
+  .mote.m3{width:8px;height:8px;top:40%;left:88%;animation:drift3 40s ease-in-out infinite;opacity:.5;}
+  .mote.m4{width:3px;height:3px;top:80%;left:34%;animation:drift2 22s ease-in-out infinite reverse;}
+  @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-30px)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,25px)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-45px)}}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 clamp(1.25rem,4vw,3rem);position:relative;z-index:3;}
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    display:flex;align-items:center;justify-content:space-between;gap:1.5rem;
+    padding:1.5rem 0;border-bottom:1px solid var(--line-soft);
+  }
+  .brand{display:flex;align-items:baseline;gap:.55rem;text-decoration:none;color:var(--ink);}
+  .brand b{font-family:var(--display);font-weight:600;font-size:1.5rem;letter-spacing:.14em;}
+  .brand i{font-style:normal;font-size:.6rem;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-faint);font-weight:700;}
+  .nav{display:flex;align-items:center;gap:2rem;}
+  .nav a{
+    font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft);
+    position:relative;padding-bottom:3px;transition:color .4s ease;
+  }
+  .nav a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--ink);transition:width .4s ease;}
+  .nav a:hover{color:var(--ink);}
+  .nav a:hover::after{width:100%;}
+  .nav .est{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);}
+
+  /* ---------- Hero ---------- */
+  .hero{display:grid;grid-template-columns:1.55fr .9fr;gap:clamp(2rem,5vw,4.5rem);align-items:end;padding:clamp(3rem,7vw,6rem) 0 clamp(2.5rem,5vw,4rem);}
+  .kicker{font-size:.72rem;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:1.6rem;display:flex;align-items:center;gap:.7rem;}
+  .kicker::before{content:"";width:34px;height:1px;background:var(--ink-soft);display:inline-block;}
+  .hero h1{
+    font-family:var(--display);font-weight:500;font-size:clamp(2.9rem,8.2vw,6.4rem);
+    line-height:.98;letter-spacing:-.01em;color:var(--ink);
+  }
+  .hero h1 em{font-style:italic;font-weight:400;color:var(--iron);}
+  .hero h1 .thin{font-weight:400;color:var(--ink-soft);}
+  .lede{max-width:44ch;margin-top:1.8rem;font-size:1.02rem;font-weight:300;color:var(--ink-soft);line-height:1.75;}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:1.6rem 2.4rem;margin-top:2.2rem;padding-top:1.6rem;border-top:1px solid var(--line-soft);}
+  .hero-meta div span{display:block;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.35rem;}
+  .hero-meta div b{font-family:var(--display);font-weight:500;font-size:1.05rem;color:var(--ink);}
+
+  .hero-side{padding-bottom:.5rem;}
+  .hero-side .idx{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:1rem;}
+  .hero-side .note{font-family:var(--display);font-style:italic;font-weight:400;font-size:1.28rem;line-height:1.5;color:var(--ink);border-left:2px solid var(--clay);padding-left:1.2rem;}
+  .hero-side .sig{margin-top:1.4rem;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);}
+
+  /* ---------- Swatch rail ---------- */
+  .rail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:1.5rem;margin-bottom:2.2rem;}
+  .rail-head h2{font-family:var(--display);font-weight:500;font-size:clamp(1.5rem,3.4vw,2.1rem);letter-spacing:.01em;}
+  .rail-head .hint{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;}
+  .rail-head .hint b{color:var(--ink-soft);}
+
+  .rail{
+    display:flex;gap:clamp(2rem,3.6vw,3.4rem);
+    overflow-x:auto;padding:14px 4px 34px;scroll-snap-type:x proximity;
+    scrollbar-width:thin;scrollbar-color:var(--line) transparent;
+  }
+  .rail::-webkit-scrollbar{height:6px;}
+  .rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;}
+  .rail::-webkit-scrollbar-track{background:transparent;}
+
+  .swatch{
+    flex:0 0 150px;scroll-snap-align:start;cursor:pointer;background:transparent;border:0;
+    display:flex;flex-direction:column;gap:.85rem;text-align:left;font-family:inherit;color:inherit;
+    opacity:0;transform:translateY(26px);
+    transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);
+  }
+  .swatch.in{opacity:1;transform:translateY(0);}
+  .swatch:focus-visible{outline:2px solid var(--ink);outline-offset:4px;}
+
+  .fabric{
+    position:relative;height:200px;width:100%;
+    box-shadow:10px 10px 0px var(--shadow);
+    transition:transform .55s cubic-bezier(.2,.7,.2,1),box-shadow .55s cubic-bezier(.2,.7,.2,1);
+    background-color:var(--base);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.045) 1px 2px, transparent 2px 3px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, rgba(0,0,0,.04) 1px 2px, transparent 2px 3px);
+    background-size:120px 120px,auto,auto;
+    background-blend-mode:multiply,multiply,multiply;
+  }
+  .fabric::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(105deg, rgba(255,252,245,0) 32%, rgba(255,252,245,.55) 50%, rgba(255,252,245,0) 68%);
+    background-size:260% 100%;background-position:150% 0;opacity:0;
+    transition:background-position 1.15s ease,opacity .4s ease;
+  }
+  .swatch:hover .fabric,.swatch:focus-visible .fabric{transform:translateY(-5px);box-shadow:15px 15px 0px var(--shadow-strong);}
+  .swatch:hover .fabric::before,.swatch:focus-visible .fabric::before{opacity:1;background-position:-150% 0;}
+
+  .swatch-meta .num{font-size:.66rem;letter-spacing:.24em;color:var(--ink-faint);}
+  .swatch-meta h3{font-family:var(--display);font-weight:600;font-size:1.12rem;text-transform:uppercase;letter-spacing:.05em;margin-top:.35rem;line-height:1.15;}
+  .swatch-meta .sub{font-size:.72rem;letter-spacing:.05em;color:var(--ink-soft);margin-top:.3rem;font-weight:300;}
+
+  /* ---------- Detail ---------- */
+  .detail{
+    max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .75s cubic-bezier(.3,.7,.2,1),opacity .5s ease,margin-top .6s ease;
+    margin-top:0;
+  }
+  .detail.open{max-height:640px;opacity:1;margin-top:2.6rem;}
+  .detail-inner{
+    display:grid;grid-template-columns:230px 1fr;gap:clamp(1.8rem,4vw,3.4rem);
+    border-top:1px solid var(--line);padding-top:2.4rem;align-items:start;
+  }
+  .d-fabric{
+    position:relative;height:280px;width:100%;
+    box-shadow:14px 14px 0px var(--shadow);
+    background-color:var(--base);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.045) 1px 2px, transparent 2px 3px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.055) 0 1px, rgba(0,0,0,.04) 1px 2px, transparent 2px 3px);
+    background-size:120px 120px,auto,auto;background-blend-mode:multiply,multiply,multiply;
+  }
+  .d-fabric .stitch{
+    position:absolute;top:12px;right:12px;background:var(--bg);color:var(--ink);
+    font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;padding:.35rem .55rem;
+    border:1px dashed var(--ink-soft);box-shadow:3px 3px 0px var(--shadow);
+  }
+  .d-body .d-num{font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-faint);}
+  .d-body h3{font-family:var(--display);font-weight:500;font-size:clamp(1.9rem,4.5vw,3rem);line-height:1;margin:.5rem 0 .1rem;text-transform:uppercase;letter-spacing:.02em;}
+  .d-body .d-sub{font-family:var(--display);font-style:italic;font-size:1.05rem;color:var(--iron);margin-bottom:1.1rem;}
+  .d-body p.d-desc{max-width:52ch;font-weight:300;color:var(--ink-soft);line-height:1.75;font-size:.98rem;}
+
+  .specs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1.6rem 2.2rem;margin-top:2rem;}
+  .spec{border-top:1px solid var(--line);padding-top:.85rem;}
+  .spec .k{font-size:.64rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.4rem;}
+  .spec .v{font-family:var(--display);font-weight:500;font-size:1.15rem;color:var(--ink);line-height:1.3;}
+  .spec .v small{display:block;font-family:var(--body);font-weight:300;font-size:.78rem;color:var(--ink-soft);margin-top:.2rem;letter-spacing:.02em;}
+
+  .d-actions{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.2rem;}
+  .btn{font-family:var(--body);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;padding:.85rem 1.5rem;cursor:pointer;border:1px solid var(--ink);transition:background .4s ease,color .4s ease;}
+  .btn.solid{background:var(--ink);color:var(--bg);}
+  .btn.solid:hover{background:transparent;color:var(--ink);}
+  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn.ghost:hover{background:var(--ink);color:var(--bg);}
+
+  /* ---------- Philosophy ---------- */
+  .philosophy{padding:clamp(4rem,9vw,7rem) 0;border-top:1px solid var(--line-soft);margin-top:clamp(3rem,6vw,5rem);}
+  .phil-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(2rem,6vw,5rem);}
+  .phil-grid .kicker{margin-bottom:1.2rem;}
+  .phil-grid h2{font-family:var(--display);font-weight:500;font-size:clamp(1.9rem,4.4vw,3rem);line-height:1.05;letter-spacing:-.01em;}
+  .phil-grid h2 em{font-style:italic;color:var(--iron);}
+  .phil-body p{font-weight:300;color:var(--ink-soft);line-height:1.8;font-size:1.02rem;margin-bottom:1.2rem;max-width:56ch;}
+  .principles{list-style:none;margin-top:1.8rem;display:grid;gap:1.1rem;}
+  .principles li{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--line-soft);}
+  .principles li:last-child{border-bottom:0;}
+  .principles .pn{font-family:var(--display);font-style:italic;font-size:1.3rem;color:var(--clay);}
+  .principles .pt b{display:block;font-family:var(--display);font-weight:600;font-size:1.05rem;letter-spacing:.02em;margin-bottom:.2rem;}
+  .principles .pt span{font-size:.9rem;font-weight:300;color:var(--ink-soft);line-height:1.6;}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:clamp(2.5rem,5vw,4rem) 0 3rem;}
+  .foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;align-items:flex-end;}
+  .foot-mark{font-family:var(--display);font-weight:600;font-size:clamp(2rem,6vw,3.6rem);letter-spacing:.1em;}
+  .foot-links{display:flex;gap:2rem;flex-wrap:wrap;}
+  .foot-links a{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--ink-soft);transition:color .4s ease;}
+  .foot-links a:hover{color:var(--ink);}
+  .foot-bottom{display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;margin-top:2.5rem;padding-top:1.4rem;border-top:1px solid var(--line-soft);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:860px){
+    .hero{grid-template-columns:1fr;gap:2.4rem;}
+    .hero-side{padding-top:1rem;border-top:1px solid var(--line-soft);}
+    .detail-inner{grid-template-columns:1fr;}
+    .d-fabric{height:200px;max-width:280px;}
+    .phil-grid{grid-template-columns:1fr;gap:2rem;}
+  }
+  @media (max-width:640px){
+    .nav{display:none;}
+    .rail{
+      display:grid;grid-template-columns:repeat(2,1fr);gap:1.8rem 1.4rem;overflow:visible;padding:6px 0 10px;
+    }
+    .swatch{flex:none;}
+    .fabric{box-shadow:7px 7px 0px var(--shadow);}
+    .swatch:hover .fabric{box-shadow:10px 10px 0px var(--shadow-strong);}
+    .rail-head .hint{display:none;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;scroll-behavior:auto;}
+    .reveal,.swatch{opacity:1 !important;transform:none !important;}
+    .fabric::before{display:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos"></div>
+  <div class="ambient">
+    <span class="mote m1"></span><span class="mote m2"></span>
+    <span class="mote m3"></span><span class="mote m4"></span>
+  </div>
+  <div class="grain"></div>
+
+  <div class="wrap">
+    <header class="masthead">
+      <a class="brand" href="#top"><b>ARID&nbsp;WEAVE</b><i>Est. 1974 · Ouarzazate</i></a>
+      <nav class="nav">
+        <a href="#collection">Collection</a>
+        <a href="#philosophy">Philosophy</a>
+        <a href="#atelier">Atelier</a>
+        <span class="est">Sun-Bleached Series</span>
+      </nav>
+    </header>
+
+    <section class="hero" id="top">
+      <div class="hero-main">
+        <p class="kicker reveal">The Sun-Bleached Series · Vol. 05</p>
+        <h1 class="reveal">Cloth<br><em>worn</em> <span class="thin">by the</span><br>desert light.</h1>
+        <p class="lede reveal">Five textiles left long enough under an unforgiving sun to shed their loudness. What remains is quiet — faded, honest, and made to age in daylight.</p>
+        <div class="hero-meta reveal">
+          <div><span>Fibres</span><b>Flax · Silk · Wool</b></div>
+          <div><span>Palette</span><b>Desaturated Earth</b></div>
+          <div><span>Weight Range</span><b>118 – 340 gsm</b></div>
+        </div>
+      </div>
+      <aside class="hero-side reveal">
+        <p class="idx">01 / 05 — A tactile study</p>
+        <p class="note">We weave for the places where colour is a luxury the sun refuses to keep.</p>
+        <p class="sig">— The Arid Weave Atelier</p>
+      </aside>
+    </section>
+
+    <section id="collection">
+      <div class="rail-head reveal">
+        <h2>The Swatches</h2>
+        <p class="hint">Hover to catch the light · <b>Click to open specs</b></p>
+      </div>
+
+      <div class="rail" id="rail">
+        <button class="swatch" data-key="dune-linen" style="--base:#CDB9A3">
+          <div class="fabric"></div>
+          <div class="swatch-meta">
+            <span class="num">01</span>
+            <h3>Dune Linen</h3>
+            <p class="sub">Clay · Plain Weave</p>
+          </div>
+        </button>
+
+        <button class="swatch" data-key="desert-silk" style="--base:#8A9A85">
+          <div class="fabric"></div>
+          <div class="swatch-meta">
+            <span class="num">02</span>
+            <h3>Desert Silk</h3>
+            <p class="sub">Olive · Charmeuse</p>
+          </div>
+        </button>
+
+        <button class="swatch" data-key="sun-wool" style="--base:#D4C5B0">
+          <div class="fabric"></div>
+          <div class="swatch-meta">
+            <span class="num">03</span>
+            <h3>Sun Wool</h3>
+            <p class="sub">Sand · Twill</p>
+          </div>
+        </button>
+
+        <button class="swatch" data-key="iron-canvas" style="--base:#7D6E5F">
+          <div class="fabric"></div>
+          <div class="swatch-meta">
+            <span class="num">04</span>
+            <h3>Iron Canvas</h3>
+            <p class="sub">Iron · Duck</p>
+          </div>
+        </button>
+
+        <button class="swatch" data-key="stone-hemp" style="--base:#B0A89D">
+          <div class="fabric"></div>
+          <div class="swatch-meta">
+            <span class="num">05</span>
+            <h3>Stone Hemp</h3>
+            <p class="sub">Stone · Basket</p>
+          </div>
+        </button>
+      </div>
+
+      <div class="detail" id="detail" aria-live="polite">
+        <div class="detail-inner">
+          <div class="d-fabric" id="dFabric"><span class="stitch">Hand-finished</span></div>
+          <div class="d-body">
+            <span class="d-num" id="dNum">01 — Reference</span>
+            <h3 id="dName">Dune Linen</h3>
+            <p class="d-sub" id="dSub">Clay · Plain Weave</p>
+            <p class="d-desc" id="dDesc"></p>
+            <div class="specs">
+              <div class="spec"><div class="k">Weight</div><div class="v" id="dGsm">185 gsm</div></div>
+              <div class="spec"><div class="k">Origin</div><div class="v" id="dOrigin">Ouarzazate, MA</div></div>
+              <div class="spec"><div class="k">Composition</div><div class="v" id="dComp">100% Flax</div></div>
+              <div class="spec"><div class="k">Care</div><div class="v" id="dCare">Cold wash · Air dry</div></div>
+              <div class="spec"><div class="k">Bleach Index</div><div class="v" id="dBleach">0.62<small>Low saturation</small></div></div>
+            </div>
+            <div class="d-actions">
+              <button class="btn solid" id="dSelect">Select swatch</button>
+              <button class="btn ghost" id="dClose">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="philosophy" id="philosophy">
+      <div class="phil-grid">
+        <div class="reveal">
+          <p class="kicker">Our Method</p>
+          <h2>Colour that <em>submits</em> to the light.</h2>
+        </div>
+        <div class="phil-body reveal">
+          <p>Every bolt begins saturated and ends surrendered. We leave our weaves on the drying terraces through the long summer, letting the sun pull the pigment down until the hue turns chalky and soft — the way a cliff face fades over centuries.</p>
+          <p>The result is a palette that never shouts. It absorbs the harsh desert light and gives back something muted, tactile, and unhurried. These are fabrics meant to be lived in, not looked at.</p>
+          <ul class="principles">
+            <li><span class="pn">01</span><div class="pt"><b>Slow Fade</b><span>Natural sun-bleaching over 40+ days — no chemical agents, no shortcuts.</span></div></li>
+            <li><span class="pn">02</span><div class="pt"><b>Low Saturation</b><span>Every tone is pulled below 30% chroma for a unified, serene hand.</span></div></li>
+            <li><span class="pn">03</span><div class="pt"><b>Weight &amp; Hand</b><span>Heavier cloths carry more shadow; lighter ones catch more light.</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer id="atelier">
+      <div class="foot-top">
+        <div class="foot-mark reveal">ARID WEAVE</div>
+        <nav class="foot-links reveal">
+          <a href="#collection">Collection</a>
+          <a href="#philosophy">Philosophy</a>
+          <a href="#top">Atelier</a>
+          <a href="#top">Contact</a>
+        </nav>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2024 Arid Weave — Woven in the Atlas foothills</span>
+        <span>Sun-Bleached Series · Vol. 05</span>
+      </div>
+    </footer>
+  </div>
+
+<script>
+  const DATA = {
+    'dune-linen':{num:'01 — Reference SW-114',name:'Dune Linen',sub:'Clay · Plain Weave',base:'#CDB9A3',
+      desc:'A coarse, honest flax woven on a wooden loom, then left on the terrace until the clay pigment turned to chalk. It softens with every wash and never fully loses its dry, sandy hand.',
+      gsm:'185 gsm',origin:'Ouarzazate, MA',comp:'100% Flax',care:'Cold wash · Air dry · Iron damp',bleach:'0.62'},
+    'desert-silk':{num:'02 — Reference SW-208',name:'Desert Silk',sub:'Olive · Charmeuse',base:'#8A9A85',
+      desc:'Mulberry silk bleached to a muted olive-grey. The weave still holds a whisper of sheen, but the sun has taken its shine and left something cooler, calmer, almost matte.',
+      gsm:'118 gsm',origin:'Marrakech, MA',comp:'100% Mulberry Silk',care:'Dry clean only · Store flat',bleach:'0.55'},
+    'sun-wool':{num:'03 — Reference SW-330',name:'Sun Wool',sub:'Sand · Twill',base:'#D4C5B0',
+      desc:'A dense, springy wool twill in the colour of sun-warmed sand. Heavy enough to hold a sharp shadow, warm enough to outlast the coldest desert night.',
+      gsm:'340 gsm',origin:'High Atlas, MA',comp:'92% Wool · 8% Hemp',care:'Hand wash cold · Dry flat',bleach:'0.48'},
+    'iron-canvas':{num:'04 — Reference SW-415',name:'Iron Canvas',sub:'Iron · Duck',base:'#7D6E5F',
+      desc:'A stiff, dark duck canvas faded to the grey-brown of old ironwork. Built for workwear and upholstery — the darker base lets the sun leave the most dramatic bleaching.',
+      gsm:'420 gsm',origin:'Fès, MA',comp:'100% Cotton Duck',care:'Machine cold · Tumble low',bleach:'0.71'},
+    'stone-hemp':{num:'05 — Reference SW-502',name:'Stone Hemp',sub:'Stone · Basket',base:'#B0A89D',
+      desc:'A basket-weave hemp in the pale grey of river stone. Rough, breathable, and quietly structured — the coolest tone in the series, closest to raw un-dyed fibre.',
+      gsm:'260 gsm',origin:'Essaouira, MA',comp:'70% Hemp · 30% Cotton',care:'Machine cold · Line dry',bleach:'0.40'}
+  };
+
+  const rail = document.getElementById('rail');
+  const detail = document.getElementById('detail');
+  const swatches = [...rail.querySelectorAll('.swatch')];
+  const dFabric = document.getElementById('dFabric');
+  const dNum = document.getElementById('dNum');
+  const dName = document.getElementById('dName');
+  const dSub = document.getElementById('dSub');
+  const dDesc = document.getElementById('dDesc');
+  const dGsm = document.getElementById('dGsm');
+  const dOrigin = document.getElementById('dOrigin');
+  const dComp = document.getElementById('dComp');
+  const dCare = document.getElementById('dCare');
+  const dBleach = document.getElementById('dBleach');
+  const dSelect = document.getElementById('dSelect');
+  const dClose = document.getElementById('dClose');
+
+  let activeKey = null;
+
+  function fill(key){
+    const d = DATA[key];
+    if(!d) return;
+    dFabric.style.setProperty('--base', d.base);
+    dNum.textContent = d.num;
+    dName.textContent = d.name;
+    dSub.textContent = d.sub;
+    dDesc.textContent = d.desc;
+    dGsm.textContent = d.gsm;
+    dOrigin.textContent = d.origin;
+    dComp.textContent = d.comp;
+    dCare.textContent = d.care;
+    dBleach.innerHTML = d.bleach + '<small>Low saturation</small>';
+  }
+
+  function openSwatch(key){
+    activeKey = key;
+    fill(key);
+    detail.classList.add('open');
+    swatches.forEach(s => s.classList.toggle('selected', s.dataset.key === key));
+    // gentle scroll so detail is comfortably in view
+    requestAnimationFrame(() => {
+      const top = detail.getBoundingClientRect().top + window.scrollY - 90;
+      window.scrollTo({ top, behavior: 'smooth' });
+    });
+  }
+
+  function closeDetail(){
+    detail.classList.remove('open');
+    swatches.forEach(s => s.classList.remove('selected'));
+    activeKey = null;
+  }
+
+  swatches.forEach(s => {
+    s.addEventListener('click', () => {
+      if(activeKey === s.dataset.key && detail.classList.contains('open')){
+        closeDetail();
+      } else {
+        openSwatch(s.dataset.key);
+      }
+    });
+  });
+
+  dClose.addEventListener('click', closeDetail);
+  dSelect.addEventListener('click', () => {
+    dSelect.textContent = 'Selected ✓';
+    dSelect.style.pointerEvents = 'none';
+    setTimeout(() => { dSelect.textContent = 'Select swatch'; dSelect.style.pointerEvents = ''; }, 1800);
+  });
+
+  // Entrance + scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  // staggered swatch entrance
+  swatches.forEach((s, i) => {
+    s.style.transitionDelay = (i * 100) + 'ms';
+    io.observe(s);
+  });
+
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    io.observe(el);
+  });
+</script>
+</body>
+</html>

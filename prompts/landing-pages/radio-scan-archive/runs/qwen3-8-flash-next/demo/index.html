@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScanArchive — Radio Signal Database</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050505;
+  --green:#00ff41;
+  --green-dim:#0a7a2c;
+  --red:#ff3333;
+  --grey:#333333;
+  --grey-lt:#666666;
+  --text:#ffffff;
+  --amber:#ffb000;
+  --mono:'Share Tech Mono', ui-monospace, 'Courier New', monospace;
+  --disp:'VT323', 'Share Tech Mono', monospace;
+  --glow:0 0 6px rgba(0,255,65,.55), 0 0 18px rgba(0,255,65,.25);
+  --glow-red:0 0 6px rgba(255,51,51,.55), 0 0 18px rgba(255,51,51,.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--void);
+  color:var(--text);
+  font-family:var(--mono);
+  line-height:1.5;
+  overflow-x:hidden;
+  position:relative;
+  min-height:100vh;
+}
+::selection{background:var(--green);color:#000}
+a{color:inherit;text-decoration:none}
+
+/* ---------- CRT OVERLAY LAYERS ---------- */
+.crt-scanlines{
+  position:fixed;inset:-50%;z-index:90;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,
+     rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+     rgba(0,0,0,.28) 3px, rgba(0,0,0,.28) 4px);
+  animation:scan 9s linear infinite;
+  opacity:.55;
+}
+@keyframes scan{from{transform:translateY(0)}to{transform:translateY(4px)}}
+.crt-sweep{
+  position:fixed;left:0;right:0;height:120px;z-index:91;pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,255,65,0), rgba(0,255,65,.05), rgba(0,255,65,0));
+  animation:sweep 7s linear infinite;
+}
+@keyframes sweep{from{top:-120px}to{top:100%}}
+.crt-vignette{
+  position:fixed;inset:0;z-index:89;pointer-events:none;
+  background:radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,.85) 100%);
+}
+.crt-flicker{
+  position:fixed;inset:0;z-index:92;pointer-events:none;
+  background:rgba(0,255,65,.02);
+  animation:flick 5s steps(2) infinite;
+}
+@keyframes flick{0%,97%{opacity:0}98%{opacity:.4}99%{opacity:.1}100%{opacity:.3}}
+.noise{
+  position:fixed;inset:0;z-index:88;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:noise .35s steps(3) infinite;
+}
+@keyframes noise{0%{transform:translate(0,0)}33%{transform:translate(-4px,3px)}66%{transform:translate(3px,-2px)}100%{transform:translate(0,0)}}
+
+/* ---------- TUNING SWEEPER (scroll motion) ---------- */
+.sweeper{
+  position:fixed;left:0;right:0;height:2px;z-index:80;pointer-events:none;
+  background:var(--green);box-shadow:var(--glow);opacity:0;
+}
+.sweeper::before{content:'';position:absolute;left:0;top:-10px;width:100%;height:22px;
+  background:linear-gradient(to bottom,rgba(0,255,65,0),rgba(0,255,65,.12),rgba(0,255,65,0));}
+.sweeper-label{
+  position:fixed;right:14px;top:0;z-index:81;pointer-events:none;
+  font-family:var(--disp);font-size:1.15rem;color:var(--green);
+  text-shadow:var(--glow);opacity:0;transform:translateY(-2px);
+  border:1px solid var(--green-dim);padding:2px 8px;background:rgba(0,20,4,.85);
+  letter-spacing:.05em;
+}
+.sweeper-label.static{color:var(--red);text-shadow:var(--glow-red);border-color:#7a1414}
+
+/* ---------- LAYOUT ---------- */
+.console{max-width:1180px;margin:0 auto;padding:0 22px 90px}
+.topbar{
+  position:sticky;top:0;z-index:70;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:12px 22px;margin:0 -22px;
+  background:rgba(5,5,5,.92);
+  border-bottom:1px solid var(--grey);
+  backdrop-filter:blur(2px);
+}
+.topbar .brand{font-family:var(--disp);font-size:1.5rem;color:var(--green);
+  text-shadow:var(--glow);letter-spacing:.06em;white-space:nowrap}
+.topbar .brand b{color:var(--text);text-shadow:none}
+.nav{display:flex;gap:22px;font-size:.82rem;letter-spacing:.08em;color:var(--grey-lt)}
+.nav a{transition:color .15s}
+.nav a:hover{color:var(--green);text-shadow:var(--glow)}
+.status-pill{display:flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:.1em;color:var(--green)}
+.led{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:var(--glow);animation:pulse 1.6s ease-in-out infinite}
+.led.red{background:var(--red);box-shadow:var(--glow-red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---------- HERO ---------- */
+.hero{padding:54px 0 30px;position:relative}
+.eyebrow{font-size:.8rem;letter-spacing:.35em;color:var(--green);text-shadow:var(--glow);
+  display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.eyebrow::before,.eyebrow::after{content:'';height:1px;flex:1;max-width:120px;
+  background:linear-gradient(to right,transparent,var(--green-dim))}
+.eyebrow::after{background:linear-gradient(to left,transparent,var(--green-dim))}
+.wordmark{
+  font-family:var(--disp);
+  font-size:clamp(3.4rem,13vw,9.5rem);
+  line-height:.86;color:var(--green);
+  text-shadow:var(--glow);
+  letter-spacing:.01em;
+  white-space:nowrap;
+}
+.wordmark .dim{color:transparent;-webkit-text-stroke:1.5px var(--green-dim);text-shadow:none}
+.hero-sub{margin-top:20px;max-width:640px;color:#c9c9c9;font-size:1rem}
+.hero-sub .k{color:var(--green)}
+.hero-actions{margin-top:26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.btn{
+  font-family:var(--mono);font-size:.85rem;letter-spacing:.12em;cursor:pointer;
+  padding:12px 22px;border:1px solid var(--green);color:var(--green);background:transparent;
+  text-shadow:var(--glow);transition:.15s;position:relative;
+}
+.btn:hover{background:var(--green);color:#000;text-shadow:none}
+.btn.ghost{border-color:var(--grey);color:var(--grey-lt);text-shadow:none}
+.btn.ghost:hover{border-color:var(--green);color:var(--green);text-shadow:var(--glow);background:transparent}
+.readout-line{margin-top:16px;font-family:var(--disp);font-size:1.35rem;color:var(--amber);
+  min-height:1.6em;letter-spacing:.04em}
+.readout-line .cursor{display:inline-block;width:.55em;height:1.05em;background:var(--amber);
+  vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+
+/* ---------- PANELS ---------- */
+.panel{border:1px solid var(--grey);background:rgba(10,10,10,.6);position:relative;margin-top:26px}
+.panel-head{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:8px 14px;border-bottom:1px solid var(--grey);
+  font-size:.72rem;letter-spacing:.18em;color:var(--grey-lt);
+  background:repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0 6px,transparent 6px 12px);
+}
+.panel-head .tag{color:var(--green);text-shadow:var(--glow)}
+.panel-body{padding:18px}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s steps(6),transform .5s steps(6)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- TUNER ---------- */
+.tuner{padding:26px 18px 20px}
+.tuner-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.freq-big{font-family:var(--disp);font-size:clamp(3rem,9vw,6rem);color:var(--green);text-shadow:var(--glow);line-height:.9}
+.freq-big small{font-size:.35em;color:var(--grey-lt);text-shadow:none;letter-spacing:.1em}
+.tuner-meta{display:flex;gap:26px;flex-wrap:wrap;font-size:.82rem;color:var(--grey-lt)}
+.tuner-meta b{display:block;color:var(--green);font-family:var(--disp);font-size:1.4rem;text-shadow:var(--glow)}
+.scale-wrap{position:relative;padding:6px 0}
+.scale{
+  position:relative;height:70px;overflow:hidden;cursor:grab;
+  border-top:1px solid var(--grey);border-bottom:1px solid var(--grey);
+  background:linear-gradient(to bottom,rgba(0,255,65,.02),transparent);
+}
+.scale:active{cursor:grabbing}
+.ticks{position:absolute;inset:0;display:flex;align-items:flex-end;will-change:transform}
+.tick{flex:0 0 auto;width:20px;height:14px;border-left:1px solid var(--grey-lt);position:relative}
+.tick.major{height:30px;border-left-color:var(--green-dim)}
+.tick.major::after{content:attr(data-l);position:absolute;bottom:32px;left:3px;
+  font-size:.7rem;color:var(--green);text-shadow:var(--glow);white-space:nowrap}
+.needle{position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--green);
+  box-shadow:var(--glow);z-index:3;transform:translateX(-50%)}
+.needle::before{content:'';position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid var(--green)}
+.needle::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+  border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:9px solid var(--green)}
+.wave{width:100%;height:64px;display:block;margin-top:14px}
+.wave-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--grey-lt);letter-spacing:.1em;margin-top:6px}
+
+/* ---------- STATUS BADGES ---------- */
+.badge{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;padding:3px 9px;border:1px solid;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.badge .dot{width:7px;height:7px;border-radius:50%}
+.badge.found{color:var(--green);border-color:var(--green-dim);background:rgba(0,255,65,.06)}
+.badge.found .dot{background:var(--green);box-shadow:var(--glow);animation:pulse 1.4s infinite}
+.badge.static{color:var(--red);border-color:#7a1414;background:rgba(255,51,51,.06)}
+.badge.static .dot{background:var(--red);box-shadow:var(--glow-red);animation:pulse .5s infinite}
+.badge.locked{color:var(--amber);border-color:#7a5a00;background:rgba(255,176,0,.06)}
+.badge.locked .dot{background:var(--amber);box-shadow:0 0 6px rgba(255,176,0,.5)}
+
+/* ---------- DATA GRID / KV ---------- */
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;background:var(--grey);border:1px solid var(--grey)}
+.kv .cell{background:#0a0a0a;padding:12px 14px}
+.kv .k{font-size:.68rem;letter-spacing:.14em;color:var(--grey-lt)}
+.kv .v{font-family:var(--disp);font-size:1.5rem;color:var(--green);text-shadow:var(--glow);margin-top:2px}
+.kv .v.red{color:var(--red);text-shadow:var(--glow-red)}
+
+/* ---------- TABLE ---------- */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:640px}
+thead th{
+  text-align:left;padding:10px 12px;font-size:.68rem;letter-spacing:.14em;color:var(--grey-lt);
+  border-bottom:1px solid var(--grey);font-weight:normal;
+}
+tbody td{padding:11px 12px;border-bottom:1px solid #1a1a1a;color:#cfcfcf}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:rgba(0,255,65,.05)}
+tbody tr:hover td:first-child{color:var(--green);text-shadow:var(--glow)}
+.fq{font-family:var(--disp);font-size:1.15rem;color:var(--green);text-shadow:var(--glow)}
+.fq.static{color:var(--red);text-shadow:var(--glow-red)}
+.snr{display:inline-block;height:6px;background:var(--green);box-shadow:var(--glow);vertical-align:middle}
+.snr.red{background:var(--red);box-shadow:var(--glow-red)}
+
+/* ---------- SECTION HEAD ---------- */
+.sec-head{margin:64px 0 6px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.sec-head .num{font-family:var(--disp);font-size:1.1rem;color:var(--green);text-shadow:var(--glow)}
+.sec-head h2{font-family:var(--disp);font-size:clamp(1.8rem,4.5vw,3rem);color:var(--text);letter-spacing:.02em}
+.sec-head .rule{flex:1;height:1px;background:linear-gradient(to right,var(--green-dim),transparent);min-width:40px}
+.sec-desc{color:var(--grey-lt);max-width:620px;margin-bottom:8px;font-size:.9rem}
+
+/* ---------- DIALS ---------- */
+.dials{display:flex;gap:34px;flex-wrap:wrap;align-items:center;justify-content:center;padding:14px 0}
+.dial{display:flex;flex-direction:column;align-items:center;gap:10px}
+.dial svg{width:110px;height:110px}
+.dial .ring{fill:none;stroke:var(--grey);stroke-width:2}
+.dial .tickline{stroke:var(--grey-lt);stroke-width:2}
+.dial .knob{fill:#111;stroke:var(--green-dim);stroke-width:2}
+.dial .marker{stroke:var(--green);stroke-width:3;filter:drop-shadow(0 0 4px rgba(0,255,65,.7))}
+.dial.spin .knobg{transform-origin:55px 55px;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dial .dl{font-size:.72rem;letter-spacing:.14em;color:var(--grey-lt)}
+.dial .dv{font-family:var(--disp);font-size:1.3rem;color:var(--green);text-shadow:var(--glow)}
+
+/* ---------- STATS STRIP ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--grey);border:1px solid var(--grey);margin-top:26px}
+.stats .st{background:#0a0a0a;padding:20px 16px;text-align:center}
+.stats .n{font-family:var(--disp);font-size:2.6rem;color:var(--green);text-shadow:var(--glow);line-height:1}
+.stats .n.red{color:var(--red);text-shadow:var(--glow-red)}
+.stats .l{font-size:.7rem;letter-spacing:.14em;color:var(--grey-lt);margin-top:6px}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:70px;border-top:1px solid var(--grey);padding:26px 0;color:var(--grey-lt);font-size:.78rem;
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer .fb{font-family:var(--disp);font-size:1.3rem;color:var(--green);text-shadow:var(--glow)}
+
+@media(max-width:720px){
+  .nav{display:none}
+  .topbar{margin:0 -22px;padding:12px 22px}
+  .console{padding:0 18px 70px}
+  .hero{padding:38px 0 20px}
+  .kv{grid-template-columns:1fr 1fr}
+  .tuner-meta{gap:18px}
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .crt-scanlines,.crt-sweep,.crt-flicker,.noise,.sweeper,.sweeper-label{display:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- CRT LAYERS -->
+<div class="noise"></div>
+<div class="crt-vignette"></div>
+<div class="crt-scanlines"></div>
+<div class="crt-sweep"></div>
+<div class="crt-flicker"></div>
+
+<!-- TUNING SWEEPER -->
+<div class="sweeper" id="sweeper"></div>
+<div class="sweeper-label" id="sweeperLabel">◈ SIGNAL FOUND</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="brand">SCAN<b>ARCHIVE</b></div>
+  <nav class="nav">
+    <a href="#tuner">TUNER</a>
+    <a href="#archive">ARCHIVE</a>
+    <a href="#dials">BANDS</a>
+    <a href="#log">LOG</a>
+  </nav>
+  <div class="status-pill"><span class="led"></span> RX ONLINE · UTC <span id="clock">00:00:00</span></div>
+</header>
+
+<div class="console">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">RADIO SIGNAL DATABASE · EST. 1979</div>
+    <h1 class="wordmark">SCAN<span class="dim">ARCHIVE</span></h1>
+    <p class="hero-sub">
+      A living archive of the electromagnetic spectrum. We capture, index and preserve
+      <span class="k">transmissions</span> — from shortwave numbers stations to the
+      last breath of AM towers — before they dissolve into <span class="k">static</span>.
+    </p>
+    <div class="readout-line"><span id="boot"></span><span class="cursor"></span></div>
+    <div class="hero-actions">
+      <button class="btn" id="scanBtn">▶ BEGIN SCAN</button>
+      <a class="btn ghost" href="#archive">BROWSE 12,408 RECORDS</a>
+    </div>
+  </section>
+
+  <!-- TUNER PANEL -->
+  <section id="tuner" class="panel reveal" data-signal="104.5 MHz · NUMBERS STATION">
+    <div class="panel-head"><span>PRIMARY RECEIVER · <span class="tag">ACTIVE</span></span><span id="tunerStatus" class="badge found"><span class="dot"></span>SIGNAL FOUND</span></div>
+    <div class="tuner">
+      <div class="tuner-top">
+        <div class="freq-big"><span id="freqBig">104.5</span> <small>MHz</small></div>
+        <div class="tuner-meta">
+          <div>MODE<b id="modeVal">WFM</b></div>
+          <div>SNR<b id="snrVal">38 dB</b></div>
+          <div>BAND<b>FM</b></div>
+          <div>LOCK<b id="lockVal">97%</b></div>
+        </div>
+      </div>
+      <div class="scale-wrap">
+        <div class="scale" id="scale">
+          <div class="ticks" id="ticks"></div>
+          <div class="needle"></div>
+        </div>
+      </div>
+      <canvas class="wave" id="wave"></canvas>
+      <div class="wave-label"><span>◀ 88.0</span><span id="centerLabel">CENTER 104.5 MHz</span><span>108.0 ▶</span></div>
+    </div>
+  </section>
+
+  <!-- LIVE READOUT -->
+  <div class="kv reveal">
+    <div class="cell"><div class="k">RECEIVER</div><div class="v" id="rRec">SDR-RX7</div></div>
+    <div class="cell"><div class="k">ANTENNA</div><div class="v">LOG-PERIODIC</div></div>
+    <div class="cell"><div class="k">GAIN</div><div class="v">+24 dB</div></div>
+    <div class="cell"><div class="k">NOISE FLOOR</div><div class="v red">-112 dBm</div></div>
+    <div class="cell"><div class="k">CAPTURED</div><div class="v">24/7</div></div>
+    <div class="cell"><div class="k">UPLINK</div><div class="v">SECURE</div></div>
+  </div>
+
+  <!-- ARCHIVE TABLE -->
+  <div class="sec-head" id="archive" data-signal="ARCHIVE INDEX · 12,408 RECORDS">
+    <span class="num">01</span><h2>ARCHIVE INDEX</h2><span class="rule"></span>
+  </div>
+  <p class="sec-desc">Recent captures across the spectrum. Green rows are locked signals; red rows are pure noise.</p>
+  <section class="panel reveal">
+    <div class="panel-head"><span>RECORDS · <span class="tag">LIVE FEED</span></span><span>SHOWING 06 / 12,408</span></div>
+    <div class="panel-body table-wrap">
+      <table>
+        <thead><tr><th>FREQ</th><th>SOURCE</th><th>MODE</th><th>SNR</th><th>TIME</th><th>STATUS</th></tr></thead>
+        <tbody>
+          <tr><td class="fq">104.50</td><td>Numbers Station ECHO-9</td><td>WFM</td><td><span class="snr" style="width:70px"></span> 38</td><td>03:14:22</td><td><span class="badge found"><span class="dot"></span>FOUND</span></td></tr>
+          <tr><td class="fq">4.625</td><td>Maritime Safety Net</td><td>SSB</td><td><span class="snr" style="width:52px"></span> 28</td><td>03:11:07</td><td><span class="badge locked"><span class="dot"></span>LOCKED</span></td></tr>
+          <tr><td class="fq static">—</td><td>Unidentified Burst</td><td>??</td><td><span class="snr red" style="width:14px"></span> 04</td><td>03:09:55</td><td><span class="badge static"><span class="dot"></span>STATIC</span></td></tr>
+          <tr><td class="fq">7.302</td><td>Amateur Relay · N7QRP</td><td>CW</td><td><span class="snr" style="width:44px"></span> 22</td><td>02:58:41</td><td><span class="badge found"><span class="dot"></span>FOUND</span></td></tr>
+          <tr><td class="fq">146.52</td><td>Repeater · Grid FN31</td><td>FM</td><td><span class="snr" style="width:60px"></span> 33</td><td>02:41:19</td><td><span class="badge found"><span class="dot"></span>FOUND</span></td></tr>
+          <tr><td class="fq static">—</td><td>Ionospheric Noise</td><td>??</td><td><span class="snr red" style="width:10px"></span> 02</td><td>02:37:03</td><td><span class="badge static"><span class="dot"></span>STATIC</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- BAND DIALS -->
+  <div class="sec-head" id="dials" data-signal="BAND SELECTION · VHF / HF">
+    <span class="num">02</span><h2>BAND SELECTOR</h2><span class="rule"></span>
+  </div>
+  <p class="sec-desc">Physical tuning across monitored bands. Rotate to lock a range.</p>
+  <section class="panel reveal">
+    <div class="panel-head"><span>MECHANICAL DIALS · <span class="tag">CALIBRATED</span></span><span>4 BANDS</span></div>
+    <div class="panel-body">
+      <div class="dials">
+        <div class="dial spin">
+          <svg viewBox="0 0 110 110"><circle class="ring" cx="55" cy="55" r="48"/><g class="knobg"><circle class="knob" cx="55" cy="55" r="30"/><line class="marker" x1="55" y1="55" x2="55" y2="22"/></g></svg>
+          <div class="dl">HF · SHORTWAVE</div><div class="dv">7.30 MHz</div>
+        </div>
+        <div class="dial spin">
+          <svg viewBox="0 0 110 110"><circle class="ring" cx="55" cy="55" r="48"/><g class="knobg"><circle class="knob" cx="55" cy="55" r="30"/><line class="marker" x1="55" y1="55" x2="55" y2="22"/></g></svg>
+          <div class="dl">VHF · FM BROADCAST</div><div class="dv">104.5 MHz</div>
+        </div>
+        <div class="dial spin">
+          <svg viewBox="0 0 110 110"><circle class="ring" cx="55" cy="55" r="48"/><g class="knobg"><circle class="knob" cx="55" cy="55" r="30"/><line class="marker" x1="55" y1="55" x2="55" y2="22"/></g></svg>
+          <div class="dl">VHF · AMATEUR</div><div class="dv">146.5 MHz</div>
+        </div>
+        <div class="dial spin">
+          <svg viewBox="0 0 110 110"><circle class="ring" cx="55" cy="55" r="48"/><g class="knobg"><circle class="knob" cx="55" cy="55" r="30"/><line class="marker" x1="55" y1="55" x2="55" y2="22"/></g></svg>
+          <div class="dl">UHF · SATELLITE</div><div class="dv">437.0 MHz</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="sec-head" id="log" data-signal="TELEMETRY · 24H WINDOW">
+    <span class="num">03</span><h2>TELEMETRY</h2><span class="rule"></span>
+  </div>
+  <section class="stats reveal">
+    <div class="st"><div class="n" data-count="12408">0</div><div class="l">SIGNALS ARCHIVED</div></div>
+    <div class="st"><div class="n" data-count="347">0</div><div class="l">BANDS MONITORED</div></div>
+    <div class="st"><div class="n red" data-count="8912">0</div><div class="l">STATIC DISCARDED</div></div>
+    <div class="st"><div class="n" data-count="99">0</div><div class="l">UPTIME %</div></div>
+    <div class="st"><div class="n" data-count="61">0</div><div class="l">COUNTRIES</div></div>
+  </section>
+
+  <footer>
+    <div class="fb">SCANARCHIVE</div>
+    <div>© 1979–2024 · ALL TRANSMISSIONS PRESERVED · <span style="color:var(--green)">RX LOCKED</span></div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- CLOCK ---- */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d=new Date();
+    function p(n){return (n<10?'0':'')+n;}
+    clock.textContent = p(d.getUTCHours())+':'+p(d.getUTCMinutes())+':'+p(d.getUTCSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---- BOOT TYPE-OUT ---- */
+  var bootEl = document.getElementById('boot');
+  var bootText = 'INITIALIZING RECEIVER... CALIBRATING OSCILLATOR... SCAN READY.';
+  if(reduce){ bootEl.textContent = bootText; }
+  else {
+    var bi=0;
+    (function type(){
+      if(bi<=bootText.length){ bootEl.textContent = bootText.slice(0,bi); bi++; setTimeout(type, 34); }
+    })();
+  }
+
+  /* ---- TUNER TICKS ---- */
+  var ticks = document.getElementById('ticks');
+  var html='';
+  for(var f=880; f<=1080; f+=5){
+    var major = (f%10===0);
+    var label = major ? (f/10).toFixed(0) : '';
+    html += '<div class="tick'+(major?' major':'')+'" data-l="'+label+'"></div>';
+  }
+  ticks.innerHTML = html;
+
+  /* ---- FREQUENCY SWEEP / DRIFT ---- */
+  var freqBig=document.getElementById('freqBig');
+  var snrVal=document.getElementById('snrVal');
+  var lockVal=document.getElementById('lockVal');
+  var centerLabel=document.getElementById('centerLabel');
+  var tunerStatus=document.getElementById('tunerStatus');
+  var tuneOffset=0;
+
+  function renderTune(){
+    var f = 104.5 + Math.sin(tuneOffset*0.02)*0.9 + (Math.random()-0.5)*0.04;
+    var snr = Math.round(38 - Math.abs(Math.sin(tuneOffset*0.02))*22 + Math.random()*3);
+    var lock = Math.max(60, Math.min(99, Math.round(97 - Math.abs(Math.sin(tuneOffset*0.02))*38)));
+    freqBig.textContent = f.toFixed(2);
+    snrVal.textContent = snr+' dB';
+    lockVal.textContent = lock+'%';
+    centerLabel.textContent = 'CENTER '+f.toFixed(1)+' MHz';
+    ticks.style.transform = 'translateX('+(Math.sin(tuneOffset*0.02)*-30)+'px)';
+    var found = lock>80;
+    tunerStatus.className = 'badge '+(found?'found':'static');
+    tunerStatus.innerHTML = '<span class="dot"></span>'+(found?'SIGNAL FOUND':'SEEKING…');
+  }
+  if(!reduce){ setInterval(function(){ tuneOffset++; renderTune(); }, 120); }
+  else { renderTune(); }
+
+  /* ---- DRAG SCALE ---- */
+  var scale=document.getElementById('scale');
+  var dragging=false, startX=0, base=0;
+  scale.addEventListener('pointerdown',function(e){dragging=true;startX=e.clientX;base=tuneOffset;scale.setPointerCapture(e.pointerId);});
+  scale.addEventListener('pointermove',function(e){if(dragging){tuneOffset=base+(e.clientX-startX)*0.5;renderTune();}});
+  scale.addEventListener('pointerup',function(){dragging=false;});
+
+  /* ---- WAVEFORM CANVAS ---- */
+  var wave=document.getElementById('wave');
+  var ctx=wave.getContext('2d');
+  function sizeWave(){
+    var r=wave.getBoundingClientRect();
+    wave.width=r.width*devicePixelRatio; wave.height=64*devicePixelRatio;
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  sizeWave(); window.addEventListener('resize',sizeWave);
+  var wp=0;
+  function drawWave(){
+    var w=wave.width/devicePixelRatio, h=wave.height/devicePixelRatio;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='#00ff41'; ctx.lineWidth=1.4;
+    ctx.shadowColor='#00ff41'; ctx.shadowBlur=6;
+    ctx.beginPath();
+    for(var x=0;x<=w;x++){
+      var n=(Math.random()-0.5)*8;
+      var y=h/2 + Math.sin((x*0.04)+wp)*10*Math.sin(x*0.011+wp*0.5) + n;
+      if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.shadowBlur=0;
+    wp+=0.12;
+    if(!reduce) requestAnimationFrame(drawWave);
+  }
+  drawWave();
+
+  /* ---- SCROLL REVEAL + TUNING SWEEPER ---- */
+  var sweeper=document.getElementById('sweeper');
+  var sweeperLabel=document.getElementById('sweeperLabel');
+  var revealEls=document.querySelectorAll('.reveal');
+  var signalEls=document.querySelectorAll('[data-signal]');
+
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting) en.target.classList.add('in'); });
+  },{threshold:0.15});
+  revealEls.forEach(function(el){io.observe(el);});
+
+  var sweepTimer=null;
+  function triggerSweep(){
+    if(reduce) return;
+    var vh=window.innerHeight;
+    var active=null, best=Infinity;
+    signalEls.forEach(function(el){
+      var r=el.getBoundingClientRect();
+      var c=r.top+r.height/2;
+      var d=Math.abs(c-vh*0.4);
+      if(r.top<vh && r.bottom>0 && d<best){best=d;active=el;}
+    });
+    sweeper.style.opacity='1';
+    sweeperLabel.style.opacity='1';
+    if(active){
+      var r=active.getBoundingClientRect();
+      var y=r.top+r.height/2;
+      sweeper.style.top=y+'px';
+      sweeperLabel.style.top=(y-16)+'px';
+      sweeperLabel.textContent='◈ '+active.getAttribute('data-signal');
+      sweeperLabel.className='sweeper-label';
+    }
+    clearTimeout(sweepTimer);
+    sweepTimer=setTimeout(function(){
+      sweeper.style.opacity='0'; sweeperLabel.style.opacity='0';
+    },700);
+  }
+  var ticking=false;
+  window.addEventListener('scroll',function(){
+    if(!ticking){ requestAnimationFrame(function(){triggerSweep();ticking=false;}); ticking=true; }
+  },{passive:true});
+
+  /* ---- SCAN BUTTON ---- */
+  document.getElementById('scanBtn').addEventListener('click',function(){
+    document.getElementById('tuner').scrollIntoView({behavior:reduce?'auto':'smooth'});
+    if(!reduce){ tuneOffset+=40; }
+  });
+
+  /* ---- COUNT-UP STATS ---- */
+  var counted=false;
+  var statIO=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting && !counted){
+        counted=true;
+        document.querySelectorAll('[data-count]').forEach(function(el){
+          var target=+el.getAttribute('data-count');
+          if(reduce){ el.textContent=target.toLocaleString(); return; }
+          var cur=0, step=Math.max(1,Math.round(target/45));
+          var iv=setInterval(function(){
+            cur+=step; if(cur>=target){cur=target;clearInterval(iv);}
+            el.textContent=cur.toLocaleString();
+          },22);
+        });
+      }
+    });
+  },{threshold:0.3});
+  statIO.observe(document.querySelector('.stats'));
+})();
+</script>
+</body>
+</html>

@@ -23,6 +23,9 @@ import {
   writeRunMeta,
   hasRunDemo,
   migrateLegacyRun,
+  recordBuildFailure,
+  syncEntryPointers,
+  isAbandonedRun,
 } from "./lib/runs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,7 +72,8 @@ HARD OUTPUT RULES:
 - Inline <style> and <script> only — no external JS frameworks, no build step
 - Google Fonts <link> is allowed (max 2 families)
 - Must look production-ready in a 1200×630 viewport AND on mobile
-- Follow the prompt art direction precisely (brand first, no hero cards/badges, expressive type, atmospheric background, 2–3 motions, prefers-reduced-motion)
+- BRAND: the exact brand/product name from the brief must appear as a hero-level signal in the first viewport (large type or dominant wordmark — not only tiny nav text). If the brief names a brand, render that string visibly.
+- Follow the prompt art direction precisely (no hero cards/badges, expressive type, atmospheric background, 2–3 motions, prefers-reduced-motion)
 - Avoid purple-glow SaaS and cream+terracotta clichés unless the brief asks for them
 - Output is stored under runs/<model>/demo/index.html and screenshotted for README`;
 
@@ -100,7 +104,7 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     "timeout=1h",
   ].join(", ");
   console.log(`Building ${entry.rel} → runs/${slug}/ (${cfg.model}) [${mode}]`);
-  const content = await chatCompletions({
+  const result = await chatCompletions({
     ...cfg,
     messages: buildMessages(entry, cfg.model),
     temperature: 0.65,
@@ -111,9 +115,12 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     queueRetries: 10,
     heartbeatMs: 30_000,
   });
+  const content = result.content;
   const html = extractHtmlDocument(content);
   if (dryRun) {
-    console.log(`  dry-run OK (${html.length} chars)`);
+    console.log(
+      `  dry-run OK (${html.length} chars, ${Math.round(result.duration_ms / 1000)}s)`
+    );
     return;
   }
   const dest = runDir(entry.dir, slug);
@@ -123,16 +130,47 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
   writeRunMeta(dest, {
     model: cfg.model,
     model_slug: slug,
+    model_api: result.model_api || cfg.modelApi || cfg.model,
     provider: cfg.provider,
     demo: "demo/index.html",
     preview: null,
+    status: "built",
+    reject_reason: null,
+    thinking_enabled: result.thinking_enabled,
+    stream: result.stream,
+    temperature: result.temperature,
+    context_tokens: result.context_tokens,
+    duration_ms: result.duration_ms,
+    prompt_tokens: result.prompt_tokens,
+    completion_tokens: result.completion_tokens,
+    // fresh build — clear live score so review runs again
+    review_score: null,
+    review_summary: null,
+    review_issues: [],
+    reviewed_at: null,
   });
+  // drop stale live preview if any (rejected evidence kept as preview.rejected.png)
+  const stalePreview = path.join(dest, "preview.png");
+  if (fs.existsSync(stalePreview)) {
+    try {
+      fs.unlinkSync(stalePreview);
+    } catch {
+      /* ignore */
+    }
+  }
   // Point entry defaults at this latest run (shots will set preview.png)
   updateMetaFields(entry.metaPath, {
     default_run: slug,
     demo: path.posix.join("runs", slug, "demo/index.html"),
+    preview: null,
   });
-  console.log(`  wrote ${entry.rel}/runs/${slug}/demo/index.html`);
+  const secs = Math.round(result.duration_ms / 1000);
+  const think = result.thinking_enabled ? "on" : "off";
+  console.log(
+    `  wrote ${entry.rel}/runs/${slug}/demo/index.html (${secs}s, thinking=${think}` +
+      (result.context_tokens != null ? `, ctx=${result.context_tokens}` : "") +
+      ")"
+  );
 }
 
 async function main() {
@@ -159,7 +197,9 @@ async function main() {
   for (const e of entries) migrateLegacyRun(e.dir, "legacy");
 
   if (!args.force) {
-    entries = entries.filter((e) => !hasRunDemo(e.dir, slug));
+    entries = entries.filter(
+      (e) => !hasRunDemo(e.dir, slug) && !isAbandonedRun(e.dir, slug)
+    );
   }
   entries = entries.slice(0, args.limit);
 
@@ -183,6 +223,20 @@ async function main() {
     } catch (err) {
       fail++;
       console.error(`  FAIL ${entry.rel}: ${err.message}`);
+      if (!args.dryRun) {
+        const dest = runDir(entry.dir, slug);
+        const rej = recordBuildFailure(dest, {
+          reason: `build_fail:${String(err.message).slice(0, 120)}`,
+          model: cfg.model,
+          model_slug: slug,
+          provider: cfg.provider,
+        });
+        syncEntryPointers(entry.dir, entry.rel, entry.metaPath, updateMetaFields);
+        console.warn(
+          `  → ${rej.status} attempt ${rej.attempts}/${rej.max}` +
+            (rej.abandoned ? " (give up)" : "")
+        );
+      }
     }
   }
   console.log(`\nDone. ok=${ok} fail=${fail}`);

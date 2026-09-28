@@ -1,0 +1,20 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 7081
+review_score: 8
+review_summary: "Excellent execution of the 'craft' aesthetic with a sophisticated, high-contrast typographic layout and a clean, well-rendered 3D plate."
+reviewed_at: "2026-09-28T09:31:42.087Z"
+review_issues:
+  - "The 'linen' texture is represented by sharp, geometric vector shapes rather than the soft, organic folds described in the brief."
+  - "The background texture is very subtle and might appear flat on lower-quality displays."

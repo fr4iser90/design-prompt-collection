@@ -1,0 +1,17 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+duration_ms: 5712
+review_score: 9
+review_summary: "Excellent execution of the brief with a strong brand-first hero, perfect color palette, and a clean, atmospheric composition."
+reviewed_at: "2026-09-28T06:22:45.003Z"
+review_issues:
+  - "The dashed route line overlaps the headline text, which can slightly impact legibility depending on the exact rendering."

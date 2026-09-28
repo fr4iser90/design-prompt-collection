@@ -19,7 +19,10 @@ import {
   readRunMeta,
   modelSlug,
   pickDefaultRun,
+  rejectRunForRebuild,
+  syncEntryPointers,
 } from "./lib/runs.mjs";
+import { ensurePlaywright, launchChromium } from "./lib/playwright-ensure.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -95,47 +98,6 @@ function startStaticServer(rootDir) {
   });
 }
 
-async function loadPlaywright() {
-  if (
-    process.env.PLAYWRIGHT_BROWSERS_PATH &&
-    process.env.PLAYWRIGHT_BROWSERS_PATH.startsWith("/nix/")
-  ) {
-    process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(
-      process.env.HOME || "/tmp",
-      ".cache",
-      "ms-playwright"
-    );
-  }
-  try {
-    return await import("playwright");
-  } catch {
-    die("playwright missing — npm install && playwright install chromium");
-  }
-}
-
-async function launchBrowser(chromium) {
-  const candidates = [];
-  for (const name of ["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"]) {
-    const r = spawnSync("which", [name], { encoding: "utf8" });
-    if (r.status === 0 && r.stdout.trim()) candidates.push(r.stdout.trim());
-  }
-  const attempts = [
-    () => chromium.launch({ headless: true }),
-    ...candidates.map(
-      (executablePath) => () => chromium.launch({ headless: true, executablePath })
-    ),
-  ];
-  let lastErr;
-  for (const attempt of attempts) {
-    try {
-      return await attempt();
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  throw new Error(lastErr?.message || "chromium launch failed");
-}
-
 async function shotRun(browser, entry, run) {
   const { server, port } = await startStaticServer(run.dir);
   // demo lives at runs/<slug>/demo/index.html — server root is run.dir
@@ -148,6 +110,42 @@ async function shotRun(browser, entry, run) {
   try {
     await page.goto(demoUrl, { waitUntil: "networkidle", timeout: 60000 });
     await new Promise((r) => setTimeout(r, 800));
+    const broken = await page.evaluate(() => {
+      const body = document.body;
+      if (!body) return "no_body";
+      const text = (body.innerText || "").trim();
+      const html = body.innerHTML || "";
+      if (
+        /\? If |Need position|Could make|Put inside|If outside|Let's |Good\. On/i.test(
+          text
+        ) ||
+        /\? If |Need position|Could make|Put inside/i.test(html)
+      ) {
+        return "thinking_prose_in_page";
+      }
+      if (text.length < 20 && body.querySelectorAll("*").length < 8) {
+        return "nearly_empty";
+      }
+      // mostly blank canvas: no meaningful painted content size
+      const main = body.querySelector("main") || body;
+      const rect = main.getBoundingClientRect();
+      if (rect.width < 50 || rect.height < 50) return "tiny_layout";
+      return null;
+    });
+    if (broken) {
+      const rej = rejectRunForRebuild(run.dir, {
+        reason: `shot_broken:${broken}`,
+        model: run.model,
+        model_slug: run.slug,
+        provider: run.provider,
+      });
+      syncEntryPointers(entry.dir, entry.rel, entry.metaPath, updateMetaFields);
+      console.warn(
+        `  ✗ broken (${broken}) → ${rej.status} attempt ${rej.attempts}/${rej.max}` +
+          (rej.abandoned ? " (give up)" : " (rebuild)")
+      );
+      throw new Error(`demo looks broken (${broken}) — rejected for rebuild`);
+    }
     const outPath = path.join(run.dir, "preview.png");
     await page.screenshot({ path: outPath, type: "png" });
     const prev = readRunMeta(run.dir) || {};
@@ -158,6 +156,8 @@ async function shotRun(browser, entry, run) {
       provider: run.provider,
       demo: "demo/index.html",
       preview: "preview.png",
+      status: "shot",
+      reject_reason: null,
     });
     console.log(`  shot ${entry.rel}/runs/${run.slug}/preview.png`);
   } finally {
@@ -195,9 +195,9 @@ async function main() {
     return;
   }
 
-  const { chromium } = await loadPlaywright();
+  const pw = await ensurePlaywright();
   console.log(`Screenshotting ${jobs.length} model run(s) at ${WIDTH}×${HEIGHT}`);
-  const browser = await launchBrowser(chromium);
+  const browser = await launchChromium(pw);
   let ok = 0;
   let fail = 0;
   const touched = new Set();

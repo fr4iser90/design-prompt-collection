@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oxidized Brass Tarnish — Time as a Material</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brass:#b5a642;
+    --brass-hi:#fffdf2;
+    --patina:#4b6969;
+    --patina-dk:#2f4f4f;
+    --ink:#0a0a0b;
+    --ink-2:#121214;
+    --text:#ece7d6;
+    --muted:#8c887b;
+    --line:rgba(236,231,214,.14);
+    --display:"Fraunces", Georgia, serif;
+    --mono:"IBM Plex Mono", ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;
+    width:100%;
+    height:100svh;
+    min-height:560px;
+    overflow:hidden;
+    background:#000;
+    isolation:isolate;
+  }
+  #plate{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* atmospheric overlays (non-interactive) */
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 40%, rgba(0,0,0,.55) 100%);
+  }
+  .grain{
+    position:absolute;inset:-30%;pointer-events:none;z-index:3;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(4) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}25%{transform:translate(-4%,3%)}
+    50%{transform:translate(3%,-3%)}75%{transform:translate(-2%,-4%)}100%{transform:translate(0,0)}
+  }
+  .edge{position:absolute;z-index:4;pointer-events:none}
+  .edge.tl{top:clamp(16px,3vw,34px);left:clamp(16px,3vw,34px);width:26px;height:26px;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .edge.tr{top:clamp(16px,3vw,34px);right:clamp(16px,3vw,34px);width:26px;height:26px;border-top:1px solid var(--line);border-right:1px solid var(--line)}
+  .edge.bl{bottom:clamp(16px,3vw,34px);left:clamp(16px,3vw,34px);width:26px;height:26px;border-bottom:1px solid var(--line);border-left:1px solid var(--line)}
+  .edge.br{bottom:clamp(16px,3vw,34px);right:clamp(16px,3vw,34px);width:26px;height:26px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+
+  /* ---------- HUD ---------- */
+  .hud{position:absolute;inset:0;z-index:5;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(20px,4.4vw,54px)}
+  .hud > *{pointer-events:auto}
+
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .wordmark{display:flex;align-items:center;gap:12px}
+  .mark{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#fff8d8,var(--brass) 55%,#6f6524);box-shadow:0 0 14px rgba(181,166,66,.55)}
+  .wordmark .nm{font-family:var(--display);font-weight:600;font-size:clamp(15px,1.5vw,19px);letter-spacing:.02em}
+  .wordmark .sub{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+  .status{display:flex;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:var(--brass);animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+
+  .hero{max-width:min(680px,92%)}
+  .eyebrow{font-size:clamp(10px,1.1vw,12px);letter-spacing:.34em;text-transform:uppercase;color:var(--muted);margin-bottom:clamp(14px,2vw,22px)}
+  .eyebrow b{color:var(--brass);font-weight:500}
+  .title{
+    font-family:var(--display);
+    font-optical-sizing:auto;
+    font-weight:380;
+    font-size:clamp(40px,8.4vw,104px);
+    line-height:.94;
+    letter-spacing:-.025em;
+    text-shadow:0 2px 40px rgba(0,0,0,.5);
+  }
+  .title em{font-style:italic;font-weight:420;color:#e7ddbd}
+  .title .thin{font-weight:250;color:#cfc9b4}
+  .dek{margin-top:clamp(16px,2.4vw,26px);font-size:clamp(12px,1.35vw,15px);line-height:1.65;color:#c4c0b2;max-width:46ch}
+  .dek .accent{color:var(--brass)}
+
+  .bottombar{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+  .readout{display:flex;flex-direction:column;gap:14px}
+  .meter{width:clamp(180px,26vw,300px)}
+  .meter .row{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .meter .pct{font-family:var(--display);font-size:clamp(20px,2.4vw,30px);font-weight:500;letter-spacing:0;color:var(--text);font-variant-numeric:tabular-nums}
+  .meter .pct i{font-style:normal;color:var(--brass);font-size:.6em;margin-left:2px}
+  .track{height:3px;background:rgba(236,231,214,.12);position:relative;overflow:hidden;border-radius:2px}
+  .fill{position:absolute;inset:0 100% 0 0;background:linear-gradient(90deg,#6f6524,var(--brass));transition:right .12s linear}
+  .phase{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+  .phase span{color:var(--muted)}
+
+  .legend{display:flex;gap:clamp(18px,3vw,40px);align-items:flex-end}
+  .legend .col{display:flex;flex-direction:column;gap:10px}
+  .legend .head{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+  .sw{display:flex;align-items:center;gap:8px;font-size:10.5px;color:#bdb9ab;letter-spacing:.04em}
+  .sw i{width:12px;height:12px;border-radius:2px;display:inline-block;flex:0 0 auto}
+  .sw.brass i{background:radial-gradient(circle at 30% 25%,#fff8d8,var(--brass) 55%,#6f6524)}
+  .sw.pat i{background:linear-gradient(135deg,#4b6969,#2f4f4f)}
+  .sw.matte i{background:repeating-linear-gradient(90deg,#2f4f4f 0 3px,#3a5a5a 3px 6px)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  body.ready .reveal{opacity:1;transform:none}
+  body.ready .d1{transition-delay:.15s}body.ready .d2{transition-delay:.3s}
+  body.ready .d3{transition-delay:.45s}body.ready .d4{transition-delay:.6s}
+
+  /* ---------- ESSAY ---------- */
+  .essay{background:linear-gradient(180deg,#0a0a0b,#0e0e10);border-top:1px solid var(--line);padding:clamp(56px,9vw,120px) clamp(20px,5vw,80px)}
+  .essay-inner{max-width:1180px;margin:0 auto}
+  .essay .kicker{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--brass);margin-bottom:clamp(24px,4vw,44px)}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(32px,6vw,80px);align-items:start}
+  .lead{font-family:var(--display);font-weight:300;font-size:clamp(26px,3.6vw,44px);line-height:1.22;letter-spacing:-.015em}
+  .lead em{font-style:italic;color:#d9cfa8}
+  .cols{columns:1;column-gap:40px;color:#b3af9f;font-size:14px;line-height:1.8}
+  .cols p{margin-bottom:1.1em}
+  .cols p:first-child::first-letter{font-family:var(--display);font-size:2.6em;float:left;line-height:.72;padding:.06em .12em 0 0;color:var(--brass)}
+  .specs{margin-top:clamp(48px,7vw,90px);border-top:1px solid var(--line);padding-top:clamp(28px,4vw,44px);display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+  .spec .n{font-family:var(--display);font-size:clamp(28px,3.4vw,42px);font-weight:400;color:var(--text)}
+  .spec .n small{font-size:.42em;color:var(--brass);margin-left:3px}
+  .spec .l{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:8px;line-height:1.5}
+
+  .foot{border-top:1px solid var(--line);padding:26px clamp(20px,5vw,80px);display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .foot b{color:var(--brass);font-weight:500}
+
+  @media (max-width:820px){
+    .grid{grid-template-columns:1fr;gap:36px}
+    .specs{grid-template-columns:repeat(2,1fr);gap:30px 24px}
+    .legend{display:none}
+    .status{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .grain{animation:none}
+    .status .dot{animation:none}
+    .reveal{transition:none;opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <canvas id="plate"></canvas>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <span class="edge tl"></span><span class="edge tr"></span>
+    <span class="edge bl"></span><span class="edge br"></span>
+
+    <div class="hud">
+      <div class="topbar">
+        <div class="wordmark reveal d1">
+          <span class="mark"></span>
+          <div>
+            <div class="nm">Oxidized Brass Tarnish</div>
+            <div class="sub">Material Aging · Study Nº 04</div>
+          </div>
+        </div>
+        <div class="status reveal d1"><span class="dot"></span> Real-time · WebGL</div>
+      </div>
+
+      <div class="hero">
+        <div class="eyebrow reveal d2">Time as a <b>Material</b></div>
+        <h1 class="title reveal d2">The Weight<br><em>of Passing</em><br><span class="thin">Years</span></h1>
+        <p class="dek reveal d3">A macro study of a brushed brass plate surrendering to verdigris — nucleation, dendritic growth, and the slow dimming of specular light. Decay rendered not as loss, but as <span class="accent">accumulated history</span>.</p>
+      </div>
+
+      <div class="bottombar">
+        <div class="readout reveal d4">
+          <div class="meter">
+            <div class="row"><span>Oxidation</span><span class="pct" id="pct">0<i>%</i></span></div>
+            <div class="track"><div class="fill" id="fill"></div></div>
+          </div>
+          <div class="phase">Phase · <span id="phase">Polished</span></div>
+        </div>
+        <div class="legend reveal d4">
+          <div class="col">
+            <div class="head">Substrate</div>
+            <div class="sw brass"><i></i>Brushed brass</div>
+            <div class="sw pat"><i></i>Verdigris patina</div>
+          </div>
+          <div class="col">
+            <div class="head">Surface</div>
+            <div class="sw"><i style="background:radial-gradient(circle at 30% 25%,#fffdf2,#b5a642)"></i>Specular</div>
+            <div class="sw matte"><i></i>Chalky matte</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="essay">
+    <div class="essay-inner">
+      <div class="kicker">Method — Shader-driven surface aging</div>
+      <div class="grid">
+        <p class="lead">The patina is never painted on. It <em>grows</em> — seeded from random nucleation points, expanded by layered domain-warped noise, its edges displaced and darkened where the corrosion thickens.</p>
+        <div class="cols">
+          <p>Two textures do the work: a procedural brushed-brass base carrying a warm specular lobe, and a time-varying noise field that reveals matte verdigris through a moving <code>smoothstep</code> threshold. Displacement bends the UVs so the boundary wobbles organically rather than dissolving.</p>
+          <p>As coverage climbs, the lighting rig drifts from a warm studio key toward cool ambient — highlights flatten and spread, occlusion deepens in the crevices, and the metal appears to sink beneath its own history.</p>
+        </div>
+      </div>
+      <div class="specs">
+        <div class="spec"><div class="n">60<small>fps</small></div><div class="l">Smooth one-way progression</div></div>
+        <div class="spec"><div class="n">3–5<small>s</small></div><div class="l">Time compressed to a breath</div></div>
+        <div class="spec"><div class="n">4<small>×</small></div><div class="l">Noise octaves · dendritic edges</div></div>
+        <div class="spec"><div class="n">2<small>×</small></div><div class="l">Lighting rig: warm → cool</div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Oxidized Brass Tarnish — <b>Time as a Material</b></span>
+    <span>Procedural · No opacity masks · WebGL fragment shader</span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var canvas = document.getElementById('plate');
+  var pctEl = document.getElementById('pct');
+  var fillEl = document.getElementById('fill');
+  var phaseEl = document.getElementById('phase');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var gl = canvas.getContext('webgl', {antialias:true, alpha:false, premultipliedAlpha:false});
+  if(!gl){ document.querySelector('.vignette').style.background='#b5a642'; return; }
+
+  var vsrc = [
+    'attribute vec2 a_pos;',
+    'void main(){ gl_Position = vec4(a_pos,0.0,1.0); }'
+  ].join('\n');
+
+  var fsrc = [
+    'precision highp float;',
+    'uniform vec2 u_res; uniform float u_time; uniform float u_prog;',
+    'float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }',
+    'float noise(vec2 p){',
+    '  vec2 i=floor(p); vec2 f=fract(p);',
+    '  vec2 u=f*f*(3.0-2.0*f);',
+    '  float a=hash(i); float b=hash(i+vec2(1.0,0.0));',
+    '  float c=hash(i+vec2(0.0,1.0)); float d=hash(i+vec2(1.0,1.0));',
+    '  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);',
+    '}',
+    'float fbm(vec2 p){',
+    '  float v=0.0; float amp=0.5;',
+    '  for(int i=0;i<6;i++){ v+=amp*noise(p); p*=2.02; amp*=0.5; }',
+    '  return v;',
+    '}',
+    'void main(){',
+    '  vec2 uv = gl_FragCoord.xy/u_res;',
+    '  vec2 asp = vec2(u_res.x/u_res.y,1.0);',
+    '  vec2 p = uv*asp;',
+    '  float prog = clamp(u_prog,0.0,1.0);',
+    '  float e = prog*prog*(3.0-2.0*prog);',
+    '  // domain warp for organic, non-circular growth',
+    '  vec2 q = vec2(fbm(p*2.3+vec2(0.0,1.7)), fbm(p*2.3+vec2(5.2,1.3)));',
+    '  vec2 r = vec2(fbm(p*2.3+3.0*q+vec2(1.7,9.2)), fbm(p*2.3+3.0*q+vec2(8.3,2.8)));',
+    '  float n = fbm(p*2.3+3.0*r);',
+    '  float grad = smoothstep(0.0,1.0,uv.x*0.35+uv.y*0.5+0.15);',
+    '  float thr = mix(1.18,0.02,e) + (grad-0.5)*0.28;',
+    '  float pat = smoothstep(thr+0.02, thr-0.02, n);',
+    '  // chalky thickness variation',
+    '  float thick = smoothstep(0.15,0.95, fbm(p*7.0+12.0));',
+    '  float t = clamp(pat*(0.5+0.5*thick),0.0,1.0);',
+    '  // brushed brass base',
+    '  float brush = noise(vec2(uv.x*140.0, uv.y*2.2));',
+    '  float fine = noise(vec2(uv.x*520.0, uv.y*1.3));',
+    '  vec2 L = normalize(vec2(0.36,0.66));',
+    '  float d = dot(L, vec2(brush-0.5,fine-0.5));',
+    '  float sheen = 0.5+0.5*sin(p.x*2.1+prog*1.1);',
+    '  vec3 brass = vec3(0.71,0.65,0.26);',
+    '  brass *= 0.80+0.26*brush+0.10*fine;',
+    '  brass *= 0.86+0.30*sheen;',
+    '  brass += d*0.14;',
+    '  // verdigris (noise mixed, matte)',
+    '  float v1 = fbm(p*4.0+7.0);',
+    '  vec3 patC = mix(vec3(0.184,0.31,0.31), vec3(0.294,0.412,0.412), v1);',
+    '  patC += (fbm(p*10.0)-0.5)*0.055;',
+    '  patC *= 0.82+0.34*fbm(p*24.0);',
+    '  vec3 col = mix(brass, patC, t);',
+    '  // specular: sharp on brass, diffuse on patina',
+    '  vec2 h = uv-0.5;',
+    '  float spec = pow(max(1.0-length(h*vec2(1.15,1.5)),0.0), 2.2);',
+    '  float specAmt = (1.0-t)*0.55;',
+    '  float warm = 1.0-0.75*e;',
+    '  col += vec3(1.0,0.99,0.95)*spec*specAmt*(0.55+0.45*warm);',
+    '  // cool ambient shift as it ages',
+    '  col = mix(col, col*vec3(0.90,0.95,1.00), e*0.42);',
+    '  // occlusion darkening in thick patina',
+    '  col *= mix(1.0, 0.74+0.26*thick, t);',
+    '  // vignette',
+    '  float vig = smoothstep(1.18,0.30,length(h*vec2(1.1,1.0)));',
+    '  col *= 0.52+0.48*vig;',
+    '  col += (hash(gl_FragCoord.xy+u_time)-0.5)*0.012;',
+    '  col = pow(max(col,0.0), vec3(0.92));',
+    '  gl_FragColor = vec4(col,1.0);',
+    '}'
+  ].join('\n');
+
+  function sh(type,src){
+    var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); }
+    return s;
+  }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(prog)); }
+  gl.useProgram(prog);
+
+  var buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1, 3,-1, -1,3]),gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog,'a_pos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+
+  var uRes = gl.getUniformLocation(prog,'u_res');
+  var uTime = gl.getUniformLocation(prog,'u_time');
+  var uProg = gl.getUniformLocation(prog,'u_prog');
+
+  var dpr = Math.min(window.devicePixelRatio||1, 2);
+  function resize(){
+    var w = canvas.clientWidth, h = canvas.clientHeight;
+    canvas.width = Math.max(1,Math.round(w*dpr));
+    canvas.height = Math.max(1,Math.round(h*dpr));
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+  }
+  window.addEventListener('resize', resize);
+
+  var start = performance.now();
+  var DUR = 4200;
+
+  function phaseName(p){
+    if(p<0.06) return 'Polished';
+    if(p<0.24) return 'Nucleation';
+    if(p<0.52) return 'Dendritic growth';
+    if(p<0.78) return 'Coalescence';
+    if(p<0.96) return 'Maturation';
+    return 'Fully oxidized';
+  }
+
+  var lastPct = -1;
+  function frame(now){
+    var t = (now-start)/1000;
+    var prog = (now-start)/DUR;
+    if(reduce) prog = 0.92;
+    prog = Math.min(prog,1.0);
+    gl.uniform1f(uTime,t);
+    gl.uniform1f(uProg,prog);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+
+    var pct = Math.round(prog*100);
+    if(pct!==lastPct){
+      lastPct = pct;
+      pctEl.innerHTML = pct+'<i>%</i>';
+      fillEl.style.right = (100-pct)+'%';
+      phaseEl.textContent = phaseName(prog);
+    }
+    if(!reduce || prog<1.0){ requestAnimationFrame(frame); }
+  }
+
+  resize();
+  requestAnimationFrame(frame);
+  document.body.classList.add('ready');
+})();
+</script>
+</body>
+</html>

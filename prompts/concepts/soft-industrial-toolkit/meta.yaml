@@ -7,14 +7,17 @@ tags:
   - soft
   - product
   - tokens
-status: polished
+status: draft
 summary: "Design toolkit blending soft UI radii with industrial material cues — aluminum, porcelain, quiet warning stripes."
 preview: preview.svg
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
+default_run: null
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

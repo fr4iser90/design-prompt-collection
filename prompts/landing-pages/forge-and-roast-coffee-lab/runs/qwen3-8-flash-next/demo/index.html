@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge & Roast — Coffee Lab</title>
+<meta name="description" content="Small-batch roastery, grinders and brewing tools. Roasted to spec, sold by the gram.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#12100f; --black2:#181513; --black3:#221d19;
+  --ash:#f1efe9; --ash-dim:#a7a199; --ash-faint:#6a645c;
+  --ember:#c8452b; --ember-lit:#e8663f; --ember-deep:#8f2e1c;
+  --line:rgba(241,239,233,.14); --line-strong:rgba(241,239,233,.28);
+  --display:'Jost','Futura','Century Gothic',sans-serif;
+  --ui:'Space Mono',ui-monospace,monospace;
+  --mono:'Space Mono',ui-monospace,monospace;
+  --pad:clamp(18px,4vw,64px);
+  --max:1320px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--black); color:var(--ash);
+  font-family:var(--ui); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+img{display:block;max-width:100%;height:100%;object-fit:cover}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--ember);color:var(--ash)}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ember)}
+
+/* grain + noise */
+.grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ============ HEADER ============ */
+header{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .4s,border-color .4s;
+  border-bottom:1px solid transparent}
+header.scrolled{background:rgba(18,16,15,.86);backdrop-filter:blur(8px);border-bottom-color:var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:66px;max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
+.brand{display:flex;align-items:baseline;gap:10px;font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:.02em}
+.brand .amp{color:var(--ember);font-style:italic;font-weight:400}
+.brand .sub{font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--ash-faint);text-transform:uppercase}
+.nav-links{display:flex;gap:30px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+.nav-links a{position:relative;color:var(--ash-dim);padding:4px 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--ember);transition:width .3s}
+.nav-links a:hover{color:var(--ash)}
+.nav-links a:hover::after{width:100%}
+.cart{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px solid var(--line-strong);padding:9px 16px;transition:.3s}
+.cart:hover{border-color:var(--ember);color:var(--ember)}
+.cart .dot{width:6px;height:6px;background:var(--ember);border-radius:50%;box-shadow:0 0 8px var(--ember)}
+.burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:6px}
+.burger span{width:24px;height:2px;background:var(--ash);transition:.3s}
+
+/* ============ HERO ============ */
+.hero{position:relative;padding-top:120px;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 78% 30%,rgba(200,69,43,.16),transparent 55%),
+             radial-gradient(90% 80% at 10% 90%,rgba(200,69,43,.06),transparent 60%)}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(24px,4vw,60px);align-items:center;width:100%}
+.hero-meta{display:flex;gap:26px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ash-dim);margin-bottom:26px;flex-wrap:wrap}
+.hero-meta b{color:var(--ember);font-weight:400}
+.hero h1{font-family:var(--display);font-weight:600;line-height:.9;letter-spacing:-.01em;
+  font-size:clamp(3.2rem,10vw,8.6rem);text-transform:uppercase}
+.hero h1 .l2{color:var(--ember);font-style:italic;font-weight:500}
+.hero h1 .stroke{-webkit-text-stroke:1.4px var(--ash);color:transparent}
+.hero-lede{max-width:42ch;margin:30px 0 34px;color:var(--ash-dim);font-size:15px;line-height:1.7}
+.hero-lede b{color:var(--ash);font-weight:400}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  padding:16px 26px;border:1px solid var(--ember);background:var(--ember);color:var(--ash);cursor:pointer;transition:.3s;position:relative}
+.btn:hover{background:var(--ember-lit);border-color:var(--ember-lit)}
+.btn.ghost{background:transparent;border-color:var(--line-strong);color:var(--ash)}
+.btn.ghost:hover{border-color:var(--ash)}
+.btn .arw{transition:transform .3s}
+.btn:hover .arw{transform:translateX(5px)}
+.btn.pulse::before{content:"";position:absolute;inset:-1px;border:1px solid var(--ember);animation:pulse 2.6s ease-out infinite;pointer-events:none}
+@keyframes pulse{0%{opacity:.7;transform:scale(1)}70%{opacity:0;transform:scale(1.06)}100%{opacity:0}}
+.hero-specs{display:flex;gap:34px;margin-top:44px;padding-top:26px;border-top:1px solid var(--line)}
+.hero-specs div span{display:block;font-family:var(--display);font-size:26px;font-weight:600;line-height:1}
+.hero-specs div small{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash-faint);margin-top:6px;display:block}
+
+/* hero image */
+.hero-img{position:relative;aspect-ratio:4/5;overflow:hidden;background:var(--black3);border:1px solid var(--line)}
+.hero-img .kb{position:absolute;inset:0;transform-origin:60% 40%;animation:kenburns 22s ease-in-out infinite alternate}
+.hero-img img{width:100%;height:100%;object-fit:cover;filter:saturate(.85) contrast(1.05)}
+@keyframes kenburns{0%{transform:scale(1.05)}100%{transform:scale(1.16) translate(-2%,-2%)}}
+.hero-img .tag{position:absolute;left:0;bottom:0;background:var(--black);padding:14px 20px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;border-top:1px solid var(--ember);border-right:1px solid var(--ember)}
+.hero-img .tag b{color:var(--ember)}
+.hero-img .coord{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ash-dim);text-align:right;text-shadow:0 1px 4px #000}
+.reveal{clip-path:inset(0 0 100% 0);transition:clip-path 1.1s cubic-bezier(.7,0,.2,1)}
+.reveal.in{clip-path:inset(0 0 0 0)}
+
+/* ============ MARQUEE ============ */
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--black2)}
+.marquee-track{display:flex;white-space:nowrap;animation:scroll 32s linear infinite;font-family:var(--display);text-transform:uppercase;font-size:clamp(1.4rem,3vw,2.4rem);font-weight:600;padding:20px 0}
+.marquee-track span{padding:0 34px;color:var(--ash)}
+.marquee-track span i{color:var(--ember);font-style:normal}
+.marquee-track em{color:var(--ash-faint);font-style:normal;-webkit-text-stroke:1px var(--ash-faint);color:transparent}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ============ SECTION HEAD ============ */
+.sec{padding:clamp(70px,10vw,130px) 0}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:52px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.sec-head h2{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:clamp(2rem,5.5vw,4rem);line-height:.95;letter-spacing:-.01em}
+.sec-head h2 i{color:var(--ember);font-style:italic;font-weight:500}
+.sec-head .idx{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--ash-faint);text-transform:uppercase}
+.sec-head p{max-width:38ch;color:var(--ash-dim);font-size:14px}
+
+/* ============ ROAST PROFILE ============ */
+.roast{background:var(--black2);border-top:1px solid var(--line)}
+.roast-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(30px,5vw,70px);align-items:start}
+.counters{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.count{background:var(--black);padding:30px 26px}
+.count .num{font-family:var(--display);font-weight:600;font-size:clamp(2.6rem,6vw,4.4rem);line-height:.9;letter-spacing:-.02em}
+.count .num .u{color:var(--ember);font-size:.4em;vertical-align:super;margin-left:4px}
+.count .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash-dim);margin-top:14px}
+.count .sub{font-family:var(--mono);font-size:10px;color:var(--ash-faint);margin-top:4px}
+.curve{border:1px solid var(--line);padding:28px;background:var(--black);position:relative}
+.curve h3{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash-dim);margin-bottom:18px}
+.curve svg{width:100%;height:auto;display:block}
+.curve .cap{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ash-faint);margin-top:14px;text-transform:uppercase;letter-spacing:.1em}
+.draw{stroke-dasharray:1000;stroke-dashoffset:1000;transition:stroke-dashoffset 2.4s ease .2s}
+.in .draw{stroke-dashoffset:0}
+
+/* ============ SHOP ============ */
+.shop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.card{background:var(--black);padding:0;display:flex;flex-direction:column;transition:background .35s;position:relative}
+.card:hover{background:var(--black2)}
+.card .media{position:relative;aspect-ratio:1/1;overflow:hidden;background:var(--black3)}
+.card .media img{transition:transform .8s cubic-bezier(.2,.7,.2,1);filter:saturate(.9)}
+.card:hover .media img{transform:scale(1.07)}
+.card .badge{position:absolute;top:12px;left:12px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:var(--ember);color:var(--ash);padding:5px 9px}
+.card .badge.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ash-dim)}
+.card .body{padding:20px;display:flex;flex-direction:column;flex:1}
+.card .origin{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ember);margin-bottom:8px}
+.card h3{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.05;text-transform:uppercase;letter-spacing:.01em}
+.card .desc{color:var(--ash-dim);font-size:12.5px;margin-top:8px;line-height:1.5}
+.spec{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;display:grid;gap:7px}
+.spec .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em}
+.spec .row span:first-child{color:var(--ash-faint);text-transform:uppercase}
+.spec .row span:last-child{color:var(--ash)}
+.card .foot{margin-top:auto;padding-top:18px;display:flex;justify-content:space-between;align-items:center}
+.price{font-family:var(--display);font-weight:600;font-size:22px}
+.price small{font-family:var(--mono);font-size:10px;color:var(--ash-faint);letter-spacing:.1em}
+.add{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:transparent;border:1px solid var(--line-strong);color:var(--ash);padding:10px 14px;cursor:pointer;transition:.3s}
+.add:hover{background:var(--ember);border-color:var(--ember)}
+
+/* ============ CRAFT ============ */
+.craft{background:var(--black2);border-top:1px solid var(--line)}
+.craft-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.step{background:var(--black);padding:30px 24px 34px;position:relative;overflow:hidden;transition:background .35s}
+.step:hover{background:var(--black3)}
+.step .no{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ember)}
+.step h4{font-family:var(--display);font-weight:600;text-transform:uppercase;font-size:26px;margin:16px 0 12px;line-height:1}
+.step p{color:var(--ash-dim);font-size:13px;line-height:1.6}
+.step .metric{margin-top:20px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ash-faint);text-transform:uppercase;border-top:1px solid var(--line);padding-top:12px}
+.step .metric b{color:var(--ash);font-weight:400}
+.step::after{content:"";position:absolute;right:-30px;bottom:-30px;width:80px;height:80px;border:1px solid var(--ember);border-radius:50%;opacity:.25;transition:.5s}
+.step:hover::after{transform:scale(1.4);opacity:.5}
+
+/* ============ QUOTE ============ */
+.quote{padding:clamp(70px,10vw,120px) 0;border-top:1px solid var(--line);position:relative;overflow:hidden}
+.quote .big{font-family:var(--display);font-weight:500;font-size:clamp(1.8rem,4.5vw,3.4rem);line-height:1.15;max-width:20ch;letter-spacing:-.01em}
+.quote .big i{color:var(--ember);font-style:italic}
+.quote .who{margin-top:30px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash-dim)}
+.quote .who b{color:var(--ash);font-weight:400}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line);background:var(--black2);padding-top:70px}
+.foot-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.3fr;gap:40px;padding-bottom:60px;border-bottom:1px solid var(--line)}
+.foot-brand .brand{font-size:34px;margin-bottom:18px}
+.foot-brand p{color:var(--ash-dim);font-size:13px;max-width:32ch;line-height:1.6}
+.foot-col h5{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash-faint);margin-bottom:18px}
+.foot-col a{display:block;color:var(--ash-dim);font-size:13px;padding:6px 0;transition:color .3s}
+.foot-col a:hover{color:var(--ember)}
+.news label{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash-faint);display:block;margin-bottom:14px}
+.news .field{display:flex;border:1px solid var(--line-strong)}
+.news input{flex:1;background:transparent;border:0;color:var(--ash);padding:14px;font-family:var(--mono);font-size:12px;outline:none}
+.news input::placeholder{color:var(--ash-faint)}
+.news button{background:var(--ember);border:0;color:var(--ash);padding:0 18px;cursor:pointer;font-family:var(--mono);font-size:16px;transition:.3s}
+.news button:hover{background:var(--ember-lit)}
+.news .note{font-family:var(--mono);font-size:10px;color:var(--ash-faint);margin-top:10px}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:26px 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ash-faint)}
+.foot-bot .coords{color:var(--ember)}
+
+/* ============ REVEAL ============ */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:1000px){
+  .hero-grid{grid-template-columns:1fr;gap:34px}
+  .hero{min-height:auto;padding-bottom:60px}
+  .hero-img{aspect-ratio:16/11;order:2}
+  .roast-grid{grid-template-columns:1fr}
+  .shop-grid{grid-template-columns:repeat(2,1fr)}
+  .craft-grid{grid-template-columns:repeat(2,1fr)}
+  .foot-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .nav-links{position:fixed;inset:66px 0 auto 0;background:var(--black);flex-direction:column;padding:24px var(--pad);gap:20px;border-bottom:1px solid var(--line);transform:translateY(-120%);transition:transform .4s;z-index:40}
+  body.open .nav-links{transform:none}
+  .burger{display:flex}
+  body.open .burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  body.open .burger span:nth-child(2){opacity:0}
+  body.open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .cart{padding:9px 12px;font-size:10px}
+  .shop-grid{grid-template-columns:1fr}
+  .craft-grid{grid-template-columns:1fr}
+  .counters{grid-template-columns:1fr}
+  .foot-top{grid-template-columns:1fr}
+  .hero-specs{flex-wrap:wrap;gap:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .rv{opacity:1;transform:none}
+  .reveal{clip-path:none}
+  .draw{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- HEADER -->
+<header id="hdr">
+  <nav class="nav">
+    <a href="#top" class="brand">FORGE<span class="amp">&amp;</span>ROAST<span class="sub">Coffee Lab</span></a>
+    <div class="nav-links">
+      <a href="#roast">Roast Profile</a>
+      <a href="#shop">Shop</a>
+      <a href="#craft">The Process</a>
+      <a href="#foot">Stockists</a>
+    </div>
+    <a href="#shop" class="cart"><span class="dot"></span>Cart · <span id="cartn">0</span></a>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="hero-meta">
+        <span>Batch <b>#0428</b></span>
+        <span>Roasted <b>Today</b></span>
+        <span>Est. <b>2016</b></span>
+        <span>Lat <b>45.52°N</b></span>
+      </div>
+      <h1>
+        <span class="l1">Roasted</span><br>
+        <span class="l2">to spec,</span><br>
+        <span class="stroke">not to taste.</span>
+      </h1>
+      <p class="hero-lede">A workshop roastery for people who measure everything. Single-origin beans, dialled grinders and brewing tools — <b>roasted in 12kg lots and shipped within 48 hours of the drop.</b></p>
+      <div class="hero-cta">
+        <a href="#shop" class="btn pulse">Shop the drop <span class="arw">→</span></a>
+        <a href="#roast" class="btn ghost">Read the roast log</a>
+      </div>
+      <div class="hero-specs">
+        <div><span>12<span style="font-size:.5em">kg</span></span><small>Max lot size</small></div>
+        <div><span>48<span style="font-size:.5em">h</span></span><small>Bean to box</small></div>
+        <div><span>06</span><small>Origins live</small></div>
+      </div>
+    </div>
+    <div class="hero-img reveal">
+      <div class="kb"><img src="https://picsum.photos/seed/roasted-coffee-beans-macro/900/1120" alt="Macro shot of freshly roasted coffee beans"></div>
+      <div class="coord">BATCH 0428<br>DRUM · PROBAT P12</div>
+      <div class="tag">Origin <b>Ethiopia · Guji</b> — Light roast</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Small batch <i>✦</i></span><span><em>Roasted to spec</em></span><span>Grinders <i>✦</i></span><span><em>Single origin</em></span><span>Brew tools <i>✦</i></span><span><em>48 hour drop</em></span>
+    <span>Small batch <i>✦</i></span><span><em>Roasted to spec</em></span><span>Grinders <i>✦</i></span><span><em>Single origin</em></span><span>Brew tools <i>✦</i></span><span><em>48 hour drop</em></span>
+  </div>
+</div>
+
+<!-- ROAST PROFILE -->
+<section class="sec roast" id="roast">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <span class="idx">01 / Roast Profile</span>
+        <h2>The numbers <i>behind</i><br>the cup.</h2>
+      </div>
+      <p>Every lot is logged. These are the live figures from the current roast — the same data we print on your bag.</p>
+    </div>
+    <div class="roast-grid">
+      <div class="counters rv">
+        <div class="count">
+          <div class="num"><span class="cn" data-to="196">0</span><span class="u">°C</span></div>
+          <div class="lbl">Final bean temp</div>
+          <div class="sub">Charge 198° · Drop 196°</div>
+        </div>
+        <div class="count">
+          <div class="num"><span class="cn" data-to="11.4">0</span><span class="u">min</span></div>
+          <div class="lbl">Total roast time</div>
+          <div class="sub">Drying 4:10 · Development 2:05</div>
+        </div>
+        <div class="count">
+          <div class="num"><span class="cn" data-to="14.2">0</span><span class="u">%</span></div>
+          <div class="lbl">Moisture content</div>
+          <div class="sub">Green 11.1% · Post-roast 14.2%</div>
+        </div>
+        <div class="count">
+          <div class="num"><span class="cn" data-to="428">0</span></div>
+          <div class="lbl">Batch number</div>
+          <div class="sub">Guji · Natural · 1850masl</div>
+        </div>
+      </div>
+      <div class="curve rv">
+        <h3>Roast curve — Lot 0428</h3>
+        <svg viewBox="0 0 400 240" role="img" aria-label="Roast temperature curve">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#c8452b" stop-opacity=".35"/>
+              <stop offset="1" stop-color="#c8452b" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- grid -->
+          <g stroke="rgba(241,239,233,.1)" stroke-width="1">
+            <line x1="0" y1="60" x2="400" y2="60"/><line x1="0" y1="120" x2="400" y2="120"/><line x1="0" y1="180" x2="400" y2="180"/>
+            <line x1="100" y1="0" x2="100" y2="240"/><line x1="200" y1="0" x2="200" y2="240"/><line x1="300" y1="0" x2="300" y2="240"/>
+          </g>
+          <!-- area -->
+          <path d="M0,210 L70,150 L140,110 L210,92 L280,80 L340,70 L400,66 L400,240 L0,240 Z" fill="url(#g)"/>
+          <!-- line -->
+          <path class="draw" d="M0,210 L70,150 L140,110 L210,92 L280,80 L340,70 L400,66" fill="none" stroke="#c8452b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- markers -->
+          <circle cx="140" cy="110" r="4" fill="#f1efe9"/>
+          <circle cx="280" cy="80" r="4" fill="#c8452b"/>
+          <circle cx="400" cy="66" r="4" fill="#e8663f"/>
+        </svg>
+        <div class="cap"><span>Turning point</span><span>First crack</span><span>Drop 196°</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section class="sec" id="shop">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <span class="idx">02 / The Drop</span>
+        <h2>Beans, grinders<br>&amp; <i>the bench.</i></h2>
+      </div>
+      <p>Hover a roast to read its origin log. Everything ships flat-rate and grinds to order.</p>
+    </div>
+    <div class="shop-grid">
+
+      <!-- Product 1 -->
+      <article class="card rv">
+        <div class="media">
+          <span class="badge">Light</span>
+          <img src="https://picsum.photos/seed/ethiopia-guji-coffee/600/600" alt="Ethiopia Guji coffee">
+        </div>
+        <div class="body">
+          <div class="origin">Ethiopia · Guji</div>
+          <h3>Ember Guji</h3>
+          <p class="desc">Natural process. Strawberry, jasmine, brown sugar finish.</p>
+          <div class="spec">
+            <div class="row"><span>Altitude</span><span>1850 masl</span></div>
+            <div class="row"><span>Process</span><span>Natural</span></div>
+            <div class="row"><span>Roast</span><span>Agtron 68</span></div>
+            <div class="row"><span>Lot</span><span>0428</span></div>
+          </div>
+          <div class="foot">
+            <div class="price">$24 <small>/ 250g</small></div>
+            <button class="add" data-add>Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 2 -->
+      <article class="card rv">
+        <div class="media">
+          <span class="badge">Med</span>
+          <img src="https://picsum.photos/seed/colombia-huila-coffee/600/600" alt="Colombia Huila coffee">
+        </div>
+        <div class="body">
+          <div class="origin">Colombia · Huila</div>
+          <h3>Anvil Huila</h3>
+          <p class="desc">Washed. Red apple, cocoa nib, toasted almond.</p>
+          <div class="spec">
+            <div class="row"><span>Altitude</span><span>1650 masl</span></div>
+            <div class="row"><span>Process</span><span>Washed</span></div>
+            <div class="row"><span>Roast</span><span>Agtron 55</span></div>
+            <div class="row"><span>Lot</span><span>0426</span></div>
+          </div>
+          <div class="foot">
+            <div class="price">$22 <small>/ 250g</small></div>
+            <button class="add" data-add>Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 3 -->
+      <article class="card rv">
+        <div class="media">
+          <span class="badge ghost">Tool</span>
+          <img src="https://picsum.photos/seed/coffee-hand-grinder/600/600" alt="Bench grinder">
+        </div>
+        <div class="body">
+          <div class="origin">Lab Equipment</div>
+          <h3>Bench Grinder</h3>
+          <p class="desc">Hand crank, 38mm conical burrs. 60-click dial.</p>
+          <div class="spec">
+            <div class="row"><span>Burrs</span><span>Conical 38mm</span></div>
+            <div class="row"><span>Clicks</span><span>60</span></div>
+            <div class="row"><span>Body</span><span>Anodised Alu</span></div>
+            <div class="row"><span>SKU</span><span>FG-01</span></div>
+          </div>
+          <div class="foot">
+            <div class="price">$148</div>
+            <button class="add" data-add>Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Product 4 -->
+      <article class="card rv">
+        <div class="media">
+          <span class="badge ghost">Brew</span>
+          <img src="https://picsum.photos/seed/pour-over-coffee-dripper/600/600" alt="Pour over dripper">
+        </div>
+        <div class="body">
+          <div class="origin">Lab Equipment</div>
+          <h3>Pour Bench</h3>
+          <p class="desc">Gooseneck kettle + ceramic dripper set. 0.6L.</p>
+          <div class="spec">
+            <div class="row"><span>Kettle</span><span>0.6L Gooseneck</span></div>
+            <div class="row"><span>Dripper</span><span>Ceramic #02</span></div>
+            <div class="row"><span>Filter</span><span>Unbleached</span></div>
+            <div class="row"><span>SKU</span><span>FG-07</span></div>
+          </div>
+          <div class="foot">
+            <div class="price">$96</div>
+            <button class="add" data-add>Add +</button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- CRAFT -->
+<section class="sec craft" id="craft">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <div>
+        <span class="idx">03 / The Process</span>
+        <h2>Four steps,<br><i>zero shortcuts.</i></h2>
+      </div>
+      <p>From green selection to the sealed valve — every stage logged against the batch number.</p>
+    </div>
+    <div class="craft-grid">
+      <div class="step rv">
+        <div class="no">01</div>
+        <h4>Source</h4>
+        <p>Direct-trade lots cupped at the lab before a single sack is bought. Only the top three scores survive.</p>
+        <div class="metric">Cupping score <b>86+</b></div>
+      </div>
+      <div class="step rv">
+        <div class="no">02</div>
+        <h4>Roast</h4>
+        <p>Twelve-kilo drum lots on a Probat P12. Curves tuned by hand, never auto-pilot.</p>
+        <div class="metric">Lot size <b>12kg</b></div>
+      </div>
+      <div class="step rv">
+        <div class="no">03</div>
+        <h4>Rest</h4>
+        <p>Beans degas for a full four days before bagging so the first cup is already dialed.</p>
+        <div class="metric">Rest window <b>4 days</b></div>
+      </div>
+      <div class="step rv">
+        <div class="no">04</div>
+        <h4>Ship</h4>
+        <p>Sealed with a one-way valve and a printed roast date. Out the door within 48 hours.</p>
+        <div class="metric">Dispatch <b>48h</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+  <div class="wrap rv">
+    <p class="big">"We don't chase the trendiest roast. We chase the <i>repeatable</i> one — the lot you can trust on a Tuesday at 6am."</p>
+    <div class="who">— Mara Voss · <b>Head Roaster</b> · Forge &amp; Roast</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">FORGE<span class="amp">&amp;</span>ROAST</div>
+        <p>A small-batch roastery and equipment lab. Roasted to spec, sold by the gram, shipped within 48 hours.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Shop</h5>
+        <a href="#shop">Single origin</a>
+        <a href="#shop">Blends</a>
+        <a href="#shop">Grinders</a>
+        <a href="#shop">Brew tools</a>
+      </div>
+      <div class="foot-col">
+        <h5>Lab</h5>
+        <a href="#roast">Roast log</a>
+        <a href="#craft">Process</a>
+        <a href="#foot">Wholesale</a>
+        <a href="#foot">Stockists</a>
+      </div>
+      <div class="news">
+        <label>Join the drop list</label>
+        <form class="field" onsubmit="return false">
+          <input type="email" placeholder="you@lab.com" aria-label="Email">
+          <button aria-label="Subscribe">→</button>
+        </form>
+        <p class="note">New lots, first crack. No spam, no countdowns.</p>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2024 Forge &amp; Roast Coffee Lab</span>
+      <span class="coords">45.5231°N · 122.6765°W — Portland, OR</span>
+      <span>Roasted to spec · Batch #0428</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* header scroll state */
+  var hdr = document.getElementById('hdr');
+  var onScroll = function(){ hdr.classList.toggle('scrolled', window.scrollY > 30); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* mobile menu */
+  var burger = document.getElementById('burger');
+  burger.addEventListener('click', function(){ document.body.classList.toggle('open'); });
+  document.querySelectorAll('.nav-links a').forEach(function(a){
+    a.addEventListener('click', function(){ document.body.classList.remove('open'); });
+  });
+
+  /* cart counter */
+  var n = 0, cartn = document.getElementById('cartn');
+  document.querySelectorAll('[data-add]').forEach(function(b){
+    b.addEventListener('click', function(){
+      n++; cartn.textContent = n;
+      b.textContent = 'Added ✓';
+      setTimeout(function(){ b.textContent = 'Add +'; }, 1200);
+    });
+  });
+
+  /* reveal + counters via IntersectionObserver */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      e.target.classList.add('in');
+      if(e.target.classList.contains('counters') || e.target.querySelector){
+        e.target.querySelectorAll('.cn').forEach(runCount);
+      }
+      io.unobserve(e.target);
+    });
+  }, {threshold:0.2});
+
+  document.querySelectorAll('.rv, .reveal').forEach(function(el){ io.observe(el); });
+
+  function runCount(el){
+    if(el.dataset.done) return; el.dataset.done = 1;
+    var to = parseFloat(el.dataset.to);
+    var dec = (to % 1 !== 0) ? 1 : 0;
+    if(reduce){ el.textContent = to.toFixed(dec); return; }
+    var dur = 1500, start = performance.now();
+    function tick(now){
+      var p = Math.min((now-start)/dur, 1);
+      var eased = 1 - Math.pow(1-p, 3);
+      el.textContent = (to*eased).toFixed(dec);
+      if(p<1) requestAnimationFrame(tick); else el.textContent = to.toFixed(dec);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* hover label shift: swap origin line text on roast cards */
+  document.querySelectorAll('.card').forEach(function(card){
+    var origin = card.querySelector('.origin');
+    if(!origin || !origin.textContent) return;
+    var base = origin.textContent;
+    var alt = {
+      'Ethiopia · Guji':'1850masl · Natural',
+      'Colombia · Huila':'1650masl · Washed'
+    }[base];
+    if(!alt) return;
+    card.addEventListener('mouseenter', function(){ origin.textContent = alt; });
+    card.addEventListener('mouseleave', function(){ origin.textContent = base; });
+  });
+})();
+</script>
+</body>
+</html>

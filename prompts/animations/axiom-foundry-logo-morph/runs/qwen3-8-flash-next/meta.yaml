@@ -1,0 +1,25 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 2
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 5578
+rejected_at: "2026-09-28T06:44:51.411Z"
+last_review_score: 4
+last_review_summary: "Correct palette and UI chrome, but the hero stage is empty at frame 000 — the actual logo morph (the deliverable) is invisible in this capture."
+last_reject_reason: "score_4_below_5"
+review_score: 8
+review_summary: "Strong brand-motion composition with correct palette, expressive monogram, and a clean timeline UI that reads as a single intentional frame."
+reviewed_at: "2026-09-28T06:48:03.454Z"
+review_issues:
+  - "Wordmark AXIOM not yet shown in this frame (only monogram stage visible)"
+  - "Dust particles are very faint, barely perceptible"
+  - "Background grid is subtle to the point of near-flatness"

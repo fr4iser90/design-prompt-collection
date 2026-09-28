@@ -69,10 +69,10 @@ const vars = {
 
 fs.mkdirSync(dest, { recursive: true });
 
-for (const file of ["meta.yaml", "prompt.md", "prompt.full.md", "preview.svg"]) {
+for (const file of ["meta.yaml", "prompt.md", "prompt.full.md"]) {
   const src = fs.readFileSync(path.join(tplDir, file), "utf8");
   fs.writeFileSync(path.join(dest, file), fill(src, vars));
 }
 
 console.log(`Created ${path.relative(ROOT, dest)}`);
-console.log("Next: edit meta.yaml + prompts, replace preview.svg, then run: npm run build");
+console.log("Next: edit meta.yaml + prompts, then npm run ai:build / shots (preview stays null until a real shot)");

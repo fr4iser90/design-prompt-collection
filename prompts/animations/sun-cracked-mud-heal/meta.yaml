@@ -1,0 +1,26 @@
+id: sun-cracked-mud-heal
+title: "Sun-Cracked Mud Heal"
+category: animations
+tags:
+  - mud
+  - cracks
+  - healing
+  - reverse
+  - earth
+  - texture
+  - arid
+status: draft
+summary: "A reverse-animation of sun-baked mud cracking, where the fissures knit themselves back together, smoothing out into wet, pliable earth."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

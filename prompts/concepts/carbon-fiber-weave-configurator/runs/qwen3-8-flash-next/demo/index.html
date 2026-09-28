@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARBON FORGE — Weave Configurator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111111;
+    --carbon:#333333;
+    --hi:#f8f8f8;
+    --amber:#f2a950;
+    --line:rgba(248,248,248,.14);
+    --line-strong:rgba(248,248,248,.42);
+    --muted:#8b8b8b;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'Inter',system-ui,sans-serif;
+    --stage:620px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--hi);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .atmos::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 50% 42%, #171717 0%, #0d0d0d 55%, #050505 100%);
+  }
+  .atmos::after{ /* vignette */
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 120% at 50% 50%, transparent 42%, rgba(0,0,0,.72) 100%);
+  }
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .ambient{position:fixed;z-index:0;pointer-events:none;filter:blur(70px);opacity:.55}
+  .ambient.a{width:380px;height:380px;left:6%;top:8%;
+    background:radial-gradient(circle,rgba(248,248,248,.16),transparent 68%);
+    animation:driftA 16s ease-in-out infinite}
+  .ambient.b{width:440px;height:440px;right:4%;bottom:2%;
+    background:radial-gradient(circle,rgba(242,169,80,.20),transparent 66%);
+    animation:driftB 20s ease-in-out infinite}
+  @keyframes driftA{50%{transform:translate(30px,26px) scale(1.08)}}
+  @keyframes driftB{50%{transform:translate(-34px,-20px) scale(1.1)}}
+
+  /* ---------- LAYOUT ---------- */
+  .app{
+    position:relative;z-index:2;height:100%;
+    display:grid;
+    grid-template-columns:236px 1fr 268px;
+    grid-template-rows:auto 1fr auto;
+    grid-template-areas:
+      "head head head"
+      "left stage right"
+      "foot foot foot";
+    gap:0 26px;
+    padding:26px 34px 22px;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{grid-area:head;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
+    border-bottom:1px solid var(--line);padding-bottom:16px}
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .brand .mark{
+    font-family:var(--mono);font-weight:600;font-size:clamp(26px,3.4vw,40px);
+    letter-spacing:-.03em;line-height:.9;
+    background:linear-gradient(180deg,#fff,#9a9a9a);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .brand .mark em{font-style:normal;color:var(--amber);-webkit-text-fill-color:var(--amber)}
+  .brand .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;color:var(--muted);
+    text-transform:uppercase;padding-bottom:5px}
+  .status{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--muted);
+    text-align:right;text-transform:uppercase;line-height:1.7}
+  .status .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--amber);
+    margin-right:7px;box-shadow:0 0 8px var(--amber);animation:pulse 2.4s ease-in-out infinite;vertical-align:middle}
+  @keyframes pulse{50%{opacity:.35}}
+
+  /* ---------- PANELS ---------- */
+  .panel{display:flex;flex-direction:column;gap:22px;justify-content:center;min-width:0}
+  .panel.left{grid-area:left}
+  .panel.right{grid-area:right}
+  .group-label{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--muted);
+    text-transform:uppercase;display:flex;align-items:center;gap:10px}
+  .group-label::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  /* weave tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .tile{
+    position:relative;cursor:pointer;border:1px solid var(--line);background:#0c0c0c;
+    padding:0;border-radius:3px;overflow:hidden;transition:border-color .35s,transform .35s;
+    color:inherit;font-family:var(--mono);text-align:left;
+  }
+  .tile .thumb{height:64px;width:100%;position:relative;overflow:hidden}
+  .tile .thumb::before{content:"";position:absolute;inset:-2px;background:var(--tex);background-size:var(--sz,14px)}
+  .tile .thumb::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(125deg,rgba(248,248,248,.28) 0%,transparent 40%,transparent 60%,rgba(242,169,80,.14) 100%);
+    mix-blend-mode:screen}
+  .tile .cap{display:flex;justify-content:space-between;align-items:center;padding:8px 9px;font-size:10px;letter-spacing:.08em}
+  .tile .cap b{font-weight:500;color:#cfcfcf}
+  .tile .cap span{color:var(--muted);font-size:9px}
+  .tile:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+  .tile.active{border-color:var(--amber)}
+  .tile.active::after{content:"";position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--amber);
+    border-radius:50%;box-shadow:0 0 8px var(--amber)}
+
+  /* finishes */
+  .finish-list{display:flex;flex-direction:column;gap:9px}
+  .fin{display:flex;align-items:center;gap:12px;cursor:pointer;padding:9px 11px;border:1px solid var(--line);
+    border-radius:3px;background:#0c0c0c;transition:border-color .35s,background .35s;font-family:var(--mono)}
+  .fin .swatch{width:34px;height:34px;flex:none;border-radius:2px;position:relative;overflow:hidden;background:#2a2a2a}
+  .fin .swatch::before{content:"";position:absolute;inset:0}
+  .fin[data-f="gloss"] .swatch::before{background:linear-gradient(135deg,#fff 0%,#4a4a4a 26%,#111 55%,#3a3a3a 82%,#fff 100%)}
+  .fin[data-f="satin"] .swatch::before{background:linear-gradient(135deg,#cfcfcf 0%,#3a3a3a 45%,#141414 70%,#4a4a4a 100%)}
+  .fin[data-f="matte"] .swatch::before{background:radial-gradient(circle at 32% 30%,#5a5a5a,#1a1a1a 72%)}
+  .fin .txt b{display:block;font-weight:500;font-size:12px;letter-spacing:.06em;color:#dcdcdc}
+  .fin .txt span{font-size:9.5px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .fin:hover{border-color:var(--line-strong)}
+  .fin.active{border-color:var(--amber);background:#161310}
+  .fin.active .txt b{color:var(--amber)}
+
+  .hint{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;
+    display:flex;align-items:center;gap:9px}
+  .hint svg{opacity:.7}
+
+  /* ---------- STAGE ---------- */
+  .stage{grid-area:stage;position:relative;display:grid;place-items:center;perspective:1500px}
+  .scene{position:relative;width:var(--stage);height:var(--stage);display:grid;place-items:center}
+
+  .glow{position:absolute;width:70%;height:70%;border-radius:50%;
+    background:radial-gradient(circle,rgba(248,248,248,.10),transparent 62%);filter:blur(30px)}
+  .glow.warm{background:radial-gradient(circle,rgba(242,169,80,.12),transparent 62%);transform:translate(60px,80px)}
+
+  .floor{position:absolute;bottom:6%;width:58%;height:120px;filter:blur(34px);
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.85),transparent 70%);transform:scaleY(.5)}
+
+  .panel3d{
+    position:relative;width:340px;height:230px;border-radius:16px;
+    transform-style:preserve-3d;cursor:grab;touch-action:none;will-change:transform;
+  }
+  .panel3d.grab{cursor:grabbing}
+  .face{
+    position:absolute;inset:0;border-radius:16px;overflow:hidden;
+    background-color:#0a0a0a;background-image:var(--tex);background-size:var(--sz,44px);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 -30px 60px rgba(0,0,0,.6);
+  }
+  .face.front{transform:translateZ(11px)}
+  .face.back{transform:rotateY(180deg) translateZ(11px)}
+  .edge{position:absolute;inset:0;border-radius:16px;
+    background:linear-gradient(90deg,#000,#1a1a1a 50%,#000);transform:translateZ(0)}
+  .edge.t{height:22px;top:-11px;transform:rotateX(90deg);background:linear-gradient(#000,#1c1c1c)}
+  .edge.b{height:22px;bottom:-11px;transform:rotateX(-90deg);background:linear-gradient(#1c1c1c,#000)}
+  .edge.l{width:22px;left:-11px;transform:rotateY(-90deg);background:linear-gradient(90deg,#000,#1c1c1c)}
+  .edge.r{width:22px;right:-11px;transform:rotateY(90deg);background:linear-gradient(90deg,#1c1c1c,#000)}
+
+  /* light layers on the face */
+  .hl{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(circle at var(--hlx,32%) var(--hly,26%),
+      rgba(248,248,248,var(--hl,0)) 0%, rgba(248,248,248,calc(var(--hl,0)*.5)) 12%, transparent var(--hls,55%));
+    transition:background .5s ease}
+  .warm{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(circle at var(--wlx,74%) var(--wly,78%),
+      rgba(242,169,80,var(--wl,0)) 0%, transparent var(--wls,50%));transition:background .5s ease}
+  .sheen{position:absolute;inset:-30%;pointer-events:none;mix-blend-mode:screen;opacity:0;
+    background:linear-gradient(115deg,transparent 42%,rgba(248,248,248,.5) 50%,transparent 58%)}
+  .sheen.sweep{animation:sweep .95s cubic-bezier(.4,0,.2,1)}
+  @keyframes sweep{0%{opacity:0;transform:translateX(-40%)}30%{opacity:1}100%{opacity:0;transform:translateX(40%)}}
+  .fres{position:absolute;inset:0;pointer-events:none;border-radius:16px;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.08)}
+
+  /* callouts */
+  .callouts{position:absolute;inset:0;pointer-events:none}
+  .callout{position:absolute;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--muted);
+    text-transform:uppercase;white-space:nowrap;opacity:0;transform:translateY(6px);transition:opacity .6s,transform .6s}
+  .callout .pin{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--amber);
+    margin-right:8px;box-shadow:0 0 6px var(--amber);vertical-align:middle}
+  .callout .lead{display:inline-block;height:1px;background:linear-gradient(90deg,var(--line-strong),transparent);
+    width:38px;vertical-align:middle;margin:0 8px 0 0}
+  .callout.rev{transform:scaleX(-1)}
+  .callout.rev .txt{transform:scaleX(-1)}
+  .c1{top:16%;left:-6%}
+  .c2{top:52%;right:-4%}
+  .c3{bottom:20%;left:2%}
+  .ready .callout{opacity:1;transform:translateY(0)}
+
+  /* ---------- FOOTER ---------- */
+  footer{grid-area:foot;border-top:1px solid var(--line);padding-top:16px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .specs{display:flex;gap:34px;flex-wrap:wrap}
+  .spec{font-family:var(--mono)}
+  .spec .k{font-size:9px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+  .spec .v{font-size:17px;font-weight:500;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  .spec .v small{font-size:10px;color:var(--muted);font-weight:400;margin-left:3px}
+  .spec .v.flash{animation:flash .6s ease}
+  @keyframes flash{0%{color:var(--amber)}100%{color:var(--hi)}}
+
+  .meter{min-width:180px}
+  .meter .k{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;
+    display:flex;justify-content:space-between;margin-bottom:7px}
+  .meter .k b{color:#cfcfcf;font-weight:500}
+  .bar{height:3px;background:#222;border-radius:2px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7a7a7a,var(--hi));
+    transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+  .actions{display:flex;align-items:center;gap:16px}
+  .btn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+    padding:11px 18px;border-radius:3px;border:1px solid var(--line-strong);background:transparent;color:#e6e6e6;
+    transition:.3s}
+  .btn:hover{border-color:var(--amber);color:var(--amber)}
+  .btn.solid{background:var(--hi);color:#0c0c0c;border-color:var(--hi);font-weight:600}
+  .btn.solid:hover{background:var(--amber);border-color:var(--amber);color:#0c0c0c}
+  .sku{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);text-align:right}
+  .sku b{display:block;color:#cfcfcf;font-weight:500;font-size:12px}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:980px){
+    body{overflow:auto}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto auto auto auto;
+      grid-template-areas:"head" "stage" "left" "right" "foot";gap:26px;padding:20px}
+    .panel{justify-content:flex-start}
+    .tiles{grid-template-columns:repeat(4,1fr)}
+    .finish-list{flex-direction:row}
+    .fin{flex:1}
+    :root{--stage:440px}
+    .panel3d{width:280px;height:190px}
+    .callout{display:none}
+    footer{flex-direction:column;align-items:flex-start;gap:20px}
+    .specs{gap:22px}
+  }
+  @media (max-width:560px){
+    .tiles{grid-template-columns:repeat(2,1fr)}
+    .finish-list{flex-direction:column}
+    :root{--stage:340px}
+    .panel3d{width:230px;height:158px}
+    .brand .sub{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ambient,.status .dot{animation:none}
+    .sheen.sweep{animation:none}
+    .panel3d,.hl,.warm,.bar i{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos"></div>
+  <div class="ambient a"></div>
+  <div class="ambient b"></div>
+  <div class="grain"></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="mark">CARBON<em>·</em>FORGE</div>
+        <div class="sub">Weave&nbsp;/&nbsp;Finish&nbsp;/&nbsp;Configurator</div>
+      </div>
+      <div class="status">
+        <div><span class="dot"></span>LIVE MATERIAL SIM</div>
+        <div>MODEL&nbsp;CF-01&nbsp;·&nbsp;SHELL&nbsp;PANEL</div>
+      </div>
+    </header>
+
+    <!-- LEFT: WEAVE -->
+    <aside class="panel left">
+      <div class="group-label">01 — Weave Structure</div>
+      <div class="tiles" id="weaveTiles">
+        <button class="tile" data-weave="twill" style="--tex:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22%3E%3Cdefs%3E%3ClinearGradient id=%22h%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23565656%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%232b2b2b%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101010%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22v%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%234a4a4a%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23262626%22/%3E%3Cstop offset=%221%22 stop-color=%22%230d0d0d%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%230a0a0a%22/%3E%3Crect x=%220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3Crect x=%220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3C/svg%3E');--sz:22px">
+          <div class="thumb"></div>
+          <div class="cap"><b>TWILL</b><span>2×2</span></div>
+        </button>
+        <button class="tile" data-weave="plain" style="--tex:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22%3E%3Cdefs%3E%3ClinearGradient id=%22h%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23565656%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%232b2b2b%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101010%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22v%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%234a4a4a%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23262626%22/%3E%3Cstop offset=%221%22 stop-color=%22%230d0d0d%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%230a0a0a%22/%3E%3Crect x=%220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3Crect x=%220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3C/svg%3E');--sz:14px">
+          <div class="thumb"></div>
+          <div class="cap"><b>PLAIN</b><span>1×1</span></div>
+        </button>
+        <button class="tile" data-weave="herringbone" style="--tex:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22%3E%3Cdefs%3E%3ClinearGradient id=%22h%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23565656%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%232b2b2b%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101010%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22v%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%234a4a4a%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23262626%22/%3E%3Cstop offset=%221%22 stop-color=%22%230d0d0d%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%230a0a0a%22/%3E%3Crect x=%220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3Crect x=%220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3C/svg%3E');--sz:18px">
+          <div class="thumb"></div>
+          <div class="cap"><b>HERING</b><span>V</span></div>
+        </button>
+        <button class="tile" data-weave="forged" style="--tex:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2240%22 height=%2240%22 viewBox=%220 0 40 40%22%3E%3Cdefs%3E%3ClinearGradient id=%22h%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%23565656%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%232b2b2b%22/%3E%3Cstop offset=%221%22 stop-color=%22%23101010%22/%3E%3C/linearGradient%3E%3ClinearGradient id=%22v%22 x1=%221%22 y1=%220%22 x2=%220%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%234a4a4a%22/%3E%3Cstop offset=%22.5%22 stop-color=%22%23262626%22/%3E%3Cstop offset=%221%22 stop-color=%22%230d0d0d%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2240%22 height=%2240%22 fill=%22%230a0a0a%22/%3E%3Crect x=%220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23h)%22/%3E%3Crect x=%2220%22 y=%220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3Crect x=%220%22 y=%2220%22 width=%2220%22 height=%2220%22 fill=%22url(%23v)%22/%3E%3C/svg%3E');--sz:60px">
+          <div class="thumb"></div>
+          <div class="cap"><b>FORGED</b><span>CHAOS</span></div>
+        </button>
+      </div>
+      <div class="hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b8b8b" stroke-width="1.5"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+        Drag the shell to inspect light
+      </div>
+    </aside>
+
+    <!-- STAGE -->
+    <main class="stage">
+      <div class="scene" id="scene">
+        <div class="glow"></div>
+        <div class="glow warm"></div>
+        <div class="floor"></div>
+        <div class="panel3d" id="panel3d">
+          <div class="edge t"></div><div class="edge b"></div>
+          <div class="edge l"></div><div class="edge r"></div>
+          <div class="face back"></div>
+          <div class="face front">
+            <div class="hl" id="hl"></div>
+            <div class="warm" id="warm"></div>
+            <div class="sheen" id="sheen"></div>
+            <div class="fres"></div>
+          </div>
+        </div>
+        <div class="callouts" id="callouts">
+          <div class="callout c1"><span class="pin"></span><span class="lead"></span><span class="txt" id="c1">TWILL 2×2</span></div>
+          <div class="callout c2 rev"><span class="txt" id="c2">GLOSS FINISH</span><span class="lead"></span><span class="pin"></span></div>
+          <div class="callout c3"><span class="pin"></span><span class="lead"></span><span class="txt">12K TOWS · 2×2</span></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT: FINISH -->
+    <aside class="panel right">
+      <div class="group-label">02 — Surface Finish</div>
+      <div class="finish-list" id="finishList">
+        <div class="fin" data-f="gloss"><div class="swatch"></div><div class="txt"><b>GLOSS</b><span>Sharp specular</span></div></div>
+        <div class="fin" data-f="satin"><div class="swatch"></div><div class="txt"><b>SATIN</b><span>Soft sheen</span></div></div>
+        <div class="fin" data-f="matte"><div class="swatch"></div><div class="txt"><b>MATTE</b><span>Diffuse</span></div></div>
+      </div>
+      <div class="hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8b8b8b" stroke-width="1.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+        Finish drives reflection energy
+      </div>
+    </aside>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="specs">
+        <div class="spec"><div class="k">Weave</div><div class="v" id="sWeave">TWILL 2×2</div></div>
+        <div class="spec"><div class="k">Finish</div><div class="v" id="sFinish">GLOSS</div></div>
+        <div class="spec"><div class="k">Areal Weight</div><div class="v"><span id="sWeight">2.14</span><small>g/cm²</small></div></div>
+        <div class="spec"><div class="k">Tensile</div><div class="v"><span id="sTensile">3.5</span><small>GPa</small></div></div>
+        <div class="spec"><div class="k">Thickness</div><div class="v"><span id="sThick">1.20</span><small>mm</small></div></div>
+      </div>
+      <div class="meter">
+        <div class="k"><span>Surface Reflectivity</span><b id="mVal">88%</b></div>
+        <div class="bar"><i id="mBar"></i></div>
+      </div>
+      <div class="actions">
+        <div class="sku">SPEC SHEET<b id="sku">CF-TW-GL</b></div>
+        <button class="btn" id="resetBtn">Reset View</button>
+        <button class="btn solid" id="quoteBtn">Request Quote</button>
+      </div>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- data ---- */
+  const WEAVES = {
+    twill:      {label:'TWILL 2×2',   angle:0,  size:44, weight:2.14, tensile:3.5, thick:1.20},
+    plain:      {label:'PLAIN 1×1',   angle:45, size:30, weight:2.02, tensile:3.8, thick:1.10},
+    herringbone:{label:'HERRINGBONE', angle:0,  size:36, weight:2.35, tensile:3.6, thick:1.30},
+    forged:     {label:'FORGED',      angle:0,  size:90, weight:2.60, tensile:2.9, thick:1.60}
+  };
+  const FINISH = {
+    gloss:{label:'GLOSS', hl:.85, hls:'34%', wl:.55, wls:'34%', refl:88},
+    satin:{label:'SATIN', hl:.45, hls:'60%', wl:.32, wls:'58%', refl:58},
+    matte:{label:'MATTE', hl:.16, hls:'92%', wl:.14, wls:'92%', refl:22}
+  };
+
+  /* ---- state ---- */
+  let weave='twill', finish='gloss';
+  let yaw=-14, pitch=9, targetYaw=-14, targetPitch=9;
+  let dragging=false, lastX=0, lastY=0, idlePhase=0, idleT=0;
+
+  const panel=document.getElementById('panel3d');
+  const hl=document.getElementById('hl');
+  const warm=document.getElementById('warm');
+  const scene=document.getElementById('scene');
+  const sheen=document.getElementById('sheen');
+
+  /* ---- weave texture generator ---- */
+  function buildTex(w){
+    const base = WEAVES[w];
+    let tile = base.size, angle = base.angle, extra = '';
+    if(w==='herringbone'){
+      extra = `<g transform="rotate(90 20 20)"><rect x="0" y="0" width="20" height="20" fill="url(#v)"/><rect x="20" y="20" width="20" height="20" fill="url(#v)"/><rect x="20" y="0" width="20" height="20" fill="url(#h)"/><rect x="0" y="20" width="20" height="20" fill="url(#h)"/></g>`;
+    }
+    if(w==='forged'){
+      extra = `<rect x="0" y="0" width="40" height="40" fill="url(#h)" opacity=".55"/>
+               <rect x="6" y="2" width="9" height="36" fill="#000" opacity=".35"/>
+               <rect x="24" y="0" width="7" height="40" fill="#3a3a3a" opacity=".4"/>
+               <rect x="0" y="14" width="40" height="6" fill="#000" opacity=".3"/>`;
+    }
+    const svg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">`+
+      `<defs>`+
+      `<linearGradient id="h" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a5a5a"/><stop offset=".5" stop-color="#2b2b2b"/><stop offset="1" stop-color="#101010"/></linearGradient>`+
+      `<linearGradient id="v" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d4d4d"/><stop offset=".5" stop-color="#262626"/><stop offset="1" stop-color="#0c0c0c"/></linearGradient>`+
+      `<filter id="fz"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="3" seed="7"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0"/></filter>`+
+      `</defs>`+
+      `<rect width="40" height="40" fill="#0a0a0a"/>`+
+      `<rect x="0" y="0" width="20" height="20" fill="url(#h)"/>`+
+      `<rect x="20" y="20" width="20" height="20" fill="url(#h)"/>`+
+      `<rect x="20" y="0" width="20" height="20" fill="url(#v)"/>`+
+      `<rect x="0" y="20" width="20" height="20" fill="url(#v)"/>`+
+      extra+
+      (w==='forged'?`<rect width="40" height="40" filter="url(#fz)"/>`:``)+
+      `</svg>`;
+    return {url:`url("data:image/svg+xml,${encodeURIComponent(svg)}")`, tile, angle};
+  }
+
+  function applyWeave(){
+    const t = buildTex(weave);
+    panel.style.setProperty('--tex', t.url);
+    panel.style.setProperty('--sz', t.tile+'px');
+    panel.style.setProperty('--wangle', t.angle+'deg');
+    // rotate texture via background-position trick isn't possible; use transform on faces
+    document.querySelectorAll('.face').forEach(f=>{
+      f.style.backgroundImage = t.url;
+      f.style.backgroundSize = t.tile+'px';
+    });
+    document.getElementById('c1').textContent = WEAVES[weave].label;
+  }
+
+  function applyFinish(){
+    const f = FINISH[finish];
+    panel.style.setProperty('--hl', f.hl);
+    panel.style.setProperty('--hls', f.hls);
+    panel.style.setProperty('--wl', f.wl);
+    panel.style.setProperty('--wls', f.wls);
+    document.getElementById('c2').textContent = f.label+' FINISH';
+  }
+
+  /* ---- dynamic light from rotation ---- */
+  function updateLight(){
+    const hlx = 32 + Math.sin(yaw*Math.PI/180)*22 + Math.sin(pitch*Math.PI/180)*8;
+    const hly = 26 - Math.sin(pitch*Math.PI/180)*16;
+    const wlx = 74 + Math.sin((yaw+180)*Math.PI/180)*16;
+    const wly = 78 + Math.sin((pitch+30)*Math.PI/180)*10;
+    panel.style.setProperty('--hlx', hlx.toFixed(1)+'%');
+    panel.style.setProperty('--hly', hly.toFixed(1)+'%');
+    panel.style.setProperty('--wlx', wlx.toFixed(1)+'%');
+    panel.style.setProperty('--wly', wly.toFixed(1)+'%');
+  }
+
+  /* ---- render loop ---- */
+  function tick(now){
+    idleT += 1/60;
+    if(!dragging){
+      idlePhase += 0.006;
+      const amp = reduce?0:1;
+      targetYaw = -14 + Math.sin(idlePhase)*10*amp;
+      targetPitch = 9 + Math.sin(idlePhase*0.7)*4*amp;
+    }
+    yaw += (targetYaw-yaw)*0.08;
+    pitch += (targetPitch-pitch)*0.08;
+    panel.style.transform = `rotateX(${pitch.toFixed(2)}deg) rotateY(${yaw.toFixed(2)}deg)`;
+    updateLight();
+    requestAnimationFrame(tick);
+  }
+
+  /* ---- drag ---- */
+  function down(x,y){dragging=true;lastX=x;lastY=y;panel.classList.add('grab');}
+  function move(x,y){
+    if(!dragging)return;
+    targetYaw += (x-lastX)*0.45;
+    targetPitch -= (y-lastY)*0.4;
+    targetPitch = Math.max(-40, Math.min(45, targetPitch));
+    lastX=x; lastY=y;
+  }
+  function up(){dragging=false;panel.classList.remove('grab');}
+
+  panel.addEventListener('mousedown',e=>{e.preventDefault();down(e.clientX,e.clientY);});
+  window.addEventListener('mousemove',e=>move(e.clientX,e.clientY));
+  window.addEventListener('mouseup',up);
+  panel.addEventListener('touchstart',e=>{down(e.touches[0].clientX,e.touches[0].clientY);},{passive:true});
+  window.addEventListener('touchmove',e=>{if(dragging){move(e.touches[0].clientX,e.touches[0].clientY);}},{passive:true});
+  window.addEventListener('touchend',up);
+
+  /* ---- number tween ---- */
+  function tween(el,to,dec){
+    const from=parseFloat(el.textContent)||0;
+    const t0=performance.now(),dur=500;
+    el.parentElement.classList.remove('flash');void el.parentElement.offsetWidth;el.parentElement.classList.add('flash');
+    if(reduce){el.textContent=to.toFixed(dec);return;}
+    (function step(n){
+      const p=Math.min(1,(n-t0)/dur), e=1-Math.pow(1-p,3);
+      el.textContent=(from+(to-from)*e).toFixed(dec);
+      if(p<1)requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function updateSpecs(){
+    const w=WEAVES[weave], f=FINISH[finish];
+    document.getElementById('sWeave').textContent=w.label;
+    document.getElementById('sFinish').textContent=f.label;
+    tween(document.getElementById('sWeight'),w.weight,2);
+    tween(document.getElementById('sTensile'),w.tensile,1);
+    tween(document.getElementById('sThick'),w.thick,2);
+    const mv=document.getElementById('mVal'), mb=document.getElementById('mBar');
+    mv.textContent=f.refl+'%'; mb.style.width=f.refl+'%';
+    document.getElementById('sku').textContent='CF-'+weave.slice(0,2).toUpperCase()+'-'+finish.slice(0,2).toUpperCase();
+  }
+
+  /* ---- selections ---- */
+  document.getElementById('weaveTiles').addEventListener('click',e=>{
+    const b=e.target.closest('.tile'); if(!b)return;
+    document.querySelectorAll('.tile').forEach(t=>t.classList.remove('active'));
+    b.classList.add('active');
+    weave=b.dataset.weave; applyWeave(); updateSpecs(); sweep();
+  });
+  document.getElementById('finishList').addEventListener('click',e=>{
+    const b=e.target.closest('.fin'); if(!b)return;
+    document.querySelectorAll('.fin').forEach(t=>t.classList.remove('active'));
+    b.classList.add('active');
+    finish=b.dataset.f; applyFinish(); updateSpecs(); sweep();
+  });
+
+  function sweep(){
+    if(reduce)return;
+    sheen.classList.remove('sweep');void sheen.offsetWidth;sheen.classList.add('sweep');
+  }
+
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    dragging=false; idlePhase=0; targetYaw=-14; targetPitch=9;
+  });
+  document.getElementById('quoteBtn').addEventListener('click',e=>{
+    const b=e.currentTarget; b.textContent='Quote Requested ✓';
+    setTimeout(()=>b.textContent='Request Quote',1800);
+  });
+
+  /* ---- init ---- */
+  applyWeave(); applyFinish(); updateSpecs(); updateLight();
+  document.querySelector('.tile[data-weave="twill"]').classList.add('active');
+  document.querySelector('.fin[data-f="gloss"]').classList.add('active');
+  requestAnimationFrame(tick);
+  requestAnimationFrame(()=>scene.classList.add('ready'));
+})();
+</script>
+</body>
+</html>

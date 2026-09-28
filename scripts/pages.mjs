@@ -109,9 +109,13 @@ function main() {
   for (const e of entries) {
     const dest = path.join(OUT, "entries", e.category, e.id);
     fs.mkdirSync(dest, { recursive: true });
-    const previewSrc = path.join(e.dir, e.preview || "preview.svg");
-    if (fs.existsSync(previewSrc)) {
-      copyFile(previewSrc, path.join(dest, path.basename(previewSrc)));
+    const previewRel =
+      e.preview && e.preview !== "null" ? e.preview : null;
+    if (previewRel) {
+      const previewSrc = path.join(e.dir, previewRel);
+      if (fs.existsSync(previewSrc)) {
+        copyFile(previewSrc, path.join(dest, path.basename(previewSrc)));
+      }
     }
     copyFile(path.join(e.dir, "prompt.md"), path.join(dest, "prompt.md"));
     copyFile(path.join(e.dir, "prompt.full.md"), path.join(dest, "prompt.full.md"));
@@ -130,6 +134,11 @@ function main() {
       })
       .join("\n");
 
+    const noRunsBlock = previewRel
+      ? `<img src="${esc(previewRel)}" alt="${esc(e.title)}" style="width:100%;border:1px solid var(--line)"/>
+      <p style="color:var(--muted)">No model runs — <code>npm run ai:build -- --id ${esc(e.id)}</code></p>`
+      : `<p style="color:var(--muted)">No demo/preview yet — <code>npm run ai:build -- --id ${esc(e.id)}</code></p>`;
+
     const body = `
 <header class="site"><div class="wrap">
   <a class="brand" href="${root}/index.html">Design Prompt Collection</a>
@@ -139,8 +148,7 @@ function main() {
   <section>
     <h1 class="page">${esc(e.title)}</h1>
     <p style="color:var(--muted)">${esc(e.summary)}</p>
-    ${runsHtml || `<img src="${esc(e.preview || "preview.svg")}" alt="${esc(e.title)}" style="width:100%;border:1px solid var(--line)"/>
-      <p style="color:var(--muted)">No model runs — <code>npm run ai:build -- --id ${esc(e.id)}</code></p>`}
+    ${runsHtml || noRunsBlock}
   </section>
   <aside class="side">
     <div class="tags">${(e.tags || []).map((t) => `<span>${esc(t)}</span>`).join("")}</div>
@@ -164,10 +172,15 @@ function main() {
           const def = e.default_run_obj;
           const img = def?.preview_name
             ? `entries/${e.category}/${e.id}/runs/${def.slug}/${def.preview_name}`
-            : `entries/${e.category}/${e.id}/${e.preview || "preview.svg"}`;
+            : e.preview && e.preview !== "null"
+              ? `entries/${e.category}/${e.id}/${e.preview}`
+              : null;
           const modelNote = def ? ` · ${def.model}` : "";
+          const thumb = img
+            ? `<a href="${href}"><img src="${esc(img)}" alt="${esc(e.title)}"/></a>`
+            : `<a href="${href}" class="body" style="aspect-ratio:1200/630;display:flex;align-items:center;justify-content:center;color:var(--muted);border-bottom:1px solid var(--line)">no preview</a>`;
           return `<article class="card">
-  <a href="${href}"><img src="${esc(img)}" alt="${esc(e.title)}"/></a>
+  ${thumb}
   <div class="body">
     <div class="meta">${esc(e.category)} · ${esc(e.status)}${esc(modelNote)}</div>
     <h2><a href="${href}" style="color:inherit;text-decoration:none">${esc(e.title)}</a></h2>

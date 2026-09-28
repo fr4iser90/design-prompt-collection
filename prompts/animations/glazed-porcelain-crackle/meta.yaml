@@ -1,0 +1,26 @@
+id: glazed-porcelain-crackle
+title: "Glazed Porcelain Crackle"
+category: animations
+tags:
+  - porcelain
+  - crackle
+  - glaze
+  - texture-animation
+  - ceramic
+  - macro
+  - haptic
+status: draft
+summary: "Macro animation of white porcelain cooling, revealing intricate crackle glaze patterns with a shifting subsurface light reflection."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

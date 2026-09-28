@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typographic Tidal Lock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --space:#1a1a2e;
+    --nebula:#16213e;
+    --well:#0f3460;
+    --star:#e94560;
+    --ink:#eaf0ff;
+    --dim:#8b97c9;
+    --faint:#4b5788;
+    --orbit:rgba(233,240,255,.055);
+    --orbit-strong:rgba(233,240,255,.11);
+    --tilt:-16deg;
+    --tilt-y:0deg;
+    --mx:0;
+    --my:0;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    background:var(--space);
+    color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg::before{
+    content:'';position:absolute;inset:0;
+    background:
+      radial-gradient(120% 90% at 50% 42%, rgba(15,52,96,.55), transparent 60%),
+      radial-gradient(60% 50% at 50% 50%, rgba(233,69,96,.10), transparent 62%),
+      radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(0,0,0,.65) 100%);
+  }
+  .bg::after{ /* faint gravity grid */
+    content:'';position:absolute;inset:-20%;
+    background-image:linear-gradient(var(--orbit) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--orbit) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask:radial-gradient(60% 60% at 50% 46%,#000,transparent 78%);
+            mask:radial-gradient(60% 60% at 50% 46%,#000,transparent 78%);
+    opacity:.5;
+  }
+  .stars{position:absolute;inset:0}
+  .stars i{position:absolute;border-radius:50%;background:#fff;
+    box-shadow:0 0 6px rgba(255,255,255,.6);animation:tw var(--d,4s) ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:.9;transform:scale(1)}}
+  .glow{
+    position:absolute;left:50%;top:46%;width:min(60vw,620px);aspect-ratio:1;
+    transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(circle,rgba(233,69,96,.22),rgba(15,52,96,.10) 42%,transparent 70%);
+    filter:blur(14px);animation:breathe 9s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{opacity:.75;transform:translate(-50%,-50%) scale(1)}
+    50%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}}
+
+  /* ---------- HUD ---------- */
+  .hud{position:fixed;inset:0;z-index:5;pointer-events:none;padding:clamp(18px,3vw,40px);
+    display:flex;flex-direction:column;justify-content:space-between}
+  .hud .row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--dim);font-weight:500}
+  .kicker b{color:var(--star)}
+  .meta{font-size:11px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase;text-align:right;line-height:1.9}
+  .meta span{color:var(--dim)}
+  .legend{display:flex;gap:22px;flex-wrap:wrap}
+  .legend div{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+  .legend b{color:var(--ink);font-weight:600}
+  .hint{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);
+    display:inline-flex;align-items:center;gap:9px}
+  .hint .dot{width:7px;height:7px;border-radius:50%;background:var(--star);
+    box-shadow:0 0 10px var(--star);animation:pulse 1.8s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+  /* ---------- STAGE ---------- */
+  .stage{position:fixed;inset:0;z-index:2;display:grid;place-items:center;
+    perspective:1500px;perspective-origin:50% 46%}
+  .orbits{
+    --size:min(88vmin,760px);
+    position:relative;width:var(--size);height:var(--size);
+    transform-style:preserve-3d;
+    transform:rotateX(calc(var(--tilt) + var(--my)*-11deg))
+               rotateY(calc(var(--tilt-y) + var(--mx)*13deg));
+    transition:transform .35s cubic-bezier(.2,.7,.2,1);
+    will-change:transform;
+  }
+  .ring{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+  .r1{animation:spin 16s linear infinite}
+  .r2{animation:spin 27s linear infinite reverse}
+  .r3{animation:spin 42s linear infinite}
+  .r4{animation:spin 64s linear infinite reverse}
+  @keyframes spin{from{transform:rotateZ(0)}to{transform:rotateZ(360deg)}}
+
+  .word{
+    position:absolute;left:50%;top:50%;
+    transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(var(--r)*-1)) rotateX(90deg);
+    transform-style:preserve-3d;white-space:nowrap;font-weight:var(--w,400);
+    letter-spacing:.06em;color:var(--ink);
+    text-shadow:0 0 18px rgba(233,240,255,.22);
+  }
+  .word.star{color:var(--star);text-shadow:0 0 22px rgba(233,69,96,.7)}
+
+  .core{position:absolute;left:50%;top:50%;width:15%;aspect-ratio:1;
+    transform:translate(-50%,-50%) rotateX(90deg);border-radius:50%;
+    background:radial-gradient(circle at 50% 45%,#fff,var(--star) 26%,#5c1226 62%,transparent 74%);
+    filter:blur(1px);animation:corepulse 5s ease-in-out infinite}
+  .core::after{content:'';position:absolute;inset:-140%;border-radius:50%;
+    background:radial-gradient(circle,rgba(233,69,96,.5),transparent 60%)}
+  @keyframes corepulse{0%,100%{opacity:.85;transform:translate(-50%,-50%) rotateX(90deg) scale(1)}
+    50%{opacity:1;transform:translate(-50%,-50%) rotateX(90deg) scale(1.12)}}
+
+  .orbitline{position:absolute;left:50%;top:50%;width:calc(var(--r)*2);height:calc(var(--r)*2);
+    transform:translate(-50%,-50%) rotateX(90deg);border-radius:50%;
+    border:1px solid var(--orbit);pointer-events:none}
+  .orbitline.o2{border-color:var(--orbit-strong)}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:640px){
+    .r3,.r4,.orbitline.o2{display:none}
+    .legend{gap:14px}
+    .meta{display:none}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .r1,.r2,.r3,.r4,.stars i,.glow,.core,.hint .dot{animation:none!important}
+    .orbits{transition:none}
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg">
+    <div class="stars" id="stars"></div>
+    <div class="glow"></div>
+  </div>
+
+  <div class="hud">
+    <div class="row">
+      <div class="kicker">Concept · <b>Orbital Typography</b> · Kinetic Type System</div>
+      <div class="meta">
+        <div>Angular velocity <span>ω ∝ 1/r²</span></div>
+        <div>Depth <span>rotateX −16° · perspective 1500</span></div>
+        <div>Render <span>CSS transforms · no canvas</span></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="legend">
+        <div><b>Inner</b> · fast · heavy · near</div>
+        <div><b>Outer</b> · slow · thin · far</div>
+        <div><b>Starburst</b> · key mass</div>
+      </div>
+      <div class="hint"><span class="dot"></span> Move cursor to bend the gravity well</div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="orbits" id="orbits"></div>
+  </div>
+
+<script>
+  const orbits = document.getElementById('orbits');
+  const isMobile = matchMedia('(max-width:640px)').matches;
+
+  // Ring configs: [words, radius(vmin), font-size(vmin), weight, star-index]
+  const rings = [
+    { words:['GRAVITY','MASS','PULL','FORCE','PULL','MASS'], r:14, fs:5.6, w:700, star:0 },
+    { words:['ORBIT','VELOCITY','TIDAL','LOCK','INERTIA','TIDAL','VELOCITY','ORBIT'], r:24, fs:3.4, w:500, star:3 },
+    { words:['ESCAPE','MOMENTUM','FIELD','CURVATURE','MASS','FIELD','MOMENTUM','ESCAPE'], r:34, fs:2.3, w:400, star:-1 },
+    { words:['EVENT HORIZON','SINGULARITY','SATELLITE','PARALLAX','ACCRETION','PARALLAX','SATELLITE','SINGULARITY','EVENT HORIZON','NEBULA'], r:44, fs:1.6, w:300, star:-1 }
+  ];
+
+  function build(){
+    orbits.innerHTML = '';
+    const active = isMobile ? rings.slice(0,2) : rings;
+    active.forEach((ring,i)=>{
+      const el = document.createElement('div');
+      el.className = 'ring r'+(i+1);
+      const n = ring.words.length;
+      ring.words.forEach((word,j)=>{
+        const span = document.createElement('span');
+        span.className = 'word' + (j===ring.star ? ' star' : '');
+        span.textContent = word;
+        span.style.setProperty('--a', (j/n*360)+'deg');
+        span.style.setProperty('--r', ring.r+'vmin');
+        span.style.fontSize = ring.fs+'vmin';
+        span.style.setProperty('--w', ring.w);
+        el.appendChild(span);
+      });
+      orbits.appendChild(el);
+    });
+    // orbit guide lines
+    [24,34,44].forEach((r,i)=>{
+      const line = document.createElement('div');
+      line.className = 'orbitline'+(i===1?' o2':'');
+      line.style.setProperty('--r', r+'vmin');
+      orbits.appendChild(line);
+    });
+    // core
+    const core = document.createElement('div');
+    core.className = 'core';
+    orbits.appendChild(core);
+  }
+  build();
+
+  // Star field
+  const stars = document.getElementById('stars');
+  const count = isMobile ? 40 : 90;
+  for(let i=0;i<count;i++){
+    const s = document.createElement('i');
+    const sz = Math.random()*2+0.6;
+    s.style.width = s.style.height = sz+'px';
+    s.style.left = Math.random()*100+'%';
+    s.style.top = Math.random()*100+'%';
+    s.style.setProperty('--d', (Math.random()*4+2.5)+'s');
+    s.style.animationDelay = (Math.random()*4)+'s';
+    s.style.opacity = Math.random()*0.6+0.2;
+    stars.appendChild(s);
+  }
+
+  // Gravity-well interaction (mouse shifts perspective)
+  const root = document.documentElement;
+  let tx=0, ty=0, cx=0, cy=0, raf=null;
+  function loop(){
+    cx += (tx-cx)*0.08;
+    cy += (ty-cy)*0.08;
+    root.style.setProperty('--mx', cx.toFixed(3));
+    root.style.setProperty('--my', cy.toFixed(3));
+    if(Math.abs(tx-cx)>0.001 || Math.abs(ty-cy)>0.001){ raf=requestAnimationFrame(loop); }
+    else raf=null;
+  }
+  function onMove(x,y){
+    tx = (x/window.innerWidth - 0.5)*2;
+    ty = (y/window.innerHeight - 0.5)*2;
+    if(!raf) raf = requestAnimationFrame(loop);
+  }
+  window.addEventListener('pointermove', e=>onMove(e.clientX,e.clientY), {passive:true});
+  window.addEventListener('pointerleave', ()=>{ tx=0; ty=0; if(!raf) raf=requestAnimationFrame(loop); });
+
+  let rt;
+  window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(build,180); });
+</script>
+</body>
+</html>

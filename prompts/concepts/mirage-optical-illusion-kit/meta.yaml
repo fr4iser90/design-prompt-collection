@@ -1,0 +1,27 @@
+id: mirage-optical-illusion-kit
+title: "Mirage Optical Illusion Kit"
+category: concepts
+tags:
+  - optical-illusion
+  - minimalist
+  - interactive
+  - desert
+  - heat-haze
+  - ui-kit
+  - experimental
+  - perspective
+status: polished
+summary: "A UI component library where elements appear to dissolve or warp due to simulated heat haze and optical refraction on a sun-bleached canvas."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

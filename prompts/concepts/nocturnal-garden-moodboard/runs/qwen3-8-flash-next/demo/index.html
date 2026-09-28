@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumenflora — Nocturnal Botanicals · Moodboard Nº01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --soil:#070b0a;
+  --soil-2:#0a100e;
+  --leaf:#143028;
+  --leaf-2:#0e211c;
+  --dew:#cfe7d6;
+  --lumen:#9dffb0;
+  --pollen:#e6d67a;
+  --muted:#6d8378;
+  --muted-2:#4c5d54;
+  --line:rgba(207,231,214,.13);
+  --line-2:rgba(207,231,214,.07);
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'Space Mono',ui-monospace,monospace;
+  --pad:clamp(20px,5vw,64px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--soil);
+  color:var(--dew);
+  font-family:var(--serif);
+  font-weight:300;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 15% 8%, rgba(20,48,40,.55), transparent 60%),
+    radial-gradient(120% 100% at 85% 92%, rgba(14,33,28,.5), transparent 55%),
+    radial-gradient(80% 60% at 50% 40%, rgba(157,255,176,.035), transparent 70%);
+}
+/* film grain */
+body::after{
+  content:"";position:fixed;inset:-50%;z-index:60;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 6s steps(6) infinite;
+}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}40%{transform:translate(3%,-2%)}60%{transform:translate(-2%,-4%)}80%{transform:translate(4%,2%)}100%{transform:translate(0,0)}}
+
+/* ---------- shared ---------- */
+.mono{font-family:var(--mono);font-weight:400;letter-spacing:.06em}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 var(--pad)}
+section{position:relative;z-index:1}
+.rule{height:1px;background:var(--line);border:0}
+
+/* ---------- masthead ---------- */
+.masthead{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+  padding:22px var(--pad);border-bottom:1px solid var(--line);
+  position:relative;z-index:5;background:linear-gradient(var(--soil),rgba(7,11,10,.4));
+}
+.mast-left{display:flex;align-items:center;gap:14px}
+.mast-mark{width:26px;height:26px;color:var(--lumen);flex:none}
+.mast-name{font-family:var(--mono);font-size:13px;letter-spacing:.28em;text-transform:uppercase}
+.mast-name b{color:var(--lumen);font-weight:700}
+.mast-right{display:flex;gap:26px;flex-wrap:wrap}
+.mast-right span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.mast-right span b{color:var(--dew);font-weight:400}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(48px,9vw,120px) var(--pad) clamp(40px,6vw,72px);position:relative;overflow:hidden}
+.hero-inner{max-width:1320px;margin:0 auto;position:relative;z-index:2}
+.hero-eyebrow{display:flex;align-items:center;gap:16px;margin-bottom:clamp(24px,4vw,44px)}
+.hero-eyebrow .line{flex:1;height:1px;background:var(--line);max-width:180px}
+.hero-word{
+  font-family:var(--serif);font-weight:300;line-height:.82;letter-spacing:-.015em;
+  font-size:clamp(3.4rem,15.5vw,15rem);color:var(--dew);
+  text-shadow:0 0 60px rgba(157,255,176,.14);
+}
+.hero-word .lum{color:var(--lumen);text-shadow:0 0 40px rgba(157,255,176,.5)}
+.hero-tag{
+  margin-top:clamp(18px,3vw,34px);max-width:640px;
+  font-size:clamp(1.15rem,2.4vw,1.7rem);font-style:italic;font-weight:300;color:var(--dew);opacity:.9;
+}
+.hero-meta{display:flex;flex-wrap:wrap;gap:clamp(20px,4vw,60px);margin-top:clamp(34px,5vw,64px);padding-top:26px;border-top:1px solid var(--line)}
+.hero-meta .cell{min-width:120px}
+.hero-meta .lab{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px}
+.hero-meta .val{font-family:var(--serif);font-size:1.05rem;color:var(--dew)}
+.hero-meta .val.pollen{color:var(--pollen)}
+.scrollcue{margin-top:clamp(30px,5vw,60px);display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.scrollcue .dot{width:6px;height:6px;border-radius:50%;background:var(--lumen);box-shadow:0 0 10px var(--lumen);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+/* ---------- section header ---------- */
+.sec-head{display:flex;align-items:baseline;gap:clamp(14px,2.5vw,30px);flex-wrap:wrap;margin-bottom:clamp(26px,4vw,48px)}
+.sec-num{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--lumen)}
+.sec-title{font-family:var(--serif);font-weight:400;font-size:clamp(1.8rem,4.4vw,3.1rem);line-height:1;color:var(--dew)}
+.sec-note{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);margin-left:auto;max-width:280px;text-align:right;line-height:1.7}
+.pad{padding:clamp(56px,8vw,110px) var(--pad)}
+.pad .inner{max-width:1320px;margin:0 auto}
+
+/* ---------- 01 palette ---------- */
+.chips{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.chip{border:1px solid var(--line);background:var(--soil-2);display:flex;flex-direction:column;min-height:190px;overflow:hidden;transition:transform .5s cubic-bezier(.2,.7,.2,1),border-color .5s}
+.chip:hover{transform:translateY(-6px);border-color:var(--line-2)}
+.chip .swatch{flex:1;position:relative}
+.chip .swatch::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,.25))}
+.chip .info{padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.chip .name{font-family:var(--serif);font-size:1.15rem;color:var(--dew)}
+.chip .code{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--muted)}
+.chip .role{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted-2);margin-top:2px}
+.c-soil{grid-column:span 4;grid-row:span 2}
+.c-soil .swatch{background:var(--soil)}
+.c-leaf{grid-column:span 4}.c-leaf .swatch{background:var(--leaf)}
+.c-dew{grid-column:span 4}.c-dew .swatch{background:var(--dew)}
+.c-lumen{grid-column:span 4}.c-lumen .swatch{background:var(--lumen)}
+.c-pollen{grid-column:span 4}.c-pollen .swatch{background:var(--pollen)}
+.c-leaf2{grid-column:span 4}.c-leaf2 .swatch{background:var(--leaf-2)}
+
+/* ---------- 02 wordmark ---------- */
+.wordmark{border:1px solid var(--line);background:radial-gradient(120% 130% at 20% 0%,rgba(20,48,40,.6),var(--soil-2));padding:clamp(30px,6vw,72px);text-align:center;position:relative;overflow:hidden}
+.wordmark::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line-2);transform:translateX(-50%)}
+.wm-main{font-family:var(--serif);font-weight:300;font-size:clamp(2.6rem,10vw,8rem);line-height:.9;letter-spacing:.01em;color:var(--dew);position:relative;z-index:1}
+.wm-main .lum{color:var(--lumen);text-shadow:0 0 34px rgba(157,255,176,.4)}
+.wm-sub{font-family:var(--mono);font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted);margin-top:14px;position:relative;z-index:1}
+.wm-row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-top:34px;padding-top:26px;border-top:1px solid var(--line);position:relative;z-index:1}
+.wm-row .cell{flex:1;min-width:130px;text-align:left}
+.wm-row .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);margin-bottom:7px}
+.wm-row .val{font-family:var(--serif);font-size:1rem;color:var(--dew)}
+.wm-row .val.mono{font-family:var(--mono);font-size:.85rem;letter-spacing:.05em}
+.wm-lockup{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:30px;position:relative;z-index:1}
+.wm-lockup .mk{width:30px;height:30px;color:var(--lumen)}
+.wm-lockup .lk{font-family:var(--mono);font-size:13px;letter-spacing:.34em;text-transform:uppercase;color:var(--dew)}
+
+/* ---------- 03 type pairing ---------- */
+.pairing{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(24px,4vw,56px)}
+.pcol{border:1px solid var(--line);background:var(--soil-2);padding:clamp(22px,3vw,40px)}
+.pcol .tag{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--lumen);margin-bottom:22px;display:flex;justify-content:space-between}
+.pcol .tag em{font-style:normal;color:var(--muted)}
+.specimen{font-family:var(--serif);font-weight:300;font-size:clamp(3rem,8vw,6.4rem);line-height:.85;color:var(--dew)}
+.specimen .ital{font-style:italic;color:var(--lumen)}
+.weights{display:flex;gap:22px;flex-wrap:wrap;margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.weights span{font-family:var(--serif);color:var(--dew);font-size:1.5rem}
+.weights span:nth-child(1){font-weight:300}
+.weights span:nth-child(2){font-weight:400}
+.weights span:nth-child(3){font-weight:500}
+.weights span:nth-child(4){font-weight:600}
+.weights span:nth-child(5){font-style:italic;font-weight:300}
+.mono-spec{font-family:var(--mono);font-size:clamp(.82rem,1.6vw,1.05rem);line-height:2;color:var(--dew);letter-spacing:.02em}
+.mono-spec .c{color:var(--muted)}
+.mono-spec .l{color:var(--lumen)}
+.mono-spec .p{color:var(--pollen)}
+.proof{margin-top:26px;border-top:1px solid var(--line);padding-top:22px}
+.proof h4{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:var(--dew);margin-bottom:12px}
+.proof p{font-size:1.05rem;color:var(--dew);opacity:.82;max-width:520px}
+.proof .cap{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:12px}
+
+/* ---------- 04 photo directives ---------- */
+.photos{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px}
+.photo{position:relative;aspect-ratio:3/4;border:1px solid var(--line);overflow:hidden;background:var(--leaf-2)}
+.photo.leaf{aspect-ratio:4/5}
+.photo .scene{position:absolute;inset:0}
+.photo .scrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(7,11,10,.92))}
+.photo .cap{position:absolute;left:0;right:0;bottom:0;padding:18px;z-index:3}
+.photo .cap .n{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--lumen);text-transform:uppercase}
+.photo .cap h3{font-family:var(--serif);font-weight:400;font-size:1.5rem;color:var(--dew);margin:5px 0 8px}
+.photo .cap p{font-family:var(--mono);font-size:10.5px;line-height:1.7;color:var(--muted);letter-spacing:.02em}
+/* leaf macro */
+.leaf .scene{background:radial-gradient(120% 100% at 30% 20%,#1c463a,#0c1c17 70%)}
+.leaf .veins{position:absolute;inset:0;transform:rotate(-18deg);background:repeating-linear-gradient(90deg,transparent 0 26px,rgba(157,255,176,.09) 26px 28px),repeating-linear-gradient(0deg,transparent 0 60px,rgba(157,255,176,.05) 60px 62px);opacity:.6}
+.leaf .midrib{position:absolute;left:50%;top:-10%;bottom:-10%;width:2px;background:linear-gradient(rgba(157,255,176,.5),rgba(157,255,176,0));transform:translateX(-50%) rotate(-18deg)}
+.leaf .drop{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.9),rgba(157,255,176,.25) 45%,transparent 62%);filter:blur(.4px)}
+.d1{width:44px;height:44px;left:22%;top:30%}
+.d2{width:20px;height:20px;left:60%;top:52%}
+.d3{width:12px;height:12px;left:70%;top:24%}
+.d4{width:28px;height:28px;left:40%;top:70%}
+/* path */
+.path .scene{background:radial-gradient(90% 70% at 50% 100%,rgba(230,214,122,.16),transparent 60%),linear-gradient(180deg,#0a1512,#060a09)}
+.path .glow{position:absolute;bottom:14%;left:50%;width:180px;height:180px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(230,214,122,.5),transparent 65%);filter:blur(6px)}
+.path .sparks span{position:absolute;border-radius:50%;background:var(--pollen);box-shadow:0 0 12px var(--pollen)}
+/* bloom */
+.bloom .scene{background:radial-gradient(120% 120% at 50% 45%,#173d31,#080f0d 72%)}
+.bloom .petals{position:absolute;inset:0}
+.bloom .petal{position:absolute;left:50%;top:46%;width:14px;height:120px;transform-origin:bottom center;background:linear-gradient(to top,rgba(157,255,176,.05),rgba(157,255,176,.4));border-radius:50% 50% 40% 40%;filter:blur(1px)}
+.bloom .core{position:absolute;left:50%;top:46%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(157,255,176,.95),rgba(157,255,176,.1) 60%,transparent);box-shadow:0 0 40px rgba(157,255,176,.6)}
+
+/* ---------- 05 texture ---------- */
+.texture{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,48px);align-items:stretch}
+.tex-swatches{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tex{border:1px solid var(--line);aspect-ratio:1;position:relative;overflow:hidden}
+.tex .lab{position:absolute;left:12px;bottom:12px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dew);z-index:3;background:rgba(7,11,10,.5);padding:4px 8px}
+.tex-noise{background:var(--leaf-2)}
+.tex-noise::before{content:"";position:absolute;inset:0;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23v)'/%3E%3C/svg%3E")}
+.tex-noise::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(157,255,176,.12),transparent 45%)}
+.tex-dew{background:radial-gradient(120% 120% at 30% 30%,#12291f,#070c0a)}
+.tex-dew::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 20% 30%,rgba(207,231,214,.85) 0 1px,transparent 2px),radial-gradient(circle at 55% 60%,rgba(207,231,214,.7) 0 1.5px,transparent 3px),radial-gradient(circle at 80% 25%,rgba(157,255,176,.8) 0 1px,transparent 2px),radial-gradient(circle at 35% 80%,rgba(207,231,214,.6) 0 1px,transparent 2px),radial-gradient(circle at 70% 85%,rgba(157,255,176,.7) 0 1px,transparent 2px),radial-gradient(circle at 90% 65%,rgba(207,231,214,.5) 0 1px,transparent 2px);background-size:70px 70px}
+.tex-frost{background:linear-gradient(160deg,#0d1a16,#060a09)}
+.tex-frost::before{content:"";position:absolute;inset:0;background-image:repeating-linear-gradient(60deg,transparent 0 14px,rgba(207,231,214,.06) 14px 15px),repeating-linear-gradient(-60deg,transparent 0 14px,rgba(207,231,214,.05) 14px 15px)}
+.tex-pollen{background:radial-gradient(120% 120% at 60% 40%,#1a1c10,#070a08)}
+.tex-pollen::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 25% 40%,rgba(230,214,122,.9) 0 1.4px,transparent 3px),radial-gradient(circle at 65% 55%,rgba(230,214,122,.7) 0 1px,transparent 2px),radial-gradient(circle at 45% 75%,rgba(230,214,122,.8) 0 1px,transparent 2px),radial-gradient(circle at 80% 30%,rgba(230,214,122,.6) 0 1px,transparent 2px);background-size:48px 48px}
+.tex-copy{display:flex;flex-direction:column;justify-content:center}
+.tex-copy p{font-size:clamp(1.15rem,2.2vw,1.6rem);font-style:italic;color:var(--dew);opacity:.9;max-width:520px;line-height:1.5}
+.tex-copy .cap{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:22px}
+.tex-copy .cap b{color:var(--pollen);font-weight:400}
+
+/* ---------- 06 motion ---------- */
+.motion{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.frame{border:1px solid var(--line);background:var(--soil-2);overflow:hidden;display:flex;flex-direction:column}
+.frame .stage{aspect-ratio:5/3;position:relative;overflow:hidden;background:radial-gradient(120% 120% at 50% 30%,#12291f,#060a09)}
+.frame .idx{position:absolute;top:12px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--lumen);z-index:4}
+.frame .body{padding:16px 18px}
+.frame .body h4{font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--dew);margin-bottom:8px}
+.frame .body p{font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted);letter-spacing:.02em}
+/* dew shimmer */
+.dew-stage .pt{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(157,255,176,.3) 45%,transparent 65%);animation:shimmer 2.8s ease-in-out infinite}
+@keyframes shimmer{0%,100%{opacity:.35}50%{opacity:1}}
+/* petal drift */
+.drift-stage .pl{position:absolute;top:-20%;width:12px;height:22px;border-radius:50% 50% 40% 40%;background:linear-gradient(to bottom,rgba(157,255,176,.4),rgba(157,255,176,.05));animation:drift 9s linear infinite}
+@keyframes drift{0%{transform:translateY(-10%) rotate(0)}100%{transform:translateY(360%) rotate(200deg)}}
+/* ink in */
+.ink-stage{display:flex;align-items:center;justify-content:center}
+.ink-stage .ink{font-family:var(--serif);font-weight:300;font-size:clamp(1.8rem,4vw,3rem);color:var(--dew);letter-spacing:.02em;clip-path:inset(0 100% 0 0);animation:inkin 3s ease-in-out infinite}
+@keyframes inkin{0%{clip-path:inset(0 100% 0 0)}45%{clip-path:inset(0 0 0 0)}70%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 100% 0 0)}}
+
+/* ---------- 07 forbidden ---------- */
+.forbid{border:1px solid rgba(207,231,214,.1);background:var(--soil-2)}
+.forbid-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.fb{padding:clamp(20px,3vw,34px);border-right:1px solid var(--line-2);position:relative;overflow:hidden}
+.fb:last-child{border-right:0}
+.fb .thumb{height:120px;border:1px solid var(--line);margin-bottom:18px;position:relative;overflow:hidden}
+.fb .x{position:absolute;top:8px;right:10px;font-family:var(--mono);font-size:16px;color:var(--pollen);z-index:3}
+.fb h4{font-family:var(--serif);font-weight:400;font-size:1.3rem;color:var(--dew);margin-bottom:8px}
+.fb p{font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted);letter-spacing:.02em}
+.fb .alt{margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--lumen)}
+.fb .alt::before{content:"→ ";color:var(--muted)}
+/* cyber purple */
+.thumb-cyber{background:radial-gradient(120% 120% at 50% 50%,#2a0a3f,#160524 70%),linear-gradient(180deg,rgba(157,255,176,.2),transparent)}
+.thumb-cyber::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 8px,rgba(180,80,255,.12) 8px 9px)}
+.thumb-cyber::after{content:"";position:absolute;left:20%;top:30%;width:60%;height:40%;background:radial-gradient(circle,rgba(190,90,255,.5),transparent 60%);filter:blur(8px)}
+/* cottage pastel */
+.thumb-cottage{background:linear-gradient(180deg,#f3e6d3,#e7d3c2)}
+.thumb-cottage::before{content:"";position:absolute;left:15%;top:20%;width:70%;height:60%;background:radial-gradient(circle at 30% 30%,#e6b3a0,transparent 55%),radial-gradient(circle at 70% 60%,#c9d8b6,transparent 55%)}
+.thumb-cottage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;background:repeating-linear-gradient(90deg,#d9c4b0 0 14px,#c9b19c 14px 16px)}
+/* fairy lights */
+.thumb-fairy{background:#12100c}
+.thumb-fairy .bulb{position:absolute;width:10px;height:14px;border-radius:50% 50% 45% 45%;box-shadow:0 0 14px currentColor}
+.thumb-fairy .wire{position:absolute;left:0;right:0;top:26%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)}
+
+/* ---------- operating brief ---------- */
+.brief{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,60px)}
+.brief-lead{font-family:var(--serif);font-weight:300;font-size:clamp(1.4rem,3vw,2.3rem);line-height:1.35;color:var(--dew);font-style:italic}
+.brief-lead .lum{color:var(--lumen);font-style:normal}
+.brief-list{list-style:none;display:flex;flex-direction:column;gap:2px}
+.brief-list li{display:flex;gap:18px;padding:18px 0;border-top:1px solid var(--line);align-items:baseline}
+.brief-list li:last-child{border-bottom:1px solid var(--line)}
+.brief-list .n{font-family:var(--mono);font-size:11px;color:var(--lumen);letter-spacing:.1em;flex:none;width:26px}
+.brief-list .t{font-family:var(--serif);font-size:1.15rem;color:var(--dew)}
+.brief-list .t em{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;display:block;margin-top:4px;text-transform:uppercase}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:clamp(40px,6vw,80px) var-pad var(--pad);position:relative;z-index:1}
+.foot{max-width:1320px;margin:0 auto;display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;align-items:flex-end}
+.foot .big{font-family:var(--serif);font-weight:300;font-size:clamp(2rem,7vw,5rem);line-height:.9;color:var(--dew)}
+.foot .big .lum{color:var(--lumen);text-shadow:0 0 30px rgba(157,255,176,.4)}
+.foot .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--muted);line-height:2;text-align:right}
+.foot .meta b{color:var(--dew);font-weight:400}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .pairing,.texture,.brief{grid-template-columns:1fr}
+  .motion{grid-template-columns:1fr}
+  .photos{grid-template-columns:1fr 1fr}
+  .photo.leaf{grid-column:span 2;aspect-ratio:16/10}
+  .forbid-grid{grid-template-columns:1fr}
+  .fb{border-right:0;border-bottom:1px solid var(--line-2)}
+  .fb:last-child{border-bottom:0}
+  .sec-note{margin-left:0;text-align:left;max-width:none;width:100%}
+}
+@media(max-width:560px){
+  .chips{grid-template-columns:repeat(6,1fr)}
+  .c-soil{grid-column:span 6;grid-row:span 1;min-height:150px}
+  .c-leaf,.c-dew,.c-lumen,.c-pollen,.c-leaf2{grid-column:span 3}
+  .photos{grid-template-columns:1fr}
+  .photo.leaf{grid-column:span 1;aspect-ratio:4/5}
+  .tex-swatches{grid-template-columns:1fr 1fr}
+  .mast-right{gap:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  .reveal{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="mast-left">
+    <svg class="mast-mark" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M20 36C20 20 12 12 4 8c0 16 6 24 16 28Z" fill="currentColor" fill-opacity=".14"/>
+      <path d="M20 36C20 20 28 12 36 8c0 16-6 24-16 28Z" fill="currentColor" fill-opacity=".14"/>
+      <path d="M20 36V14"/><circle cx="20" cy="10" r="3.2" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="mast-name">Lumen<b>flora</b></span>
+  </div>
+  <div class="mast-right">
+    <span>Moodboard <b>Nº01</b></span>
+    <span>Discipline <b>Atmosphere</b></span>
+    <span>Season <b>Nocturne</b></span>
+    <span>Ref <b>LF–0708</b></span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow reveal">
+      <span class="kicker">Nocturnal Botanicals House</span>
+      <span class="line"></span>
+      <span class="kicker">Operating Brief · Moodboard</span>
+    </div>
+    <h1 class="hero-word reveal">Lumen<span class="lum">flora</span></h1>
+    <p class="hero-tag reveal">A garden that only blooms after the eyes adjust. Light here is biological — not an LED strip. Type feels engraved on leaf-dark.</p>
+    <div class="hero-meta reveal">
+      <div class="cell"><span class="lab">Field</span><span class="val">Velvet night · wet leaves · bioluminescent tips</span></div>
+      <div class="cell"><span class="lab">Core hues</span><span class="val">Soil · Leaf · Dew · Lumen</span></div>
+      <div class="cell"><span class="lab">Rare accent</span><span class="val pollen">Pollen — <b>1%</b> usage</span></div>
+      <div class="cell"><span class="lab">Motion</span><span class="val">3 locked principles</span></div>
+    </div>
+    <div class="scrollcue reveal"><span class="dot"></span> Scroll — seven locked references</div>
+  </div>
+</section>
+
+<!-- 01 PALETTE -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">01</span>
+      <h2 class="sec-title">Colour, locked on a black field</h2>
+      <p class="sec-note">Light is biological. Lumen carries the glow; pollen is rationed to a whisper.</p>
+    </div>
+    <div class="chips reveal">
+      <div class="chip c-soil"><div class="swatch"></div><div class="info"><span class="name">Soil Night</span><span class="code">#070B0A</span><span class="role">Ground · canvas</span></div></div>
+      <div class="chip c-leaf"><div class="swatch"></div><div class="info"><span class="name">Leaf Dark</span><span class="code">#143028</span><span class="role">Structure</span></div></div>
+      <div class="chip c-dew"><div class="swatch"></div><div class="info"><span class="name">Dew</span><span class="code">#CFE7D6</span><span class="role">Body text</span></div></div>
+      <div class="chip c-lumen"><div class="swatch"></div><div class="info"><span class="name">Lumen</span><span class="code">#9DFFB0</span><span class="role">Signal · glow</span></div></div>
+      <div class="chip c-pollen"><div class="swatch"></div><div class="info"><span class="name">Pollen</span><span class="code">#E6D67A</span><span class="role">Rare · warm</span></div></div>
+      <div class="chip c-leaf2"><div class="swatch"></div><div class="info"><span class="name">Underleaf</span><span class="code">#0E211C</span><span class="role">Panels · depth</span></div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 02 WORDMARK -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">02</span>
+      <h2 class="sec-title">Brand specimen</h2>
+      <p class="sec-note">Set in Cormorant Garamond Light. The “lum” glyph is the only glowing element.</p>
+    </div>
+    <div class="wordmark reveal">
+      <div class="wm-main">Lu<span class="lum">men</span>flora</div>
+      <div class="wm-sub">Nocturnal Botanicals</div>
+      <div class="wm-lockup">
+        <svg class="mk" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 36C20 20 12 12 4 8c0 16 6 24 16 28Z" fill="currentColor" fill-opacity=".14"/><path d="M20 36C20 20 28 12 36 8c0 16-6 24-16 28Z" fill="currentColor" fill-opacity=".14"/><path d="M20 36V14"/><circle cx="20" cy="10" r="3.2" fill="currentColor" stroke="none"/></svg>
+        <span class="lk">Lumenflora</span>
+      </div>
+      <div class="wm-row">
+        <div class="cell"><div class="lab">Typeface</div><div class="val">Cormorant Garamond</div></div>
+        <div class="cell"><div class="lab">Weight</div><div class="val">Light 300</div></div>
+        <div class="cell"><div class="lab">Tracking</div><div class="val mono">-0.015em</div></div>
+        <div class="cell"><div class="lab">Glow rule</div><div class="val">Lumen glyph only</div></div>
+        <div class="cell"><div class="lab">Never</div><div class="val">Bold · all-caps</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 03 TYPE PAIRING -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">03</span>
+      <h2 class="sec-title">Lyrical serif · tiny mono</h2>
+      <p class="sec-note">The serif breathes; the mono annotates. Two voices, never shouting.</p>
+    </div>
+    <div class="pairing reveal">
+      <div class="pcol">
+        <div class="tag"><span>Display / Serif</span><em>Cormorant Garamond</em></div>
+        <div class="specimen">Night<span class="ital">bloom</span></div>
+        <div class="weights"><span>Aa</span><span>Aa</span><span>Aa</span><span>Aa</span><span>Aa</span></div>
+        <div class="proof">
+          <h4>The garden keeps its own hours.</h4>
+          <p>Long, elegant descenders read as stems. Italic carries the romance; roman holds the line.</p>
+          <div class="cap">Optical · 300 / 400 / 500 / 600 · italic 300</div>
+        </div>
+      </div>
+      <div class="pcol">
+        <div class="tag"><span>Body / Captions</span><em>Space Mono</em></div>
+        <div class="mono-spec">
+          <span class="c">// specimen — caption grid</span><br>
+          dew: <span class="l">#CFE7D6</span> · lumen: <span class="l">#9DFFB0</span><br>
+          pollen: <span class="p">#E6D67A</span> — <span class="c">rare, 1%</span><br>
+          tracking: <span class="l">0.06em</span> · size: <span class="l">11px</span><br>
+          <span class="c">// mono annotates, never leads</span><br>
+          <span class="c">// uppercase, wide, quiet</span>
+        </div>
+        <div class="proof">
+          <h4>Field notes, not marketing copy.</h4>
+          <p>Every caption behaves like a specimen label pinned to a leaf.</p>
+          <div class="cap">Uppercase · letter-spaced · muted</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 04 PHOTO DIRECTIVES -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">04</span>
+      <h2 class="sec-title">Three photo directives</h2>
+      <p class="sec-note">Real botanical night photography. Macro wet leaves, moth-adjacent blur, practical lumen points — no abstract gradients.</p>
+    </div>
+    <div class="photos reveal">
+      <figure class="photo leaf">
+        <div class="scene"><div class="veins"></div><div class="midrib"></div>
+          <span class="drop d1"></span><span class="drop d2"></span><span class="drop d3"></span><span class="drop d4"></span>
+        </div>
+        <div class="scrim"></div>
+        <figcaption class="cap"><span class="n">Crop A · Leaf</span><h3>Wet macro, single rib</h3><p>50mm macro · f/2 · practical dew light. Water beads catch one lumen point each. Deep leaf-dark shadows, no fill flash.</p></figcaption>
+      </figure>
+      <figure class="photo path">
+        <div class="scene"><div class="glow"></div>
+          <div class="sparks">
+            <span style="left:30%;top:55%;width:3px;height:3px"></span>
+            <span style="left:62%;top:48%;width:2px;height:2px"></span>
+            <span style="left:48%;top:66%;width:4px;height:4px"></span>
+            <span style="left:72%;top:60%;width:2px;height:2px"></span>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <figcaption class="cap"><span class="n">Crop B · Path</span><h3>Moth-adjacent blur</h3><p>Long exposure · warm pollen glow low on the ground. Motion trails, never neon. Fog, not haze filter.</p></figcaption>
+      </figure>
+      <figure class="photo bloom">
+        <div class="scene"><div class="petals">
+          <span class="petal" style="transform:translateX(-50%) rotate(0deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(45deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(90deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(135deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(180deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(225deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(270deg)"></span>
+          <span class="petal" style="transform:translateX(-50%) rotate(315deg)"></span>
+        </div><div class="core"></div></div>
+        <div class="scrim"></div>
+        <figcaption class="cap"><span class="n">Crop C · Bloom</span><h3>Bioluminescent tip</h3><p>Self-lit centre · radial petals. Lumen is the light source, not a glow filter. Petals fade to soil.</p></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 05 TEXTURE -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">05</span>
+      <h2 class="sec-title">Texture swatches</h2>
+      <p class="sec-note">Velvet noise as the base weave. Chromatic aberration is banned outright.</p>
+    </div>
+    <div class="texture reveal">
+      <div class="tex-swatches">
+        <div class="tex tex-noise"><span class="lab">Velvet noise</span></div>
+        <div class="tex tex-dew"><span class="lab">Dew field</span></div>
+        <div class="tex tex-frost"><span class="lab">Frost grain</span></div>
+        <div class="tex tex-pollen"><span class="lab">Pollen dust</span></div>
+      </div>
+      <div class="tex-copy">
+        <p>“The surface should feel like velvet left out in the rain — soft, granular, faintly damp. Grain sits at <b style="color:var(--lumen);font-weight:400">5% opacity</b>, never more.”</p>
+        <div class="cap">Base grain 5% · <b>chromatic aberration: forbidden</b> · no bloom halos on type</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 06 MOTION -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">06</span>
+      <h2 class="sec-title">Motion language — three, no more</h2>
+      <p class="sec-note">Storyboard frames for future pages. Everything slow, biological, restrained.</p>
+    </div>
+    <div class="motion reveal">
+      <div class="frame">
+        <div class="stage dew-stage"><span class="idx">M·01</span>
+          <span class="pt" style="left:22%;top:30%;width:14px;height:14px;animation-delay:0s"></span>
+          <span class="pt" style="left:55%;top:55%;width:9px;height:9px;animation-delay:.6s"></span>
+          <span class="pt" style="left:74%;top:28%;width:7px;height:7px;animation-delay:1.1s"></span>
+          <span class="pt" style="left:40%;top:70%;width:11px;height:11px;animation-delay:1.6s"></span>
+        </div>
+        <div class="body"><h4>Dew shimmer</h4><p>Opacity delta 0.35 → 1.0 over 2.8s. Staggered, never in sync. Only on water beads and lumen points.</p></div>
+      </div>
+      <div class="frame">
+        <div class="stage drift-stage"><span class="idx">M·02</span>
+          <span class="pl" style="left:18%;animation-delay:0s"></span>
+          <span class="pl" style="left:42%;animation-delay:2.4s"></span>
+          <span class="pl" style="left:66%;animation-delay:4.8s"></span>
+          <span class="pl" style="left:84%;animation-delay:1.2s"></span>
+        </div>
+        <div class="body"><h4>Slow petal drift</h4><p>Vertical descent, 9s loop. Background botanicals only, 6–10% opacity. Reads as settling, not falling.</p></div>
+      </div>
+      <div class="frame">
+        <div class="stage ink-stage"><span class="idx">M·03</span>
+          <span class="ink">engraved</span>
+        </div>
+        <div class="body"><h4>Type ink-in</h4><p>Words reveal left-to-right like ink soaking into leaf-dark. 3s on enter, once per heading. No bounce.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- 07 FORBIDDEN -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">07</span>
+      <h2 class="sec-title">Forbidden board</h2>
+      <p class="sec-note">Three looks rejected before a pixel is drawn. Each has a sanctioned alternative.</p>
+    </div>
+    <div class="forbid reveal">
+      <div class="forbid-grid">
+        <div class="fb">
+          <div class="thumb thumb-cyber"><span class="x">✕</span></div>
+          <h4>Purple cyber-garden</h4>
+          <p>Neon magenta glow, synthwave grids, LED-strip foliage. Reads as crypto NFT garden.</p>
+          <div class="alt">Biological lumen on leaf-dark, no violet</div>
+        </div>
+        <div class="fb">
+          <div class="thumb thumb-cottage"><span class="x">✕</span></div>
+          <h4>Cute cottagecore</h4>
+          <p>Warm pastels, gingham, hand-lettered whimsy. Too soft, too daylight, too precious.</p>
+          <div class="alt">Sharp serif, night palette, restrained romance</div>
+        </div>
+        <div class="fb">
+          <div class="thumb thumb-fairy"><span class="x">✕</span></div>
+          <h4>Stock “fairy lights”</h4>
+          <p>Warm string-bulb bokeh, generic cozy glow. Borrowed, not botanical, not nocturnal.</p>
+          <div class="alt">Practical lumen points, self-lit bloom cores</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- OPERATING BRIEF -->
+<section class="pad">
+  <div class="inner">
+    <div class="sec-head reveal">
+      <span class="sec-num">OB</span>
+      <h2 class="sec-title">Operating brief</h2>
+      <p class="sec-note">Six rules a build agent can execute against. Atmosphere over chrome.</p>
+    </div>
+    <div class="brief reveal">
+      <p class="brief-lead">Build the <span class="lum">atmosphere first</span>. If a screen can be mistaken for a crypto garden, a cottage, or a fairy-lit café — it is wrong. Light is grown, never plugged in.</p>
+      <ul class="brief-list">
+        <li><span class="n">01</span><span class="t">Atmosphere &gt; UI chrome<em>Background carries the mood; controls stay quiet</em></span></li>
+        <li><span class="n">02</span><span class="t">Brand specimen always present<em>Lumenflora wordmark, Cormorant Light, lum glyph glows</em></span></li>
+        <li><span class="n">03</span><span class="t">Pollen is rationed<em>1% of any surface — a rare warm spark</em></span></li>
+        <li><span class="n">04</span><span class="t">Three motions only<em>Dew shimmer · petal drift · type ink-in</em></span></li>
+        <li><span class="n">05</span><span class="t">Forbidden board is binding<em>No purple, no cottage, no fairy lights</em></span></li>
+        <li><span class="n">06</span><span class="t">Respect reduced motion<em>All animation off under prefers-reduced-motion</em></span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot">
+    <div class="big">Lumen<span class="lum">flora</span></div>
+    <div class="meta">
+      <b>Nocturnal Botanicals House</b><br>
+      Moodboard Nº01 · LF–0708<br>
+      Velvet night · wet leaves · lumen tips<br>
+      <span style="color:var(--muted-2)">Executable by build agent — one-page visual board</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.reveal');
+  if(reduce){ els.forEach(function(e){e.classList.add('in');}); return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var d = en.target.dataset.d || 0;
+        setTimeout(function(){ en.target.classList.add('in'); }, d);
+        io.unobserve(en.target);
+      }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(e,i){ e.dataset.d = (i%4)*90; io.observe(e); });
+})();
+</script>
+</body>
+</html>

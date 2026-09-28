@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Magnetic Cursor Orbit — Oblique Studio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --void: #121212;
+      --graphite: #2a2a2a;
+      --bone: #f2f2f2;
+      --accent: #c4f34a;
+
+      --bone-70: rgba(242, 242, 242, 0.7);
+      --bone-45: rgba(242, 242, 242, 0.45);
+      --bone-35: rgba(242, 242, 242, 0.35);
+      --bone-12: rgba(242, 242, 242, 0.12);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--void);
+      color: var(--bone);
+      font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Atmospheric base */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background:
+        radial-gradient(120% 90% at 50% -20%, rgba(42, 42, 42, 0.72), transparent 62%),
+        radial-gradient(90% 70% at 100% 110%, rgba(196, 243, 74, 0.025), transparent 58%),
+        var(--void);
+    }
+
+    /* Static grain, no motion */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.035;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    }
+
+    .horizon {
+      position: fixed;
+      left: 0;
+      right: 0;
+      top: 62%;
+      height: 1px;
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(242, 242, 242, 0.06), transparent);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 0;
+      z-index: 100;
+      padding: 10px 14px;
+      background: var(--accent);
+      color: var(--void);
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .skip-link:focus {
+      left: 16px;
+      top: 16px;
+    }
+
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: clamp(18px, 2.8vw, 28px) clamp(20px, 4vw, 48px);
+      background: linear-gradient(
+        to bottom,
+        rgba(18, 18, 18, 0.94) 0%,
+        rgba(18, 18, 18, 0.68) 58%,
+        rgba(18, 18, 18, 0) 100%
+      );
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.38rem;
+      color: var(--bone);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border: 1px solid var(--bone-35);
+      font-size: 0.62rem;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+
+    .brand-accent {
+      color: var(--accent);
+    }
+
+    .magnetic-nav {
+      position: relative;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: clamp(18px, 3.2vw, 44px);
+    }
+
+    .nav-link {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 12px 4px 8px;
+      color: var(--bone-70);
+      text-decoration: none;
+      font-size: clamp(0.78rem, 0.92vw, 0.88rem);
+      font-weight: 400;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      touch-action: manipulation;
+      transition: color 0.22s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible,
+    .nav-link:active {
+      color: var(--bone);
+    }
+
+    .nav-link:focus-visible {
+      outline: 1px solid rgba(196, 243, 74, 0.82);
+      outline-offset: 6px;
+    }
+
+    .nav-label {
+      position: relative;
+      display: inline-block;
+      transform: translate3d(0, 0, 0);
+      will-change: transform;
+    }
+
+    /* Fallback hover underline for reduced motion / touch / JS-off */
+    .nav-label::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -8px;
+      height: 1px;
+      background: var(--bone);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .nav-link:hover .nav-label::after,
+    .nav-link:focus-visible .nav-label::after {
+      transform: scaleX(1);
+    }
+
+    /* Shared accent underline used only when motion is enabled */
+    .nav-underline {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 1px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0;
+      pointer-events: none;
+      transform-origin: left center;
+      transform: translate3d(0, 0, 0) scaleX(0);
+      transition: opacity 0.18s ease;
+      will-change: transform;
+    }
+
+    body.motion-enhanced .nav-label::after {
+      display: none;
+    }
+
+    .satellite {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 7px;
+      height: 7px;
+      margin: -3.5px 0 0 -3.5px;
+      border-radius: 50%;
+      background: var(--bone);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 20;
+      transform: translate3d(-100px, -100px, 0);
+      will-change: transform, opacity;
+    }
+
+    main {
+      min-height: 100vh;
+      display: grid;
+      align-items: end;
+      padding: clamp(120px, 18vh, 180px) clamp(20px, 4vw, 48px) clamp(48px, 8vh, 80px);
+    }
+
+    .stage {
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--bone-45);
+    }
+
+    .title {
+      margin: 0;
+      font-size: clamp(2.6rem, 7vw, 5.6rem);
+      line-height: 0.94;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+
+    .accent-rule {
+      width: 72px;
+      height: 1px;
+      margin: 28px 0 24px;
+      background: var(--accent);
+      opacity: 0.85;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 52ch;
+      font-size: clamp(1rem, 1.35vw, 1.15rem);
+      line-height: 1.65;
+      font-weight: 300;
+      color: var(--bone-70);
+    }
+
+    .meta {
+      margin: 28px 0 0;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--bone-35);
+    }
+
+    .hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 34px;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--bone-35);
+    }
+
+    .hint::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--bone-45);
+    }
+
+    @keyframes fade-in {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fade-up {
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes nav-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes item-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .brand {
+        opacity: 0;
+        animation: fade-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+
+      .nav-list {
+        opacity: 0;
+        animation: nav-in 0.85s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+
+      .nav-list li {
+        opacity: 0;
+        transform: translateY(8px);
+        animation: item-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+      }
+
+      .nav-list li:nth-child(1) { animation-delay: 0.12s; }
+      .nav-list li:nth-child(2) { animation-delay: 0.18s; }
+      .nav-list li:nth-child(3) { animation-delay: 0.24s; }
+      .nav-list li:nth-child(4) { animation-delay: 0.30s; }
+      .nav-list li:nth-child(5) { animation-delay: 0.36s; }
+
+      .stage {
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.24s forwards;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .brand,
+      .nav-list,
+      .nav-list li,
+      .stage {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+      }
+
+      .satellite,
+      .nav-underline {
+        display: none !important;
+      }
+
+      .nav-link,
+      .nav-label::after {
+        transition: none !important;
+      }
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      .satellite,
+      .nav-underline {
+        display: none !important;
+      }
+
+      .nav-label::after {
+        transition: none;
+      }
+
+      .nav-link:active {
+        color: var(--bone);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .site-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .nav-list {
+        flex-wrap: wrap;
+        gap: 14px 26px;
+      }
+
+      main {
+        padding-top: clamp(180px, 30vh, 260px);
+      }
+
+      .nav-underline {
+        display: none !important;
+      }
+
+      body.motion-enhanced .nav-label::after {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="horizon" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Oblique Studio home">
+      <span class="brand-mark">O</span>
+      <span>Oblique</span>
+      <span class="brand-accent">°</span>
+    </a>
+
+    <nav class="magnetic-nav" aria-label="Primary">
+      <ul class="nav-list">
+        <li><a class="nav-link" href="#" aria-current="page"><span class="nav-label">Index</span></a></li>
+        <li><a class="nav-link" href="#"><span class="nav-label">Work</span></a></li>
+        <li><a class="nav-link" href="#"><span class="nav-label">Studio</span></a></li>
+        <li><a class="nav-link" href="#"><span class="nav-label">Journal</span></a></li>
+        <li><a class="nav-link" href="#"><span class="nav-label">Contact</span></a></li>
+      </ul>
+      <span class="nav-underline" aria-hidden="true"></span>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="stage">
+      <p class="eyebrow">Interaction Study · 004</p>
+      <h1 class="title">Magnetic Cursor Orbit</h1>
+      <div class="accent-rule" aria-hidden="true"></div>
+      <p class="lede">
+        A horizontal header nav tuned with a soft magnetic field. Labels are drawn toward
+        the pointer, then spring home without jitter.
+      </p>
+      <p class="meta">radius 100px · stiffness 0.12 · damping 0.70 · max translation 14px</p>
+      <p class="hint">Move cursor across the header</p>
+    </section>
+  </main>
+
+  <div class="satellite" aria-hidden="true"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const body = document.body;
+      const nav = document.querySelector(".magnetic-nav");
+      const underline = document.querySelector(".nav-underline");
+      const satellite = document.querySelector(".satellite");
+      const links = Array.from(document.querySelectorAll(".nav-link"));
+
+      if (!nav || !underline || !satellite || !links.length) return;
+
+      /*
+        Spring tuning:
+        - LABEL_STIFFNESS: acceleration toward magnetic target per 60fps frame.
+        - LABEL_DAMPING: velocity retained per 60fps frame. 0.70 gives a firm,
+          non-jelly settle in under ~300ms after leaving the field.
+        - PULL_STRENGTH: maps cursor offset to desired label translation inside RADIUS.
+        - MAX_PULL: hard cap so typography stays stable and never drifts.
+        - DOT_*: slightly quicker satellite follow for crisp orbit handoff.
+        - UNDERLINE_*: a touch stiffer so the accent line feels like a measured rail.
+      */
+      const RADIUS = 100;
+      const MAX_PULL = 14;
+      const PULL_STRENGTH = 0.45;
+
+      const LABEL_STIFFNESS = 0.12;
+      const LABEL_DAMPING = 0.70;
+
+      const DOT_STIFFNESS = 0.16;
+      const DOT_DAMPING = 0.72;
+      const ORBIT_RADIUS = 18;
+      const ORBIT_SPEED = 0.018; // radians per 60fps frame
+
+      const UNDERLINE_STIFFNESS = 0.18;
+      const UNDERLINE_DAMPING = 0.74;
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+      const states = links.map((el) => {
+        const label = el.querySelector(".nav-label") || el;
+        return {
+          el,
+          label,
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          cx: 0,
+          cy: 0,
+          dx: 0,
+          dy: 0,
+          dist: Infinity,
+          uLeft: 0,
+          uWidth: 0
+        };
+      });
+
+      const mouse = { x: -9999, y: -9999 };
+
+      let activeIndex = -1;
+      let orbitAngle = 0;
+
+      let dotX = window.innerWidth * 0.5;
+      let dotY = window.innerHeight * 0.5;
+      let dotVx = 0;
+      let dotVy = 0;
+      let dotActive = false;
+
+      let uLeft = 0;
+      let uScale = 0;
+      let uLeftV = 0;
+      let uScaleV = 0;
+      let underlineVisible = false;
+
+      let rafId = null;
+      let lastTime = performance.now();
+
+      const clamp = (value, min, max) => (value < min ? min : value > max ? max : value);
+
+      function cacheRects() {
+        const navRect = nav.getBoundingClientRect();
+
+        states.forEach((s) => {
+          const r = s.el.getBoundingClientRect();
+          s.cx = r.left + r.width / 2;
+          s.cy = r.top + r.height / 2;
+          s.uLeft = r.left - navRect.left;
+          s.uWidth = r.width;
+        });
+      }
+
+      function updateActive() {
+        activeIndex = -1;
+        let nearest = Infinity;
+
+        for (let i = 0; i < states.length; i++) {
+          const s = states[i];
+          s.dx = mouse.x - s.cx;
+          s.dy = mouse.y - s.cy;
+          s.dist = Math.sqrt(s.dx * s.dx + s.dy * s.dy);
+
+          if (s.dist < RADIUS && s.dist < nearest) {
+            nearest = s.dist;
+            activeIndex = i;
+          }
+        }
+      }
+
+      function step(now) {
+        const dt = Math.min((now - lastTime) / 16.6667, 2.5);
+        lastTime = now;
+
+        updateActive();
+
+        const labelDamp = Math.pow(LABEL_DAMPING, dt);
+
+        for (let i = 0; i < states.length; i++) {
+          const s = states[i];
+          let tx = 0;
+          let ty = 0;
+
+          if (s.dist < RADIUS) {
+            const falloff = 1 - s.dist / RADIUS;
+            tx = clamp(s.dx * falloff * PULL_STRENGTH, -MAX_PULL, MAX_PULL);
+            ty = clamp(s.dy * falloff * PULL_STRENGTH, -MAX_PULL, MAX_PULL);
+          }
+
+          s.vx = (s.vx + (tx - s.x) * LABEL_STIFFNESS * dt) * labelDamp;
+          s.vy = (s.vy + (ty - s.y) * LABEL_STIFFNESS * dt) * labelDamp;
+
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+
+          if (s.x > MAX_PULL) {
+            s.x = MAX_PULL;
+            if (s.vx > 0) s.vx = 0;
+          } else if (s.x < -MAX_PULL) {
+            s.x = -MAX_PULL;
+            if (s.vx < 0) s.vx = 0;
+          }
+
+          if (s.y > MAX_PULL) {
+            s.y = MAX_PULL;
+            if (s.vy > 0) s.vy = 0;
+          } else if (s.y < -MAX_PULL) {
+            s.y = -MAX_PULL;
+            if (s.vy < 0) s.vy = 0;
+          }
+
+          s.label.style.transform =
+            `translate3d(${s.x.toFixed(2)}px, ${s.y.toFixed(2)}px, 0)`;
+        }
+
+        const targetLeft = activeIndex >= 0 ? states[activeIndex].uLeft : uLeft;
+        const targetScale = activeIndex >= 0 ? states[activeIndex].uWidth : 0;
+        const underlineDamp = Math.pow(UNDERLINE_DAMPING, dt);
+
+        uLeftV = (uLeftV + (targetLeft - uLeft) * UNDERLINE_STIFFNESS * dt) * underlineDamp;
+        uScaleV = (uScaleV + (targetScale - uScale) * UNDERLINE_STIFFNESS * dt) * underlineDamp;
+
+        uLeft += uLeftV * dt;
+        uScale = Math.max(0, uScale + uScaleV * dt);
+
+        underline.style.transform =
+          `translate3d(${uLeft.toFixed(2)}px, 0, 0) scaleX(${uScale.toFixed(2)})`;
+
+        const nextUnderlineVisible = activeIndex >= 0;
+        if (nextUnderlineVisible !== underlineVisible) {
+          underline.style.opacity = nextUnderlineVisible ? "1" : "0";
+          underlineVisible = nextUnderlineVisible;
+        }
+
+        if (activeIndex >= 0) {
+          orbitAngle += ORBIT_SPEED * dt;
+
+          const active = states[activeIndex];
+          const tx = active.cx + Math.cos(orbitAngle) * ORBIT_RADIUS;
+          const ty = active.cy + Math.sin(orbitAngle) * ORBIT_RADIUS;
+
+          if (!dotActive) {
+            dotX = tx;
+            dotY = ty;
+            dotVx = 0;
+            dotVy = 0;
+            dotActive = true;
+          }
+
+          const dotDamp = Math.pow(DOT_DAMPING, dt);
+          dotVx = (dotVx + (tx - dotX) * DOT_STIFFNESS * dt) * dotDamp;
+          dotVy = (dotVy + (ty - dotY) * DOT_STIFFNESS * dt) * dotDamp;
+
+          dotX += dotVx * dt;
+          dotY += dotVy * dt;
+
+          satellite.style.opacity = "0.9";
+        } else {
+          dotActive = false;
+          satellite.style.opacity = "0";
+        }
+
+        satellite.style.transform =
+          `translate3d(${dotX.toFixed(2)}px, ${dotY.toFixed(2)}px, 0)`;
+
+        rafId = requestAnimationFrame(step);
+      }
+
+      function canAnimate() {
+        return finePointer.matches && !reducedMotion.matches;
+      }
+
+      function start() {
+        if (!canAnimate()) {
+          stop();
+          return;
+        }
+
+        body.classList.add("motion-enhanced");
+        cacheRects();
+        lastTime = performance.now();
+
+        if (rafId === null) {
+          rafId = requestAnimationFrame(step);
+        }
+      }
+
+      function stop() {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+
+        body.classList.remove("motion-enhanced");
+
+        states.forEach((s) => {
+          s.x = 0;
+          s.y = 0;
+          s.vx = 0;
+          s.vy = 0;
+          s.label.style.transform = "translate3d(0, 0, 0)";
+        });
+
+        underline.style.opacity = "0";
+        underline.style.transform = "translate3d(0, 0, 0) scaleX(0)";
+        underlineVisible = false;
+
+        satellite.style.opacity = "0";
+        dotActive = false;
+      }
+
+      window.addEventListener(
+        "pointermove",
+        (event) => {
+          mouse.x = event.clientX;
+          mouse.y = event.clientY;
+        },
+        { passive: true }
+      );
+
+      document.addEventListener(
+        "pointerleave",
+        (event) => {
+          if (!event.relatedTarget) {
+            mouse.x = -9999;
+            mouse.y = -9999;
+          }
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("blur", () => {
+        mouse.x = -9999;
+        mouse.y = -9999;
+      });
+
+      let resizeTimer;
+      window.addEventListener(
+        "resize",
+        () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(cacheRects, 80);
+        },
+        { passive: true }
+      );
+
+      if ("ResizeObserver" in window) {
+        const ro = new ResizeObserver(() => cacheRects());
+        ro.observe(nav);
+      }
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(cacheRects);
+      }
+
+      window.addEventListener("load", () => {
+        cacheRects();
+        setTimeout(cacheRects, 950);
+      });
+
+      const onMediaChange = start;
+      if (reducedMotion.addEventListener) {
+        reducedMotion.addEventListener("change", onMediaChange);
+        finePointer.addEventListener("change", onMediaChange);
+      } else {
+        reducedMotion.addListener(onMediaChange);
+        finePointer.addListener(onMediaChange);
+      }
+
+      // Demo-only: keep placeholder links from jumping.
+      links.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          if (link.getAttribute("href") === "#") event.preventDefault();
+        });
+      });
+
+      start();
+    })();
+  </script>
+</body>
+</html>

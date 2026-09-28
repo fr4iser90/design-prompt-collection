@@ -1,0 +1,26 @@
+id: cold-chain-logistics
+title: "Cold Chain Logistics"
+category: landing-pages
+tags:
+  - logistics
+  - cold-chain
+  - utility
+  - warning
+  - infrastructure
+  - monospace
+  - stencil
+status: polished
+summary: "A utility landing page for 'FrostLine', a temperature-sensitive logistics provider, using frost patterns, warning labels, and industrial stencil typography."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

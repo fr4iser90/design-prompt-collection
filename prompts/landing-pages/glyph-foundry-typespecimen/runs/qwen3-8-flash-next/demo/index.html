@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glyph — Variable Type Specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@100..900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ffffff;
+    --ink:#000000;
+    --marking:#ff5722;
+    --hairline:#e0e0e0;
+    --hairline-soft:#f0f0f0;
+    --font-display:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --font-ui:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --grid:88px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{background:var(--paper);-webkit-text-size-adjust:100%;}
+  body{
+    font-family:var(--font-ui);
+    color:var(--ink);
+    background:var(--paper);
+    overflow-x:hidden;
+    cursor:default;
+  }
+  ::selection{background:var(--marking);color:#fff;}
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- Atmosphere: hairline grid ---------- */
+  .grid-bg{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right,var(--hairline) 1px,transparent 1px),
+      linear-gradient(to bottom,var(--hairline) 1px,transparent 1px);
+    background-size:var(--grid) var(--grid);
+    background-position:0 0;
+  }
+  .grid-bg::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(to right,var(--hairline-soft) 1px,transparent 1px),
+      linear-gradient(to bottom,var(--hairline-soft) 1px,transparent 1px);
+    background-size:calc(var(--grid)/4) calc(var(--grid)/4);
+    opacity:.6;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%,transparent 60%,rgba(0,0,0,.035) 100%);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:relative;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;flex-wrap:wrap;
+    padding:.85rem clamp(1rem,3vw,2.5rem);
+    border-bottom:1px solid var(--hairline);
+    font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    background:rgba(255,255,255,.72);
+    backdrop-filter:blur(2px);
+  }
+  .brand{display:flex;align-items:baseline;gap:.55rem;font-weight:700;}
+  .brand .mark{
+    font-family:var(--font-display);font-weight:900;
+    font-size:1.15rem;letter-spacing:-.02em;text-transform:none;
+  }
+  .brand .tag{color:var(--ink);opacity:.55;font-weight:400;}
+  .topbar .meta{display:flex;gap:1.4rem;flex-wrap:wrap;opacity:.7;}
+  .topbar .meta b{color:var(--marking);font-weight:700;}
+
+  /* ---------- Stage / Hero ---------- */
+  .stage{
+    position:relative;z-index:2;
+    min-height:calc(100svh - 45px);
+    display:flex;flex-direction:column;
+    padding:clamp(1.5rem,4vw,3.5rem) clamp(1rem,3vw,2.5rem) 200px;
+  }
+  .stage-top{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:1rem;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+    opacity:.6;padding-bottom:1.5rem;
+  }
+  .stage-top .col{max-width:26ch;line-height:1.7;}
+  .stage-top .col.right{text-align:right;}
+
+  .hero{flex:1;display:flex;align-items:center;}
+  .hero-word{
+    position:relative;
+    width:100%;
+    font-family:var(--font-display);
+    font-weight:900;
+    font-size:clamp(3.2rem,20vw,17rem);
+    line-height:.82;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    caret-color:var(--marking);
+    outline:none;
+    padding:0;
+    border:none;
+    background:transparent;
+    -webkit-user-select:text;user-select:text;
+    text-transform:uppercase;
+    word-break:break-word;
+    transform-origin:left center;
+    will-change:font-variation-settings,transform;
+  }
+  .hero-word::before{
+    content:attr(data-text);
+    position:absolute;left:0;top:0;
+    color:var(--marking);opacity:0;
+    pointer-events:none;
+    transform:translate(0,0);
+    transition:none;
+  }
+  .hero-word::after{
+    content:"";
+    position:absolute;left:0;bottom:.02em;
+    width:100%;height:2px;background:var(--marking);
+    transform:scaleX(0);transform-origin:left center;
+    transition:transform .2s cubic-bezier(.2,.7,.2,1);
+  }
+  .hero-word:focus::after{transform:scaleX(1);}
+  .hero-word:focus{color:var(--ink);}
+  .hero-word:focus::before{
+    animation:stamp .16s cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes stamp{
+    0%{opacity:.9;transform:scale(1.1);}
+    100%{opacity:0;transform:scale(1);}
+  }
+
+  .hero-foot{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:1.5rem;flex-wrap:wrap;
+    padding-top:1.5rem;border-top:1px solid var(--hairline);
+    font-size:.72rem;letter-spacing:.1em;
+  }
+  .hero-foot .hint{max-width:40ch;line-height:1.7;opacity:.65;text-transform:uppercase;}
+  .hero-foot .hint b{color:var(--marking);}
+  .hero-foot .axis-read{
+    display:flex;gap:1.6rem;text-transform:uppercase;opacity:.85;
+  }
+  .hero-foot .axis-read span{display:flex;flex-direction:column;gap:.2rem;}
+  .hero-foot .axis-read .k{opacity:.5;font-size:.62rem;letter-spacing:.18em;}
+  .hero-foot .axis-read .v{font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:0;}
+
+  /* ---------- Sections ---------- */
+  .section{
+    position:relative;z-index:2;
+    padding:clamp(3rem,7vw,6rem) clamp(1rem,3vw,2.5rem) 2rem;
+    border-top:1px solid var(--hairline);
+  }
+  .sec-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    gap:1rem;flex-wrap:wrap;
+    padding-bottom:2rem;margin-bottom:2.5rem;
+  }
+  .sec-num{
+    font-family:var(--font-display);font-weight:900;
+    font-size:clamp(2rem,5vw,3.4rem);line-height:1;
+    color:var(--ink);
+  }
+  .sec-title{
+    font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+    opacity:.6;
+  }
+  .sec-rule{flex:1;height:1px;background:var(--hairline);min-width:40px;}
+
+  /* Glyph grid */
+  .glyph-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    border-left:1px solid var(--hairline);
+    border-top:1px solid var(--hairline);
+  }
+  .glyph{
+    position:relative;
+    aspect-ratio:1/1;
+    display:flex;align-items:center;justify-content:center;
+    border-right:1px solid var(--hairline);
+    border-bottom:1px solid var(--hairline);
+    font-family:var(--font-display);
+    font-size:clamp(2.4rem,5vw,3.6rem);
+    line-height:1;
+    color:var(--ink);
+    transition:background .12s ease,color .12s ease;
+    cursor:crosshair;
+    overflow:hidden;
+  }
+  .glyph .idx{
+    position:absolute;top:.4rem;left:.5rem;
+    font-family:var(--font-ui);font-size:.58rem;letter-spacing:.1em;
+    opacity:.4;
+  }
+  .glyph .code{
+    position:absolute;bottom:.4rem;right:.5rem;
+    font-family:var(--font-ui);font-size:.58rem;letter-spacing:.05em;
+    opacity:0;color:var(--marking);transition:opacity .12s ease;
+  }
+  .glyph:hover{background:var(--ink);color:var(--paper);}
+  .glyph:hover .idx{opacity:.5;color:var(--paper);}
+  .glyph:hover .code{opacity:1;}
+
+  /* Weights */
+  .weights{display:flex;flex-direction:column;}
+  .weight-row{
+    display:grid;grid-template-columns:9rem 1fr;gap:1.5rem;align-items:baseline;
+    padding:1.1rem 0;border-bottom:1px solid var(--hairline);
+    transition:padding-left .15s ease;
+  }
+  .weight-row:hover{padding-left:.6rem;}
+  .weight-row:hover .w-name{color:var(--marking);}
+  .w-name{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;opacity:.7;transition:color .12s ease;}
+  .w-name b{color:var(--marking);font-weight:700;}
+  .w-sample{
+    font-family:var(--font-display);
+    font-size:clamp(1.4rem,4.2vw,2.6rem);
+    line-height:1;letter-spacing:-.01em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  /* Paragraphs */
+  .paragraphs{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:clamp(2rem,4vw,4rem);
+  }
+  .para{border-top:2px solid var(--ink);padding-top:1.2rem;}
+  .para h3{
+    font-family:var(--font-ui);font-size:.68rem;letter-spacing:.16em;
+    text-transform:uppercase;opacity:.6;margin-bottom:.9rem;font-weight:400;
+  }
+  .para p{
+    font-family:var(--font-display);
+    font-size:clamp(1rem,1.4vw,1.15rem);
+    line-height:1.5;letter-spacing:-.005em;
+    margin-bottom:1.4rem;
+  }
+  .para .num{
+    font-family:var(--font-display);font-weight:900;
+    font-size:clamp(3rem,7vw,5rem);line-height:.9;letter-spacing:-.03em;
+  }
+
+  /* ---------- Control panel ---------- */
+  .controls{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    background:var(--paper);
+    border-top:2px solid var(--ink);
+    padding:.7rem clamp(1rem,3vw,2.5rem) .9rem;
+    display:flex;align-items:center;gap:clamp(1rem,3vw,2.5rem);flex-wrap:wrap;
+    box-shadow:0 -1px 0 var(--hairline);
+  }
+  .ctrl-title{
+    font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+    display:flex;align-items:center;gap:.5rem;white-space:nowrap;
+  }
+  .ctrl-title .dot{width:8px;height:8px;background:var(--marking);display:inline-block;}
+  .sliders{display:flex;gap:clamp(1.2rem,3vw,2.6rem);flex:1;flex-wrap:wrap;min-width:0;}
+  .ctrl{display:flex;flex-direction:column;gap:.4rem;flex:1;min-width:150px;}
+  .ctrl-head{display:flex;justify-content:space-between;align-items:baseline;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;}
+  .ctrl-head .name{opacity:.55;}
+  .ctrl-head .val{font-family:var(--font-display);font-weight:700;font-size:.85rem;letter-spacing:0;color:var(--marking);}
+  .ctrl-head .val::before{content:"";display:inline-block;width:6px;height:6px;background:var(--marking);margin-right:.35rem;vertical-align:middle;}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:2px;background:var(--ink);cursor:pointer;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:16px;height:16px;background:var(--paper);
+    border:2px solid var(--marking);border-radius:0;
+    transition:transform .1s ease;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
+  input[type=range]:active::-webkit-slider-thumb{background:var(--marking);}
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;background:var(--paper);
+    border:2px solid var(--marking);border-radius:0;
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--marking);outline-offset:4px;}
+
+  .ctrl-actions{display:flex;gap:.5rem;}
+  .btn{
+    border:2px solid var(--ink);
+    padding:.5rem .8rem;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;
+    transition:border-color .12s ease,color .12s ease,background .12s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--marking);color:var(--marking);}
+  .btn:active{background:var(--marking);color:#fff;border-color:var(--marking);}
+  .btn.primary{background:var(--ink);color:#fff;}
+  .btn.primary:hover{background:var(--marking);border-color:var(--marking);}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    position:relative;z-index:2;
+    padding:clamp(3rem,7vw,6rem) clamp(1rem,3vw,2.5rem) 220px;
+    border-top:1px solid var(--hairline);
+  }
+  .footer-word{
+    font-family:var(--font-display);font-weight:900;
+    font-size:clamp(4rem,26vw,22rem);line-height:.8;letter-spacing:-.03em;
+    color:var(--ink);
+    display:block;
+  }
+  .footer-meta{
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;
+    margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--hairline);
+    font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;opacity:.7;
+  }
+  .footer-meta a:hover{color:var(--marking);}
+  .footer-meta .links{display:flex;gap:1.5rem;flex-wrap:wrap;}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:720px){
+    .stage{min-height:auto;padding-bottom:360px;}
+    .stage-top{flex-direction:column;gap:.6rem;}
+    .stage-top .col.right{text-align:left;}
+    .hero-foot{flex-direction:column;align-items:flex-start;}
+    .weight-row{grid-template-columns:1fr;gap:.3rem;}
+    .controls{flex-direction:column;align-items:stretch;gap:.8rem;}
+    .ctrl-title{justify-content:space-between;}
+    .ctrl-actions{justify-content:flex-end;}
+    .footer{padding-bottom:380px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important;}
+    .reveal{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">Glyph</span>
+      <span class="tag">Variable Type Foundry</span>
+    </div>
+    <div class="meta">
+      <span>Release <b>2.0</b></span>
+      <span>Axes <b>3</b></span>
+      <span>Styles <b>∞</b></span>
+      <span>Format <b>WOFF2</b></span>
+    </div>
+  </header>
+
+  <!-- STAGE -->
+  <main class="stage">
+    <div class="stage-top">
+      <div class="col">A grotesque built for screen and print. Edit the specimen below — the letterform is yours.</div>
+      <div class="col right">Neutrality as a<br>design principle.</div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-word" id="heroWord" contenteditable="true" spellcheck="false"
+           data-text="GLYPH" role="textbox" aria-label="Editable specimen text">GLYPH</div>
+    </div>
+
+    <div class="hero-foot">
+      <div class="hint">Type to set the specimen. Drag the axes to reshape the letterform. <b>Click a glyph</b> below to copy its code.</div>
+      <div class="axis-read">
+        <span><span class="k">Weight</span><span class="v" id="readW">900</span></span>
+        <span><span class="k">Width</span><span class="v" id="readWd">100%</span></span>
+        <span><span class="k">Slant</span><span class="v" id="readSl">0°</span></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- GLYPHS -->
+  <section class="section" id="glyphs">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-num">01</div>
+        <div class="sec-title">Character Set — Live</div>
+      </div>
+      <div class="sec-rule"></div>
+      <div class="sec-title">Click to copy codepoint</div>
+    </div>
+    <div class="glyph-grid reveal" id="glyphGrid"></div>
+  </section>
+
+  <!-- WEIGHTS -->
+  <section class="section" id="weights">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-num">02</div>
+        <div class="sec-title">Weight Range — 100 to 900</div>
+      </div>
+      <div class="sec-rule"></div>
+      <div class="sec-title">Continuous interpolation</div>
+    </div>
+    <div class="weights reveal" id="weightList"></div>
+  </section>
+
+  <!-- PARAGRAPHS -->
+  <section class="section" id="paragraphs">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-num">03</div>
+        <div class="sec-title">Text &amp; Figures</div>
+      </div>
+      <div class="sec-rule"></div>
+      <div class="sec-title">Optical sizes tested at 11pt</div>
+    </div>
+    <div class="paragraphs reveal">
+      <div class="para">
+        <h3>Body Copy</h3>
+        <p>Glyph was drawn to disappear. Its counters stay open at small sizes while its terminals hold crisp at display scale — a grotesque that never calls attention to itself, only to the words it carries.</p>
+        <p>Every axis is continuous. Weight, width and slant move together or apart, giving a single file the reach of a full family without a single extra byte of decoration.</p>
+      </div>
+      <div class="para">
+        <h3>Figures &amp; Symbols</h3>
+        <div class="num">0123456789</div>
+        <p style="margin-top:1rem">Tabular figures align in columns; proportional figures breathe in prose. Currency, math and punctuation are drawn to match the rhythm of the text around them.</p>
+        <p style="opacity:.6">Aa Bb Cc Dd Ee Ff Gg — the alphabet, honest and unadorned.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span class="footer-word" id="footerWord">GLYPH</span>
+    <div class="footer-meta">
+      <span>© 2024 Glyph Foundry — Variable Grotesque</span>
+      <div class="links">
+        <a href="#glyphs">Specimen</a>
+        <a href="#weights">Weights</a>
+        <a href="#">License</a>
+        <a href="#">Purchase</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CONTROLS -->
+  <div class="controls" role="group" aria-label="Type axis controls">
+    <div class="ctrl-title"><span class="dot"></span> Type Axes</div>
+    <div class="sliders">
+      <div class="ctrl">
+        <div class="ctrl-head"><span class="name">Weight</span><span class="val" id="valW">900</span></div>
+        <input type="range" id="slW" min="100" max="900" step="1" value="900" aria-label="Weight axis">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><span class="name">Width</span><span class="val" id="valWd">100%</span></div>
+        <input type="range" id="slWd" min="75" max="125" step="1" value="100" aria-label="Width axis">
+      </div>
+      <div class="ctrl">
+        <div class="ctrl-head"><span class="name">Slant</span><span class="val" id="valSl">0°</span></div>
+        <input type="range" id="slSl" min="0" max="12" step="0.5" value="0" aria-label="Slant axis">
+      </div>
+    </div>
+    <div class="ctrl-actions">
+      <button class="btn" id="btnReset">Reset</button>
+      <button class="btn primary" id="btnCopy">Copy CSS</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var state = { w:900, wd:100, sl:0 };
+  var defaults = { w:900, wd:100, sl:0 };
+
+  var slW  = document.getElementById('slW');
+  var slWd = document.getElementById('slWd');
+  var slSl = document.getElementById('slSl');
+  var valW  = document.getElementById('valW');
+  var valWd = document.getElementById('valWd');
+  var valSl = document.getElementById('valSl');
+  var readW  = document.getElementById('readW');
+  var readWd = document.getElementById('readWd');
+  var readSl = document.getElementById('readSl');
+  var hero = document.getElementById('heroWord');
+
+  function fvs(){
+    return '"wght" '+state.w+', "wdth" '+state.wd+', "slnt" '+(-state.sl);
+  }
+
+  function apply(){
+    var v = fvs();
+    hero.style.fontVariationSettings = v;
+    document.getElementById('footerWord').style.fontVariationSettings = v;
+    // weight list reflects current width/slant but keeps its own weight
+    document.querySelectorAll('.w-sample').forEach(function(el){
+      el.style.fontVariationSettings = '"wght" '+el.dataset.w+', "wdth" '+state.wd+', "slnt" '+(-state.sl);
+    });
+    document.querySelectorAll('.para p, .para .num').forEach(function(el){
+      el.style.fontVariationSettings = v;
+    });
+    document.querySelectorAll('.glyph').forEach(function(el){
+      el.style.fontVariationSettings = v;
+    });
+    valW.textContent  = state.w;
+    valWd.textContent = state.wd + '%';
+    valSl.textContent = state.sl + '°';
+    readW.textContent  = state.w;
+    readWd.textContent = state.wd + '%';
+    readSl.textContent = state.sl + '°';
+  }
+
+  function bindSlider(input, key, fmt){
+    input.addEventListener('input', function(){
+      state[key] = parseFloat(input.value);
+      apply();
+    });
+  }
+  bindSlider(slW,'w'); bindSlider(slWd,'wd'); bindSlider(slSl,'sl');
+
+  document.getElementById('btnReset').addEventListener('click', function(){
+    state.w=defaults.w; state.wd=defaults.wd; state.sl=defaults.sl;
+    slW.value=state.w; slWd.value=state.wd; slSl.value=state.sl;
+    hero.textContent='GLYPH';
+    apply();
+  });
+
+  document.getElementById('btnCopy').addEventListener('click', function(){
+    var css = "font-variation-settings: "+fvs()+";";
+    var done = function(){
+      var b=document.getElementById('btnCopy'); var t=b.textContent;
+      b.textContent='Copied ✓';
+      setTimeout(function(){b.textContent=t;},1200);
+    };
+    if(navigator.clipboard){ navigator.clipboard.writeText(css).then(done).catch(done); }
+    else { done(); }
+  });
+
+  // Hero editing
+  hero.addEventListener('input', function(){
+    hero.dataset.text = hero.textContent || ' ';
+    if(!hero.textContent.trim()){ hero.textContent='GLYPH'; }
+  });
+  hero.addEventListener('paste', function(e){
+    e.preventDefault();
+    var t=(e.clipboardData||window.clipboardData).getData('text');
+    document.execCommand('insertText', false, t.replace(/\n/g,' '));
+  });
+  hero.addEventListener('keydown', function(e){
+    if(e.key==='Enter'){ e.preventDefault(); hero.blur(); }
+  });
+
+  // Build glyph grid
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&@#%$?!*+/—";
+  var grid = document.getElementById('glyphGrid');
+  chars.split('').forEach(function(c,i){
+    var cell=document.createElement('div');
+    cell.className='glyph';
+    cell.dataset.ch=c;
+    var idx=document.createElement('span'); idx.className='idx';
+    idx.textContent=String(i+1).padStart(2,'0');
+    var code=document.createElement('span'); code.className='code';
+    code.textContent='U+'+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0');
+    cell.appendChild(idx);
+    cell.appendChild(document.createTextNode(c));
+    cell.appendChild(code);
+    cell.addEventListener('click', function(){
+      var cp='U+'+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0');
+      if(navigator.clipboard){ navigator.clipboard.writeText(c); }
+      var prev=code.textContent; code.textContent='Copied';
+      setTimeout(function(){code.textContent=prev;},900);
+    });
+    grid.appendChild(cell);
+  });
+
+  // Build weight list
+  var weights=[
+    [100,'Thin'],[200,'ExtraLight'],[300,'Light'],[400,'Regular'],
+    [500,'Medium'],[600,'SemiBold'],[700,'Bold'],[800,'ExtraBold'],[900,'Black']
+  ];
+  var wl=document.getElementById('weightList');
+  weights.forEach(function(pair){
+    var row=document.createElement('div'); row.className='weight-row';
+    var name=document.createElement('div'); name.className='w-name';
+    name.innerHTML='<b>'+pair[0]+'</b> · '+pair[1];
+    var s=document.createElement('div'); s.className='w-sample'; s.dataset.w=pair[0];
+    s.textContent='Handgloves';
+    row.appendChild(name); row.appendChild(s);
+    wl.appendChild(row);
+  });
+
+  apply();
+
+  // Reveal on scroll
+  if(reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');});
+  } else {
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    },{threshold:0.12});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  }
+
+  // Subtle parallax on the hairline grid
+  if(!reduce){
+    var bg=document.querySelector('.grid-bg');
+    var ticking=false;
+    window.addEventListener('scroll', function(){
+      if(ticking) return; ticking=true;
+      requestAnimationFrame(function(){
+        var y=window.scrollY;
+        bg.style.backgroundPositionY=(-y*0.04)+'px';
+        ticking=false;
+      });
+    },{passive:true});
+  }
+})();
+</script>
+</body>
+</html>

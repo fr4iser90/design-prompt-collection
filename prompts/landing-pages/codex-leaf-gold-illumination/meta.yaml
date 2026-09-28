@@ -1,0 +1,26 @@
+id: codex-leaf-gold-illumination
+title: "Codex Leaf Gold Illumination"
+category: landing-pages
+tags:
+  - illuminated-manuscript
+  - gold-leaf
+  - digital-archive
+  - historical-tech
+  - trust
+  - serif
+  - static
+status: polished
+summary: "A landing page for a digital manuscript archive, featuring gold-leaf drop caps, vellum textures, and static, dignified typography that evokes the permanence of handwritten records."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -7,14 +7,17 @@ tags:
   - light
   - trust
   - saas
-status: polished
+status: draft
 summary: "Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one clarity promise — no purple glow, no dashboard soup."
 preview: preview.svg
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
+default_run: null
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

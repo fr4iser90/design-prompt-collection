@@ -1,0 +1,26 @@
+id: structural-load-report
+title: "Structural Load Report"
+category: landing-pages
+tags:
+  - engineering
+  - warning
+  - infrastructure
+  - monospace
+  - stamps
+  - data
+  - utility
+status: polished
+summary: "A landing page for 'LoadSafe', a structural monitoring service, using blueprint grids, load-bearing warnings, and 'Approved' stamp aesthetics in a technical utility style."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COPPER &amp; OXIDE — Hammered Copper Pulse</title>
+<meta name="description" content="A living sheet of hammered copper that answers to invisible pressure — ripples with weight, friction, and a molten sheen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --copper:#B87333;
+    --copper-lo:#8B4513;
+    --copper-hi:#E08D3C;
+    --glint:#F4C430;
+    --crevice:#2C1A14;
+    --ink:#0a0503;
+    --ink-2:#160c07;
+    --line:rgba(244,196,48,.16);
+    --line-2:rgba(244,196,48,.32);
+    --text:#f4e6d2;
+    --muted:#c9a074;
+    --display:'Bebas Neue', Impact, 'Arial Narrow Bold', sans-serif;
+    --mono:'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--glint);color:var(--crevice);}
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---------- ambient background ---------- */
+  .ambient{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1100px 720px at 14% -8%, rgba(184,115,51,.20), transparent 58%),
+      radial-gradient(900px 640px at 104% 12%, rgba(244,196,48,.10), transparent 55%),
+      radial-gradient(1000px 900px at 50% 118%, rgba(139,69,19,.16), transparent 60%),
+      linear-gradient(180deg,#0a0503 0%,#140b06 46%,#0a0503 100%);
+  }
+  .ambient::after{
+    content:"";position:absolute;inset:-25%;
+    background:radial-gradient(420px 420px at 30% 40%, rgba(244,196,48,.06), transparent 70%);
+    animation:drift 22s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    from{transform:translate(-6%,-4%) scale(1);}
+    to{transform:translate(8%,6%) scale(1.15);}
+  }
+  .grain{
+    position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- fixed HUD ---------- */
+  .hud{position:fixed;inset:0;z-index:55;pointer-events:none;}
+  .hud .corner{position:absolute;width:16px;height:16px;border:1px solid var(--line-2);}
+  .hud .tl{top:14px;left:14px;border-right:0;border-bottom:0;}
+  .hud .tr{top:14px;right:14px;border-left:0;border-bottom:0;}
+  .hud .bl{bottom:14px;left:14px;border-right:0;border-top:0;}
+  .hud .br{bottom:14px;right:14px;border-left:0;border-top:0;}
+  .hud .tag{position:absolute;font-size:10px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;}
+  .hud .tag.t{top:18px;left:44px;}
+  .hud .tag.r{top:18px;right:44px;text-align:right;}
+  .hud .tag.b{bottom:18px;right:44px;text-align:right;}
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:20px clamp(20px,5vw,64px);
+    transition:background .4s ease,border-color .4s ease;
+    border-bottom:1px solid transparent;
+  }
+  .masthead.scrolled{background:rgba(10,5,3,.72);backdrop-filter:blur(6px);border-bottom-color:var(--line);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{width:26px;height:26px;flex:none;color:var(--glint);}
+  .brand .word{font-family:var(--display);font-size:22px;letter-spacing:.16em;line-height:1;color:var(--text);}
+  .brand .word b{color:var(--glint);font-weight:400;}
+  nav.links{display:flex;gap:clamp(14px,2.4vw,34px);align-items:center;}
+  nav.links a{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);position:relative;padding:4px 0;transition:color .3s;}
+  nav.links a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--glint);transition:width .35s cubic-bezier(.2,.7,.2,1);}
+  nav.links a:hover{color:var(--glint);}
+  nav.links a:hover::after{width:100%;}
+  .nav-toggle{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;z-index:10;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;}
+  .hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;cursor:crosshair;}
+  .hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      linear-gradient(90deg, rgba(10,5,3,.86) 0%, rgba(10,5,3,.5) 34%, rgba(10,5,3,0) 62%),
+      linear-gradient(0deg, rgba(10,5,3,.7) 0%, rgba(10,5,3,0) 40%);
+  }
+  .hero-inner{position:relative;z-index:2;padding:0 clamp(20px,5vw,64px) clamp(64px,10vh,120px);max-width:1200px;}
+  .eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--glint);margin-bottom:22px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--glint);box-shadow:0 0 12px var(--glint);animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.4;transform:scale(.8);}50%{opacity:1;transform:scale(1.25);}}
+  .hero-title{margin:0;font-family:var(--display);font-weight:400;line-height:.9;letter-spacing:.01em;text-transform:uppercase;}
+  .hero-title .l1{display:block;font-size:clamp(3.4rem,15vw,12rem);color:var(--text);text-shadow:0 2px 30px rgba(0,0,0,.5);}
+  .hero-title .l2{display:block;font-size:clamp(3.4rem,15vw,12rem);color:var(--glint);-webkit-text-stroke:1px rgba(244,196,48,.35);}
+  .hero-sub{margin:26px 0 0;max-width:52ch;font-size:clamp(.92rem,1.4vw,1.08rem);line-height:1.65;color:#e6d2b8;}
+  .hero-sub b{color:var(--glint);font-weight:700;}
+  .hero-meta{margin-top:34px;display:flex;flex-wrap:wrap;gap:14px;}
+  .chip{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:8px 12px;background:rgba(10,5,3,.35);}
+  .chip b{color:var(--glint);font-weight:700;}
+  .scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);}
+  .scroll-hint .bar{width:1px;height:34px;background:linear-gradient(var(--glint),transparent);position:relative;overflow:hidden;}
+  .scroll-hint .bar::after{content:"";position:absolute;top:-40%;left:0;width:100%;height:40%;background:var(--glint);animation:drop 1.8s cubic-bezier(.7,0,.3,1) infinite;}
+  @keyframes drop{0%{top:-40%;}60%,100%{top:120%;}}
+
+  /* ---------- generic section ---------- */
+  .section{position:relative;z-index:10;padding:clamp(72px,12vh,150px) clamp(20px,5vw,64px);}
+  .kicker{display:flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--glint);margin-bottom:26px;}
+  .kicker .num{font-family:var(--display);font-size:20px;color:var(--copper-hi);letter-spacing:.06em;}
+  .kicker .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line-2),transparent);}
+  .h-sec{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.92;letter-spacing:.01em;color:var(--text);margin:0;font-size:clamp(2.4rem,7vw,5.6rem);}
+  .h-sec em{font-style:normal;color:var(--glint);}
+
+  /* ---------- physics (sticky two column) ---------- */
+  .physics{max-width:1200px;margin:0 auto;}
+  .physics-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(30px,5vw,70px);align-items:start;}
+  .physics-sticky{position:sticky;top:100px;}
+  .physics-sticky .h-sec{margin-bottom:20px;}
+  .physics-sticky .lead{color:#d9c0a2;line-height:1.7;font-size:1rem;max-width:44ch;}
+  .physics-sticky .lead b{color:var(--glint);font-weight:700;}
+  .steps{display:flex;flex-direction:column;}
+  .step{border-top:1px solid var(--line);padding:30px 0;display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:start;}
+  .step:last-child{border-bottom:1px solid var(--line);}
+  .step .idx{font-family:var(--display);font-size:clamp(2.4rem,5vw,3.6rem);line-height:1;color:var(--copper);transition:color .4s;}
+  .step:hover .idx{color:var(--glint);}
+  .step h3{margin:0 0 8px;font-family:var(--display);font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:clamp(1.4rem,2.6vw,2rem);color:var(--text);}
+  .step p{margin:0;color:#c9a98a;line-height:1.66;font-size:.95rem;}
+  .step .tagline{margin-top:12px;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--glint);}
+
+  /* ---------- material ---------- */
+  .material{max-width:1200px;margin:0 auto;}
+  .mat-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(30px,5vw,70px);align-items:center;}
+  .mat-swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:34px;}
+  .swatch{border:1px solid var(--line);padding:16px;background:rgba(10,5,3,.4);transition:transform .35s cubic-bezier(.2,.7,.2,1),border-color .35s;}
+  .swatch:hover{transform:translateY(-4px);border-color:var(--line-2);}
+  .swatch .chipc{height:44px;border-radius:2px;margin-bottom:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -6px 12px rgba(0,0,0,.4);}
+  .swatch .name{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text);}
+  .swatch .hex{font-size:12px;color:var(--muted);margin-top:3px;}
+  .mat-copy p{color:#d3b896;line-height:1.75;font-size:1rem;margin:0 0 18px;}
+  .mat-copy p b{color:var(--glint);font-weight:700;}
+  .mat-copy .note{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);border-left:2px solid var(--glint);padding-left:14px;margin-top:26px;}
+
+  /* ---------- variants (scattered postcards) ---------- */
+  .variants{max-width:1200px;margin:0 auto;}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.6vw,30px);margin-top:40px;}
+  .card{position:relative;border:1px solid var(--line);background:linear-gradient(180deg,rgba(22,12,7,.9),rgba(10,5,3,.9));overflow:hidden;transition:transform .5s cubic-bezier(.2,.7,.2,1),box-shadow .5s,border-color .5s;}
+  .card:nth-child(1){transform:rotate(-1.4deg);}
+  .card:nth-child(3){transform:rotate(1.2deg);}
+  .card:hover{transform:rotate(0) translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.5);border-color:var(--line-2);}
+  .card .imgwrap{position:relative;aspect-ratio:4/3;overflow:hidden;}
+  .card .imgwrap img{width:100%;height:100%;object-fit:cover;filter:saturate(1.1) contrast(1.05);transform:scale(1.02);transition:transform 6s ease;}
+  .card:hover .imgwrap img{transform:scale(1.12);}
+  .card .imgwrap::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,5,3,.85),transparent 55%);}
+  .card .stamp{position:absolute;top:12px;left:12px;font-family:var(--display);font-size:14px;letter-spacing:.2em;color:var(--glint);border:1px solid var(--line-2);padding:3px 9px;background:rgba(10,5,3,.6);z-index:2;}
+  .card .body{padding:20px;}
+  .card h3{margin:0 0 4px;font-family:var(--display);font-weight:400;letter-spacing:.05em;text-transform:uppercase;font-size:1.7rem;color:var(--text);}
+  .card .sub{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--glint);margin-bottom:12px;}
+  .card p{margin:0;color:#c2a184;line-height:1.6;font-size:.9rem;}
+  .card .spec{margin-top:16px;display:flex;justify-content:space-between;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;}
+
+  /* ---------- process (stacked cards) ---------- */
+  .process{max-width:1100px;margin:0 auto;}
+  .stack{margin-top:40px;display:flex;flex-direction:column;gap:26px;}
+  .panel{position:sticky;border:1px solid var(--line);background:linear-gradient(180deg,#160c07,#0d0704);padding:clamp(28px,4vw,52px);box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .panel .p-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:18px;}
+  .panel .p-num{font-family:var(--display);font-size:clamp(3rem,7vw,5rem);line-height:.8;color:var(--copper);}
+  .panel .p-lab{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--glint);}
+  .panel h3{margin:0 0 14px;font-family:var(--display);font-weight:400;letter-spacing:.04em;text-transform:uppercase;font-size:clamp(1.8rem,4vw,3rem);color:var(--text);}
+  .panel p{margin:0;color:#c9a98a;line-height:1.7;font-size:1rem;max-width:64ch;}
+  .panel:nth-child(1){top:90px;}
+  .panel:nth-child(2){top:118px;}
+  .panel:nth-child(3){top:146px;}
+  .panel:nth-child(4){top:174px;}
+
+  /* ---------- specs ---------- */
+  .specs{max-width:1200px;margin:0 auto;}
+  .spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:40px;}
+  .spec{background:var(--ink-2);padding:28px 22px;transition:background .35s;}
+  .spec:hover{background:#1c100a;}
+  .spec .k{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);}
+  .spec .v{font-family:var(--display);font-size:clamp(2rem,4vw,3rem);line-height:1;color:var(--glint);margin:12px 0 4px;}
+  .spec .v small{font-size:1rem;color:var(--copper-hi);}
+  .spec .d{font-size:11px;color:#b08a6a;letter-spacing:.04em;}
+
+  /* ---------- footer ---------- */
+  footer{position:relative;z-index:10;border-top:1px solid var(--line);padding:clamp(60px,9vh,110px) clamp(20px,5vw,64px) 40px;background:linear-gradient(180deg,transparent,rgba(10,5,3,.6));}
+  .foot-top{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;justify-content:space-between;gap:40px;align-items:flex-end;}
+  .foot-brand{font-family:var(--display);font-size:clamp(3rem,10vw,8rem);line-height:.82;letter-spacing:.02em;text-transform:uppercase;color:var(--text);}
+  .foot-brand b{color:var(--glint);font-weight:400;}
+  .foot-meta{display:flex;flex-direction:column;gap:10px;min-width:240px;}
+  .foot-meta .row{display:flex;justify-content:space-between;gap:20px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:8px;}
+  .foot-meta .row b{color:var(--glint);font-weight:700;}
+  .foot-bottom{max-width:1200px;margin:56px auto 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);}
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .reveal.d1{transition-delay:.08s;}
+  .reveal.d2{transition-delay:.16s;}
+  .reveal.d3{transition-delay:.24s;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .physics-grid,.mat-grid{grid-template-columns:1fr;}
+    .physics-sticky{position:static;}
+    .cards{grid-template-columns:1fr;}
+    .card:nth-child(1),.card:nth-child(3){transform:none;}
+    .spec-grid{grid-template-columns:repeat(2,1fr);}
+    .panel{position:relative;top:auto!important;}
+  }
+  @media (max-width:720px){
+    nav.links{display:none;}
+    .nav-toggle{display:inline-flex;flex-direction:column;gap:4px;background:none;border:1px solid var(--line-2);padding:8px;}
+    .nav-toggle span{width:20px;height:2px;background:var(--glint);display:block;}
+    nav.links.open{display:flex;position:absolute;top:100%;right:16px;flex-direction:column;gap:14px;background:rgba(10,5,3,.95);border:1px solid var(--line-2);padding:20px 26px;}
+    .mat-swatches{grid-template-columns:repeat(2,1fr);}
+    .hud .tag.r,.hud .tag.b{display:none;}
+  }
+  @media (max-width:480px){
+    .spec-grid{grid-template-columns:1fr;}
+    .hero-meta{gap:10px;}
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+    .reveal{opacity:1;transform:none;}
+    .card:nth-child(1),.card:nth-child(3){transform:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- fixed HUD -->
+  <div class="hud" aria-hidden="true">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+    <span class="tag t">SPEC · COPPER-SHEET-01</span>
+    <span class="tag r">GL · VERTEX DISPLACE</span>
+    <span class="tag b">REV 04 · MMXXV</span>
+  </div>
+
+  <!-- masthead -->
+  <header class="masthead" id="masthead">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <path d="M12 2 L21 7 V17 L12 22 L3 17 V7 Z"/>
+        <path d="M12 2 V22 M3 7 L12 12 L21 7" opacity=".55"/>
+      </svg>
+      <span class="word">COPPER <b>&amp;</b> OXIDE</span>
+    </div>
+    <nav class="links" id="navlinks">
+      <a href="#physics">Physics</a>
+      <a href="#material">Material</a>
+      <a href="#variants">Variants</a>
+      <a href="#process">Process</a>
+      <a href="#specs">Specs</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <canvas class="hero-canvas" id="copper" aria-hidden="true"></canvas>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-inner">
+      <span class="eyebrow reveal in"><span class="dot"></span> Hammered · Solid-state · Viscous</span>
+      <h1 class="hero-title">
+        <span class="l1">COPPER</span>
+        <span class="l2">&amp; OXIDE</span>
+      </h1>
+      <p class="hero-sub reveal in d1">A living sheet of hammered copper that answers to <b>invisible pressure</b>. Press it, and the metal remembers — ripples that move like liquid but hold the weight of a solid. Not water. Not plastic. <b>Molten, then cooled.</b></p>
+      <div class="hero-meta reveal in d2">
+        <span class="chip">BASE · <b>#B87333</b></span>
+        <span class="chip">GLINT · <b>#F4C430</b></span>
+        <span class="chip">DAMPING · <b>0.970</b></span>
+        <span class="chip">PULSE · <b>5.0s</b></span>
+      </div>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span>Press to ripple</span><span class="bar"></span></div>
+  </section>
+
+  <!-- PHYSICS -->
+  <section class="section" id="physics">
+    <div class="physics">
+      <div class="kicker reveal"><span class="num">01</span> THE MECHANICS <span class="rule"></span></div>
+      <div class="physics-grid">
+        <div class="physics-sticky">
+          <h2 class="h-sec reveal">Heavy,<br><em>slow</em>, and<br>deliberate.</h2>
+          <p class="lead reveal d1">The copper never snaps back. Every disturbance is met with <b>solid-state friction</b> — a high-damping field that bleeds energy fast, so each ripple collapses into the hammered grain within seconds. This is metal with <b>mass</b>, not a shader toy.</p>
+        </div>
+        <div class="steps">
+          <div class="step reveal">
+            <div class="idx">01</div>
+            <div>
+              <h3>Idle Breathing</h3>
+              <p>At rest the sheet is never truly still. A sub-pixel sine wave rolls across the vertices — an almost imperceptible respiration that keeps the specular glints drifting along the dimples.</p>
+              <div class="tagline">Amplitude · 0.006 world units</div>
+            </div>
+          </div>
+          <div class="step reveal">
+            <div class="idx">02</div>
+            <div>
+              <h3>The Lagging Dent</h3>
+              <p>A pressure point trails the cursor with heavy inertia. It doesn't chase — it follows, sinking the surface behind your pointer like a thumb pressed into warm wax that cools too quickly to spring back.</p>
+              <div class="tagline">Dent lag · 0.11 / frame</div>
+            </div>
+          </div>
+          <div class="step reveal">
+            <div class="idx">03</div>
+            <div>
+              <h3>Radial Pulse</h3>
+              <p>Click, tap, or let the timed pulse fire every five seconds. A ring of displacement expands outward, carrying the hammered noise with it — stretching the grain at the crest, compressing it in the trough.</p>
+              <div class="tagline">Ring speed · 0.025 u/s</div>
+            </div>
+          </div>
+          <div class="step reveal">
+            <div class="idx">04</div>
+            <div>
+              <h3>Specular Flare</h3>
+              <p>Light is computed from the deformed normal every frame. The glint <b>flares sharp and gold</b> at the ripple's peak and dies to oxidized shadow in the trough — no bloom, no plastic sheen, just a hard metallic luster.</p>
+              <div class="tagline">Shininess · 140 · Sharp falloff</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MATERIAL -->
+  <section class="section" id="material">
+    <div class="material">
+      <div class="kicker reveal"><span class="num">02</span> THE MATERIAL <span class="rule"></span></div>
+      <div class="mat-grid">
+        <div>
+          <h2 class="h-sec reveal">Forged from<br>a single <em>shader</em>.</h2>
+          <div class="mat-swatches">
+            <div class="swatch reveal"><div class="chipc" style="background:#B87333"></div><div class="name">Copper Base</div><div class="hex">#B87333</div></div>
+            <div class="swatch reveal d1"><div class="chipc" style="background:#E08D3C"></div><div class="name">Bright Highlight</div><div class="hex">#E08D3C</div></div>
+            <div class="swatch reveal d2"><div class="chipc" style="background:#F4C430"></div><div class="name">Specular Glint</div><div class="hex">#F4C430</div></div>
+            <div class="swatch reveal d3"><div class="chipc" style="background:#2C1A14"></div><div class="name">Deep Crevice</div><div class="hex">#2C1A14</div></div>
+          </div>
+        </div>
+        <div class="mat-copy">
+          <p class="reveal">The hammered texture is generated procedurally — a domain-warped Voronoi cell field that reads as thousands of overlapping <b>hammer strikes</b>. It lives in the fragment shader as a normal perturbation, so it survives every deformation.</p>
+          <p class="reveal d1">Because detail is a normal map rather than geometry, the sheet stays lightweight. Vertex displacement handles the <b>macro ripples</b>; the fragment stage handles the <b>micro grain</b>. Together they deform as one continuous surface.</p>
+          <div class="note reveal d2">Detail via normal map · Macro via vertex displacement · Zero high-poly cost</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANTS -->
+  <section class="section" id="variants">
+    <div class="variants">
+      <div class="kicker reveal"><span class="num">03</span> THE FINISHES <span class="rule"></span></div>
+      <h2 class="h-sec reveal">Three states<br>of the same <em>metal</em>.</h2>
+      <div class="cards">
+        <article class="card reveal">
+          <div class="imgwrap"><span class="stamp">SPEC</span><img src="https://picsum.photos/seed/hammered-copper-sheet/800/600" alt="Hammered copper sheet under raking light"></div>
+          <div class="body">
+            <h3>Hammered</h3>
+            <div class="sub">The reference finish</div>
+            <p>Random radial dimples, high-contrast specular. The default — a hand-worked sheet that catches light in a thousand tiny facets.</p>
+            <div class="spec"><span>Grain · Voronoi</span><span>#B87333</span></div>
+          </div>
+        </article>
+        <article class="card reveal d1">
+          <div class="imgwrap"><span class="stamp">VAR · A</span><img src="https://picsum.photos/seed/patina-green-copper/800/600" alt="Patina green oxidized copper"></div>
+          <div class="body">
+            <h3>Patina</h3>
+            <div class="sub">Aged · oxidized</div>
+            <p>Copper turned green by years of weather. The glint dims to a muted sheen; the crevices deepen toward black-green shadow.</p>
+            <div class="spec"><span>Grain · Voronoi</span><span>#5C7A65</span></div>
+          </div>
+        </article>
+        <article class="card reveal d2">
+          <div class="imgwrap"><span class="stamp">VAR · B</span><img src="https://picsum.photos/seed/brushed-metal-grain/800/600" alt="Brushed metal linear grain"></div>
+          <div class="body">
+            <h3>Brushed</h3>
+            <div class="sub">Directional · grain-bound</div>
+            <p>Linear striations replace the dimples. Ripples no longer spread evenly — they follow the grain, elongating along the brush direction.</p>
+            <div class="spec"><span>Grain · Linear</span><span>#B87333</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section" id="process">
+    <div class="process">
+      <div class="kicker reveal"><span class="num">04</span> THE PIPELINE <span class="rule"></span></div>
+      <h2 class="h-sec reveal">How the sheet<br><em>remembers</em>.</h2>
+      <div class="stack">
+        <div class="panel reveal">
+          <div class="p-top"><span class="p-num">01</span><span class="p-lab">Displacement Field</span></div>
+          <h3>Accumulate the pressure</h3>
+          <p>A ring buffer of active ripples — each with a center, a birth time, and a strength — is passed to the vertex shader. A persistent dent tracks the pointer with lagged inertia. Height is summed from every source into a single scalar field.</p>
+        </div>
+        <div class="panel reveal">
+          <div class="p-top"><span class="p-num">02</span><span class="p-lab">Analytic Normals</span></div>
+          <h3>Rebuild the surface</h3>
+          <p>Instead of sampling a heightmap, the normal is derived analytically from the gradient of the displacement field. This keeps the hammered grain crisp even as the whole sheet bends, and costs nothing in geometry.</p>
+        </div>
+        <div class="panel reveal">
+          <div class="p-top"><span class="p-num">03</span><span class="p-lab">Copper BRDF</span></div>
+          <h3>Light the metal</h3>
+          <p>A Blinn–Phong pass tints the specular toward gold (#F4C430) and the diffuse toward copper (#B87333). Fresnel lifts the grazing edges; a hard exponent keeps the glint sharp — metallic, never bloomed.</p>
+        </div>
+        <div class="panel reveal">
+          <div class="p-top"><span class="p-num">04</span><span class="p-lab">Damping &amp; Decay</span></div>
+          <h3>Let it cool</h3>
+          <p>Every ripple fades on a Gaussian envelope over two to three seconds, and the pointer dent eases back toward zero. Energy leaves the system fast — the surface returns to hammered stillness, carrying only the memory of the touch.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPECS -->
+  <section class="section" id="specs">
+    <div class="specs">
+      <div class="kicker reveal"><span class="num">05</span> THE NUMBERS <span class="rule"></span></div>
+      <h2 class="h-sec reveal">Tuned for <em>weight</em>.</h2>
+      <div class="spec-grid">
+        <div class="spec reveal"><div class="k">Mesh</div><div class="v">256<small>²</small></div><div class="d">Displaced grid vertices</div></div>
+        <div class="spec reveal d1"><div class="k">Damping</div><div class="v">0.970</div><div class="d">Per-frame decay factor</div></div>
+        <div class="spec reveal d2"><div class="k">Pulse</div><div class="v">5.0<small>s</small></div><div class="d">Idle ripple interval</div></div>
+        <div class="spec reveal d3"><div class="k">Shininess</div><div class="v">140</div><div class="d">Specular exponent</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="foot-top">
+      <div class="foot-brand">COPPER<br><b>&amp; OXIDE</b></div>
+      <div class="foot-meta">
+        <div class="row"><span>Study</span><b>Hammered Pulse</b></div>
+        <div class="row"><span>Renderer</span><b>Raw WebGL2</b></div>
+        <div class="row"><span>Detail</span><b>Normal-mapped</b></div>
+        <div class="row"><span>Interaction</span><b>Pointer + Pulse</b></div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© MMXXV · COPPER &amp; OXIDE</span>
+      <span>GL · VERTEX DISPLACE · SPECULAR #F4C430</span>
+      <span>NO BLOOM · NO PLASTIC</span>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- nav ---------- */
+  var navToggle = document.getElementById('navToggle');
+  var navlinks = document.getElementById('navlinks');
+  if(navToggle){
+    navToggle.addEventListener('click', function(){ navlinks.classList.toggle('open'); });
+    navlinks.addEventListener('click', function(e){ if(e.target.tagName==='A') navlinks.classList.remove('open'); });
+  }
+  var mast = document.getElementById('masthead');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 40) mast.classList.add('scrolled'); else mast.classList.remove('scrolled');
+  }, {passive:true});
+
+  /* ---------- reveal ---------- */
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal:not(.in)').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- WebGL ---------- */
+  var canvas = document.getElementById('copper');
+  var gl = canvas.getContext('webgl2', {antialias:true, alpha:false, powerPreference:'high-performance'});
+  if(!gl){ canvas.style.background='linear-gradient(135deg,#B87333,#2C1A14)'; return; }
+
+  var vs = `#version 300 es
+  precision highp float;
+  layout(location=0) in vec2 aPos;
+  uniform float uTime;
+  uniform vec2 uDent;
+  uniform float uDentStrength;
+  uniform int uRippleCount;
+  uniform vec3 uRipples[12];
+  uniform float uRippleAmp;
+  uniform float uScale;
+  out vec2 vUv;
+  out vec3 vWorld;
+  out float vDisp;
+
+  float ripplesAt(vec2 p){
+    float h = 0.0;
+    for(int i=0;i<12;i++){
+      if(i>=uRippleCount) break;
+      vec3 r = uRipples[i];
+      float d = distance(p, r.xy);
+      float age = uTime - r.z;
+      float rad = age * 0.025;
+      float w = 0.11;
+      float env = exp(-pow((d-rad)/w,2.0));
+      float fade = exp(-age*0.55);
+      h += sin((d-rad)*150.0) * env * fade * r.b;
+    }
+    return h;
+  }
+  float dentAt(vec2 p){
+    float d = distance(p, uDent);
+    return uDentStrength * exp(-d*d*55.0);
+  }
+  float heightAt(vec2 p){
+    float breathe = sin(p.x*2.0 + uTime*0.5) * cos(p.y*2.0 - uTime*0.4) * 0.006;
+    return ripplesAt(p) + dentAt(p) + breathe;
+  }
+  void main(){
+    vUv = aPos*0.5 + 0.5;
+    float e = 0.002;
+    float h  = heightAt(aPos);
+    float hx = heightAt(aPos + vec2(e,0.0));
+    float hy = heightAt(aPos + vec2(0.0,e));
+    vec3 pos = vec3(aPos.x, aPos.y, h);
+    vWorld = vec3(aPos.x*uScale, aPos.y*uScale, h*uScale);
+    vDisp  = h;
+    gl_Position = vec4(pos.xy, 0.0, 1.0);
+  }`;
+
+  var fs = `#version 300 es
+  precision highp float;
+  in vec2 vUv;
+  in vec3 vWorld;
+  in float vDisp;
+  out vec4 frag;
+
+  uniform vec2 uResolution;
+  uniform float uTime;
+  uniform vec3 uEye;
+  uniform vec3 uLightDir;
+  uniform vec3 uLightDir2;
+  uniform float uScale;
+
+  vec3 hash33(vec3 p){
+    p = vec3(dot(p,vec3(127.1,311.7,74.7)),
+             dot(p,vec3(269.5,183.3,246.1)),
+             dot(p,vec3(113.5,271.9,124.6)));
+    return fract(sin(p)*43758.5453123);
+  }
+  float voronoi(vec2 p){
+    vec2 n = floor(p);
+    vec2 f = fract(p);
+    float md = 8.0;
+    for(int j=-1;j<=1;j++){
+      for(int i=-1;i<=1;i++){
+        vec2 g = vec2(float(i),float(j));
+        vec2 o = hash33(vec3(n+g,0.0)).xy;
+        vec2 r = g + o - f;
+        float d = dot(r,r);
+        md = min(md, d);
+      }
+    }
+    return sqrt(md);
+  }
+  float hammered(vec2 p){
+    float v = voronoi(p*10.0);
+    v = smoothstep(0.0,1.0,v);
+    float dimple = 1.0 - v;
+    dimple *= 0.75 + 0.25*sin(p.x*6.0 + p.y*4.0);
+    return dimple;
+  }
+  float noise2(vec2 p){
+    vec2 i = floor(p); vec2 f = fract(p);
+    vec2 u = f*f*(3.0-2.0*f);
+    float a = fract(sin(dot(i,vec2(127.1,311.7)))*43758.5453);
+    float b = fract(sin(dot(i+vec2(1.0,0.0),vec2(127.1,311.7)))*43758.5453);
+    float c = fract(sin(dot(i+vec2(0.0,1.0),vec2(127.1,311.7)))*43758.5453);
+    float d = fract(sin(dot(i+vec2(1.0,1.0),vec2(127.1,311.7)))*43758.5453);
+    return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+  }
+  float fbm(vec2 p){
+    float v=0.0, a=0.5;
+    for(int i=0;i<4;i++){ v += a*noise2(p); p = p*2.03 + 17.0; a*=0.5; }
+    return v;
+  }
+
+  void main(){
+    float aspect = uResolution.x / uResolution.y;
+    vec2 scr = vUv; scr.x *= aspect;
+
+    // hammered grain -> normal perturbation
+    float e = 1.0/700.0;
+    float hc = hammered(scr);
+    float hx = hammered(scr + vec2(e,0.0));
+    float hy = hammered(scr + vec2(0.0,e));
+    float strength = 0.9;
+    vec3 n = normalize(vec3(-(hx-hc)*strength, -(hy-hc)*strength, 1.0));
+
+    // ripple displacement gradient -> macro normal
+    float e2 = 1.0/500.0;
+    float dC = vDisp;
+    vec2 p = vec2(vUv.x, vUv.y);
+    float dX = vDisp; // approximate via screen-space derivative
+    float dY = vDisp;
+    // use fwidth for cheap gradient of displacement
+    float gx = dFdx(dC);
+    float gy = dFdy(dC);
+    n = normalize(n + vec3(gx, gy, 0.0)*1.4);
+
+    vec3 V = normalize(uEye - vWorld);
+    vec3 L1 = normalize(uLightDir);
+    vec3 L2 = normalize(uLightDir2);
+
+    float diff1 = max(dot(n,L1), 0.0);
+    float diff2 = max(dot(n,L2), 0.0);
+    float diff = diff1*0.9 + diff2*0.35;
+
+    vec3 H1 = normalize(L1+V);
+    vec3 H2 = normalize(L2+V);
+    float spec1 = pow(max(dot(n,H1),0.0), 140.0);
+    float spec2 = pow(max(dot(n,H2),0.0), 60.0);
+    float spec = spec1 + spec2*0.4;
+
+    vec3 base = vec3(0.7216,0.4510,0.2000);   // #B87333
+    vec3 hi   = vec3(0.8784,0.5529,0.2353);   // #E08D3C
+    vec3 crevice = vec3(0.1725,0.1020,0.0784);// #2C1A14
+    vec3 glint = vec3(0.9569,0.7686,0.1882);  // #F4C430
+
+    // mottle for realism
+    float mott = fbm(scr*3.0)*0.25 - 0.12;
+    vec3 albedo = mix(crevice, base, clamp(0.55 + hc*0.7 + mott, 0.0, 1.0));
+    albedo = mix(albedo, hi, clamp(hc*0.5, 0.0, 1.0));
+
+    // fresnel rim
+    float fres = pow(1.0 - max(dot(n,V),0.0), 3.0);
+
+    vec3 color = albedo * (0.22 + diff*0.95);
+    color += glint * spec * 1.5;
+    color += hi * fres * 0.35;
+    color += glint * clamp(vDisp*2.2, 0.0, 1.0) * 0.5; // crest flare
+
+    // vignette
+    float vig = smoothstep(1.25, 0.35, length(scr - vec2(aspect*0.5,0.5)));
+    color *= mix(0.55, 1.0, vig);
+
+    // tone
+    color = color/(color+vec3(1.0));
+    color = pow(color, vec3(1.0/1.15));
+
+    frag = vec4(color, 1.0);
+  }`;
+
+  function compile(type, src){
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s)); return null;
+    }
+    return s;
+  }
+  var vsh = compile(gl.VERTEX_SHADER, vs);
+  var fsh = compile(gl.FRAGMENT_SHADER, fs);
+  if(!vsh || !fsh){ return; }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, vsh); gl.attachShader(prog, fsh); gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(prog)); return; }
+  gl.useProgram(prog);
+
+  // geometry
+  var N = 256;
+  var verts = new Float32Array(N*N*2);
+  var idx = [];
+  for(var y=0;y<N;y++){
+    for(var x=0;x<N;x++){
+      var u = x/(N-1)*2-1, v = y/(N-1)*2-1;
+      verts[(y*N+x)*2]=u; verts[(y*N+x)*2+1]=v;
+    }
+  }
+  for(var yy=0;yy<N-1;yy++){
+    for(var xx=0;xx<N-1;xx++){
+      var a=yy*N+xx, b=yy*N+xx+1, c=(yy+1)*N+xx, d=(yy+1)*N+xx+1;
+      idx.push(a,b,c, b,d,c);
+    }
+  }
+  var vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  var vbo = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  var ibo = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(idx), gl.STATIC_DRAW);
+
+  var U = {
+    time: gl.getUniformLocation(prog,'uTime'),
+    dent: gl.getUniformLocation(prog,'uDent'),
+    dentStr: gl.getUniformLocation(prog,'uDentStrength'),
+    rcount: gl.getUniformLocation(prog,'uRippleCount'),
+    ripples: gl.getUniformLocation(prog,'uRipples[0]'),
+    amp: gl.getUniformLocation(prog,'uRippleAmp'),
+    scale: gl.getUniformLocation(prog,'uScale'),
+    res: gl.getUniformLocation(prog,'uResolution'),
+    eye: gl.getUniformLocation(prog,'uEye'),
+    l1: gl.getUniformLocation(prog,'uLightDir'),
+    l2: gl.getUniformLocation(prog,'uLightDir2')
+  };
+
+  var SCALE = 1.6;
+  gl.uniform1f(U.scale, SCALE);
+  gl.uniform3f(U.eye, 0.0, 0.0, 2.2);
+  gl.uniform3f(U.l1, 0.4, 0.6, 0.7);
+  gl.uniform3f(U.l2, -0.5, -0.3, 0.6);
+
+  function resize(){
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    var w = Math.floor(canvas.clientWidth*dpr);
+    var h = Math.floor(canvas.clientHeight*dpr);
+    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; }
+    gl.viewport(0,0,w,h);
+    gl.uniform2f(U.res, w, h);
+  }
+  window.addEventListener('resize', resize);
+
+  // interaction state
+  var MAXR = 12;
+  var ripples = [];
+  var dent = {x:0, y:0, tx:0, ty:0, s:0, ts:0};
+  var startTime = performance.now();
+
+  function toWorld(clientX, clientY){
+    var r = canvas.getBoundingClientRect();
+    var nx = ((clientX - r.left)/r.width)*2 - 1;
+    var ny = -(((clientY - r.top)/r.height)*2 - 1);
+    return [nx, ny];
+  }
+  function addRipple(x,y,strength){
+    ripples.push({x:x, y:y, t: (performance.now()-startTime)/1000, b:strength});
+    if(ripples.length>MAXR) ripples.shift();
+  }
+
+  canvas.addEventListener('pointermove', function(e){
+    var w = toWorld(e.clientX, e.clientY);
+    dent.tx = w[0]; dent.ty = w[1]; dent.ts = 0.16;
+  });
+  canvas.addEventListener('pointerleave', function(){ dent.ts = 0.0; });
+  canvas.addEventListener('pointerdown', function(e){
+    var w = toWorld(e.clientX, e.clientY);
+    dent.tx=w[0]; dent.ty=w[1]; dent.ts=0.28;
+    addRipple(w[0], w[1], 0.05);
+  });
+
+  // periodic pulse
+  var lastPulse = 0;
+  function maybePulse(t){
+    if(t - lastPulse > 5.0){
+      lastPulse = t;
+      var ang = Math.random()*Math.PI*2;
+      var rad = Math.random()*0.5;
+      addRipple(Math.cos(ang)*rad, Math.sin(ang)*rad, 0.045);
+    }
+  }
+
+  var raf;
+  function frame(){
+    resize();
+    var t = (performance.now()-startTime)/1000;
+    if(!reduce) maybePulse(t);
+
+    // lagged dent
+    dent.x += (dent.tx - dent.x)*0.11;
+    dent.y += (dent.ty - dent.y)*0.11;
+    dent.s += (dent.ts - dent.s)*0.08;
+
+    // cull old ripples
+    ripples = ripples.filter(function(r){ return (t - r.t) < 6.0; });
+
+    var arr = new Float32Array(MAXR*3);
+    for(var i=0;i<ripples.length;i++){
+      arr[i*3]=ripples[i].x; arr[i*3+1]=ripples[i].y; arr[i*3+2]=ripples[i].t;
+    }
+
+    gl.uniform1f(U.time, reduce ? 0.0 : t);
+    gl.uniform2f(U.dent, dent.x, dent.y);
+    gl.uniform1f(U.dentStr, dent.s);
+    gl.uniform1i(U.rcount, ripples.length);
+    gl.uniform3fv(U.ripples, arr);
+    gl.uniform1f(U.amp, 1.0);
+
+    gl.clearColor(0.04,0.02,0.01,1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_INT, 0);
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  if(reduce){
+    // render a single static frame
+    resize();
+    gl.uniform1f(U.time, 0.0);
+    gl.uniform2f(U.dent, 0, 0);
+    gl.uniform1f(U.dentStr, 0.0);
+    gl.uniform1i(U.rcount, 0);
+    gl.clearColor(0.04,0.02,0.01,1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawElements(gl.TRIANGLES, idx.length, gl.UNSIGNED_INT, 0);
+  } else {
+    frame();
+  }
+})();
+</script>
+</body>
+</html>

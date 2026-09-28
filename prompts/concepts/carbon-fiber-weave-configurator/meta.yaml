@@ -1,0 +1,26 @@
+id: carbon-fiber-weave-configurator
+title: "Carbon Fiber Weave Configurator"
+category: concepts
+tags:
+  - carbon-fiber
+  - composite
+  - configurator
+  - tech
+  - tactile
+  - weave
+  - industrial
+status: polished
+summary: "A product configurator where users change the layup of carbon fiber, with real-time texture shifts and directional light reflections indicating fiber orientation."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

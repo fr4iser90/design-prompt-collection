@@ -32,6 +32,7 @@ import {
   LANES,
 } from "./lib/catalog.mjs";
 import { waitForIdleSlot } from "./lib/slots.mjs";
+import { chatCompletions } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -207,51 +208,6 @@ function buildUserPrompt({
   return parts.filter((p) => p !== null).join("\n");
 }
 
-async function chatCompletions({
-  baseUrl,
-  apiKey,
-  model,
-  modelApi,
-  provider,
-  messages,
-  temperature,
-  jsonMode = true,
-}) {
-  const url = `${baseUrl}/chat/completions`;
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${apiKey}`,
-  };
-  if (provider === "openrouter") {
-    headers["HTTP-Referer"] = "https://github.com/local/design-prompt-collection";
-    headers["X-Title"] = "design-prompt-collection";
-  }
-
-  const body = {
-    model: modelApi || model,
-    temperature: temperature ?? 0.9,
-    messages,
-  };
-  if (jsonMode) body.response_format = { type: "json_object" };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-  });
-  const raw = await res.text();
-  if (!res.ok) {
-    const err = new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
-    err.status = res.status;
-    err.body = raw;
-    throw err;
-  }
-  const data = JSON.parse(raw);
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error(`Empty model content: ${raw.slice(0, 400)}`);
-  return content;
-}
-
 function normalizePayload(content) {
   let parsed = extractJson(content);
   if (!Array.isArray(parsed) && parsed && typeof parsed === "object") {
@@ -368,24 +324,30 @@ async function generateForCategory(cfg, args, catalog, category) {
   let content;
   try {
     await waitForIdleSlot(cfg, { need: 1, label: cfg.modelApi || cfg.model });
-    content = await chatCompletions({
+    const result = await chatCompletions({
       ...cfg,
       messages,
       temperature,
       jsonMode: true,
+      stream: false,
+      thinkingEnabled: Boolean(cfg.thinkingEnabled),
     });
+    content = result.content;
   } catch (err) {
     const maybeFormat =
       err.status === 400 &&
       /response_format|json_object|unsupported/i.test(err.body || err.message);
     if (!maybeFormat) throw err;
     console.warn("  json_object unsupported — retrying plain…");
-    content = await chatCompletions({
+    const result = await chatCompletions({
       ...cfg,
       messages,
       temperature,
       jsonMode: false,
+      stream: false,
+      thinkingEnabled: Boolean(cfg.thinkingEnabled),
     });
+    content = result.content;
   }
 
   const rawEntries = normalizePayload(content);

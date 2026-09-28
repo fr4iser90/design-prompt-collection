@@ -1,0 +1,27 @@
+id: bioluminescent-spore-dispersion
+title: "Bioluminescent Spore Dispersion"
+category: concepts
+tags:
+  - bioluminescence
+  - spore
+  - particle-system
+  - nocturnal
+  - dispersion
+  - glow
+  - organic
+  - simulation
+status: polished
+summary: "A generative visual where bioluminescent spores drift upward in a dark void, reacting to mouse proximity with gentle repulsion and light scattering."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

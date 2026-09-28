@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-// check-complete.mjs — gate: only "finished" prompt entries may be committed
+// check-complete.mjs — gate staged/ship entries
 //
-// Finished = status polished (or archived), ≥1 model run with demo + preview.png
+// draft: valid prompts OK (worker commits WIP)
+// polished: ≥1 model run with demo + preview.png
+// archived: OK without runs
 //
 //   npm run check                 # all non-experiment entries
 //   npm run check -- --staged     # only entries touched by staged git files
@@ -75,12 +77,10 @@ function inspect(entry) {
   const completeRuns = runs.filter((r) => r.has_demo && r.has_preview);
   const problems = [];
 
-  if (entry.status === "draft") {
-    problems.push("status is draft (only polished/archived may ship)");
-  }
+  // draft = WIP briefs OK to commit (worker); polished must have a real run+shot
   if (entry.status === "archived" && !completeRuns.length) {
     // archived without runs is ok
-  } else if (entry.status !== "archived" && entry.status !== "draft") {
+  } else if (entry.status === "polished") {
     if (!completeRuns.length) {
       problems.push("no complete model run (need runs/<model>/demo + preview.png)");
     }
@@ -148,7 +148,7 @@ function main() {
     console.error(
       `\n${failed.length} incomplete entr${failed.length === 1 ? "y" : "ies"}.` +
         `\nFix with:  npm run ship` +
-        `\nOr keep drafts unstaged / under prompts/experiments/`
+        `\nOr move WIP under prompts/experiments/`
     );
     process.exit(1);
   }

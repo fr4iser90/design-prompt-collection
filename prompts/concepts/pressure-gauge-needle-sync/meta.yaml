@@ -1,0 +1,27 @@
+id: pressure-gauge-needle-sync
+title: "Pressure Gauge Needle Sync"
+category: concepts
+tags:
+  - analog-gauge
+  - pressure
+  - steam
+  - mechanical
+  - sync
+  - industrial
+  - steam
+  - vibration
+status: draft
+summary: "A multi-gauge dashboard where mechanical needles vibrate and sync based on simulated pressure loads. Steam bursts occur at critical thresholds, shaking the UI."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

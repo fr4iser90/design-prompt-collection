@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riso Registration Shift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F2F0;
+    --ink1:#FF4000;
+    --ink2:#00FFFF;
+    --ink-dark:#171219;
+    --font-display:'Anton', sans-serif;
+    --font-mono:'Space Mono', monospace;
+    --ink-1:rgba(23,18,25,.62);
+    --ink-2:rgba(23,18,25,.40);
+    --ink-3:rgba(23,18,25,.20);
+    --rule:rgba(23,18,25,.16);
+    --dur:4s;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{height:100%;}
+
+  body{
+    background:var(--paper);
+    color:var(--ink-dark);
+    font-family:var(--font-mono);
+    overflow:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---- ambient paper ---- */
+  .paper-grad{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 42%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 55%),
+      radial-gradient(90% 70% at 50% 120%, rgba(23,18,25,.05) 0%, rgba(23,18,25,0) 60%);
+  }
+
+  /* ---- grain overlay (static) ---- */
+  .grain{
+    position:fixed;inset:-5%;z-index:60;pointer-events:none;
+    opacity:.16;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:220px 220px;
+  }
+
+  /* ---- press frame ---- */
+  .press{
+    position:relative;z-index:10;
+    height:100vh;height:100dvh;
+    display:flex;flex-direction:column;
+    padding:clamp(14px,2.4vw,30px);
+    gap:clamp(10px,1.6vw,18px);
+  }
+
+  /* ---- header ---- */
+  .masthead{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:20px;
+    border-bottom:1px solid var(--rule);
+    padding-bottom:clamp(8px,1.2vw,14px);
+  }
+  .wordmark{
+    font-family:var(--font-display);
+    font-size:clamp(20px,2.6vw,30px);
+    letter-spacing:.02em;line-height:.9;
+    color:var(--ink-dark);
+    display:flex;align-items:center;gap:.5ch;
+  }
+  .wordmark .dot{
+    width:.42em;height:.42em;border-radius:50%;
+    background:var(--ink1);
+    box-shadow:0 0 0 2px var(--paper), 0 0 0 3.4px var(--ink2);
+    flex:0 0 auto;
+  }
+  .spec{
+    display:grid;grid-template-columns:repeat(4,auto);
+    gap:clamp(10px,1.8vw,30px);
+    text-align:right;
+  }
+  .spec div{display:flex;flex-direction:column;gap:3px;}
+  .spec dt{
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-3);
+  }
+  .spec dd{
+    font-size:11px;font-weight:700;letter-spacing:.06em;
+    color:var(--ink-1);white-space:nowrap;
+  }
+
+  /* ---- stage ---- */
+  .stage{
+    flex:1 1 auto;position:relative;min-height:0;
+    display:grid;place-items:center;
+    overflow:hidden;
+  }
+
+  .art{
+    position:relative;
+    width:min(96vw, 1320px);
+    height:clamp(220px, 46vh, 480px);
+    display:flex;align-items:center;justify-content:center;
+    isolation:isolate;
+  }
+
+  /* ghost / bleed mark behind */
+  .ghost{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    font-family:var(--font-display);
+    font-size:clamp(220px,34vw,460px);
+    line-height:1;letter-spacing:-.03em;
+    color:transparent;
+    -webkit-text-stroke:1.5px var(--rule);
+    white-space:nowrap;
+    z-index:0;
+    user-select:none;
+  }
+
+  .layer{
+    position:absolute;top:50%;left:50%;
+    transform:translate3d(-50%,-50%,0);
+    will-change:transform;
+    mix-blend-mode:multiply;
+    z-index:1;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .layer span{
+    display:block;
+    font-family:var(--font-display);
+    font-size:clamp(96px,21vw,300px);
+    line-height:.82;letter-spacing:-.025em;
+  }
+  .l1 span{color:var(--ink1);}
+  .l2 span{color:var(--ink2);}
+
+  /* ---- registration crop marks ---- */
+  .crop{position:absolute;width:26px;height:26px;z-index:5;pointer-events:none;opacity:.55;}
+  .crop::before,.crop::after{content:"";position:absolute;background:var(--ink-dark);}
+  .crop::before{width:100%;height:1px;top:50%;}
+  .crop::after{height:100%;width:1px;left:50%;}
+  .crop.tl{top:0;left:0;}
+  .crop.tr{top:0;right:0;}
+  .crop.bl{bottom:0;left:0;}
+  .crop.br{bottom:0;right:0;}
+
+  /* ---- footer / readout ---- */
+  .foot{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:20px;
+    border-top:1px solid var(--rule);
+    padding-top:clamp(8px,1.2vw,14px);
+  }
+  .legend{display:flex;align-items:center;gap:clamp(14px,2.4vw,34px);}
+  .swatch{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-1);}
+  .swatch i{width:16px;height:16px;display:inline-block;border:1px solid rgba(23,18,25,.25);}
+  .swatch .o{background:var(--ink1);}
+  .swatch .c{background:var(--ink2);}
+  .swatch .v{background:#4a2a6b;}
+  .swatch .b{background:var(--ink-dark);}
+
+  .readout{
+    display:flex;align-items:center;gap:18px;
+    font-size:11px;letter-spacing:.08em;
+  }
+  .phase{
+    font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-dark);
+    display:flex;align-items:center;gap:8px;
+  }
+  .phase .led{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--ink-3);
+    transition:background .12s linear, box-shadow .12s linear;
+  }
+  .phase[data-state="lock"] .led{background:var(--ink-dark);box-shadow:0 0 0 3px rgba(23,18,25,.14);}
+  .phase[data-state="mis"] .led{background:var(--ink1);}
+  .coords{
+    color:var(--ink-2);min-width:210px;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.04em;
+  }
+  .coords b{color:var(--ink-1);}
+
+  .timeline{
+    position:relative;height:2px;background:var(--rule);
+    margin-top:6px;
+  }
+  .timeline .cursor{
+    position:absolute;top:-4px;left:0;width:2px;height:10px;background:var(--ink-dark);
+  }
+  .timeline .zone{position:absolute;top:0;height:2px;}
+  .timeline .zone.a{left:0;width:47%;background:rgba(255,64,0,.35);}
+  .timeline .zone.b{left:50%;width:13%;background:rgba(23,18,25,.5);}
+  .timeline .zone.c{left:64%;width:36%;background:rgba(0,255,255,.4);}
+
+  .tag{
+    position:absolute;bottom:clamp(14px,2.4vw,30px);
+    font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--ink-3);
+  }
+
+  /* ---- motion ---- */
+  @media (prefers-reduced-motion: no-preference){
+    .l1{animation:roll1 var(--dur) steps(1,end) infinite;}
+    .l2{animation:roll2 var(--dur) steps(1,end) infinite;}
+    .timeline .cursor{animation:cursor var(--dur) linear infinite;}
+    .ghost{animation:ghostpulse var(--dur) steps(1,end) infinite;}
+  }
+
+  /* Orange roller — steps() for mechanical clicks */
+  @keyframes roll1{
+    0%   {transform:translate3d(calc(-50% + 10px),calc(-50% - 5px),0);}
+    25%  {transform:translate3d(calc(-50% - 5px),calc(-50% + 10px),0);}
+    50%  {transform:translate3d(calc(-50% + 0px),calc(-50% + 0px),0);}
+    62%  {transform:translate3d(calc(-50% + 0px),calc(-50% + 0px),0);}
+    75%  {transform:translate3d(calc(-50% + 15px),calc(-50% + 5px),0);}
+    100% {transform:translate3d(calc(-50% + 10px),calc(-50% - 5px),0);}
+  }
+  /* Cyan roller — sharp cubic-bezier snap */
+  @keyframes roll2{
+    0%   {transform:translate3d(calc(-50% - 10px),calc(-50% + 5px),0);}
+    25%  {transform:translate3d(calc(-50% + 5px),calc(-50% - 10px),0);}
+    50%  {transform:translate3d(calc(-50% + 0px),calc(-50% + 0px),0);}
+    62%  {transform:translate3d(calc(-50% + 0px),calc(-50% + 0px),0);}
+    75%  {transform:translate3d(calc(-50% - 15px),calc(-50% - 5px),0);}
+    100% {transform:translate3d(calc(-50% - 10px),calc(-50% + 5px),0);}
+  }
+  @keyframes ghostpulse{
+    0%,100%{opacity:.5;}
+    50%,62%{opacity:.85;}
+  }
+  @keyframes cursor{
+    from{left:0;}
+    to{left:100%;}
+  }
+
+  /* ---- responsive ---- */
+  @media (max-width:720px){
+    .spec{grid-template-columns:repeat(2,auto);gap:8px 16px;text-align:left;}
+    .foot{flex-direction:column;align-items:flex-start;gap:12px;}
+    .readout{flex-direction:column;align-items:flex-start;gap:8px;}
+    .coords{min-width:0;}
+    .ghost{font-size:clamp(180px,52vw,320px);}
+  }
+  @media (max-width:460px){
+    .legend{flex-wrap:wrap;gap:10px;}
+  }
+</style>
+</head>
+<body>
+  <div class="paper-grad"></div>
+
+  <main class="press">
+    <header class="masthead">
+      <div class="wordmark"><span class="dot"></span>RISO REGISTRATION SHIFT</div>
+      <dl class="spec">
+        <div><dt>Format</dt><dd>2-COLOR RISO</dd></div>
+        <div><dt>Drum</dt><dd>ORANGE · CYAN</dd></div>
+        <div><dt>Cycle</dt><dd>4.000 S</dd></div>
+        <div><dt>Sheet</dt><dd>A3 · 100LB</dd></div>
+      </dl>
+    </header>
+
+    <section class="stage">
+      <div class="crop tl"></div>
+      <div class="crop tr"></div>
+      <div class="crop bl"></div>
+      <div class="crop br"></div>
+
+      <div class="art" id="art">
+        <div class="ghost" aria-hidden="true">PRESS</div>
+        <div class="layer l1" id="l1"><span>PRESS</span></div>
+        <div class="layer l2" id="l2"><span>PRESS</span></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="legend">
+        <span class="swatch"><i class="o"></i>Ink 1 · Orange</span>
+        <span class="swatch"><i class="c"></i>Ink 2 · Cyan</span>
+        <span class="swatch"><i class="v"></i>Overlap · Violet</span>
+        <span class="swatch"><i class="b"></i>Registered · Black</span>
+      </div>
+      <div class="readout">
+        <span class="phase" id="phase" data-state="mis"><span class="led"></span><span id="phaseTxt">MISREGISTRATION</span></span>
+        <span class="coords" id="coords">O <b>+10.0 / -5.0</b> &nbsp; C <b>-10.0 / +5.0</b></span>
+        <div class="timeline" style="flex:1 1 160px;max-width:220px;">
+          <span class="zone a"></span><span class="zone b"></span><span class="zone c"></span>
+          <span class="cursor"></span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div class="grain"></div>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const l1 = document.getElementById('l1');
+  const l2 = document.getElementById('l2');
+  const coords = document.getElementById('coords');
+  const phase = document.getElementById('phase');
+  const phaseTxt = document.getElementById('phaseTxt');
+
+  // keyframe offsets (px) — must mirror CSS keyframes
+  const K = [
+    {t:0.00, o:[10,-5],  c:[-10,5]},
+    {t:0.25, o:[-5,10],  c:[5,-10]},
+    {t:0.50, o:[0,0],    c:[0,0]},
+    {t:0.62, o:[0,0],    c:[0,0]},
+    {t:0.75, o:[15,5],   c:[-15,-5]},
+    {t:1.00, o:[10,-5],  c:[-10,5]}
+  ];
+
+  function lerp(a,b,f){return a+(b-a)*f;}
+  function sample(p){
+    p = ((p % 1) + 1) % 1;
+    for(let i=0;i<K.length-1;i++){
+      const a=K[i], b=K[i+1];
+      if(p>=a.t && p<=b.t){
+        const f = (p-a.t)/(b.t-a.t || 1);
+        return {
+          o:[lerp(a.o[0],b.o[0],f), lerp(a.o[1],b.o[1],f)],
+          c:[lerp(a.c[0],b.c[0],f), lerp(a.c[1],b.c[1],f)]
+        };
+      }
+    }
+    return {o:K[0].o, c:K[0].c};
+  }
+  function fmt(v){return (v>=0?'+':'')+v.toFixed(1);}
+
+  function render(p){
+    const s = sample(p);
+    if(!reduce){
+      l1.style.transform = 'translate3d(calc(-50% + '+s.o[0]+'px), calc(-50% + '+s.o[1]+'px), 0)';
+      l2.style.transform = 'translate3d(calc(-50% + '+s.c[0]+'px), calc(-50% + '+s.c[1]+'px), 0)';
+    }
+    coords.innerHTML = 'O <b>'+fmt(s.o[0])+' / '+fmt(s.o[1])+'</b> &nbsp; C <b>'+fmt(s.c[0])+' / '+fmt(s.c[1])+'</b>';
+    const locked = Math.abs(s.o[0]-s.c[0])<0.5 && Math.abs(s.o[1]-s.c[1])<0.5;
+    phase.dataset.state = locked ? 'lock' : 'mis';
+    phaseTxt.textContent = locked ? 'REGISTERED · LOCK' : 'MISREGISTRATION';
+  }
+
+  if(reduce){
+    render(0.5); // hold a clean registered frame
+  } else {
+    const start = performance.now();
+    const DUR = 4000;
+    (function loop(now){
+      render((now-start)/DUR);
+      requestAnimationFrame(loop);
+    })(start);
+  }
+})();
+</script>
+</body>
+</html>

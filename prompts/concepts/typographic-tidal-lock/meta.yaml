@@ -1,0 +1,27 @@
+id: typographic-tidal-lock
+title: "Typographic Tidal Lock"
+category: concepts
+tags:
+  - orbital
+  - kinetic-type
+  - circular-text
+  - planetary
+  - minimalist
+  - css-animation
+  - space
+  - gravity
+status: polished
+summary: "Celestial mechanics meets typography. Text orbits a central point, with speed and scale dictated by simulated gravity wells. A study in circular motion and hierarchical focus."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

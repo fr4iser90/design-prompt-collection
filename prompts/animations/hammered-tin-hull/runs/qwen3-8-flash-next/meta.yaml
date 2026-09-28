@@ -1,0 +1,20 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 7513
+review_score: 9
+review_summary: "Excellent execution of the 'cold working' concept with a realistic, dull silver material and a clear visual representation of the 'mosaic' facets."
+reviewed_at: "2026-09-28T10:15:51.325Z"
+review_issues:
+  - "The 'hammer' visual is abstract (a simple line/weight) rather than a recognizable tool, though this fits the industrial/diagrammatic style."
+  - "The text block on the left is slightly obscured by the central sphere's edge."

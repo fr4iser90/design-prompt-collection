@@ -1,0 +1,26 @@
+id: salt-pan-crystallization
+title: "Salt Pan Crystallization"
+category: animations
+tags:
+  - salt
+  - crystallization
+  - evaporation
+  - geometry
+  - white-desert
+  - loop
+  - arid
+status: draft
+summary: "A macro view of salt crystals rapidly forming from evaporating brine in a desert pan, creating sharp geometric spikes and white ridges."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

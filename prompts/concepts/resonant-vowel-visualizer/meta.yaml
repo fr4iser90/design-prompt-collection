@@ -1,0 +1,27 @@
+id: resonant-vowel-visualizer
+title: "Resonant Vowel Visualizer"
+category: concepts
+tags:
+  - acoustic
+  - kinetic-type
+  - audio-reactive
+  - generative
+  - linguistics
+  - spring-physics
+  - dark-ui
+  - experimental
+status: polished
+summary: "Typography that reacts to vocal frequency. Letters expand, contract, and distort based on real-time audio input, visualizing the physics of sound through kinetic type."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

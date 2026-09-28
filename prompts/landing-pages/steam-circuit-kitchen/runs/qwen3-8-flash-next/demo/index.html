@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit & Steam — Steamboat Restaurant</title>
+<meta name="description" content="Circuit & Steam — a futuristic steamboat restaurant where heat flows through the table like data. Tune your heat.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0A0A0A;
+    --red:#EF4444;
+    --red-deep:#B91C1C;
+    --red-bright:#F87171;
+    --white:#FFFFFF;
+    --gray:#1F2937;
+    --gray-2:#141418;
+    --muted:#9CA3AF;
+    --line:rgba(255,255,255,.08);
+    --line-red:rgba(239,68,68,.35);
+    --font-display:'Montserrat',sans-serif;
+    --font-body:'Inter',sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:var(--font-body);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Ambient background ---------- */
+  .bg-grid{
+    position:fixed;inset:-50%;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(rgba(239,68,68,.055) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(239,68,68,.055) 1px,transparent 1px);
+    background-size:54px 54px;
+    animation:gridMove 22s linear infinite;
+    will-change:transform;
+  }
+  @keyframes gridMove{to{transform:translateY(54px)}}
+  body.scrolling .bg-grid{animation-duration:6s}
+  .bg-glow{
+    position:fixed;top:-20%;left:50%;transform:translateX(-50%);
+    width:900px;height:900px;z-index:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(239,68,68,.10),transparent 62%);
+    filter:blur(20px);
+  }
+  .scanlines{
+    position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.35;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+
+  .wrap{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:0 28px}
+
+  /* ---------- Nav ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    transition:background .3s,border-color .3s;
+    border-bottom:1px solid transparent;
+  }
+  header.scrolled{background:rgba(10,10,10,.82);backdrop-filter:blur(12px);border-bottom-color:var(--line)}
+  nav{max-width:1240px;margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:12px;font-family:var(--font-display);font-weight:800;letter-spacing:.02em;font-size:1.02rem}
+  .brand .amp{color:var(--red);font-weight:900}
+  .brand-mark{
+    width:30px;height:30px;border:1.5px solid var(--red);position:relative;flex:none;
+    box-shadow:0 0 12px rgba(239,68,68,.4),inset 0 0 8px rgba(239,68,68,.25);
+  }
+  .brand-mark::before{content:"";position:absolute;inset:6px;border:1.5px solid var(--red);opacity:.6}
+  .brand-mark::after{content:"";position:absolute;inset:12px;background:var(--red);box-shadow:0 0 8px var(--red)}
+  .nav-links{display:flex;gap:34px;align-items:center}
+  .nav-links a{
+    color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;
+    letter-spacing:.16em;text-transform:uppercase;transition:color .25s;position:relative;
+  }
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-6px;height:1px;width:0;background:var(--red);transition:width .3s;box-shadow:0 0 6px var(--red)}
+  .nav-links a:hover{color:var(--white)}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    font-family:var(--font-display);font-weight:700;font-size:.72rem;letter-spacing:.14em;
+    color:var(--white);background:transparent;border:1px solid var(--red);padding:9px 16px;
+    text-transform:uppercase;cursor:pointer;transition:.25s;
+  }
+  .nav-cta:hover{background:var(--red);box-shadow:0 0 18px rgba(239,68,68,.5)}
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px}
+  .burger span{width:24px;height:2px;background:var(--white);transition:.3s}
+
+  /* ---------- Hero ---------- */
+  .hero{min-height:100vh;display:flex;align-items:center;position:relative;padding:120px 0 60px}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center;width:100%}
+  .kicker{
+    display:inline-flex;align-items:center;gap:10px;font-size:.72rem;font-weight:600;
+    letter-spacing:.28em;text-transform:uppercase;color:var(--red);margin-bottom:26px;
+  }
+  .kicker .dot{width:7px;height:7px;background:var(--red);border-radius:50%;box-shadow:0 0 10px var(--red);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  h1{
+    font-family:var(--font-display);font-weight:900;line-height:.94;
+    font-size:clamp(3.2rem,8.5vw,6.6rem);letter-spacing:-.02em;text-transform:uppercase;
+  }
+  h1 .line{display:block;overflow:hidden}
+  h1 .heat{color:transparent;-webkit-text-stroke:2px var(--red);text-stroke:2px var(--red);position:relative}
+  h1 .heat::after{content:"HEAT";position:absolute;inset:0;color:var(--red);-webkit-text-stroke:0;
+    clip-path:inset(0 100% 0 0);animation:heatFill 4s ease-in-out infinite alternate}
+  @keyframes heatFill{0%{clip-path:inset(0 100% 0 0)}100%{clip-path:inset(0 0 0 0)}}
+  .hero p.lede{color:var(--muted);font-size:1.08rem;max-width:440px;margin:30px 0 36px}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .btn{
+    font-family:var(--font-display);font-weight:700;font-size:.78rem;letter-spacing:.14em;
+    text-transform:uppercase;padding:15px 28px;cursor:pointer;border:none;text-decoration:none;
+    display:inline-flex;align-items:center;gap:10px;transition:.25s;
+  }
+  .btn-primary{background:var(--red);color:var(--white);box-shadow:0 0 24px rgba(239,68,68,.35)}
+  .btn-primary:hover{background:var(--red-bright);box-shadow:0 0 40px rgba(239,68,68,.6);transform:translateY(-2px)}
+  .btn-ghost{background:transparent;color:var(--white);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--red);color:var(--red)}
+
+  .hero-stats{display:flex;gap:34px;margin-top:48px;flex-wrap:wrap}
+  .stat .num{font-family:var(--font-display);font-weight:800;font-size:1.7rem;color:var(--white)}
+  .stat .num b{color:var(--red)}
+  .stat .lbl{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+  /* Pot visual */
+  .pot-stage{position:relative;height:520px;display:flex;align-items:center;justify-content:center}
+  .pot-svg{width:100%;max-width:440px;height:auto;overflow:visible}
+  .steam{fill:none;stroke:var(--red);stroke-width:2;stroke-linecap:round;
+    stroke-dasharray:6 10;animation:flow 2.4s linear infinite;filter:drop-shadow(0 0 4px var(--red))}
+  @keyframes flow{to{stroke-dashoffset:-64}}
+  .steam.s2{animation-duration:3.1s;stroke-width:1.6;opacity:.7}
+  .steam.s3{animation-duration:2s;stroke-width:1.4;opacity:.55}
+  .node{fill:var(--black);stroke:var(--red);stroke-width:1.5;animation:nodePulse 2.6s ease-in-out infinite}
+  @keyframes nodePulse{0%,100%{r:3;opacity:.6}50%{r:5;opacity:1}}
+  .pot-body{fill:url(#potGrad);stroke:var(--red);stroke-width:1.5;filter:drop-shadow(0 0 18px rgba(239,68,68,.4))}
+  .pot-rim{fill:none;stroke:var(--red);stroke-width:2.5;filter:drop-shadow(0 0 10px var(--red))}
+  .pot-broth{fill:rgba(239,68,68,.14)}
+  .bubble{fill:var(--red);animation:bubble 2.2s ease-in infinite}
+  @keyframes bubble{0%{transform:translateY(0);opacity:0}30%{opacity:.9}100%{transform:translateY(-26px);opacity:0}}
+  .pot-label{font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:.14em;fill:var(--muted)}
+  .pot-value{font-family:var(--font-display);font-weight:800;font-size:15px;fill:var(--white)}
+
+  /* ---------- Section shell ---------- */
+  section{position:relative;z-index:2;padding:110px 0}
+  .sec-head{margin-bottom:56px;max-width:640px}
+  .sec-tag{font-size:.72rem;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+  .sec-tag::before{content:"";width:34px;height:1px;background:var(--red);box-shadow:0 0 6px var(--red)}
+  h2{font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,4.6vw,3.4rem);line-height:1.02;letter-spacing:-.01em;text-transform:uppercase}
+  .sec-head p{color:var(--muted);margin-top:18px;font-size:1.02rem}
+
+  /* ---------- Menu / heat map ---------- */
+  .heat-legend{display:flex;align-items:center;gap:16px;margin-bottom:34px;flex-wrap:wrap}
+  .heat-legend .bar{height:8px;flex:1;min-width:200px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(239,68,68,.15),var(--red),#fff);box-shadow:0 0 14px rgba(239,68,68,.3)}
+  .heat-legend span{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+  .menu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .dish{
+    background:var(--gray-2);border:1px solid var(--line);padding:24px;cursor:pointer;
+    position:relative;overflow:hidden;transition:.3s;
+  }
+  .dish::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);
+    box-shadow:0 0 12px var(--red);transform:scaleY(0);transform-origin:top;transition:transform .35s}
+  .dish:hover{border-color:var(--line-red);transform:translateY(-4px);background:#17171c}
+  .dish:hover::before{transform:scaleY(1)}
+  .dish .idx{font-family:var(--font-display);font-weight:700;font-size:.7rem;letter-spacing:.16em;color:var(--muted)}
+  .dish h3{font-family:var(--font-display);font-weight:700;font-size:1.22rem;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.01em}
+  .dish .cat{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);font-weight:600}
+  .dish .desc{color:var(--muted);font-size:.9rem;margin-top:14px;max-height:0;opacity:0;overflow:hidden;transition:.4s}
+  .dish.open .desc{max-height:120px;opacity:1;margin-top:14px}
+  .dish .heat{display:flex;align-items:center;gap:8px;margin-top:16px}
+  .dish .heat .bars{display:flex;gap:3px}
+  .dish .heat .bars i{width:16px;height:5px;background:var(--gray);transition:.3s}
+  .dish .heat .bars i.on{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .dish .heat .val{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:auto}
+  .dish .plus{position:absolute;top:22px;right:22px;color:var(--muted);font-size:1.3rem;line-height:1;transition:.3s}
+  .dish.open .plus{transform:rotate(45deg);color:var(--red)}
+
+  /* ---------- Setup / table ---------- */
+  .setup{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .table-wrap{position:relative;aspect-ratio:1/1;max-width:460px;margin:0 auto;width:100%}
+  .table-svg{width:100%;height:100%;overflow:visible}
+  .seat{cursor:pointer}
+  .seat .seat-c{fill:var(--gray-2);stroke:var(--line);stroke-width:1.5;transition:.3s}
+  .seat .seat-n{fill:var(--muted);font-family:var(--font-display);font-weight:700;font-size:12px;transition:.3s}
+  .seat:hover .seat-c,.seat.active .seat-c{stroke:var(--red);fill:rgba(239,68,68,.12);filter:drop-shadow(0 0 10px rgba(239,68,68,.4))}
+  .seat:hover .seat-n,.seat.active .seat-n{fill:var(--white)}
+  .center-core{fill:var(--red);filter:drop-shadow(0 0 16px var(--red));animation:corePulse 2.4s ease-in-out infinite}
+  @keyframes corePulse{0%,100%{r:20}50%{r:26}}
+  .center-ring{fill:none;stroke:var(--red);stroke-width:1.5;opacity:.5}
+  .flow-line{fill:none;stroke:rgba(239,68,68,.18);stroke-width:1.5}
+  .flow-line.active{stroke:var(--red);stroke-width:2.5;stroke-dasharray:5 9;animation:flow 1.4s linear infinite;filter:drop-shadow(0 0 5px var(--red))}
+  .table-info{margin-top:26px;background:var(--gray-2);border:1px solid var(--line);padding:22px;border-left:3px solid var(--red)}
+  .table-info .ti-title{font-family:var(--font-display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:1.05rem}
+  .table-info .ti-meta{color:var(--muted);font-size:.88rem;margin-top:8px}
+  .table-info .ti-meta b{color:var(--red)}
+
+  .control-list{display:flex;flex-direction:column;gap:2px;margin-top:30px}
+  .ctrl{display:flex;align-items:center;gap:16px;padding:16px 18px;border:1px solid var(--line);background:var(--gray-2);cursor:pointer;transition:.25s}
+  .ctrl:hover,.ctrl.active{border-color:var(--line-red);background:#17171c}
+  .ctrl .cnum{width:34px;height:34px;border:1px solid var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;color:var(--red);flex:none}
+  .ctrl .ctxt{font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:.92rem}
+  .ctrl .csub{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .ctrl .carrow{margin-left:auto;color:var(--muted);transition:.25s}
+  .ctrl.active .carrow{color:var(--red);transform:translateX(4px)}
+
+  /* ---------- Flow / process ---------- */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;margin-top:20px}
+  .flow::before{content:"";position:absolute;top:38px;left:6%;right:6%;height:1px;background:linear-gradient(90deg,transparent,var(--line-red),var(--line-red),transparent)}
+  .step{padding:0 20px;position:relative}
+  .step .snode{width:76px;height:76px;border:1px solid var(--line);background:var(--black);display:flex;align-items:center;justify-content:center;margin-bottom:26px;position:relative;z-index:2;transition:.3s}
+  .step .snode svg{width:34px;height:34px;stroke:var(--red);fill:none;stroke-width:1.6;filter:drop-shadow(0 0 6px rgba(239,68,68,.5))}
+  .step:hover .snode{border-color:var(--red);box-shadow:0 0 24px rgba(239,68,68,.35)}
+  .step .snum{font-family:var(--font-display);font-weight:800;font-size:.72rem;letter-spacing:.16em;color:var(--red);margin-bottom:8px}
+  .step h3{font-family:var(--font-display);font-weight:700;font-size:1.15rem;text-transform:uppercase;margin-bottom:10px}
+  .step p{color:var(--muted);font-size:.9rem}
+
+  /* ---------- Reserve ---------- */
+  .reserve{display:grid;grid-template-columns:.9fr 1.1fr;gap:60px;align-items:start}
+  .reserve-left h2{margin-bottom:20px}
+  .reserve-left p{color:var(--muted);margin-bottom:30px}
+  .reserve-meta{border-top:1px solid var(--line);padding-top:24px;display:flex;flex-direction:column;gap:16px}
+  .reserve-meta .rm{display:flex;justify-content:space-between;font-size:.88rem}
+  .reserve-meta .rm span:first-child{color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-size:.72rem}
+  .reserve-meta .rm span:last-child{font-family:var(--font-display);font-weight:600}
+  form{background:var(--gray-2);border:1px solid var(--line);padding:38px}
+  .field{margin-bottom:22px}
+  .field label{display:block;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .field input,.field select{
+    width:100%;background:var(--black);border:1px solid var(--line);color:var(--white);
+    padding:14px 16px;font-family:var(--font-body);font-size:.95rem;transition:.25s;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 18px rgba(239,68,68,.25)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  form .btn-primary{width:100%;justify-content:center;margin-top:8px}
+  .form-note{font-size:.76rem;color:var(--muted);text-align:center;margin-top:16px}
+  .success{display:none;text-align:center;padding:40px 20px}
+  .success.show{display:block;animation:fadeUp .6s ease}
+  .success .check{width:64px;height:64px;border:2px solid var(--red);border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(239,68,68,.4)}
+  .success .check svg{width:30px;height:30px;stroke:var(--red);fill:none;stroke-width:2.5}
+  .success h3{font-family:var(--font-display);font-weight:800;text-transform:uppercase;font-size:1.4rem;margin-bottom:10px}
+  .success p{color:var(--muted)}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--line);padding:60px 0 40px;position:relative;z-index:2}
+  .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px}
+  .foot-brand{max-width:320px}
+  .foot-brand p{color:var(--muted);font-size:.9rem;margin-top:16px}
+  .foot-col h4{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:16px}
+  .foot-col a{display:block;color:var(--muted);text-decoration:none;font-size:.88rem;margin-bottom:10px;transition:.25s}
+  .foot-col a:hover{color:var(--white)}
+  .foot-bottom{margin-top:50px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:.76rem;color:var(--muted);letter-spacing:.06em}
+
+  /* ---------- Reveal / glitch ---------- */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+  .glitch{position:relative}
+  .glitch.in{animation:glitchIn .55s steps(2,end)}
+  @keyframes glitchIn{
+    0%{transform:translateX(-6px);clip-path:inset(0 0 55% 0)}
+    20%{transform:translateX(5px);clip-path:inset(45% 0 0 0)}
+    40%{transform:translateX(-3px);clip-path:inset(0 0 30% 0)}
+    60%{transform:translateX(2px);clip-path:inset(60% 0 0 0)}
+    100%{transform:none;clip-path:inset(0 0 0 0)}
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:960px){
+    .hero-grid{grid-template-columns:1fr;gap:20px}
+    .pot-stage{height:380px;order:-1}
+    .setup{grid-template-columns:1fr;gap:40px}
+    .reserve{grid-template-columns:1fr;gap:36px}
+    .menu-grid{grid-template-columns:repeat(2,1fr)}
+    .flow{grid-template-columns:repeat(2,1fr);gap:34px 20px}
+    .flow::before{display:none}
+  }
+  @media(max-width:720px){
+    .nav-links,.nav-cta{display:none}
+    .nav-links.open{display:flex;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:22px;background:rgba(10,10,10,.97);padding:28px;border-bottom:1px solid var(--line)}
+    .burger{display:flex}
+    .field-row{grid-template-columns:1fr}
+    .menu-grid{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}
+    section{padding:80px 0}
+    .hero{padding:110px 0 40px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    .heat::after{clip-path:inset(0 0 0 0)}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<div class="scanlines"></div>
+
+<header id="header">
+  <nav>
+    <div class="brand">
+      <span class="brand-mark"></span>
+      CIRCUIT <span class="amp">&amp;</span> STEAM
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="#menu">Menu</a>
+      <a href="#setup">The Setup</a>
+      <a href="#flow">The Flow</a>
+      <a href="#reserve">Reserve</a>
+    </div>
+    <button class="nav-cta" onclick="document.getElementById('reserve').scrollIntoView()">Book a Table</button>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="kicker reveal"><span class="dot"></span> Steamboat · Redefined · Node 07</span>
+        <h1>
+          <span class="line reveal glitch">Tune Your</span>
+          <span class="line reveal glitch"><span class="heat">HEAT</span></span>
+        </h1>
+        <p class="lede reveal">A communal steamboat experience wired like a circuit board. Heat rises from the core, branches through the table, and lands on your plate — dialled, precise, alive.</p>
+        <div class="hero-actions reveal">
+          <a href="#reserve" class="btn btn-primary">Initiate Dinner →</a>
+          <a href="#menu" class="btn btn-ghost">Read the Menu</a>
+        </div>
+        <div class="hero-stats reveal">
+          <div class="stat"><div class="num">12<b>°</b></div><div class="lbl">Heat Zones</div></div>
+          <div class="stat"><div class="num">08</div><div class="lbl">Seats / Table</div></div>
+          <div class="stat"><div class="num">04<b>h</b></div><div class="lbl">Nightly Service</div></div>
+        </div>
+      </div>
+
+      <div class="pot-stage reveal">
+        <svg class="pot-svg" viewBox="0 0 440 520" aria-label="Animated steam circuit pot">
+          <defs>
+            <linearGradient id="potGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1F2937"/>
+              <stop offset="1" stop-color="#0A0A0A"/>
+            </linearGradient>
+          </defs>
+
+          <!-- rising steam paths -->
+          <path class="steam s1" d="M220 300 C200 250 240 210 220 160 C205 120 235 90 220 40"/>
+          <path class="steam s2" d="M180 300 C150 250 185 210 150 150 C130 110 160 80 140 30"/>
+          <path class="steam s3" d="M260 300 C295 250 260 210 300 150 C320 110 290 80 310 30"/>
+          <path class="steam s2" d="M150 300 C110 260 130 220 90 170"/>
+          <path class="steam s3" d="M290 300 C330 260 310 220 350 170"/>
+
+          <!-- circuit nodes -->
+          <circle class="node" cx="220" cy="40" style="animation-delay:.1s"/>
+          <circle class="node" cx="140" cy="30" style="animation-delay:.6s"/>
+          <circle class="node" cx="310" cy="30" style="animation-delay:.9s"/>
+          <circle class="node" cx="90" cy="170" style="animation-delay:.4s"/>
+          <circle class="node" cx="350" cy="170" style="animation-delay:1.2s"/>
+
+          <!-- pot -->
+          <ellipse class="pot-broth" cx="220" cy="312" rx="128" ry="26"/>
+          <path class="pot-body" d="M92 312 L92 430 Q92 470 132 470 L308 470 Q348 470 348 430 L348 312 Z"/>
+          <ellipse class="pot-rim" cx="220" cy="312" rx="128" ry="26"/>
+
+          <!-- bubbles -->
+          <circle class="bubble" cx="190" cy="300" style="animation-delay:0s"/>
+          <circle class="bubble" cx="230" cy="305" style="animation-delay:.7s"/>
+          <circle class="bubble" cx="260" cy="298" style="animation-delay:1.3s"/>
+          <circle class="bubble" cx="210" cy="302" style="animation-delay:1.8s"/>
+
+          <!-- handles -->
+          <path class="pot-rim" d="M92 350 Q60 350 60 380 Q60 410 92 410"/>
+          <path class="pot-rim" d="M348 350 Q380 350 380 380 Q380 410 348 410"/>
+
+          <!-- readouts -->
+          <line x1="60" y1="470" x2="60" y2="505" stroke="rgba(239,68,68,.4)" stroke-width="1"/>
+          <text class="pot-label" x="40" y="518">CORE</text>
+          <text class="pot-value" x="40" y="500">100°</text>
+          <line x1="380" y1="470" x2="380" y2="505" stroke="rgba(239,68,68,.4)" stroke-width="1"/>
+          <text class="pot-label" x="360" y="518" text-anchor="end">FLOW</text>
+          <text class="pot-value" x="360" y="500" text-anchor="end">ON</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU -->
+<section id="menu">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">01 — The Menu</div>
+      <h2>Heat-Map Catalogue</h2>
+      <p>Every dish is a node. Tap to expand the spec — colour intensity maps to heat level, from ambient to incandescent.</p>
+    </div>
+
+    <div class="heat-legend reveal">
+      <span>Ambient</span>
+      <div class="bar"></div>
+      <span>Incandescent</span>
+    </div>
+
+    <div class="menu-grid">
+      <div class="dish reveal" data-heat="1">
+        <span class="plus">+</span>
+        <div class="idx">N-01</div>
+        <div class="cat">Broth</div>
+        <h3>Null Broth</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i></i><i></i><i></i><i></i></div><span class="val">1 / 5 · Ambient</span></div>
+        <p class="desc">A clear, whisper-light base of kombu and dried shiitake. Clean circuit, zero noise — the perfect ground for delicate proteins.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="2">
+        <span class="plus">+</span>
+        <div class="idx">N-02</div>
+        <div class="cat">Broth</div>
+        <h3>Signal Miso</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><span class="val">2 / 5 · Warm</span></div>
+        <p class="desc">White miso fermented 90 days, finished with toasted sesame and a pulse of ginger. A steady, humming warmth.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="3">
+        <span class="plus">+</span>
+        <div class="idx">N-03</div>
+        <div class="cat">Broth</div>
+        <h3>Tom Yum Loop</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="val">3 / 5 · Hot</span></div>
+        <p class="desc">Lemongrass, galangal and lime leaf cycling through a coconut broth. Bright acid, looping heat, unmistakable signature.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="4">
+        <span class="plus">+</span>
+        <div class="idx">N-04</div>
+        <div class="cat">Broth</div>
+        <h3>Sichuan Surge</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="val">4 / 5 · Intense</span></div>
+        <p class="desc">Sichuan peppercorn numbing tingle meets dried chilli oil. A voltage spike that rewires the palate mid-meal.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="5">
+        <span class="plus">+</span>
+        <div class="idx">N-05</div>
+        <div class="cat">Broth</div>
+        <h3>Overclock</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><span class="val">5 / 5 · Incandescent</span></div>
+        <p class="desc">Our house supernova. Ghost pepper, bird's eye and fermented bean paste. Sign a waiver. We mean it.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="2">
+        <span class="plus">+</span>
+        <div class="idx">N-06</div>
+        <div class="cat">Protein</div>
+        <h3>Wagyu Node</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div><span class="val">2 / 5 · Warm</span></div>
+        <p class="desc">A5 Wagyu sliced to 1mm, seared in the broth in under eight seconds. Butter-soft, marbled, dissolving.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="3">
+        <span class="plus">+</span>
+        <div class="idx">N-07</div>
+        <div class="cat">Protein</div>
+        <h3>Octopus Circuit</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="val">3 / 5 · Hot</span></div>
+        <p class="desc">Char-grilled octopus threaded with smoked paprika oil. Firm, electric, built to grip the tongue.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="1">
+        <span class="plus">+</span>
+        <div class="idx">N-08</div>
+        <div class="cat">Veg</div>
+        <h3>Glass Noodle Grid</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i></i><i></i><i></i><i></i></div><span class="val">1 / 5 · Ambient</span></div>
+        <p class="desc">Translucent glass noodles woven with bok choy and enoki. A neutral lane to run any broth through.</p>
+      </div>
+
+      <div class="dish reveal" data-heat="4">
+        <span class="plus">+</span>
+        <div class="idx">N-09</div>
+        <div class="cat">Veg</div>
+        <h3>Chilli Bloom</h3>
+        <div class="heat"><div class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="val">4 / 5 · Intense</span></div>
+        <p class="desc">Flash-fried baby corn and king oyster mushroom glazed in chilli crisp. Sweet, smoky, deceptively fierce.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section id="setup">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">02 — The Setup</div>
+      <h2>The Table, Top-Down</h2>
+      <p>One core. Eight seats. Toggle a seat to trace how heat flows from the centre to your position.</p>
+    </div>
+
+    <div class="setup">
+      <div class="reveal">
+        <div class="table-wrap">
+          <svg class="table-svg" viewBox="0 0 400 400">
+            <circle cx="200" cy="200" r="188" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+            <!-- flow lines -->
+            <g id="flowLines"></g>
+            <!-- seats -->
+            <g id="seats"></g>
+            <!-- core -->
+            <circle class="center-ring" cx="200" cy="200" r="46"/>
+            <circle class="center-ring" cx="200" cy="200" r="62" style="opacity:.25"/>
+            <circle class="center-core" cx="200" cy="200" r="20"/>
+            <text x="200" y="205" text-anchor="middle" fill="#0A0A0A" font-family="Montserrat" font-weight="800" font-size="11">CORE</text>
+          </svg>
+        </div>
+        <div class="table-info" id="tableInfo">
+          <div class="ti-title">Select a seat</div>
+          <div class="ti-meta">Tap any node to route steam from the core and read its live heat allocation.</div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="control-list" id="controlList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section id="flow">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-tag">03 — The Flow</div>
+      <h2>How the Steam Works</h2>
+      <p>Four stages, one continuous loop. From ignition to the last drop, heat travels the same path every night.</p>
+    </div>
+
+    <div class="flow">
+      <div class="step reveal">
+        <div class="snode"><svg viewBox="0 0 24 24"><path d="M12 2v6M12 22a7 7 0 0 0 7-7c0-4-3-6-3-6M12 22a7 7 0 0 1-7-7c0-4 3-6 3-6"/></svg></div>
+        <div class="snum">STAGE 01</div>
+        <h3>Ignite</h3>
+        <p>The core reaches 100° on induction. A single node wakes the whole board.</p>
+      </div>
+      <div class="step reveal">
+        <div class="snode"><svg viewBox="0 0 24 24"><path d="M4 12h6M14 12h6M12 4v6M12 14v6M4 4l4 4M20 20l-4-4"/></svg></div>
+        <div class="snum">STAGE 02</div>
+        <h3>Route</h3>
+        <p>Steam channels branch outward through the table, distributing heat to each seat.</p>
+      </div>
+      <div class="step reveal">
+        <div class="snode"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div class="snum">STAGE 03</div>
+        <h3>Regulate</h3>
+        <p>Per-seat dials trim the flow. Cool your lane, spike your neighbour's — no interference.</p>
+      </div>
+      <div class="step reveal">
+        <div class="snode"><svg viewBox="0 0 24 24"><path d="M6 3v6a6 6 0 0 0 12 0V3M12 15v6M9 21h6"/></svg></div>
+        <div class="snum">STAGE 04</div>
+        <h3>Reclaim</h3>
+        <p>Condensation is captured, filtered and recirculated. Zero waste, endless steam.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESERVE -->
+<section id="reserve">
+  <div class="wrap">
+    <div class="reserve">
+      <div class="reserve-left reveal">
+        <div class="sec-tag">04 — Reserve</div>
+        <h2>Plug Into Dinner</h2>
+        <p>Tables release at 09:00, seven days ahead. Seats are allocated by heat zone — tell us your tolerance and we'll wire you in.</p>
+        <div class="reserve-meta">
+          <div class="rm"><span>Location</span><span>Node 07 · Warehouse District</span></div>
+          <div class="rm"><span>Service</span><span>18:00 — 22:00</span></div>
+          <div class="rm"><span>Seating</span><span>8 per core table</span></div>
+          <div class="rm"><span>Hold</span><span>15 min grace window</span></div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <form id="resForm">
+          <div class="field">
+            <label for="name">Diner Name</label>
+            <input type="text" id="name" placeholder="Your name" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="date">Date</label>
+              <input type="date" id="date" required>
+            </div>
+            <div class="field">
+              <label for="time">Time</label>
+              <select id="time" required>
+                <option value="">Select</option>
+                <option>18:00</option><option>18:30</option><option>19:00</option>
+                <option>19:30</option><option>20:00</option><option>20:30</option><option>21:00</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="guests">Seats</label>
+              <select id="guests" required>
+                <option value="">Select</option>
+                <option>2</option><option>3</option><option>4</option>
+                <option>5</option><option>6</option><option>7</option><option>8</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="heat">Heat Tolerance</label>
+              <select id="heat" required>
+                <option value="">Select</option>
+                <option>Ambient</option><option>Warm</option><option>Hot</option><option>Intense</option><option>Incandescent</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Initiate Dinner →</button>
+          <p class="form-note">No deposit required. Confirmation routed to your inbox.</p>
+        </form>
+
+        <div class="success" id="success">
+          <div class="check"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></div>
+          <h3>Connection Established</h3>
+          <p>Your table is wired. Check your inbox for the confirmation packet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><span class="brand-mark"></span> CIRCUIT <span class="amp">&amp;</span> STEAM</div>
+        <p>A futuristic steamboat restaurant where heat flows through the table like data. Tune your heat.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Explore</h4>
+        <a href="#menu">Heat-Map Menu</a>
+        <a href="#setup">The Setup</a>
+        <a href="#flow">The Flow</a>
+        <a href="#reserve">Reserve</a>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <a href="#">hello@circuitandsteam.io</a>
+        <a href="#">+1 (000) 077-0707</a>
+        <a href="#">Warehouse District</a>
+      </div>
+      <div class="foot-col">
+        <h4>Signal</h4>
+        <a href="#">Instagram</a>
+        <a href="#">Newsletter</a>
+        <a href="#">Private Cores</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2024 Circuit &amp; Steam — Node 07</span>
+      <span>Designed for heat. Built for flow.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Nav scroll state */
+  var header = document.getElementById('header');
+  var scrollTimer;
+  window.addEventListener('scroll', function(){
+    header.classList.toggle('scrolled', window.scrollY > 40);
+    document.body.classList.add('scrolling');
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){ document.body.classList.remove('scrolling'); }, 220);
+  });
+
+  /* Burger */
+  var burger = document.getElementById('burger');
+  var navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', function(){ navLinks.classList.toggle('open'); });
+  navLinks.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){ navLinks.classList.remove('open'); });
+  });
+
+  /* Reveal on scroll */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* Menu expand */
+  document.querySelectorAll('.dish').forEach(function(d){
+    d.addEventListener('click', function(){ d.classList.toggle('open'); });
+  });
+
+  /* Table interactive */
+  var cx=200, cy=200, R=150;
+  var seatsG = document.getElementById('seats');
+  var flowG  = document.getElementById('flowLines');
+  var list   = document.getElementById('controlList');
+  var info   = document.getElementById('tableInfo');
+  var labels = ['N','NE','E','SE','S','SW','W','NW'];
+  var heats  = ['Ambient','Warm','Hot','Intense','Ambient','Hot','Warm','Incandescent'];
+  var seats=[];
+
+  for(var i=0;i<8;i++){
+    var ang = (-90 + i*45) * Math.PI/180;
+    var x = cx + R*Math.cos(ang);
+    var y = cy + R*Math.sin(ang);
+    seats.push({x:x,y:y,label:labels[i],heat:heats[i]});
+
+    var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cx); line.setAttribute('y1',cy);
+    line.setAttribute('x2',x);  line.setAttribute('y2',y);
+    line.setAttribute('class','flow-line'); line.dataset.i=i;
+    flowG.appendChild(line);
+
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','seat'); g.dataset.i=i;
+    var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r',22); c.setAttribute('class','seat-c');
+    var t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x); t.setAttribute('y',y+4); t.setAttribute('text-anchor','middle'); t.setAttribute('class','seat-n');
+    t.textContent = labels[i];
+    g.appendChild(c); g.appendChild(t); seatsG.appendChild(g);
+
+    var ctrl = document.createElement('div');
+    ctrl.className='ctrl'; ctrl.dataset.i=i;
+    ctrl.innerHTML = '<div class="cnum">'+(i+1)+'</div><div><div class="ctxt">Seat '+labels[i]+'</div><div class="csub">Heat allocation: <b style="color:var(--red)">'+heats[i]+'</b></div></div><div class="carrow">→</div>';
+    list.appendChild(ctrl);
+  }
+
+  function activate(i){
+    document.querySelectorAll('.seat').forEach(function(s){ s.classList.toggle('active', +s.dataset.i===i); });
+    document.querySelectorAll('.flow-line').forEach(function(l){ l.classList.toggle('active', +l.dataset.i===i); });
+    document.querySelectorAll('.ctrl').forEach(function(c){ c.classList.toggle('active', +c.dataset.i===i); });
+    var s = seats[i];
+    info.innerHTML = '<div class="ti-title">Seat '+s.label+' · Active</div><div class="ti-meta">Steam routed from <b>CORE</b> → <b>'+s.label+'</b>. Live heat allocation: <b>'+s.heat+'</b>. Flow rate nominal.</div>';
+  }
+  seatsG.addEventListener('click', function(e){ var g=e.target.closest('.seat'); if(g) activate(+g.dataset.i); });
+  list.addEventListener('click', function(e){ var c=e.target.closest('.ctrl'); if(c) activate(+c.dataset.i); });
+
+  /* Reserve form */
+  var form = document.getElementById('resForm');
+  var success = document.getElementById('success');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    form.style.display='none';
+    success.classList.add('show');
+  });
+})();
+</script>
+</body>
+</html>

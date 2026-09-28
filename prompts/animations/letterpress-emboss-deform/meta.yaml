@@ -1,0 +1,26 @@
+id: letterpress-emboss-deform
+title: "Letterpress Emboss Deform"
+category: animations
+tags:
+  - letterpress
+  - deboss
+  - emboss
+  - paper-compression
+  - tactile
+  - 3d-transform
+  - shadow-play
+status: polished
+summary: "Simulating the physical compression of paper under a heavy letterpress block. Text presses into the substrate, creating dynamic shadows and highlights."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

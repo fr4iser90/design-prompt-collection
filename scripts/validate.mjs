@@ -88,12 +88,11 @@ function validateEntry(category, id, errors) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(meta.created || "")) {
     fail(errors, `${category}/${id}: created must be YYYY-MM-DD`);
   }
-  if (meta.prompt !== "prompt.md") fail(errors, `${category}/${id}: prompt must be prompt.md`);
-  if (meta.extended !== "prompt.full.md") {
-    fail(errors, `${category}/${id}: extended must be prompt.full.md`);
+  if (!meta.prompt || meta.prompt !== "prompt.md") {
+    fail(errors, `${category}/${id}: prompt must be prompt.md`);
   }
-  if (!meta.preview || !/^(preview\.(svg|png|webp|jpg|jpeg)|runs\/[a-z0-9-]+\/preview\.(svg|png|webp|jpg|jpeg))$/.test(meta.preview)) {
-    fail(errors, `${category}/${id}: invalid preview filename`);
+  if (!meta.extended || meta.extended !== "prompt.full.md") {
+    fail(errors, `${category}/${id}: extended must be prompt.full.md`);
   }
 
   for (const req of ["prompt.md", "prompt.full.md"]) {
@@ -101,11 +100,35 @@ function validateEntry(category, id, errors) {
       fail(errors, `${category}/${id}: missing file ${req}`);
     }
   }
-  if (!fs.existsSync(path.join(dir, meta.preview))) {
-    fail(errors, `${category}/${id}: missing preview ${meta.preview}`);
+
+  // listed demo/preview must exist on disk; null = incomplete
+  const demo = meta.demo && meta.demo !== "null" ? meta.demo : null;
+  const preview =
+    meta.preview && meta.preview !== "null" ? meta.preview : null;
+
+  if (preview) {
+    if (
+      !/^(preview\.(svg|png|webp|jpg|jpeg)|runs\/[a-z0-9-]+\/preview\.(svg|png|webp|jpg|jpeg))$/.test(
+        preview
+      )
+    ) {
+      fail(errors, `${category}/${id}: invalid preview filename`);
+    } else if (!fs.existsSync(path.join(dir, preview))) {
+      fail(errors, `${category}/${id}: missing preview ${preview}`);
+    }
   }
-  if (meta.demo && meta.demo !== "null" && !fs.existsSync(path.join(dir, meta.demo))) {
-    fail(errors, `${category}/${id}: demo listed but missing: ${meta.demo}`);
+
+  if (demo) {
+    if (!fs.existsSync(path.join(dir, demo))) {
+      fail(errors, `${category}/${id}: demo listed but missing: ${demo}`);
+    }
+  }
+
+  if (demo && preview && /\.svg$/i.test(preview)) {
+    fail(
+      errors,
+      `${category}/${id}: demo present but preview is svg — need shot png/webp`
+    );
   }
 
   const prompt = fs.readFileSync(path.join(dir, "prompt.md"), "utf8").trim();

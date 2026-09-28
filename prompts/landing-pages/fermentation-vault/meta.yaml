@@ -1,0 +1,26 @@
+id: fermentation-vault
+title: "Fermentation Vault"
+category: landing-pages
+tags:
+  - fermentation
+  - kobo
+  - dark-mode
+  - time
+  - microbial
+  - craft
+  - amber
+status: polished
+summary: "Landing page for 'Microbe & Time', a fermentation supply brand. Dark, mysterious aesthetic with glowing amber lights inside glass jars, emphasizing the slow, living process."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

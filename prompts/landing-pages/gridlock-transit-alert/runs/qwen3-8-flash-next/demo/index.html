@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gridlock Transit Alert — Network Disruption Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1a1a;
+    --bg-2:#141414;
+    --bg-3:#0f0f0f;
+    --panel:#202020;
+    --panel-2:#242424;
+    --yellow:#ffcc00;
+    --red:#ff3333;
+    --green:#33d17a;
+    --blue:#37b6ff;
+    --orange:#ff8a2b;
+    --teal:#22d3c5;
+    --magenta:#ff4d9d;
+    --lime:#a6e04a;
+    --text:#f0f0f0;
+    --meta:#888888;
+    --line:#333333;
+    --line-soft:#2a2a2a;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --head:'Oswald','Arial Narrow',sans-serif;
+    --hazard:repeating-linear-gradient(45deg,#ffcc00 0 16px,#141414 16px 32px);
+    --hazard-red:repeating-linear-gradient(45deg,#ff3333 0 14px,#141414 14px 28px);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+  ::selection{background:var(--yellow);color:#141414;}
+  a{color:inherit;text-decoration:none;}
+  ul{list-style:none;}
+  img{display:block;max-width:100%;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+  /* ---------- ATMOSPHERIC BACKGROUND ---------- */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bg .grid{
+    position:absolute;inset:-2px;
+    background-image:
+      linear-gradient(to right,rgba(255,255,255,.035) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:44px 44px;
+    mask-image:radial-gradient(ellipse 120% 90% at 50% 0%,#000 30%,transparent 85%);
+  }
+  .bg .glow{
+    position:absolute;top:-15%;left:50%;transform:translateX(-50%);
+    width:1200px;height:600px;
+    background:radial-gradient(ellipse at center,rgba(255,204,0,.05),transparent 65%);
+  }
+  .bg .scan{
+    position:absolute;left:0;right:0;height:120px;
+    background:linear-gradient(to bottom,transparent,rgba(255,255,255,.02),transparent);
+    animation:scan 9s linear infinite;
+  }
+  @keyframes scan{0%{top:-15%}100%{top:115%}}
+  .bg .sweep{
+    position:absolute;top:0;bottom:0;left:0;width:2px;
+    background:linear-gradient(to bottom,transparent,rgba(255,204,0,.35),transparent);
+    animation:sweep 14s linear infinite;
+  }
+  @keyframes sweep{0%{left:-2%}100%{left:102%}}
+
+  .wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:0 24px;}
+
+  /* ---------- HAZARD STRIPES ---------- */
+  .hazard{height:14px;background:var(--hazard);}
+  .hazard.red{background:var(--hazard-red);}
+  .hazard--anim{background-size:45.25px 45.25px;animation:haz 1.4s linear infinite;}
+  @keyframes haz{to{background-position:45.25px 0;}}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:24px;padding:16px 24px;flex-wrap:wrap;
+    border-bottom:2px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand .mark{
+    width:38px;height:38px;border:2px solid var(--yellow);
+    display:grid;place-items:center;position:relative;flex:none;
+  }
+  .brand .mark::before{content:"";position:absolute;inset:0;background:var(--hazard);opacity:.18;}
+  .brand .mark svg{width:22px;height:22px;position:relative;}
+  .brand .name{font-family:var(--head);font-weight:700;font-size:22px;letter-spacing:.04em;line-height:1;}
+  .brand .sub{font-size:10px;letter-spacing:.28em;color:var(--meta);text-transform:uppercase;margin-top:3px;}
+  .nav{display:flex;gap:26px;align-items:center;}
+  .nav a{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--meta);position:relative;padding:4px 0;transition:color .2s;}
+  .nav a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--yellow);transition:width .25s;}
+  .nav a:hover{color:var(--text);}
+  .nav a:hover::after{width:100%;}
+  .status-pill{
+    display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;border:1px solid var(--green);color:var(--green);padding:6px 12px;
+  }
+  .status-pill .dot{width:8px;height:8px;background:var(--green);animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;padding:64px 0 40px;}
+  .hero__grid{display:grid;grid-template-columns:1.55fr .95fr;gap:40px;align-items:end;}
+  .kicker{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--yellow);
+    border-left:3px solid var(--yellow);padding:4px 0 4px 12px;margin-bottom:22px;
+  }
+  .hero h1{
+    font-family:var(--head);font-weight:700;
+    font-size:clamp(3.2rem,11vw,9.5rem);line-height:.86;
+    letter-spacing:.01em;text-transform:uppercase;
+  }
+  .hero h1 .l2{display:block;color:var(--text);}
+  .hero h1 .l1{
+    display:block;color:transparent;
+    -webkit-text-stroke:2px var(--text);
+  }
+  .hero h1 .l2 .accent{color:var(--yellow);}
+  .hero__desc{
+    max-width:52ch;margin-top:26px;color:var(--meta);font-size:14px;
+    border-top:2px solid var(--line);padding-top:20px;
+  }
+  .hero__desc b{color:var(--text);font-weight:600;}
+
+  /* ---------- FLIP BOARD ---------- */
+  .board{border:2px solid var(--line);background:var(--bg-2);}
+  .board__head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px;border-bottom:2px solid var(--line);
+    font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--meta);
+  }
+  .board__head .live{display:flex;align-items:center;gap:8px;color:var(--red);}
+  .board__head .live .dot{width:7px;height:7px;background:var(--red);animation:blink 1.1s infinite;}
+  .board__body{padding:18px 16px;display:grid;gap:16px;}
+  .board__row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+  .board__row .lbl{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--meta);}
+  .board__row .val{font-family:var(--head);font-weight:700;font-size:2.6rem;line-height:1;}
+  .flip{display:inline-flex;gap:2px;}
+  .flip .cell{
+    display:inline-grid;place-items:center;
+    background:#0c0c0c;border:1px solid #303030;
+    min-width:.72em;padding:2px 4px;color:var(--yellow);
+    position:relative;overflow:hidden;
+  }
+  .flip .cell.crit{color:var(--red);}
+  .flip .cell::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.6);}
+  .flip .cell.tick{animation:flip .5s ease;}
+  @keyframes flip{0%{transform:rotateX(90deg);filter:brightness(2)}100%{transform:rotateX(0)}}
+  .board__foot{border-top:2px solid var(--line);padding:10px 16px;font-size:10px;letter-spacing:.2em;color:var(--meta);text-transform:uppercase;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .board__foot .clock{color:var(--green);}
+
+  /* ---------- TICKER ---------- */
+  .ticker{
+    border-top:2px solid var(--yellow);border-bottom:2px solid var(--yellow);
+    background:var(--bg-3);overflow:hidden;white-space:nowrap;
+    display:flex;align-items:center;
+  }
+  .ticker__tag{
+    flex:none;background:var(--yellow);color:#141414;font-weight:700;
+    font-size:11px;letter-spacing:.2em;text-transform:uppercase;padding:12px 18px;z-index:2;
+  }
+  .ticker__track{display:flex;animation:marq 32s linear infinite;}
+  .ticker:hover .ticker__track{animation-play-state:paused;}
+  .ticker__track span{padding:12px 30px;font-size:12px;letter-spacing:.06em;color:var(--text);display:inline-flex;align-items:center;gap:10px;}
+  .ticker__track span::before{content:"◆";color:var(--yellow);font-size:8px;}
+  .ticker__track span.crit::before{color:var(--red);}
+  @keyframes marq{to{transform:translateX(-50%)}}
+
+  /* ---------- SECTION HEAD ---------- */
+  section{padding:80px 0;}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:40px;flex-wrap:wrap;}
+  .sec-head .num{font-size:11px;letter-spacing:.3em;color:var(--yellow);text-transform:uppercase;}
+  .sec-head h2{font-family:var(--head);font-weight:700;font-size:clamp(2rem,5vw,3.6rem);text-transform:uppercase;line-height:.9;letter-spacing:.01em;}
+  .sec-head p{color:var(--meta);font-size:12px;max-width:34ch;text-align:right;letter-spacing:.04em;}
+
+  /* ---------- DISRUPTION CARDS ---------- */
+  .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  .card{
+    --c:var(--yellow);
+    position:relative;border:2px solid var(--c);background:var(--panel);
+    padding:20px 20px 18px;overflow:hidden;
+    transition:transform .35s cubic-bezier(.2,.9,.25,1.1),background .3s;
+    opacity:0;transform:translateY(26px);
+  }
+  .card.in{opacity:1;transform:translateY(0);}
+  .card::before{
+    content:"";position:absolute;inset:0;z-index:0;opacity:0;transition:opacity .3s;
+    background:var(--hazard);
+  }
+  .card:hover::before{opacity:.06;}
+  .card:hover{transform:translateY(-4px);}
+  .card__inner{position:relative;z-index:1;}
+  .card__top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .route{display:flex;align-items:center;gap:10px;}
+  .route__badge{
+    font-family:var(--head);font-weight:700;font-size:20px;line-height:1;
+    color:#141414;background:var(--c);min-width:44px;height:44px;
+    display:grid;place-items:center;padding:0 8px;
+  }
+  .route__name{font-family:var(--head);font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.02em;}
+  .route__id{font-size:10px;color:var(--meta);letter-spacing:.14em;}
+  .status{
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+    padding:5px 10px;border:1px solid var(--c);color:var(--c);white-space:nowrap;
+  }
+  .card[data-state="critical"]{border-color:var(--red);}
+  .card[data-state="critical"] .status{border-color:var(--red);color:var(--red);background:rgba(255,51,51,.06);}
+  .card[data-state="critical"]::before{background:var(--hazard-red);}
+  .card[data-state="critical"]{animation:pulse 2.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:inset 0 0 0 0 rgba(255,51,51,0)}50%{box-shadow:inset 0 0 0 2px rgba(255,51,51,.35)}}
+  .card__meta{display:flex;gap:24px;flex-wrap:wrap;font-size:11px;color:var(--meta);margin:14px 0;padding-top:14px;border-top:1px solid var(--line);}
+  .card__meta b{color:var(--text);font-weight:600;display:block;font-size:15px;font-family:var(--head);}
+  .card__msg{font-size:12.5px;color:#cfcfcf;line-height:1.6;}
+  .card__msg .hl{color:var(--yellow);}
+  .card__msg .crit{color:var(--red);}
+  .card__actions{display:flex;align-items:center;gap:14px;margin-top:16px;}
+  .btn{
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;
+    border:1px solid var(--line);padding:9px 14px;color:var(--text);
+    position:relative;overflow:hidden;transition:color .3s,border-color .3s;
+  }
+  .btn::before{content:"";position:absolute;inset:0;background:var(--yellow);transform:translateX(-101%) skewX(-18deg);transition:transform .35s ease;z-index:-1;}
+  .btn:hover{color:#141414;border-color:var(--yellow);}
+  .btn:hover::before{transform:translateX(0) skewX(-18deg);}
+  .btn.crit::before{background:var(--red);}
+  .btn.crit:hover{color:#fff;border-color:var(--red);}
+  .btn.ghost{border-color:var(--meta);color:var(--meta);}
+  .btn.ghost:hover{color:#141414;}
+  .card__expand{
+    max-height:0;overflow:hidden;transition:max-height .45s ease;
+    border-top:1px solid var(--line);margin-top:0;
+  }
+  .card.open .card__expand{max-height:340px;margin-top:16px;}
+  .stations{display:grid;gap:0;padding-top:14px;}
+  .stn{display:flex;align-items:center;gap:12px;font-size:11px;padding:7px 0;border-bottom:1px dashed var(--line-soft);}
+  .stn:last-child{border-bottom:none;}
+  .stn .dot{width:9px;height:9px;flex:none;border:2px solid var(--meta);}
+  .stn .dot.ok{border-color:var(--green);background:var(--green);}
+  .stn .dot.warn{border-color:var(--yellow);background:var(--yellow);}
+  .stn .dot.down{border-color:var(--red);background:var(--red);}
+  .stn .nm{flex:1;color:#d8d8d8;}
+  .stn .tag{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--meta);}
+  .stn .tag.ok{color:var(--green)}.stn .tag.warn{color:var(--yellow)}.stn .tag.down{color:var(--red)}
+
+  /* ---------- LINE DIAGRAM ---------- */
+  .diagram-wrap{border:2px solid var(--line);background:var(--bg-2);position:relative;overflow:hidden;}
+  .diagram-wrap .dhead{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:2px solid var(--line);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--meta);}
+  .diagram{display:block;width:100%;height:auto;}
+  .dline{stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .dline.active{animation:glow 3s ease-in-out infinite;}
+  .dline.down{stroke:var(--red);stroke-dasharray:10 8;animation:dash 1.2s linear infinite;}
+  @keyframes dash{to{stroke-dashoffset:-36;}}
+  @keyframes glow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}50%{filter:drop-shadow(0 0 6px currentColor)}}
+  .dstation{fill:#1a1a1a;stroke:#f0f0f0;stroke-width:2;}
+  .dstation.crit{stroke:var(--red);}
+  .dlabel{font-family:var(--mono);font-size:11px;fill:#9a9a9a;letter-spacing:.08em;}
+  .dlabel.on{fill:#f0f0f0;}
+  .legend{display:flex;flex-wrap:wrap;gap:18px 26px;padding:16px;border-top:2px solid var(--line);}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--meta);}
+  .legend .sw{width:26px;height:4px;}
+  .legend .sw.dash{height:0;border-top:4px dashed var(--red);}
+  .legend .sw.dot{width:9px;height:9px;border:2px solid #f0f0f0;background:#1a1a1a;}
+
+  /* ---------- ADVISORY ---------- */
+  .advisory{border:2px solid var(--yellow);background:var(--bg-2);padding:0;position:relative;}
+  .advisory .abar{height:12px;background:var(--hazard);}
+  .advisory .abody{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .advisory .abody > div{padding:28px 30px;}
+  .advisory .abody > div:first-child{border-right:2px solid var(--line);}
+  .advisory h3{font-family:var(--head);font-weight:700;font-size:1.6rem;text-transform:uppercase;margin-bottom:14px;}
+  .advisory p{color:var(--meta);font-size:13px;line-height:1.7;}
+  .advisory .kv{display:grid;gap:12px;}
+  .advisory .kv .row{display:flex;justify-content:space-between;font-size:12px;border-bottom:1px solid var(--line);padding-bottom:10px;}
+  .advisory .kv .row .k{color:var(--meta);letter-spacing:.1em;text-transform:uppercase;font-size:10px;}
+  .advisory .kv .row .v{color:var(--text);font-weight:600;font-family:var(--head);font-size:16px;}
+
+  /* ---------- FOOTER ---------- */
+  footer{border-top:2px solid var(--line);background:var(--bg-3);padding:48px 0 32px;margin-top:20px;}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px;}
+  .foot-brand .name{font-family:var(--head);font-weight:700;font-size:26px;letter-spacing:.03em;}
+  .foot-brand p{color:var(--meta);font-size:12px;margin-top:12px;max-width:32ch;line-height:1.7;}
+  .foot-col h4{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--yellow);margin-bottom:16px;}
+  .foot-col a{display:block;color:var(--meta);font-size:12px;padding:5px 0;transition:color .2s;}
+  .foot-col a:hover{color:var(--text);}
+  .foot-bar{margin-top:40px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--meta);}
+
+  /* ---------- REVEAL ---------- */
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.9,.25,1.05);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:960px){
+    .hero__grid{grid-template-columns:1fr;gap:34px;}
+    .cards{grid-template-columns:1fr;}
+    .advisory .abody{grid-template-columns:1fr;}
+    .advisory .abody > div:first-child{border-right:none;border-bottom:2px solid var(--line);}
+    .foot-grid{grid-template-columns:1fr 1fr;gap:28px;}
+    .nav{display:none;}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 16px;}
+    section{padding:56px 0;}
+    .hero{padding:44px 0 24px;}
+    .sec-head p{text-align:left;}
+    .foot-grid{grid-template-columns:1fr;}
+    .board__row .val{font-size:2rem;}
+    .card__meta{gap:16px;}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important;}
+    .reveal,.card{opacity:1!important;transform:none!important;}
+    .ticker__track{animation:none;}
+    .bg .scan,.bg .sweep{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" aria-hidden="true">
+  <div class="grid"></div>
+  <div class="glow"></div>
+  <div class="scan"></div>
+  <div class="sweep"></div>
+</div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#ffcc00" stroke-width="2.2" stroke-linecap="round">
+        <path d="M4 20h16M6 20V9l6-4 6 4v11M9 13h6M9 16h6"/>
+      </svg>
+    </div>
+    <div>
+      <div class="name">GRIDLOCK TRANSIT ALERT</div>
+      <div class="sub">Metropolitan Transit Authority · Ops Center</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="#status">Status</a>
+    <a href="#lines">Lines</a>
+    <a href="#network">Network Map</a>
+    <a href="#advisory">Advisory</a>
+  </nav>
+  <div class="status-pill"><span class="dot"></span> Live Feed Active</div>
+</header>
+<div class="hazard hazard--anim" aria-hidden="true"></div>
+
+<!-- HERO -->
+<section class="hero" id="status" style="padding-top:56px;">
+  <div class="wrap">
+    <div class="hero__grid">
+      <div>
+        <span class="kicker">Real-Time Disruption Hub</span>
+        <h1>
+          <span class="l1">Network</span>
+          <span class="l2">Status<span class="accent">.</span></span>
+        </h1>
+        <p class="hero__desc">
+          Central nervous system for the city's rail and bus network. Disruptions are published
+          the moment they are detected by <b>1,240 field sensors</b> and verified by the Operations
+          Control Center. All times shown are <b>local (GMT+0)</b>.
+        </p>
+      </div>
+
+      <!-- FLIP BOARD -->
+      <div class="board">
+        <div class="board__head">
+          <span>Ops Summary</span>
+          <span class="live"><span class="dot"></span> Live</span>
+        </div>
+        <div class="board__body">
+          <div class="board__row">
+            <span class="lbl">Active Alerts</span>
+            <span class="val flip" id="flip-alerts" data-value="07"></span>
+          </div>
+          <div class="board__row">
+            <span class="lbl">Critical Stops</span>
+            <span class="val flip" id="flip-crit" data-value="03" data-crit="1"></span>
+          </div>
+          <div class="board__row">
+            <span class="lbl">Network Load</span>
+            <span class="val flip" id="flip-load" data-value="82"></span>
+          </div>
+        </div>
+        <div class="board__foot">
+          <span>Refresh <span class="clock">00:04</span></span>
+          <span>Nodes 1,240 / 1,244</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" role="marquee" aria-label="Live alert feed">
+  <div class="ticker__tag">◆ Alert Feed</div>
+  <div class="ticker__track" id="ticker">
+    <span class="crit">RED LINE — Signal failure at Union Terminal · full stoppage</span>
+    <span>BLUE LINE — 12 min delays between Riverside &amp; Central</span>
+    <span class="crit">GREEN LINE — Track obstruction near Depot · shuttle active</span>
+    <span>ORANGE LINE — Reduced service · engineering works until 06:00</span>
+    <span>TEAL LINE — On schedule · no disruptions reported</span>
+    <span class="crit">MAGENTA LINE — Power fault at Northgate · evacuating</span>
+  </div>
+</div>
+
+<!-- DISRUPTION GRID -->
+<section id="lines">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="num">02 / Disruption Register</div>
+        <h2>Active Incidents</h2>
+      </div>
+      <p>Hover a route to reveal detail. Tap expand for station-by-station status.</p>
+    </div>
+
+    <div class="cards">
+
+      <!-- RED -->
+      <article class="card" data-state="critical" style="--c:var(--red)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">R</span>
+              <div>
+                <div class="route__name">Red Line</div>
+                <div class="route__id">LINE-01 · 24 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Stopped</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>8 of 24</b></div>
+            <div>Delay<b>∞ HOLD</b></div>
+            <div>Detected<b>14:32</b></div>
+          </div>
+          <p class="card__msg"><span class="crit">SIGNAL FAILURE</span> at Union Terminal. All trains held. Emergency crew on site. Bus bridge operating between Central &amp; Union.</p>
+          <div class="card__actions">
+            <button class="btn crit" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot down"></span><span class="nm">Union Terminal</span><span class="tag down">Held</span></div>
+              <div class="stn"><span class="dot down"></span><span class="nm">Civic Plaza</span><span class="tag down">Held</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Market St</span><span class="tag warn">Slow</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Harbor West</span><span class="tag ok">Clear</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- BLUE -->
+      <article class="card" data-state="caution" style="--c:var(--blue)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">B</span>
+              <div>
+                <div class="route__name">Blue Line</div>
+                <div class="route__id">LINE-02 · 19 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Delay</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>5 of 19</b></div>
+            <div>Delay<b>+12 MIN</b></div>
+            <div>Detected<b>13:48</b></div>
+          </div>
+          <p class="card__msg"><span class="hl">HEAVY RIDERSHIP</span> between Riverside &amp; Central. Trains dwelling longer at peak platforms. No further action required.</p>
+          <div class="card__actions">
+            <button class="btn" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot warn"></span><span class="nm">Riverside</span><span class="tag warn">Slow</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Dock 9</span><span class="tag warn">Slow</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Central</span><span class="tag warn">Slow</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Eastgate</span><span class="tag ok">Clear</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- GREEN -->
+      <article class="card" data-state="caution" style="--c:var(--green)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">G</span>
+              <div>
+                <div class="route__name">Green Line</div>
+                <div class="route__id">LINE-03 · 16 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Disrupt</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>3 of 16</b></div>
+            <div>Delay<b>+07 MIN</b></div>
+            <div>Detected<b>14:05</b></div>
+          </div>
+          <p class="card__msg"><span class="hl">TRACK OBSTRUCTION</span> near Depot. Single-track operation. Replacement shuttle buses running Depot → Fairview.</p>
+          <div class="card__actions">
+            <button class="btn" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot warn"></span><span class="nm">Depot</span><span class="tag warn">Shuttle</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Foundry</span><span class="tag warn">Slow</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Fairview</span><span class="tag ok">Clear</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ORANGE -->
+      <article class="card" data-state="caution" style="--c:var(--orange)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">O</span>
+              <div>
+                <div class="route__name">Orange Line</div>
+                <div class="route__id">LINE-04 · 12 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Works</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>Planned</b></div>
+            <div>Delay<b>REDUCED</b></div>
+            <div>Detected<b>22:00</b></div>
+          </div>
+          <p class="card__msg"><span class="hl">ENGINEERING WORKS</span> overnight. Service reduced to every 20 min until 06:00. Night bus N4 covers all stations.</p>
+          <div class="card__actions">
+            <button class="btn" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot warn"></span><span class="nm">Westfield</span><span class="tag warn">Every 20</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Grove Park</span><span class="tag warn">Every 20</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Summit</span><span class="tag ok">Clear</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- MAGENTA -->
+      <article class="card" data-state="critical" style="--c:var(--magenta)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">M</span>
+              <div>
+                <div class="route__name">Magenta Line</div>
+                <div class="route__id">LINE-05 · 14 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Evac</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>North Sec.</b></div>
+            <div>Delay<b>∞ HOLD</b></div>
+            <div>Detected<b>14:41</b></div>
+          </div>
+          <p class="card__msg"><span class="crit">POWER FAULT</span> at Northgate. Station evacuated as a precaution. Trains terminated at Midtown. Crews assessing.</p>
+          <div class="card__actions">
+            <button class="btn crit" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot down"></span><span class="nm">Northgate</span><span class="tag down">Evac</span></div>
+              <div class="stn"><span class="dot down"></span><span class="nm">Kingsway</span><span class="tag down">Closed</span></div>
+              <div class="stn"><span class="dot warn"></span><span class="nm">Midtown</span><span class="tag warn">Term.</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- TEAL -->
+      <article class="card" data-state="clear" style="--c:var(--teal)">
+        <div class="card__inner">
+          <div class="card__top">
+            <div class="route">
+              <span class="route__badge">T</span>
+              <div>
+                <div class="route__name">Teal Line</div>
+                <div class="route__id">LINE-06 · 11 STATIONS</div>
+              </div>
+            </div>
+            <span class="status">● Normal</span>
+          </div>
+          <div class="card__meta">
+            <div>Affected<b>0 of 11</b></div>
+            <div>Delay<b>ON TIME</b></div>
+            <div>Detected<b>—</b></div>
+          </div>
+          <p class="card__msg"><span style="color:var(--green)">ALL CLEAR.</span> Service running to schedule. Average headway 6 min. No advisories in effect.</p>
+          <div class="card__actions">
+            <button class="btn" data-toggle>Details</button>
+            <button class="btn ghost">Alternate Route</button>
+          </div>
+          <div class="card__expand">
+            <div class="stations">
+              <div class="stn"><span class="dot ok"></span><span class="nm">Bayfront</span><span class="tag ok">Clear</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Old Town</span><span class="tag ok">Clear</span></div>
+              <div class="stn"><span class="dot ok"></span><span class="nm">Vineyard</span><span class="tag ok">Clear</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<div class="hazard red" aria-hidden="true"></div>
+
+<!-- NETWORK DIAGRAM -->
+<section id="network">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="num">03 / Schematic</div>
+        <h2>Network Map</h2>
+      </div>
+      <p>Active lines glow. Disrupted segments render dashed red in real time.</p>
+    </div>
+
+    <div class="diagram-wrap reveal">
+      <div class="dhead"><span>Line Schematic · Simplified</span><span>6 Lines · 96 Stations</span></div>
+      <svg class="diagram" viewBox="0 0 1000 360" role="img" aria-label="Schematic of the transit network">
+        <!-- faint reference grid -->
+        <g stroke="#242424" stroke-width="1">
+          <line x1="0" y1="90" x2="1000" y2="90"/>
+          <line x1="0" y1="180" x2="1000" y2="180"/>
+          <line x1="0" y1="270" x2="1000" y2="270"/>
+        </g>
+
+        <!-- RED LINE (down) -->
+        <path class="dline down active" style="color:#ff3333" stroke="#ff3333" d="M60 60 H940"/>
+        <!-- BLUE LINE -->
+        <path class="dline active" style="color:#37b6ff" stroke="#37b6ff" d="M60 120 H940"/>
+        <!-- GREEN LINE -->
+        <path class="dline active" style="color:#33d17a" stroke="#33d17a" d="M60 180 H940"/>
+        <!-- ORANGE LINE -->
+        <path class="dline active" style="color:#ff8a2b" stroke="#ff8a2b" d="M60 240 H940"/>
+        <!-- MAGENTA (down, diagonal) -->
+        <path class="dline down" style="color:#ff4d9d" stroke="#ff4d9d" d="M120 330 L360 240 L940 240"/>
+        <!-- TEAL -->
+        <path class="dline active" style="color:#22d3c5" stroke="#22d3c5" d="M60 300 H940"/>
+
+        <!-- vertical connectors -->
+        <path class="dline active" style="color:#f0f0f0" stroke="#5a5a5a" d="M500 60 V300"/>
+        <path class="dline active" style="color:#f0f0f0" stroke="#5a5a5a" d="M760 60 V240"/>
+
+        <!-- interchange stations -->
+        <circle class="dstation" cx="500" cy="60" r="7"/>
+        <circle class="dstation" cx="500" cy="120" r="7"/>
+        <circle class="dstation" cx="500" cy="180" r="7"/>
+        <circle class="dstation" cx="500" cy="240" r="7"/>
+        <circle class="dstation" cx="500" cy="300" r="7"/>
+        <circle class="dstation" cx="760" cy="60" r="7"/>
+        <circle class="dstation" cx="760" cy="120" r="7"/>
+        <circle class="dstation" cx="760" cy="180" r="7"/>
+        <circle class="dstation" cx="760" cy="240" r="7"/>
+
+        <!-- fault markers -->
+        <circle class="dstation crit" cx="500" cy="60" r="11"/>
+        <circle class="dstation crit" cx="360" cy="240" r="11"/>
+
+        <!-- labels -->
+        <text class="dlabel on" x="60" y="48">R · UNION</text>
+        <text class="dlabel" x="60" y="108">B · CENTRAL</text>
+        <text class="dlabel" x="60" y="168">G · DEPOT</text>
+        <text class="dlabel" x="60" y="228">O · WESTFIELD</text>
+        <text class="dlabel" x="60" y="322">T · BAYFRONT</text>
+        <text class="dlabel on" x="512" y="52">UNION TERMINAL ⚠</text>
+        <text class="dlabel on" x="372" y="232">NORTHGATE ⚠</text>
+      </svg>
+      <div class="legend">
+        <div class="li"><span class="sw" style="background:#33d17a"></span> On Schedule</div>
+        <div class="li"><span class="sw" style="background:#ffcc00"></span> Caution / Delay</div>
+        <div class="li"><span class="sw dash"></span> Critical / Stopped</div>
+        <div class="li"><span class="sw dot"></span> Interchange</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADVISORY -->
+<section id="advisory">
+  <div class="wrap">
+    <div class="advisory reveal">
+      <div class="abar"></div>
+      <div class="abody">
+        <div>
+          <h3>Operations Advisory</h3>
+          <p>
+            A cascading signal fault at Union Terminal has triggered automatic hold across the
+            Red and Magenta corridors. Passengers are advised to allow <b style="color:#f0f0f0">+25 minutes</b>
+            for cross-city journeys and to use the Blue Line interchange at Central. Emergency
+            services are on site at Northgate; no injuries reported. This hub updates automatically —
+            no manual refresh required.
+          </p>
+        </div>
+        <div class="kv">
+          <div class="row"><span class="k">Incident Ref</span><span class="v">OPS-2291-A</span></div>
+          <div class="row"><span class="k">Severity</span><span class="v" style="color:#ff3333">Level 3 · Major</span></div>
+          <div class="row"><span class="k">Est. Resolution</span><span class="v">~16:30</span></div>
+          <div class="row"><span class="k">Lines Affected</span><span class="v">2 of 6</span></div>
+          <div class="row"><span class="k">Last Verified</span><span class="v" style="color:#33d17a">14:47:02</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="name">GRIDLOCK</div>
+        <p>The real-time disruption hub for the Metropolitan Transit Authority. Built for clarity under pressure.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Network</h4>
+        <a href="#lines">Line Status</a>
+        <a href="#network">Network Map</a>
+        <a href="#advisory">Advisories</a>
+        <a href="#status">Live Feed</a>
+      </div>
+      <div class="foot-col">
+        <h4>Support</h4>
+        <a href="#">Report Issue</a>
+        <a href="#">Accessibility</a>
+        <a href="#">Lost &amp; Found</a>
+        <a href="#">Contact Ops</a>
+      </div>
+      <div class="foot-col">
+        <h4>Systems</h4>
+        <a href="#">Sensor Grid</a>
+        <a href="#">API Access</a>
+        <a href="#">Status History</a>
+        <a href="#">Data Feed</a>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© 2024 Metropolitan Transit Authority</span>
+      <span>System Nominal · Feed Latency 1.2s</span>
+      <span>WCAG AAA Compliant</span>
+    </div>
+  </div>
+</footer>
+
+<div class="hazard hazard--anim" aria-hidden="true"></div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Flip board digits ---- */
+  function buildFlip(el){
+    var v = el.getAttribute('data-value') || '00';
+    var crit = el.hasAttribute('data-crit');
+    el.innerHTML = '';
+    for(var i=0;i<v.length;i++){
+      var c = document.createElement('span');
+      c.className = 'cell' + (crit ? ' crit' : '');
+      c.textContent = v[i];
+      el.appendChild(c);
+    }
+  }
+  var boards = document.querySelectorAll('.flip');
+  boards.forEach(buildFlip);
+
+  function setFlip(el, val){
+    var v = String(val).padStart(el.children.length,'0');
+    var crit = el.hasAttribute('data-crit');
+    for(var i=0;i<el.children.length;i++){
+      var cell = el.children[i];
+      if(cell.textContent !== v[i]){
+        cell.textContent = v[i];
+        if(!reduce){
+          cell.classList.remove('tick');
+          void cell.offsetWidth;
+          cell.classList.add('tick');
+        }
+      }
+    }
+  }
+
+  /* ---- Live-ish data jitter ---- */
+  var alertsEl = document.getElementById('flip-alerts');
+  var loadEl = document.getElementById('flip-load');
+  var loadVal = 82;
+  if(!reduce){
+    setInterval(function(){
+      // occasionally nudge load
+      loadVal = Math.max(60, Math.min(96, loadVal + (Math.random()<.5?-1:1)*Math.round(Math.random()*3)));
+      setFlip(loadEl, loadVal);
+    }, 2600);
+  }
+
+  /* ---- Refresh clock in board foot ---- */
+  var clock = document.querySelector('.board__foot .clock');
+  var secs = 4;
+  if(!reduce && clock){
+    setInterval(function(){
+      secs = (secs+1) % 60;
+      clock.textContent = '00:' + String(secs).padStart(2,'0');
+    }, 1000);
+  }
+
+  /* ---- Ticker duplication for seamless marquee ---- */
+  var ticker = document.getElementById('ticker');
+  if(ticker){ ticker.innerHTML += ticker.innerHTML; }
+
+  /* ---- Reveal on scroll ---- */
+  var revealEls = document.querySelectorAll('.reveal, .card');
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var el = e.target;
+          var delay = 0;
+          if(el.classList.contains('card')){
+            var cards = Array.prototype.slice.call(el.parentElement.children);
+            delay = cards.indexOf(el) * 90;
+          }
+          setTimeout(function(){ el.classList.add('in'); }, delay);
+          io.unobserve(el);
+        }
+      });
+    }, {threshold:.15});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---- Card expand toggle ---- */
+  document.querySelectorAll('[data-toggle]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var card = btn.closest('.card');
+      var open = card.classList.toggle('open');
+      btn.textContent = open ? 'Collapse' : 'Details';
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Ink Brush Lifting — 書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f2eb;
+    --paper-deep:#ece6d8;
+    --ink:#0f0f0f;
+    --ink-soft:#2a2824;
+    --seal:#b23a2e;
+    --mono:'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --serif:'Shippori Mincho B1', Georgia, 'Songti SC', serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--mono);
+    background:#141210;
+    color:var(--ink);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---- stage / film frame ---- */
+  .stage{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(120% 90% at 50% 40%, #26221d 0%, #17140f 60%, #0d0b09 100%);
+  }
+  .frame{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    background:var(--paper);
+    overflow:hidden;
+    box-shadow:
+      0 40px 120px -30px rgba(0,0,0,.85),
+      0 0 0 1px rgba(0,0,0,.5),
+      inset 0 0 0 1px rgba(255,255,255,.25);
+  }
+
+  /* ---- canvas ---- */
+  #scene{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  /* ---- overlays (paper texture, vignette, grain, light, flicker) ---- */
+  .ov{ position:absolute; inset:0; pointer-events:none; }
+  .grain{
+    opacity:.5; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:180px 180px;
+  }
+  .fibers{
+    opacity:.16; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.006 0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.17 0 0 0 0 0.12 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size:220px 220px;
+  }
+  .vignette{
+    background:
+      radial-gradient(130% 120% at 50% 42%, rgba(0,0,0,0) 46%, rgba(28,20,10,.10) 74%, rgba(20,12,4,.34) 100%);
+  }
+  .light{
+    background:linear-gradient(115deg, rgba(255,252,244,.55) 0%, rgba(255,252,244,0) 42%, rgba(0,0,0,0) 62%, rgba(20,14,6,.14) 100%);
+  }
+  .flicker{ background:#000; opacity:0; animation:flick 7.5s ease-in-out infinite; }
+  @keyframes flick{
+    0%,100%{opacity:0;}
+    46%{opacity:0;}
+    47%{opacity:.05;}
+    48%{opacity:0;}
+    72%{opacity:0;}
+    72.6%{opacity:.07;}
+    73.2%{opacity:0;}
+  }
+
+  /* ---- HUD ---- */
+  .hud{ position:absolute; inset:0; pointer-events:none; z-index:5; }
+  .hud .t{
+    position:absolute; font-family:var(--mono);
+    font-size:clamp(9px,1.1vw,12px); letter-spacing:.22em;
+    color:rgba(15,15,15,.62); text-transform:uppercase;
+  }
+  .hud .t b{ font-weight:700; color:rgba(15,15,15,.9); }
+  .hud .tl{ top:clamp(16px,3vh,30px); left:clamp(18px,3vw,40px); }
+  .hud .tr{ top:clamp(16px,3vh,30px); right:clamp(18px,3vw,40px); text-align:right; }
+  .hud .bl{ bottom:clamp(16px,3vh,30px); left:clamp(18px,3vw,40px); }
+  .hud .br{ bottom:clamp(16px,3vh,30px); right:clamp(18px,3vw,40px); text-align:right; }
+
+  .rec{ display:inline-flex; align-items:center; gap:7px; }
+  .rec .dot{
+    width:8px;height:8px;border-radius:50%;background:var(--seal);
+    box-shadow:0 0 0 0 rgba(178,58,46,.55); animation:rec 1.4s ease-out infinite;
+  }
+  @keyframes rec{
+    0%{box-shadow:0 0 0 0 rgba(178,58,46,.5);}
+    70%{box-shadow:0 0 0 7px rgba(178,58,46,0);}
+    100%{box-shadow:0 0 0 0 rgba(178,58,46,0);}
+  }
+
+  /* ---- brand ---- */
+  .brand{
+    position:absolute; z-index:6; pointer-events:none;
+    left:clamp(18px,3vw,44px); top:50%; transform:translateY(-50%);
+  }
+  .brand .k{
+    font-family:var(--serif); font-weight:700;
+    font-size:clamp(52px,10vw,150px); line-height:.9;
+    color:rgba(15,15,15,.14); letter-spacing:.02em;
+    text-shadow:0 1px 0 rgba(255,255,255,.35);
+  }
+  .brand .t{
+    font-family:var(--mono); font-weight:700;
+    font-size:clamp(13px,1.7vw,20px); letter-spacing:.34em;
+    color:rgba(15,15,15,.72); margin-top:14px;
+    padding-left:3px;
+  }
+  .brand .t span{ color:var(--seal); }
+  .brand .sub{
+    font-family:var(--mono); font-size:clamp(8px,1vw,10px);
+    letter-spacing:.42em; color:rgba(15,15,15,.4); margin-top:8px;
+  }
+
+  /* ---- seal ---- */
+  .seal{
+    position:absolute; z-index:6; pointer-events:none;
+    right:clamp(20px,3.2vw,46px); bottom:clamp(20px,3.4vh,42px);
+    width:clamp(46px,6vw,74px); height:clamp(46px,6vw,74px);
+    border-radius:7px; background:var(--seal);
+    display:grid; place-items:center;
+    box-shadow:0 6px 18px -6px rgba(120,30,20,.6), inset 0 0 0 2px rgba(255,255,255,.14);
+    transform:rotate(-2deg);
+    filter:contrast(1.05);
+  }
+  .seal::after{
+    content:""; position:absolute; inset:0; border-radius:7px; opacity:.5; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    background-size:60px 60px;
+  }
+  .seal span{
+    font-family:var(--serif); font-weight:700; color:#f5f2eb;
+    font-size:clamp(22px,3vw,38px); line-height:1;
+    text-shadow:0 1px 1px rgba(90,15,10,.5);
+  }
+
+  /* ---- caption ---- */
+  .caption{
+    position:absolute; z-index:6; pointer-events:none;
+    left:50%; bottom:clamp(16px,3vh,30px); transform:translateX(-50%);
+    font-family:var(--serif); font-weight:500;
+    font-size:clamp(11px,1.4vw,15px); letter-spacing:.16em;
+    color:rgba(15,15,15,.5); white-space:nowrap;
+  }
+  .caption b{ color:rgba(15,15,15,.85); font-weight:600; }
+
+  @media (max-width:640px){
+    .brand .k{ font-size:clamp(44px,15vw,90px); }
+    .hud .tr{ display:none; }
+    .caption{ font-size:10px; letter-spacing:.1em; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .flicker,.rec .dot{ animation:none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="frame">
+      <canvas id="scene"></canvas>
+
+      <div class="ov fibers"></div>
+      <div class="ov grain"></div>
+      <div class="ov light"></div>
+      <div class="ov vignette"></div>
+      <div class="ov flicker"></div>
+
+      <div class="hud">
+        <div class="t tl"><span class="rec"><span class="dot"></span>REC</span> &nbsp;·&nbsp; MACRO 100mm</div>
+        <div class="t tr">ISO 200 · f/2.8 · 1/500<br>WET INK · MATTE PAPER</div>
+        <div class="t bl" id="phase">PHASE · <b>POOLING</b></div>
+        <div class="t br" id="tc">00:00:00:00</div>
+      </div>
+
+      <div class="brand">
+        <div class="k">墨</div>
+        <div class="t">INK&nbsp;BRUSH&nbsp;<span>·</span>&nbsp;LIFTING</div>
+        <div class="sub">LIQUID&nbsp;TENSION&nbsp;STUDY</div>
+      </div>
+
+      <div class="seal"><span>墨</span></div>
+      <div class="caption">書道 · <b>提筆</b> — the lift</div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const phaseEl = document.getElementById('phase');
+  const tcEl = document.getElementById('tc');
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,DPR=1;
+  let brushX, brushY, contactX, contactY, scale, bristleLen;
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    scale = Math.min(W,H)/620;
+    contactX = W*0.5;
+    contactY = H*0.705;
+    brushX = contactX + 16*scale;
+    brushY = contactY - 250*scale;
+    bristleLen = 230*scale;
+  }
+  window.addEventListener('resize', resize);
+
+  /* ---- ink palette ---- */
+  const INK = {
+    deep:'#0b0b0b', base:'#141414', wet:'#1c1c1c', gloss:'#3a3a3a', hi:'#565656'
+  };
+
+  /* ---- helpers ---- */
+  function smooth(a,b,x){ const t=Math.max(0,Math.min(1,(x-a)/(b-a))); return t*t*(3-2*t); }
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+
+  /* ---- brush bristles ---- */
+  const bristles = [];
+  (function(){
+    let seed = 7;
+    const rnd = ()=> (seed = (seed*1103515245+12345)&0x7fffffff)/0x7fffffff;
+    for(let i=0;i<15;i++){
+      bristles.push({
+        off:(i-7)/7,                 // -1..1 lateral
+        len:0.86+0.14*Math.abs(Math.sin(i*1.7)),
+        curl:0.10+0.05*Math.sin(i*2.3),
+        w:0.7+0.5*rnd()
+      });
+    }
+  })();
+
+  /* ---- static ink pool on paper (the finished stroke) ---- */
+  function drawStroke(t){
+    const cx = contactX, cy = contactY;
+    const L = 150*scale;
+    // soft fuzzy absorbed edge
+    ctx.save();
+    ctx.globalCompositeOperation='source-over';
+    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,L*0.9);
+    g.addColorStop(0,'rgba(15,15,15,0.34)');
+    g.addColorStop(0.55,'rgba(15,15,15,0.16)');
+    g.addColorStop(1,'rgba(15,15,15,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,L*0.95,L*0.42,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // main glossy stroke body
+    const wet = 0.55 + 0.45*smooth(0.05,0.4,t); // dries a touch after break
+    ctx.save();
+    ctx.beginPath();
+    const w0 = 46*scale, w1 = 30*scale;
+    ctx.moveTo(cx-L*0.55, cy);
+    ctx.quadraticCurveTo(cx, cy-w1, cx+L*0.42, cy-2*scale);
+    ctx.quadraticCurveTo(cx, cy+w0, cx-L*0.55, cy);
+    ctx.closePath();
+    const bg = ctx.createLinearGradient(cx,cy-w1,cx,cy+w0);
+    bg.addColorStop(0, INK.base);
+    bg.addColorStop(0.5, INK.deep);
+    bg.addColorStop(1, INK.wet);
+    ctx.fillStyle=bg;
+    ctx.fill();
+
+    // wet gloss highlight along the stroke
+    ctx.globalAlpha = 0.5*wet;
+    ctx.beginPath();
+    ctx.moveTo(cx-L*0.4, cy-4*scale);
+    ctx.quadraticCurveTo(cx-10*scale, cy-w1*0.7, cx+L*0.3, cy-4*scale);
+    ctx.strokeStyle='rgba(120,120,120,0.5)';
+    ctx.lineWidth=3*scale; ctx.lineCap='round';
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---- the ink pool at the contact point ---- */
+  function drawPool(liftFrac, t){
+    const spread = 1 + liftFrac*0.25;
+    const rx = (34 + 10*Math.sin(t*1.3))*scale*spread;
+    const ry = (13 + 3*Math.sin(t*1.7))*scale*spread;
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(contactX, contactY+2*scale, rx, ry, 0,0,Math.PI*2);
+    const g=ctx.createRadialGradient(contactX-6*scale, contactY-2*scale, 1, contactX, contactY, rx);
+    g.addColorStop(0, INK.wet);
+    g.addColorStop(0.6, INK.deep);
+    g.addColorStop(1, INK.base);
+    ctx.fillStyle=g; ctx.fill();
+    // meniscus gloss
+    ctx.beginPath();
+    ctx.ellipse(contactX-8*scale, contactY-3*scale, rx*0.42, ry*0.4, -0.3,0,Math.PI*2);
+    ctx.fillStyle='rgba(150,150,150,0.28)'; ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---- the stretching ink strand ---- */
+  function drawStrand(liftFrac, t, broke){
+    if(liftFrac<=0.02) return;
+    const gap = liftFrac*bristleLen;
+    const topY = contactY - gap;
+    const thin = clamp(1 - liftFrac*1.05, 0.14, 1);
+    const baseW = (18*scale)*thin;
+    const wob = Math.sin(t*11)*3*scale*(0.4+liftFrac) + Math.sin(t*23+1)*1.2*scale*liftFrac;
+    const sway = Math.sin(t*2.2)*4*scale*liftFrac;
+    const bx = brushX + sway;
+
+    // strand silhouette (necked in the middle)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(brushX - baseW*0.9, brushY);
+    ctx.quadraticCurveTo(bx - baseW*0.35 + wob, (brushY+topY)/2, contactX - baseW*0.55, topY);
+    ctx.lineTo(contactX + baseW*0.55, topY);
+    ctx.quadraticCurveTo(bx + baseW*0.35 + wob, (brushY+topY)/2, brushX + baseW*0.9, brushY);
+    ctx.closePath();
+    const sg = ctx.createLinearGradient(brushX,brushY,contactX,topY);
+    sg.addColorStop(0, INK.wet);
+    sg.addColorStop(0.5, INK.base);
+    sg.addColorStop(1, INK.deep);
+    ctx.fillStyle=sg; ctx.fill();
+
+    // gloss highlight on the strand
+    ctx.beginPath();
+    ctx.moveTo(brushX - baseW*0.15, brushY);
+    ctx.quadraticCurveTo(bx - baseW*0.1 + wob, (brushY+topY)/2, contactX - baseW*0.15, topY);
+    ctx.strokeStyle='rgba(140,140,140,0.5)';
+    ctx.lineWidth=Math.max(1, baseW*0.28); ctx.lineCap='round';
+    ctx.stroke();
+    ctx.restore();
+
+    // droplet at the paper end (recoiling)
+    if(broke){
+      ctx.save();
+      const dr = (5 + 4*thin)*scale;
+      ctx.beginPath(); ctx.arc(contactX, topY+2*scale, dr,0,Math.PI*2);
+      const dg=ctx.createRadialGradient(contactX-1.5*scale,topY,0.5,contactX,topY,dr);
+      dg.addColorStop(0,INK.wet); dg.addColorStop(1,INK.deep);
+      ctx.fillStyle=dg; ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /* ---- the brush ---- */
+  function drawBrush(liftFrac){
+    const gap = liftFrac*bristleLen;
+    const tipY = contactY - gap;
+    const tipX = brushX;
+    const backY = tipY - bristleLen;
+    const backX = brushX - 30*scale;
+    const half = 13*scale;
+
+    // bristle bundle (tapered to the wet tip)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backX-half, backY);
+    ctx.quadraticCurveTo(brushX-half*1.15, (backY+tipY)/2, tipX-2.5*scale, tipY-2*scale);
+    ctx.quadraticCurveTo(tipX, tipY+2*scale, tipX+2.5*scale, tipY-2*scale);
+    ctx.quadraticCurveTo(brushX+half*1.15, (backY+tipY)/2, backX+half, backY);
+    ctx.closePath();
+    const bg=ctx.createLinearGradient(backX-half,backY,tipX,tipY);
+    bg.addColorStop(0,'#3b362e');
+    bg.addColorStop(0.45,'#221f1a');
+    bg.addColorStop(0.8,'#141210');
+    bg.addColorStop(1,'#0a0a0a');
+    ctx.fillStyle=bg; ctx.fill();
+
+    // individual bristle lines
+    ctx.globalAlpha=0.35;
+    ctx.strokeStyle='#0a0a0a'; ctx.lineWidth=1*scale;
+    bristles.forEach(b=>{
+      ctx.beginPath();
+      const sx = backX + b.off*half*0.9;
+      const ex = tipX + b.off*2.2*scale;
+      const my = (backY+tipY)/2;
+      ctx.moveTo(sx, backY);
+      ctx.quadraticCurveTo(sx + b.curl*20*scale + b.off*4*scale, my, ex, tipY - (1-b.len)*bristleLen*0.5);
+      ctx.stroke();
+    });
+    ctx.globalAlpha=1;
+
+    // wet ink clinging to the tip
+    ctx.beginPath();
+    ctx.ellipse(tipX, tipY-3*scale, 4*scale, 6*scale, 0,0,Math.PI*2);
+    ctx.fillStyle='rgba(10,10,10,0.9)'; ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(tipX-1.2*scale, tipY-4*scale, 1.4*scale, 2.4*scale, 0,0,Math.PI*2);
+    ctx.fillStyle='rgba(120,120,120,0.5)'; ctx.fill();
+    ctx.restore();
+
+    // handle
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(backX-half*0.8, backY);
+    ctx.lineTo(backX-half*0.8 - 90*scale, backY-150*scale);
+    ctx.lineTo(backX+half*0.8 - 90*scale, backY-150*scale);
+    ctx.lineTo(backX+half*0.8, backY);
+    ctx.closePath();
+    const hg=ctx.createLinearGradient(backX-half,backY,backX+half,backY);
+    hg.addColorStop(0,'#5a4632');
+    hg.addColorStop(0.4,'#7a5f43');
+    hg.addColorStop(0.55,'#8a6c4c');
+    hg.addColorStop(1,'#4a3826');
+    ctx.fillStyle=hg; ctx.fill();
+    // handle gloss
+    ctx.beginPath();
+    ctx.moveTo(backX-half*0.35, backY);
+    ctx.lineTo(backX-half*0.35 - 90*scale, backY-150*scale);
+    ctx.strokeStyle='rgba(255,240,220,0.22)'; ctx.lineWidth=3*scale;
+    ctx.stroke();
+    // ferrule band
+    ctx.beginPath();
+    ctx.moveTo(backX-half, backY);
+    ctx.lineTo(backX-half*0.75, backY-16*scale);
+    ctx.lineTo(backX+half*0.75, backY-16*scale);
+    ctx.lineTo(backX+half, backY);
+    ctx.closePath();
+    ctx.fillStyle='#c9c2b2'; ctx.fill();
+    ctx.restore();
+  }
+
+  /* ---- timeline ---- */
+  const CYCLE = 6.2;
+  const BREAK = 0.56;
+  let start = performance.now();
+
+  function phaseName(t){
+    if(t<0.12) return 'POOLING';
+    if(t<BREAK-0.06) return 'LIFTING';
+    if(t<BREAK+0.05) return 'TENSION';
+    if(t<BREAK+0.16) return 'BREAK';
+    return 'SETTLE';
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function render(now){
+    const el = (now - start)/1000;
+    const cyc = reduce ? 0 : (el % CYCLE);
+    const t = cyc/CYCLE;
+    const tt = el; // global time for wobble
+
+    // lift fraction
+    let liftFrac;
+    if(reduce){ liftFrac = 0.42; }
+    else if(t<0.10) liftFrac = 0;
+    else if(t<BREAK) liftFrac = smooth(0.10,BREAK,t);
+    else liftFrac = 1;
+
+    const broke = !reduce && t>=BREAK;
+
+    ctx.clearRect(0,0,W,H);
+
+    drawStroke(t);
+    drawPool(liftFrac, tt);
+    drawStrand(liftFrac, tt, broke);
+    drawBrush(liftFrac);
+
+    // HUD
+    phaseEl.innerHTML = 'PHASE · <b>'+phaseName(t)+'</b>';
+    const total = reduce?1.9:el;
+    const s = Math.floor(total);
+    const ms = Math.floor((total-s)*100);
+    const mm = Math.floor(s/60);
+    const ss = s%60;
+    const ff = Math.floor(((total-s)*30))%30;
+    tcEl.textContent = pad(mm)+':'+pad(ss)+':'+pad(ms)+':'+pad(ff);
+
+    requestAnimationFrame(render);
+  }
+
+  resize();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

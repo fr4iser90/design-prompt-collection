@@ -7,14 +7,17 @@ tags:
   - microinteraction
   - nav
   - js
-status: polished
+status: draft
 summary: "Nav labels gently orbit/attract toward the cursor with spring damping — tactile, premium, never gimmicky."
 preview: preview.svg
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
+default_run: null
+source_model: null
+source_provider: null
 created: "2026-09-27"
-updated: "2026-09-27"
+updated: "2026-09-28"
 model_hints:
   - cursor
   - chatgpt

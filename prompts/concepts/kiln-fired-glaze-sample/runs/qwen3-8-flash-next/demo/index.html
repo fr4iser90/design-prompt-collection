@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiln-Fired Glaze Sample — Studio Glaze Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --clay:#2a1b14;
+    --clay-deep:#1a1009;
+    --clay-loft:#3a2418;
+    --kiln:#d4a373;
+    --kiln-hot:#f0c58c;
+    --bisque:#e9edc9;
+    --bisque-dim:rgba(233,237,201,.55);
+    --bisque-faint:rgba(233,237,201,.28);
+    --font-serif:"Cormorant Garamond",Georgia,serif;
+    --font-sans:"Source Sans 3",system-ui,sans-serif;
+    --sel-color:#d4a373;
+    --sel-halo:rgba(212,163,115,.6);
+    --sel-text:#1a1009;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--clay);
+    color:var(--bisque);
+    font-family:var(--font-sans);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .grain{
+    position:fixed;inset:-50%;z-index:1;pointer-events:none;opacity:.09;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 6s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+    40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+    80%{transform:translate(3%,1%)}100%{transform:translate(0,0)}
+  }
+  .glow{
+    position:fixed;top:-15vh;left:-15vw;width:70vw;height:70vh;border-radius:50%;
+    z-index:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(212,163,115,.30),rgba(212,163,115,.08) 45%,transparent 70%);
+    filter:blur(30px);
+    animation:pan 26s ease-in-out infinite alternate;
+  }
+  @keyframes pan{
+    0%{transform:translate(0,0) scale(1)}
+    50%{transform:translate(38vw,14vh) scale(1.15)}
+    100%{transform:translate(62vw,-6vh) scale(.95)}
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(ellipse 90% 80% at 50% 40%,transparent 55%,rgba(15,8,4,.65) 100%);
+  }
+
+  /* ---------- SHELF / LAYOUT ---------- */
+  .shelf{
+    position:relative;z-index:3;
+    max-width:1320px;margin:0 auto;
+    padding:clamp(1.4rem,4vw,3.4rem) clamp(1.2rem,4vw,3.5rem) 6rem;
+    display:grid;gap:clamp(1.6rem,3vw,3rem);
+    grid-template-columns:1fr;
+  }
+  @media(min-width:1000px){
+    .shelf{grid-template-columns:minmax(340px,420px) 1fr;align-items:start}
+  }
+
+  /* ---------- HEADER / SPECIMEN ---------- */
+  .header{position:relative}
+  @media(min-width:1000px){.header{position:sticky;top:clamp(1.4rem,4vw,3.4rem)}}
+
+  .wordmark{
+    font-family:var(--font-sans);font-weight:600;
+    font-size:.72rem;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--kiln);
+    display:flex;align-items:center;gap:.7rem;margin-bottom:2.2rem;
+  }
+  .wordmark::before{content:"";width:26px;height:1px;background:var(--kiln);opacity:.7}
+
+  .specimen{
+    position:relative;width:clamp(230px,60vw,360px);aspect-ratio:1;
+    margin:0 auto 2.4rem;
+    filter:drop-shadow(22px 34px 26px rgba(0,0,0,.55));
+    transition:filter .8s ease;
+    animation:placeIn 1s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .specimen svg{width:100%;height:100%;display:block;overflow:visible}
+  .spec-body{fill:var(--sel-color);transition:fill .9s cubic-bezier(.4,0,.2,1)}
+  .spec-ripple{
+    position:absolute;left:50%;top:50%;width:26px;height:26px;border-radius:50%;
+    transform:translate(-50%,-50%) scale(0);pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.6),rgba(255,255,255,.15) 55%,transparent 72%);
+    mix-blend-mode:screen;opacity:0;
+  }
+  .spec-ripple.go{animation:ripple .95s cubic-bezier(.2,.7,.3,1) forwards}
+  @keyframes ripple{
+    0%{transform:translate(-50%,-50%) scale(0);opacity:.9}
+    100%{transform:translate(-50%,-50%) scale(11);opacity:0}
+  }
+
+  .glaze-name{
+    font-family:var(--font-serif);font-weight:400;
+    font-size:clamp(2.6rem,6.5vw,4.1rem);line-height:.98;letter-spacing:-.01em;
+    color:var(--bisque);
+    min-height:1.1em;
+  }
+  .glaze-name.shimmer{animation:shimmer .85s ease}
+  @keyframes shimmer{
+    0%{filter:blur(0) hue-rotate(0);opacity:1}
+    22%{filter:blur(2.2px) hue-rotate(14deg);opacity:.55}
+    55%{filter:blur(1px) hue-rotate(-6deg);opacity:.8}
+    100%{filter:blur(0) hue-rotate(0);opacity:1}
+  }
+  .glaze-sub{
+    font-family:var(--font-serif);font-style:italic;font-weight:300;
+    font-size:clamp(1.05rem,2.4vw,1.4rem);color:var(--bisque-dim);
+    margin-top:.35rem;min-height:1.4em;
+  }
+  .glaze-sub.shimmer{animation:shimmer .85s ease}
+
+  .specs{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+    margin:2.2rem 0 1.8rem;
+    background:linear-gradient(var(--bisque-faint),var(--bisque-faint));
+    border-top:1px solid var(--bisque-faint);
+  }
+  .spec-cell{background:var(--clay);padding:1rem .2rem 1rem 0}
+  .spec-cell .k{
+    font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--kiln);font-weight:600;margin-bottom:.35rem;
+  }
+  .spec-cell .v{font-family:var(--font-serif);font-size:1.35rem;color:var(--bisque)}
+  .spec-cell .v.shimmer{animation:shimmer .8s ease}
+
+  .hexline{
+    display:flex;align-items:baseline;gap:.7rem;
+    font-family:var(--font-sans);
+  }
+  .hexline .swatch{
+    width:16px;height:16px;border-radius:50%;background:var(--sel-color);
+    box-shadow:0 0 0 1px rgba(255,255,255,.15),0 0 14px var(--sel-halo);
+    transition:background .9s ease,box-shadow .9s ease;flex:none;
+  }
+  .hexline .hex{
+    font-size:1.05rem;letter-spacing:.14em;color:var(--bisque);
+    text-transform:uppercase;
+  }
+  .hexline .hex.shimmer{animation:shimmer .8s ease}
+
+  .footnote{
+    margin-top:2rem;font-size:.72rem;line-height:1.7;color:var(--bisque-faint);
+    max-width:34ch;font-weight:300;
+  }
+
+  /* ---------- THE SHELF ---------- */
+  .gallery{position:relative}
+  .gallery-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    gap:1rem;margin-bottom:clamp(1.6rem,3vw,2.6rem);
+    padding-bottom:1rem;border-bottom:1px solid var(--bisque-faint);
+  }
+  .gallery-head h2{
+    font-family:var(--font-serif);font-weight:400;font-size:clamp(1.4rem,3vw,1.9rem);
+    color:var(--bisque);
+  }
+  .gallery-head .count{
+    font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--kiln);
+    white-space:nowrap;
+  }
+
+  .shelf-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+    gap:clamp(.6rem,1.6vw,1.2rem);
+    align-items:start;
+    justify-items:center;
+  }
+
+  .tile{
+    position:relative;width:100%;max-width:190px;
+    background:none;border:none;cursor:pointer;
+    padding:0;
+    opacity:0;transform:translateY(46px);
+    transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1);
+    will-change:transform,opacity;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tile.in{opacity:1;transform:translateY(0)}
+  .tile:nth-child(2){transition-delay:.06s}
+  .tile:nth-child(3){transition-delay:.12s}
+  .tile:nth-child(4){transition-delay:.18s}
+  .tile:nth-child(5){transition-delay:.24s}
+  .tile:nth-child(6){transition-delay:.30s}
+  .tile:nth-child(7){transition-delay:.36s}
+  .tile:nth-child(8){transition-delay:.42s}
+  .tile:nth-child(9){transition-delay:.48s}
+  .tile:nth-child(10){transition-delay:.54s}
+  .tile:nth-child(11){transition-delay:.60s}
+  .tile:nth-child(12){transition-delay:.66s}
+
+  .disc{
+    position:relative;width:100%;aspect-ratio:1;
+    transition:transform .55s cubic-bezier(.34,1.4,.4,1),filter .55s ease;
+    filter:drop-shadow(14px 22px 16px rgba(0,0,0,.5));
+  }
+  .disc svg{width:100%;height:100%;display:block;overflow:visible}
+
+  .tile:hover .disc,.tile:focus-visible .disc{
+    transform:translateY(-9px) scale(1.03);
+    filter:drop-shadow(26px 40px 26px rgba(0,0,0,.6)) brightness(1.06);
+  }
+  .tile:focus-visible{outline:none}
+  .tile:focus-visible .disc{filter:drop-shadow(0 0 0 2px var(--kiln)),drop-shadow(26px 40px 26px rgba(0,0,0,.6))}
+
+  .tile.selected .disc{
+    transform:translateY(-6px) scale(1.05);
+    filter:drop-shadow(18px 30px 22px rgba(0,0,0,.55)) drop-shadow(0 0 22px var(--sel-halo));
+  }
+
+  /* wet ripple on tile */
+  .ripple{
+    position:absolute;left:50%;top:50%;width:30px;height:30px;border-radius:50%;
+    transform:translate(-50%,-50%) scale(0);pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.75),rgba(255,255,255,.2) 50%,transparent 70%);
+    mix-blend-mode:screen;opacity:0;z-index:4;
+  }
+  .ripple.go{animation:ripple .9s cubic-bezier(.2,.7,.3,1) forwards}
+
+  .tile-label{
+    margin-top:.7rem;text-align:center;
+  }
+  .tile-label .tl-name{
+    font-family:var(--font-serif);font-size:1.02rem;color:var(--bisque);
+    line-height:1.1;letter-spacing:.01em;
+    transition:color .5s ease;
+  }
+  .tile.selected .tile-label .tl-name{color:var(--kiln-hot)}
+  .tile-label .tl-temp{
+    font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--bisque-faint);margin-top:.2rem;
+  }
+
+  /* selected marker ring on disc */
+  .sel-ring{
+    position:absolute;inset:6%;border-radius:50%;
+    border:1.5px solid var(--kiln-hot);opacity:0;transform:scale(.85);
+    transition:opacity .5s ease,transform .5s ease;pointer-events:none;z-index:3;
+    box-shadow:0 0 12px rgba(240,197,140,.4) inset;
+  }
+  .tile.selected .sel-ring{opacity:.85;transform:scale(1)}
+
+  @keyframes placeIn{
+    0%{opacity:0;transform:translateY(40px) scale(.94)}
+    100%{opacity:1;transform:translateY(0) scale(1)}
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:640px){
+    .shelf-grid{grid-template-columns:repeat(2,1fr)}
+    .specimen{width:min(72vw,300px)}
+  }
+  @media(max-width:380px){
+    .shelf-grid{grid-template-columns:1fr}
+    .tile{max-width:230px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    .glow,.grain{animation:none}
+    .tile{transition:opacity .3s ease;opacity:1;transform:none}
+    .tile:nth-child(n){transition-delay:0s}
+    .specimen{animation:none}
+    .disc,.tile.selected .disc,.tile:hover .disc{transition:none}
+    .shimmer,.ripple.go,.spec-ripple.go{animation:none}
+    .ripple.go,.spec-ripple.go{opacity:.5}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos" aria-hidden="true">
+    <div class="glow"></div>
+  </div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <main class="shelf">
+    <!-- HEADER / CURRENT SPECIMEN -->
+    <header class="header">
+      <div class="wordmark">Studio Glaze Library</div>
+
+      <div class="specimen" id="specimen">
+        <svg viewBox="0 0 200 200" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <radialGradient id="specGloss" cx="34%" cy="26%" r="75%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity=".5"/>
+              <stop offset="30%" stop-color="#ffffff" stop-opacity=".12"/>
+              <stop offset="65%" stop-color="#000000" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#000000" stop-opacity=".28"/>
+            </radialGradient>
+            <filter id="specRough">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+          </defs>
+          <path class="spec-body" d="M100,12 C138,12 178,34 186,78 C193,116 178,158 138,178 C108,192 66,186 38,160 C14,138 8,96 22,62 C36,30 66,12 100,12 Z" filter="url(#specRough)"/>
+          <path d="M100,12 C138,12 178,34 186,78 C193,116 178,158 138,178 C108,192 66,186 38,160 C14,138 8,96 22,62 C36,30 66,12 100,12 Z" fill="url(#specGloss)" filter="url(#specRough)"/>
+        </svg>
+        <div class="spec-ripple" id="specRipple"></div>
+      </div>
+
+      <h1 class="glaze-name" id="gName">Celadon</h1>
+      <p class="glaze-sub" id="gSub">Soft celadon green</p>
+
+      <div class="specs">
+        <div class="spec-cell"><div class="k">Firing</div><div class="v" id="gTemp">Cone 6</div></div>
+        <div class="spec-cell"><div class="k">Finish</div><div class="v" id="gFinish">Satin</div></div>
+        <div class="spec-cell"><div class="k">Surface</div><div class="v" id="gSurface">Crackle</div></div>
+        <div class="spec-cell"><div class="k">Batch</div><div class="v" id="gBatch">No. 04</div></div>
+      </div>
+
+      <div class="hexline">
+        <span class="swatch" id="gSwatch"></span>
+        <span class="hex" id="gHex">#6E9B8A</span>
+      </div>
+
+      <p class="footnote">Each disc is a hand-thrown test tile. Colour shifts under the kiln's light — hover to lift, tap to fire.</p>
+    </header>
+
+    <!-- THE SHELF -->
+    <section class="gallery" aria-label="Glaze shelf">
+      <div class="gallery-head">
+        <h2>The Shelf</h2>
+        <span class="count" id="count">12 specimens</span>
+      </div>
+      <div class="shelf-grid" id="grid"></div>
+    </section>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var GLAZES = [
+    {name:"Oxblood",        sub:"Deep iron red",        hex:"#7A2A26", temp:"Cone 10", finish:"Gloss",   surface:"Ravaged",  batch:"No. 01"},
+    {name:"Celadon",        sub:"Soft celadon green",   hex:"#6E9B8A", temp:"Cone 6",  finish:"Satin",   surface:"Crackle",  batch:"No. 04"},
+    {name:"Ash Glaze",      sub:"Volcanic ash grey",    hex:"#9A948A", temp:"Cone 10", finish:"Matte",   surface:"Speckled", batch:"No. 07"},
+    {name:"Tenmoku",        sub:"Black tea oil",        hex:"#3A2A22", temp:"Cone 10", finish:"Gloss",   surface:"Breaks rust", batch:"No. 09"},
+    {name:"Shino",          sub:"Warm carbon pink",     hex:"#C97B5A", temp:"Cone 10", finish:"Satin",   surface:"Carbon trap", batch:"No. 03"},
+    {name:"Copper Green",   sub:"Oxidised copper",      hex:"#3F7D6B", temp:"Cone 6",  finish:"Gloss",   surface:"Iridescent", batch:"No. 12"},
+    {name:"Iron Satin",     sub:"Matte iron amber",     hex:"#B07A45", temp:"Cone 6",  finish:"Satin",   finish2:"", surface:"Dry", batch:"No. 05"},
+    {name:"Nuka",           sub:"Rice-husk white",      hex:"#DCCFB4", temp:"Cone 10", finish:"Satin",   surface:"Milky",    batch:"No. 02"},
+    {name:"Indigo Ash",     sub:"Reduced cobalt",       hex:"#33465E", temp:"Cone 10", finish:"Matte",   surface:"Stony",    batch:"No. 08"},
+    {name:"Persimmon",      sub:"Bright iron orange",   hex:"#C85A38", temp:"Cone 6",  finish:"Gloss",   surface:"Drippy",   batch:"No. 06"},
+    {name:"Honey Amber",    sub:"Golden translucent",   hex:"#C79A4E", temp:"Cone 6",  finish:"Gloss",   surface:"Honeyed",  batch:"No. 10"},
+    {name:"Moss Celadon",   sub:"Deep pond green",      hex:"#556B4A", temp:"Cone 6",  finish:"Satin",   surface:"Crackle",  batch:"No. 11"}
+  ];
+
+  var grid = document.getElementById("grid");
+  var NS = "http://www.w3.org/2000/svg";
+
+  // irregular disc path
+  function discPath(seed){
+    var pts = 14, cx=100, cy=100, r=82, d="";
+    for(var i=0;i<pts;i++){
+      var a=(i/pts)*Math.PI*2;
+      var wob=(Math.sin(a*3+seed)*6)+(Math.cos(a*5+seed*1.7)*4)+(Math.sin(a*2-seed)*3);
+      var rr=r+wob;
+      var x=(cx+Math.cos(a)*rr).toFixed(1);
+      var y=(cy+Math.sin(a)*rr).toFixed(1);
+      d+=(i===0?"M":"L")+x+","+y;
+    }
+    return d+"Z";
+  }
+
+  // luminance -> text color
+  function lum(hex){
+    var c=hex.replace("#","");
+    var r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+    return (0.299*r+0.587*g+0.114*b)/255;
+  }
+  function halo(hex){
+    var c=hex.replace("#","");
+    var r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+    return "rgba("+r+","+g+","+b+",.6)";
+  }
+
+  // build a tile
+  function buildTile(g,i){
+    var btn=document.createElement("button");
+    btn.className="tile";
+    btn.type="button";
+    btn.setAttribute("aria-label",g.name+", "+g.hex+", "+g.temp);
+    btn.dataset.index=i;
+
+    var seed=i*2.3+1.1;
+    var path=discPath(seed);
+
+    var disc=document.createElement("div");
+    disc.className="disc";
+
+    var svg=document.createElementNS(NS,"svg");
+    svg.setAttribute("viewBox","0 0 200 200");
+    svg.setAttribute("preserveAspectRatio","none");
+
+    var defs=document.createElementNS(NS,"defs");
+    var gid="gloss"+i, fid="rough"+i;
+
+    var grad=document.createElementNS(NS,"radialGradient");
+    grad.setAttribute("id",gid);
+    grad.setAttribute("cx","34%");grad.setAttribute("cy","26%");grad.setAttribute("r","78%");
+    var stops=[["0%","#ffffff",".5"],["26%","#ffffff",".14"],["62%","#000000","0"],["100%","#000000",".3"]];
+    stops.forEach(function(s){
+      var st=document.createElementNS(NS,"stop");
+      st.setAttribute("offset",s[0]);st.setAttribute("stop-color",s[1]);st.setAttribute("stop-opacity",s[2]);
+      grad.appendChild(st);
+    });
+    defs.appendChild(grad);
+
+    var filt=document.createElementNS(NS,"filter");
+    filt.setAttribute("id",fid);
+    var turb=document.createElementNS(NS,"feTurbulence");
+    turb.setAttribute("type","fractalNoise");
+    turb.setAttribute("baseFrequency",(0.018+ (i%3)*0.004).toFixed(3));
+    turb.setAttribute("numOctaves","3");
+    turb.setAttribute("seed",String(3+i*7));
+    turb.setAttribute("result","n");
+    filt.appendChild(turb);
+    var disp=document.createElementNS(NS,"feDisplacementMap");
+    disp.setAttribute("in","SourceGraphic");disp.setAttribute("in2","n");
+    disp.setAttribute("scale","7");
+    disp.setAttribute("xChannelSelector","R");disp.setAttribute("yChannelSelector","G");
+    filt.appendChild(disp);
+    defs.appendChild(filt);
+    svg.appendChild(defs);
+
+    var body=document.createElementNS(NS,"path");
+    body.setAttribute("d",path);
+    body.setAttribute("fill",g.hex);
+    body.setAttribute("filter","url(#"+fid+")");
+    svg.appendChild(body);
+
+    var gloss=document.createElementNS(NS,"path");
+    gloss.setAttribute("d",path);
+    gloss.setAttribute("fill","url(#"+gid+")");
+    gloss.setAttribute("filter","url(#"+fid+")");
+    svg.appendChild(gloss);
+
+    disc.appendChild(svg);
+
+    var ring=document.createElement("div");
+    ring.className="sel-ring";
+    disc.appendChild(ring);
+
+    var rip=document.createElement("div");
+    rip.className="ripple";
+    disc.appendChild(rip);
+
+    btn.appendChild(disc);
+
+    var lab=document.createElement("div");
+    lab.className="tile-label";
+    lab.innerHTML='<div class="tl-name">'+g.name+'</div><div class="tl-temp">'+g.temp+' · '+g.finish+'</div>';
+    btn.appendChild(lab);
+
+    btn.addEventListener("click",function(){ select(i); });
+    return btn;
+  }
+
+  // build all
+  GLAZES.forEach(function(g,i){ grid.appendChild(buildTile(g,i)); });
+  document.getElementById("count").textContent=GLAZES.length+" specimens";
+
+  var tiles=Array.prototype.slice.call(grid.querySelectorAll(".tile"));
+
+  // entrance
+  if(reduce){
+    tiles.forEach(function(t){t.classList.add("in");});
+  }else{
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }});
+    },{threshold:.15});
+    tiles.forEach(function(t){io.observe(t);});
+  }
+
+  // header refs
+  var elName=document.getElementById("gName"),
+      elSub=document.getElementById("gSub"),
+      elTemp=document.getElementById("gTemp"),
+      elFinish=document.getElementById("gFinish"),
+      elSurface=document.getElementById("gSurface"),
+      elBatch=document.getElementById("gBatch"),
+      elHex=document.getElementById("gHex"),
+      elSwatch=document.getElementById("gSwatch"),
+      specBody=document.querySelector(".spec-body"),
+      specRipple=document.getElementById("specRipple");
+
+  var current=-1;
+
+  function shimmer(el){
+    if(reduce) return;
+    el.classList.remove("shimmer"); void el.offsetWidth; el.classList.add("shimmer");
+  }
+
+  function select(i){
+    if(i===current) return;
+    var g=GLAZES[i];
+    current=i;
+
+    // tile states
+    tiles.forEach(function(t,k){ t.classList.toggle("selected",k===i); });
+
+    // wet ripple on tile
+    var rip=tiles[i].querySelector(".ripple");
+    rip.classList.remove("go"); void rip.offsetWidth; rip.classList.add("go");
+
+    // update specimen color
+    specBody.style.fill=g.hex;
+    document.documentElement.style.setProperty("--sel-color",g.hex);
+    document.documentElement.style.setProperty("--sel-halo",halo(g.hex));
+    elSwatch.style.background=g.hex;
+
+    // update text w/ heat shimmer
+    elName.textContent=g.name;   shimmer(elName);
+    elSub.textContent=g.sub;     shimmer(elSub);
+    elTemp.textContent=g.temp;   shimmer(elTemp);
+    elFinish.textContent=g.finish; shimmer(elFinish);
+    elSurface.textContent=g.surface; shimmer(elSurface);
+    elBatch.textContent=g.batch; shimmer(elBatch);
+    elHex.textContent=g.hex;     shimmer(elHex);
+
+    // specimen ripple
+    specRipple.classList.remove("go"); void specRipple.offsetWidth; specRipple.classList.add("go");
+  }
+
+  // default selection: Celadon (index 1)
+  setTimeout(function(){ select(1); }, reduce?0:650);
+})();
+</script>
+</body>
+</html>

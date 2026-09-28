@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLOCK — Editorial Brutalist System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BLOCK — Editorial Brutalist System
+   tokens: asphalt #111111 · paper #f4f4f0 · weld #ff3b00 · mid #8a8a84
+   ============================================================ */
+:root{
+  --asphalt:#111111;
+  --paper:#f4f4f0;
+  --weld:#ff3b00;
+  --mid:#8a8a84;
+  --rule:2px;
+  --pad:clamp(18px,5vw,64px);
+  --rule-c:var(--asphalt);
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Anton","Arial Narrow",sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+body.night{ --rule-c:var(--paper); }
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--asphalt);
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+  transition:background .45s ease,color .45s ease;
+}
+body.night{background:var(--asphalt);color:var(--paper)}
+::selection{background:var(--weld);color:var(--paper)}
+a{color:inherit;text-decoration:none}
+
+/* ---- atmosphere: concrete grain ---- */
+.grain{
+  position:fixed;inset:0;z-index:9998;pointer-events:none;
+  opacity:.06;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body.night .grain{mix-blend-mode:screen;opacity:.09}
+
+/* ---- scroll progress ---- */
+.progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--weld);z-index:10000}
+
+/* ---- fixed corner marks ---- */
+.cmark{position:fixed;z-index:9997;font:600 11px var(--mono);letter-spacing:.14em;pointer-events:none;color:var(--mid)}
+.cmark.tl{top:14px;left:14px}
+.cmark.br{bottom:14px;right:14px;text-align:right}
+.cmark b{color:var(--weld)}
+
+/* ---- shared ---- */
+.section{padding:clamp(60px,10vw,140px) var(--pad);position:relative}
+.section--asphalt{background:var(--asphalt);color:var(--paper);--rule-c:var(--paper)}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--mid);display:flex;align-items:center;gap:14px}
+.eyebrow .idx{color:var(--weld)}
+.eyebrow::before{content:"";width:26px;height:var(--rule);background:var(--rule-c)}
+.h-sec{font-family:var(--disp);font-weight:400;line-height:.9;letter-spacing:.005em;text-transform:uppercase;font-size:clamp(38px,8.5vw,104px)}
+.deck{max-width:56ch;font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:var(--mid)}
+body.night .deck{color:#b9b9b0}
+.mono{font-family:var(--mono)}
+.weld{color:var(--weld)}
+.rule{height:var(--rule);background:var(--rule-c);width:100%}
+
+/* ---- reveal / motion primitives ---- */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.06s}.reveal.d2{transition-delay:.12s}.reveal.d3{transition-delay:.18s}
+.reveal.d4{transition-delay:.24s}.reveal.d5{transition-delay:.3s}.reveal.d6{transition-delay:.36s}
+.hline{transform:scaleX(0);transform-origin:left;transition:transform .85s var(--ease)}
+.hline.in{transform:scaleX(1)}
+.vline{transform:scaleY(0);transform-origin:top;transition:transform .85s var(--ease)}
+.vline.in{transform:scaleY(1)}
+.settle{opacity:0;transform:translateY(6px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.settle.in{opacity:1;transform:none}
+
+/* ============================================================
+   MASTHEAD
+   ============================================================ */
+.mast{
+  position:sticky;top:0;z-index:9000;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:16px var(--pad);
+  background:var(--paper);border-bottom:var(--rule) solid var(--rule-c);
+  transition:background .45s ease;
+}
+body.night .mast{background:var(--asphalt)}
+.mast-brand{font-family:var(--disp);font-size:clamp(22px,3vw,30px);letter-spacing:.02em;line-height:1}
+.mast-brand .dot{color:var(--weld)}
+.mast-nav{display:flex;gap:clamp(14px,2.2vw,30px);font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.mast-nav a{position:relative;padding-bottom:6px;color:var(--mid);transition:color .2s ease}
+.mast-nav a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--weld);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
+.mast-nav a:hover{color:var(--asphalt)}
+body.night .mast-nav a:hover{color:var(--paper)}
+.mast-nav a:hover::after{transform:scaleX(1)}
+.mast-right{display:flex;align-items:center;gap:16px}
+.issue{font:600 11px var(--mono);letter-spacing:.16em;color:var(--mid);white-space:nowrap}
+.issue b{color:var(--asphalt)}
+body.night .issue b{color:var(--paper)}
+.tgl{display:flex;border:2px solid var(--rule-c);font:600 11px var(--mono);letter-spacing:.1em}
+.tgl button{background:none;border:none;color:var(--mid);padding:8px 12px;cursor:pointer;transition:.2s ease}
+.tgl button.on{background:var(--weld);color:var(--paper)}
+
+/* ============================================================
+   HERO — brand monument
+   ============================================================ */
+.hero{position:relative;padding:clamp(48px,7vw,80px) var(--pad) clamp(40px,6vw,72px);overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:0;position:relative}
+.hero-grid::before,.hero-grid::after{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--rule-c);opacity:.14}
+.hero-grid::before{left:calc(100%/3)}
+.hero-grid::after{left:calc(100%/3*2)}
+.hero-meta{grid-column:1/4;align-self:end}
+.hero-meta .row{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mid);padding:9px 0;border-top:1px solid var(--rule-c)}
+.hero-meta .row:first-child{border-top:none}
+.hero-meta .row b{color:var(--asphalt)}
+body.night .hero-meta .row b{color:var(--paper)}
+.monu{grid-column:4/10;position:relative}
+.monu h1{font-family:var(--disp);font-weight:400;font-size:clamp(120px,29vw,400px);line-height:.82;letter-spacing:-.01em;text-transform:uppercase}
+.monu h1 .l{display:inline-block}
+.monu h1 .o{color:var(--weld)}
+.monu .tag{font:600 12px var(--mono);letter-spacing:.3em;color:var(--mid);margin-top:8px}
+.monu .tag b{color:var(--weld)}
+.hero-lead{grid-column:10/13;align-self:end;padding-left:24px}
+.hero-lead p{font-size:clamp(14px,1.4vw,17px);line-height:1.55;color:var(--mid)}
+.hero-lead p b{color:var(--asphalt)}
+body.night .hero-lead p b{color:var(--paper)}
+.hero-foot{display:flex;flex-wrap:wrap;gap:18px 40px;justify-content:space-between;align-items:baseline;margin-top:clamp(28px,4vw,48px);padding-top:20px;border-top:var(--rule) solid var(--rule-c)}
+.hero-foot .k{font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mid)}
+.hero-foot .k b{color:var(--weld)}
+.scrollcue{font:600 11px var(--mono);letter-spacing:.2em;color:var(--mid);display:flex;align-items:center;gap:10px}
+.scrollcue .bar{display:inline-block;width:40px;height:2px;background:var(--weld);animation:cue 2.2s var(--ease) infinite}
+@keyframes cue{0%,100%{transform:scaleX(.3);transform-origin:left}50%{transform:scaleX(1);transform-origin:left}}
+
+/* ============================================================
+   MANIFESTO
+   ============================================================ */
+.manifesto{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(20px,3vw,40px)}
+.manifesto .m-head{grid-column:1/5}
+.manifesto .m-body{grid-column:6/13}
+.manifesto .statement{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(30px,5.2vw,64px);line-height:.98;letter-spacing:.005em}
+.manifesto .statement .w{color:var(--weld)}
+.manifesto .sub{margin-top:24px;max-width:52ch;color:var(--mid);font-size:clamp(14px,1.5vw,17px);line-height:1.6}
+.manifesto .sub b{color:var(--paper)}
+
+/* ============================================================
+   PRINCIPLES
+   ============================================================ */
+.principles{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:clamp(40px,5vw,64px);border-top:var(--rule) solid var(--rule-c)}
+.pr{padding:26px 22px 30px;border-right:2px solid var(--rule-c)}
+.pr:last-child{border-right:none}
+.pr .n{font-family:var(--disp);font-size:clamp(46px,7vw,86px);line-height:.8;color:var(--weld)}
+.pr .t{font:600 15px var(--mono);letter-spacing:.04em;text-transform:uppercase;margin:16px 0 10px}
+.pr .d{font-size:13px;line-height:1.55;color:var(--mid)}
+
+/* ============================================================
+   PALETTE
+   ============================================================ */
+.pal-head{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-end;margin-bottom:clamp(30px,4vw,50px)}
+.pal{display:grid;grid-template-columns:repeat(4,1fr);border:var(--rule) solid var(--rule-c)}
+.sw{display:flex;flex-direction:column;min-height:clamp(180px,24vw,260px);border-right:2px solid var(--rule-c)}
+.sw:last-child{border-right:none}
+.sw .chip{flex:1;position:relative}
+.sw .chip::after{content:attr(data-role);position:absolute;top:12px;left:12px;font:600 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.sw[data-l="dark"] .chip::after{color:rgba(255,255,255,.55)}
+.sw .info{padding:14px;border-top:2px solid var(--rule-c)}
+.sw .name{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.sw .hex{font:500 12px var(--mono);color:var(--mid);margin-top:6px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.sw .hex:hover{color:var(--weld)}
+.sw .hex::before{content:"COPY";font-size:9px;letter-spacing:.1em;color:var(--weld)}
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+.type-wrap{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(30px,5vw,70px);align-items:start}
+.specimen{border-top:var(--rule) solid var(--rule-c);padding-top:22px}
+.specimen .lbl{font:600 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--mid);margin-bottom:18px}
+.specimen .lbl b{color:var(--weld)}
+.big-display{font-family:var(--disp);font-weight:400;text-transform:uppercase;line-height:.86;font-size:clamp(64px,13vw,180px);letter-spacing:-.005em}
+.big-display .o{color:var(--weld)}
+.type-scale{margin-top:26px;border-top:1px solid var(--rule-c)}
+.type-scale .tr{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule-c)}
+.type-scale .tr .k{font:600 11px var(--mono);letter-spacing:.1em;color:var(--mid);white-space:nowrap}
+.type-scale .tr .v{font-family:var(--disp);text-transform:uppercase;line-height:1}
+.mono-block{border:var(--rule) solid var(--rule-c)}
+.mono-block .hd{padding:12px 16px;border-bottom:2px solid var(--rule-c);font:600 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--mid)}
+.mono-block .hd b{color:var(--weld)}
+.mono-block .bd{padding:18px 16px;font:500 13px/1.9 var(--mono);color:var(--mid);white-space:pre-wrap;word-break:break-word}
+.mono-block .bd .w{color:var(--weld)}
+.mono-block .bd .a{color:var(--asphalt)}
+body.night .mono-block .bd .a{color:var(--paper)}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+.grid-wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(30px,5vw,64px);align-items:start}
+.grid-demo{border:var(--rule) solid var(--rule-c);padding:16px;background:rgba(0,0,0,.02)}
+body.night .grid-demo{background:rgba(255,255,255,.03)}
+.grid-cols{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:clamp(200px,26vw,300px)}
+.grid-cols .c{background:repeating-linear-gradient(45deg,transparent,transparent 6px,var(--rule-c) 6px,var(--rule-c) 7px);opacity:.28;border:1px solid var(--rule-c)}
+.grid-cols .c.hot{background:var(--weld);opacity:.9}
+.grid-cols .c.mid{background:var(--mid);opacity:.5}
+.grid-metrics{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.metric{border-top:2px solid var(--rule-c);padding-top:10px}
+.metric .v{font-family:var(--disp);font-size:clamp(28px,4vw,44px);line-height:1}
+.metric .v .u{font-family:var(--mono);font-size:14px;color:var(--weld);letter-spacing:0}
+.metric .l{font:600 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mid);margin-top:6px}
+.grid-notes .ni{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--rule-c)}
+.grid-notes .ni .k{font-family:var(--disp);color:var(--weld);font-size:22px;line-height:1}
+.grid-notes .ni .t{font:600 13px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.grid-notes .ni .d{font-size:13px;color:var(--mid);margin-top:4px;line-height:1.5}
+
+/* ============================================================
+   RULES
+   ============================================================ */
+.rules-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(24px,3vw,40px);margin-top:clamp(30px,4vw,50px)}
+.rules-grid .r{grid-column:span 4;border-top:var(--rule) solid var(--rule-c);padding-top:18px}
+.rules-grid .r.wide{grid-column:span 8}
+.rules-grid .r .k{font-family:var(--disp);font-size:clamp(40px,6vw,72px);line-height:.9}
+.rules-grid .r .k .u{font-family:var(--mono);font-size:16px;color:var(--weld)}
+.rules-grid .r .l{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-top:8px}
+.rules-grid .r .d{font-size:13px;color:var(--mid);margin-top:8px;line-height:1.5}
+.rules-grid .r .d b{color:var(--weld)}
+.demo-rules{margin-top:40px;display:flex;flex-direction:column;gap:18px}
+.demo-rules .dr{display:flex;align-items:center;gap:18px}
+.demo-rules .dr .lab{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mid);width:150px;flex-shrink:0}
+.demo-rules .dr .bar{flex:1;background:var(--rule-c)}
+.demo-rules .dr .bar.hair{height:1px;background:var(--mid);opacity:.5}
+.demo-rules .dr .bar.struct{height:2px}
+.demo-rules .dr .bar.thick{height:4px}
+.demo-rules .dr .bar.weld{height:2px;background:var(--weld)}
+.demo-rules .dr .verdict{font:600 11px var(--mono);letter-spacing:.1em;width:80px;text-align:right}
+.demo-rules .dr.no .verdict{color:var(--weld)}
+.demo-rules .dr.yes .verdict{color:var(--mid)}
+
+/* ============================================================
+   PHOTO
+   ============================================================ */
+.photo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,50px);align-items:stretch;margin-top:clamp(30px,4vw,50px)}
+.frame{position:relative;overflow:hidden;border:var(--rule) solid var(--rule-c);min-height:clamp(280px,40vw,440px)}
+.frame img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.4) brightness(.96);transition:filter .5s ease}
+.frame:hover img{filter:grayscale(1) contrast(1.6) brightness(1)}
+.frame::after{content:"";position:absolute;inset:0;background:var(--weld);mix-blend-mode:soft-light;opacity:.14;pointer-events:none}
+.frame .tag{position:absolute;left:0;bottom:0;background:var(--asphalt);color:var(--paper);font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:8px 12px}
+.frame .tag b{color:var(--weld)}
+.photo-spec .ni{display:grid;grid-template-columns:auto 1fr;gap:16px;padding:16px 0;border-top:1px solid var(--rule-c)}
+.photo-spec .ni .k{font-family:var(--disp);color:var(--weld);font-size:20px;line-height:1}
+.photo-spec .ni .t{font:600 13px var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.photo-spec .ni .d{font-size:13px;color:var(--mid);margin-top:4px;line-height:1.5}
+.photo-spec .ni .d b{color:var(--paper)}
+
+/* ============================================================
+   RECIPES
+   ============================================================ */
+.recipe{margin-top:clamp(40px,5vw,64px);border:var(--rule) solid var(--rule-c)}
+.recipe .rh{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:baseline;padding:16px 20px;border-bottom:2px solid var(--rule-c);background:rgba(0,0,0,.02)}
+body.night .recipe .rh{background:rgba(255,255,255,.03)}
+.recipe .rh .num{font-family:var(--disp);font-size:clamp(28px,4vw,44px);line-height:1;color:var(--weld)}
+.recipe .rh .name{font:600 14px var(--mono);letter-spacing:.1em;text-transform:uppercase}
+.recipe .rh .name b{color:var(--weld)}
+.recipe .rh .use{font:600 11px var(--mono);letter-spacing:.1em;color:var(--mid);text-transform:uppercase}
+.recipe .body{display:grid;grid-template-columns:1.3fr 1fr}
+.recipe .wire{padding:20px;border-right:2px solid var(--rule-c);background:rgba(0,0,0,.015)}
+body.night .recipe .wire{background:rgba(255,255,255,.02)}
+.recipe .desc{padding:20px}
+.recipe .desc h4{font:600 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--mid);margin-bottom:14px}
+.recipe .desc h4 b{color:var(--weld)}
+.recipe .desc p{font-size:13.5px;line-height:1.6;color:var(--mid)}
+.recipe .desc p b{color:var(--paper)}
+.recipe .desc ul{list-style:none;margin-top:14px}
+.recipe .desc li{font-size:13px;color:var(--mid);padding:8px 0;border-top:1px solid var(--rule-c);display:flex;gap:10px}
+.recipe .desc li::before{content:"›";color:var(--weld);font-weight:700}
+.wire-nav{border:2px solid var(--rule-c);height:100%;min-height:150px;display:flex;flex-direction:column}
+.wire-nav .top{flex:1;display:flex;align-items:center;justify-content:space-between;padding:14px}
+.wire-nav .top .bl{font-family:var(--disp);font-size:34px;letter-spacing:.02em}
+.wire-nav .top .bl .o{color:var(--weld)}
+.wire-nav .top .rt{font:600 9px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mid);text-align:right;line-height:1.7}
+.wire-nav .bot{height:2px;background:var(--rule-c)}
+.wire-art{border:2px solid var(--rule-c);height:100%;min-height:150px;display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:auto auto 1fr;gap:6px;padding:14px}
+.wire-art .kicker{grid-column:1/13;font:600 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--weld)}
+.wire-art .title{grid-column:1/9;font-family:var(--disp);font-size:clamp(22px,3vw,34px);line-height:.9;text-transform:uppercase}
+.wire-art .deck{grid-column:9/13;font-size:10px;line-height:1.5;color:var(--mid)}
+.wire-art .rule{grid-column:1/13;align-self:end;height:2px;background:var(--rule-c)}
+.wire-img{border:2px solid var(--rule-c);height:100%;min-height:150px;display:flex;flex-direction:column}
+.wire-img .pic{flex:1;background:repeating-linear-gradient(45deg,var(--asphalt),var(--asphalt) 8px,#2a2a2a 8px,#2a2a2a 16px);position:relative;overflow:hidden}
+body.night .wire-img .pic{background:repeating-linear-gradient(45deg,#3a3a3a,#3a3a3a 8px,#4a4a4a 8px,#4a4a4a 16px)}
+.wire-img .pic::after{content:"";position:absolute;inset:0;background:var(--weld);mix-blend-mode:soft-light;opacity:.14}
+.wire-img .cap{padding:10px 12px;border-top:2px solid var(--rule-c);font:500 9px var(--mono);letter-spacing:.04em;color:var(--mid)}
+.wire-img .cap b{color:var(--weld)}
+
+/* ============================================================
+   MOTION
+   ============================================================ */
+.motion-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,36px);margin-top:clamp(30px,4vw,50px)}
+.mo{border:var(--rule) solid var(--rule-c);padding:20px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+.mo .n{font-family:var(--disp);font-size:clamp(40px,6vw,64px);line-height:.8;color:var(--weld)}
+.mo .t{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 8px}
+.mo .d{font-size:12.5px;color:var(--mid);line-height:1.5}
+.mo .stage{margin-top:18px;height:60px;display:flex;align-items:center;border-top:1px solid var(--rule-c);padding-top:16px}
+.mo .stage .r{height:2px;background:var(--weld);width:100%}
+.mo .stage .r.draw{transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease)}
+.mo.in .stage .r.draw{transform:scaleX(1)}
+.mo .stage .set{font-family:var(--disp);font-size:30px;text-transform:uppercase;transform:translateY(6px);opacity:0;transition:.6s var(--ease)}
+.mo.in .stage .set{transform:none;opacity:1}
+.mo .stage .thick{width:100%;height:2px;background:var(--rule-c);transition:height .25s ease,background .25s ease}
+.mo .stage .thick:hover{height:6px;background:var(--weld)}
+.mo .stage .thick::after{content:"HOVER";font:600 9px var(--mono);letter-spacing:.14em;color:var(--mid);display:block;margin-top:8px}
+
+/* ============================================================
+   DO / DON'T
+   ============================================================ */
+.dd{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,50px);margin-top:clamp(30px,4vw,50px)}
+.dd .col .h{font:600 12px var(--mono);letter-spacing:.2em;text-transform:uppercase;padding-bottom:12px;border-bottom:2px solid var(--rule-c);margin-bottom:6px}
+.dd .col.do .h{color:var(--paper)}
+.dd .col.dont .h{color:var(--weld)}
+.dd .item{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--rule-c);align-items:start}
+.dd .item .mk{font-family:var(--disp);font-size:24px;line-height:1}
+.dd .do .mk{color:var(--paper)}
+.dd .dont .mk{color:var(--weld)}
+.dd .item .t{font:600 13px var(--mono);letter-spacing:.02em;text-transform:uppercase}
+.dd .item .d{font-size:12.5px;color:var(--mid);margin-top:4px;line-height:1.5}
+
+/* ============================================================
+   VARIANTS
+   ============================================================ */
+.var-wrap{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,50px);margin-top:clamp(30px,4vw,50px)}
+.var{border:var(--rule) solid var(--rule-c);overflow:hidden}
+.var .prev{height:clamp(160px,22vw,220px);position:relative;display:flex;align-items:center;justify-content:center}
+.var.a .prev{background:var(--paper);color:var(--asphalt)}
+.var.b .prev{background:var(--asphalt);color:var(--paper)}
+.var .prev .word{font-family:var(--disp);font-size:clamp(40px,7vw,80px);letter-spacing:.02em;text-transform:uppercase}
+.var .prev .word .o{color:var(--weld)}
+.var .prev .strip{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--rule-c)}
+.var .prev .strip.a{background:var(--asphalt)}
+.var .prev .strip.b{background:var(--paper)}
+.var .info{padding:18px}
+.var .info .k{font:600 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--weld)}
+.var .info .n{font-family:var(--disp);font-size:clamp(22px,3vw,34px);text-transform:uppercase;margin:8px 0 10px;line-height:1}
+.var .info .d{font-size:13px;color:var(--mid);line-height:1.5}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.foot{background:var(--asphalt);color:var(--paper);padding:clamp(50px,8vw,90px) var(--pad) 40px;position:relative;overflow:hidden}
+.foot .bigword{font-family:var(--disp);font-size:clamp(80px,26vw,340px);line-height:.8;text-transform:uppercase;letter-spacing:-.01em;color:var(--paper)}
+.foot .bigword .o{color:var(--weld)}
+.foot .meta{display:flex;flex-wrap:wrap;gap:18px 40px;justify-content:space-between;margin-top:30px;padding-top:20px;border-top:2px solid var(--paper)}
+.foot .meta .c{font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mid)}
+.foot .meta .c b{color:var(--weld)}
+.foot .end{margin-top:30px;font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mid);display:flex;gap:14px;flex-wrap:wrap}
+.foot .end .sep{color:var(--weld)}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:960px){
+  .manifesto,.type-wrap,.grid-wrap,.photo-wrap,.dd,.var-wrap{grid-template-columns:1fr}
+  .manifesto .m-head,.manifesto .m-body{grid-column:1/-1}
+  .principles{grid-template-columns:repeat(2,1fr)}
+  .pr:nth-child(2){border-right:none}
+  .pal{grid-template-columns:repeat(2,1fr)}
+  .sw:nth-child(2){border-right:none}
+  .sw:nth-child(-n+2){border-bottom:2px solid var(--rule-c)}
+  .rules-grid .r,.rules-grid .r.wide{grid-column:1/-1}
+  .recipe .body{grid-template-columns:1fr}
+  .recipe .wire{border-right:none;border-bottom:2px solid var(--rule-c)}
+  .motion-grid{grid-template-columns:1fr}
+  .mast-nav{display:none}
+}
+@media(max-width:680px){
+  .hero-grid{grid-template-columns:1fr;gap:24px}
+  .hero-grid::before,.hero-grid::after{display:none}
+  .hero-meta,.monu,.hero-lead{grid-column:1/-1}
+  .hero-lead{padding-left:0}
+  .principles{grid-template-columns:1fr}
+  .pr{border-right:none;border-bottom:2px solid var(--rule-c)}
+  .pr:last-child{border-bottom:none}
+  .pal{grid-template-columns:1fr}
+  .sw{border-right:none;border-bottom:2px solid var(--rule-c)}
+  .sw:last-child{border-bottom:none}
+  .sw:nth-child(-n+2){border-bottom:2px solid var(--rule-c)}
+  .grid-metrics{grid-template-columns:1fr 1fr}
+  .issue{display:none}
+  .demo-rules .dr .lab{width:110px}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal,.settle{opacity:1!important;transform:none!important}
+  .hline,.vline{transform:none!important}
+  .mo .stage .r.draw{transform:none!important}
+  .mo .stage .set{transform:none!important;opacity:1!important}
+  .scrollcue .bar{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cmark tl" aria-hidden="true">BLOCK <b>//</b> SYS</div>
+<div class="cmark br" aria-hidden="true">ISSUE 01 <b>//</b> <span id="clock">00:00:00</span></div>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="mast">
+  <div class="mast-brand">BL<span class="dot">O</span>CK</div>
+  <nav class="mast-nav" aria-label="System sections">
+    <a href="#manifesto">Manifesto</a>
+    <a href="#palette">Palette</a>
+    <a href="#type">Type</a>
+    <a href="#grid">Grid</a>
+    <a href="#recipes">Recipes</a>
+    <a href="#motion">Motion</a>
+  </nav>
+  <div class="mast-right">
+    <span class="issue">ISSUE <b>01</b> · <b>CONCRETE</b></span>
+    <div class="tgl" role="group" aria-label="Theme variant">
+      <button id="tglPaper" class="on" type="button">PAPER</button>
+      <button id="tglNight" type="button">NIGHT</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-meta reveal">
+      <div class="row">SYSTEM / <b>001</b></div>
+      <div class="row">DISCIPLINE / <b>ART&nbsp;DIRECTION</b></div>
+      <div class="row">STATUS / <b>ACTIVE</b></div>
+      <div class="row">MODE / <b>PAPER-FIRST</b></div>
+    </div>
+    <div class="monu">
+      <h1 aria-label="BLOCK"><span class="l">BL</span><span class="l o">O</span><span class="l">CK</span></h1>
+      <div class="tag">EDITORIAL <b>BRUTALIST</b> SYSTEM</div>
+    </div>
+    <div class="hero-lead reveal d2">
+      <p>A magazine-tech hybrid built from <b>printed concrete</b>. The grid is load-bearing. Ink is the voice. Orange is electricity — welded, never painted.</p>
+    </div>
+  </div>
+  <div class="hero-foot">
+    <span class="k">PALETTE <b>ASPHALT · PAPER · WELD</b></span>
+    <span class="k">TYPE <b>ANTON + IBM PLEX MONO</b></span>
+    <span class="k">GRID <b>12-COL / LOAD-BEARING</b></span>
+    <span class="scrollcue">SCROLL TO READ <span class="bar"></span></span>
+  </div>
+</section>
+
+<!-- ============ MANIFESTO ============ -->
+<section class="section section--asphalt" id="manifesto">
+  <div class="manifesto">
+    <div class="m-head reveal">
+      <div class="eyebrow"><span class="idx">01</span> MANIFESTO</div>
+    </div>
+    <div class="m-body">
+      <p class="statement reveal d1">BLOCK is <span class="w">printed concrete.</span> The grid is load-bearing. Ink is the voice. Orange is electricity — a weld, not a paint job.</p>
+      <p class="sub reveal d2">This document is not a website. It is an <b>operating system for a page</b>: tokens, weights, rules and motion that any designer or build agent can execute into the same family of results. Siblings, not cousins. Concrete, ink, voltage.</p>
+    </div>
+  </div>
+  <div class="principles">
+    <div class="pr reveal"><div class="n">01</div><div class="t">Concrete</div><div class="d">Surfaces feel poured, not printed. Structure is honest; nothing pretends to float.</div></div>
+    <div class="pr reveal d1"><div class="n">02</div><div class="t">Ink</div><div class="d">Type carries the argument. Hierarchy is set by weight and scale, never by decoration.</div></div>
+    <div class="pr reveal d2"><div class="n">03</div><div class="t">Voltage</div><div class="d">Weld orange is a joint, not a gradient. Sparing. A single charged point per field.</div></div>
+    <div class="pr reveal d3"><div class="n">04</div><div class="t">Load</div><div class="d">Every rule holds weight. The 2px line is structural — it never becomes a hairline ornament.</div></div>
+  </div>
+</section>
+
+<!-- ============ PALETTE ============ -->
+<section class="section" id="palette">
+  <div class="pal-head">
+    <div>
+      <div class="eyebrow reveal"><span class="idx">02</span> PALETTE TOKENS</div>
+      <h2 class="h-sec reveal d1" style="margin-top:16px">FOUR<br>INCS.</h2>
+    </div>
+    <p class="deck reveal d2">Asphalt is the ground. Paper is the page. Mid-gray is the quiet. Weld is the charge — held in reserve and used like a sparingly welded joint. Click any value to copy.</p>
+  </div>
+  <div class="pal reveal d1">
+    <div class="sw" data-l="dark"><div class="chip" data-role="ground" style="background:#111111"></div><div class="info"><div class="name">Asphalt</div><div class="hex" data-hex="#111111">#111111</div></div></div>
+    <div class="sw" data-l="light"><div class="chip" data-role="page" style="background:#f4f4f0"></div><div class="info"><div class="name">Paper</div><div class="hex" data-hex="#f4f4f0">#f4f4f0</div></div></div>
+    <div class="sw" data-l="dark"><div class="chip" data-role="charge" style="background:#ff3b00"></div><div class="info"><div class="name">Weld</div><div class="hex" data-hex="#ff3b00">#ff3b00</div></div></div>
+    <div class="sw" data-l="dark"><div class="chip" data-role="quiet" style="background:#8a8a84"></div><div class="info"><div class="name">Mid</div><div class="hex" data-hex="#8a8a84">#8a8a84</div></div></div>
+  </div>
+</section>
+
+<!-- ============ TYPE ============ -->
+<section class="section section--asphalt" id="type">
+  <div class="eyebrow reveal"><span class="idx">03</span> TYPE PAIRING</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 40px">A VOICE<br>&amp; A LOG.</h2>
+  <div class="type-wrap">
+    <div class="specimen reveal">
+      <div class="lbl">DISPLAY — <b>ANTON</b> · GROTESK MONUMENT</div>
+      <div class="big-display">B<span class="o">O</span>CK<br>TYPE</div>
+      <div class="type-scale">
+        <div class="tr"><span class="k">MONU 400</span><span class="v" style="font-size:clamp(40px,7vw,84px)">BLOCK</span></div>
+        <div class="tr"><span class="k">H1 300</span><span class="v" style="font-size:clamp(30px,5vw,56px)">The Grid Holds</span></div>
+        <div class="tr"><span class="k">H2 200</span><span class="v" style="font-size:clamp(22px,3.4vw,38px)">Ink Is The Voice</span></div>
+        <div class="tr"><span class="k">H3 150</span><span class="v" style="font-size:clamp(18px,2.4vw,26px)">Concrete Surfaces</span></div>
+      </div>
+    </div>
+    <div class="mono-block reveal d1">
+      <div class="hd">META — <b>IBM PLEX MONO</b> · LOG &amp; LABELS</div>
+      <div class="bd"><span class="w">BLOCK</span> // SYSTEM SPEC v1.0
+ISSUE 01 — CONCRETE
+GRID ........ 12 COL / 4 COL
+RULE ........ <span class="a">2PX STRUCTURAL</span>
+WELD ........ #FF3B00 (SPARING)
+
+THE RULE IS LOAD-BEARING.
+IT NEVER BECOMES A HAIRLINE
+ORNAMENT. IT HOLDS WEIGHT,
+OR IT IS NOT THERE AT ALL.
+
+<span class="a">A</span> B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+0 1 2 3 4 5 6 7 8 9 — / · +</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GRID ============ -->
+<section class="section" id="grid">
+  <div class="eyebrow reveal"><span class="idx">04</span> GRID &amp; SPACING</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 40px">LOAD-<br>BEARING.</h2>
+  <div class="grid-wrap">
+    <div class="grid-demo reveal">
+      <div class="grid-cols">
+        <div class="c"></div><div class="c hot"></div><div class="c"></div><div class="c"></div>
+        <div class="c mid"></div><div class="c"></div><div class="c"></div><div class="c hot"></div>
+        <div class="c"></div><div class="c"></div><div class="c mid"></div><div class="c"></div>
+      </div>
+      <div class="grid-metrics">
+        <div class="metric"><div class="v">12<span class="u">COL</span></div><div class="l">Desktop columns</div></div>
+        <div class="metric"><div class="v">4<span class="u">COL</span></div><div class="l">Mobile columns</div></div>
+        <div class="metric"><div class="v">4–6<span class="u">VW</span></div><div class="l">Page margins</div></div>
+      </div>
+    </div>
+    <div class="grid-notes reveal d1">
+      <div class="ni"><div class="k">A</div><div><div class="t">Tight gutters</div><div class="d">Gutters are narrow so columns read as a slab, not a lattice. Content bleeds edge-to-edge when the field demands it.</div></div></div>
+      <div class="ni"><div class="k">B</div><div><div class="t">Full-bleed permitted</div><div class="d">Images and rules may break the column to reach the viewport. The grid is a discipline, not a cage.</div></div></div>
+      <div class="ni"><div class="k">C</div><div><div class="t">Vertical rhythm</div><div class="d">Spacing snaps to a baseline. Sections breathe with generous padding; nothing is crammed or airy by accident.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RULES ============ -->
+<section class="section section--asphalt" id="rules">
+  <div class="eyebrow reveal"><span class="idx">05</span> RULE WEIGHTS</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">2PX,<br>ALWAYS.</h2>
+  <p class="deck reveal d2">The structural rule is 2px and black. It separates, divides and carries weight. The 1px "newspaper" hairline is forbidden as an aesthetic — it is delicate where the system must be load-bearing.</p>
+  <div class="rules-grid">
+    <div class="r reveal"><div class="k">2<span class="u">PX</span></div><div class="l">Structural</div><div class="d">The default. Divides sections, frames components, underlines the masthead. <b>Black on paper, paper on asphalt.</b></div></div>
+    <div class="r reveal d1"><div class="k">4<span class="u">PX</span></div><div class="l">Emphasis</div><div class="d">Reserved for a single charged moment — a hover state, an active joint. Used once per view at most.</div></div>
+    <div class="r wide reveal d2"><div class="k">1<span class="u">PX</span></div><div class="l">Forbidden as aesthetic</div><div class="d">Hairline broadsheet pastiche is off-limits. A 1px line may exist only as an internal grid guide — never as a visible design element. <b>The rule is concrete or it is not there.</b></div></div>
+  </div>
+  <div class="demo-rules reveal d2">
+    <div class="dr yes"><span class="lab">STRUCTURAL</span><span class="bar struct"></span><span class="verdict">USE</span></div>
+    <div class="dr yes"><span class="lab">WELD JOINT</span><span class="bar weld"></span><span class="verdict">USE</span></div>
+    <div class="dr yes"><span class="lab">EMPHASIS</span><span class="bar thick"></span><span class="verdict">SPARING</span></div>
+    <div class="dr no"><span class="lab">HAIRLINE</span><span class="bar hair"></span><span class="verdict">NO</span></div>
+  </div>
+</section>
+
+<!-- ============ PHOTO ============ -->
+<section class="section" id="photo">
+  <div class="eyebrow reveal"><span class="idx">06</span> PHOTO TREATMENT</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">CRUSHED<br>BLOCKS.</h2>
+  <p class="deck reveal d2">Photography is concrete too: high contrast, crushed blacks, desaturated. A weld duotone overlay may sit at ≤15% — a charge, never a wash. No soft gradients, no pastel filters.</p>
+  <div class="photo-wrap">
+    <div class="frame reveal">
+      <img src="https://picsum.photos/seed/brutalist-concrete-monolith/900/700" alt="High-contrast architectural concrete">
+      <span class="tag">FIG.01 <b>//</b> CRUSHED BLACKS</span>
+    </div>
+    <div class="photo-spec reveal d1">
+      <div class="ni"><div class="k">01</div><div><div class="t">Desaturate</div><div class="d">Grayscale by default. Colour is the weld's job, not the photo's.</div></div></div>
+      <div class="ni"><div class="k">02</div><div><div class="t">Crush</div><div class="d">Push contrast so blacks go solid. The image should feel poured, not printed.</div></div></div>
+      <div class="ni"><div class="k">03</div><div><div class="t">Duotone weld</div><div class="d">Occasional <b>#ff3b00</b> soft-light overlay at ≤15%. One charge per image, never more.</div></div></div>
+      <div class="ni"><div class="k">04</div><div><div class="t">Frame</div><div class="d">A 2px structural border, flush. No drop shadows, no rounded corners, no bloom.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECIPES ============ -->
+<section class="section section--asphalt" id="recipes">
+  <div class="eyebrow reveal"><span class="idx">07</span> COMPONENT RECIPES</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">THREE<br>BLOCKS.</h2>
+  <p class="deck reveal d2">Described in words and wire proportions — not card UI kits. Each recipe is a load-bearing arrangement of the same tokens.</p>
+
+  <!-- Recipe 1: Nav -->
+  <div class="recipe reveal">
+    <div class="rh"><span class="num">R1</span><span class="name">NAV — <b>MONUMENT LEFT</b></span><span class="use">Fixed masthead · full width</span></div>
+    <div class="body">
+      <div class="wire"><div class="wire-nav"><div class="top"><div class="bl">BL<span class="o">O</span>CK</div><div class="rt">MANIFESTO<br>TYPE · GRID<br>RECIPES</div></div><div class="bot"></div></div></div>
+      <div class="desc">
+        <h4>PROPORTIONS</h4>
+        <p>Brand sits <b>left, huge</b> (Anton, ~30px) as a typographic monument. Links form a <b>mono list on the right</b>, uppercase, tracked. A single 2px rule closes the bottom.</p>
+        <ul>
+          <li>Brand left · links right · bottom rule</li>
+          <li>Hover = rule thickens under link, no shadow</li>
+          <li>Sticky; background matches surface token</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe 2: Article header -->
+  <div class="recipe reveal">
+    <div class="rh"><span class="num">R2</span><span class="name">ARTICLE HEADER — <b>MEGA SPAN</b></span><span class="use">No hero card</span></div>
+    <div class="body">
+      <div class="wire"><div class="wire-art"><div class="kicker">FEATURE / 01</div><div class="title">The Grid Holds The Weight</div><div class="deck">A deck set in mono, spanning the last four columns. No card. No container. Just ink and rule.</div><div class="rule"></div></div></div>
+      <div class="desc">
+        <h4>PROPORTIONS</h4>
+        <p>Mega title spans <b>8 of 12 columns</b> in Anton. The deck is a mono paragraph in the <b>remaining 4</b>, baseline-aligned. A kicker sits above; a 2px rule closes below.</p>
+        <ul>
+          <li>Title 8-col · deck 4-col · kicker above</li>
+          <li>No hero card, no container, no padding box</li>
+          <li>Title settles from a 4px offset on enter</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe 3: Image + caption -->
+  <div class="recipe reveal">
+    <div class="rh"><span class="num">R3</span><span class="name">IMAGE + CAPTION — <b>FULL BLEED</b></span><span class="use">Figure / figcaption</span></div>
+    <div class="body">
+      <div class="wire"><div class="wire-img"><div class="pic"></div><div class="cap">FIG.02 — <b>WELD OVERLAY ≤15%</b> · CAPTION IN MONO UNDER A 2PX RULE</div></div></div>
+      <div class="desc">
+        <h4>PROPORTIONS</h4>
+        <p>The image is <b>full-bleed</b>, treated with crushed blacks and an optional weld duotone. The caption is <b>mono, small, set under a 2px rule</b> — never inside the frame.</p>
+        <ul>
+          <li>Full-bleed image · caption below, not overlaid</li>
+          <li>2px rule separates figure from caption</li>
+          <li>Weld duotone at ≤15%, soft-light, one charge</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MOTION ============ -->
+<section class="section" id="motion">
+  <div class="eyebrow reveal"><span class="idx">08</span> MOTION PRINCIPLES</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">STRUCTURAL,<br>NOT DECO.</h2>
+  <p class="deck reveal d2">Motion is structural only — it reveals the system, it never decorates it. Three principles, no more. Everything respects prefers-reduced-motion.</p>
+  <div class="motion-grid">
+    <div class="mo reveal"><div><div class="n">M1</div><div class="t">Rule draw</div><div class="d">On enter, rules draw from the left. The structure reveals itself rather than appearing.</div></div><div class="stage"><span class="r draw"></span></div></div>
+    <div class="mo reveal d1"><div><div class="n">M2</div><div class="t">Ink settle</div><div class="d">Titles settle from a 4px offset into place — ink drying onto the page.</div></div><div class="stage"><span class="set">BLOCK</span></div></div>
+    <div class="mo reveal d2"><div><div class="n">M3</div><div class="t">Rule thickens</div><div class="d">Hover thickens the rule to 4px and charges it weld. No shadow bloom, ever.</div></div><div class="stage"><span class="thick"></span></div></div>
+  </div>
+</section>
+
+<!-- ============ DO / DON'T ============ -->
+<section class="section section--asphalt" id="dd">
+  <div class="eyebrow reveal"><span class="idx">09</span> DO / DON'T</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">THE<br>LINES.</h2>
+  <div class="dd">
+    <div class="col do reveal">
+      <div class="h">DO</div>
+      <div class="item"><span class="mk">+</span><div><div class="t">Load-bearing rules</div><div class="d">2px black lines that divide and hold weight.</div></div></div>
+      <div class="item"><span class="mk">+</span><div><div class="t">Brand as monument</div><div class="d">BLOCK set huge in Anton, treated as architecture.</div></div></div>
+      <div class="item"><span class="mk">+</span><div><div class="t">Sparing weld</div><div class="d">One charged orange point per field, like a joint.</div></div></div>
+      <div class="item"><span class="mk">+</span><div><div class="t">Crushed photography</div><div class="d">High contrast, desaturated, occasional weld duotone.</div></div></div>
+      <div class="item"><span class="mk">+</span><div><div class="t">Structural motion</div><div class="d">Rule draws, ink settles, hover thickens. Nothing floats.</div></div></div>
+    </div>
+    <div class="col dont reveal d1">
+      <div class="h">DON'T</div>
+      <div class="item"><span class="mk">×</span><div><div class="t">Hairline broadsheet</div><div class="d">No 1px delicate newspaper pastiche as aesthetic.</div></div></div>
+      <div class="item"><span class="mk">×</span><div><div class="t">Soft cream + terracotta</div><div class="d">No luxury defaults. Concrete and voltage, not warmth.</div></div></div>
+      <div class="item"><span class="mk">×</span><div><div class="t">Purple tech glow</div><div class="d">No gradient glow, no neon haze, no SaaS aurora.</div></div></div>
+      <div class="item"><span class="mk">×</span><div><div class="t">Shadow bloom</div><div class="d">No drop shadows on hover. Thickening rules only.</div></div></div>
+      <div class="item"><span class="mk">×</span><div><div class="t">Meme brutalism</div><div class="d">No random rotation, no comic clash, no chaos.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VARIANTS ============ -->
+<section class="section" id="variants">
+  <div class="eyebrow reveal"><span class="idx">10</span> OPTIONAL VARIANTS</div>
+  <h2 class="h-sec reveal d1" style="margin:16px 0 20px">INVERT<br>THE GROUND.</h2>
+  <p class="deck reveal d2">The system ships paper-first and supports a night inversion. Toggle the masthead to preview — the weld never changes; only the ground does.</p>
+  <div class="var-wrap">
+    <div class="var a reveal">
+      <div class="prev"><span class="word">BL<span class="o">O</span>CK</span><span class="strip a"></span></div>
+      <div class="info"><div class="k">VARIANT A</div><div class="n">Paper-first</div><div class="d">The default. Asphalt text on paper. Ink-forward, gallery-lit, the printed page.</div></div>
+    </div>
+    <div class="var b reveal d1">
+      <div class="prev"><span class="word">BL<span class="o">O</span>CK</span><span class="strip b"></span></div>
+      <div class="info"><div class="k">VARIANT B</div><div class="n">Night asphalt</div><div class="d">Asphalt ground, paper ink. The weld glows like a live joint in the dark.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="bigword reveal">BL<span class="o">O</span>CK</div>
+  <div class="meta">
+    <span class="c">SYSTEM <b>EDITORIAL BRUTALIST</b></span>
+    <span class="c">ISSUE <b>01 / CONCRETE</b></span>
+    <span class="c">TOKENS <b>ASPHALT · PAPER · WELD · MID</b></span>
+    <span class="c">TYPE <b>ANTON + IBM PLEX MONO</b></span>
+  </div>
+  <div class="end">
+    <span>CONCRETE</span><span class="sep">//</span>
+    <span>INK</span><span class="sep">//</span>
+    <span>VOLTAGE</span><span class="sep">//</span>
+    <span>THREE AIs · SIBLINGS, NOT COUSINS</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* clock */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var p = function(n){return String(n).padStart(2,'0');};
+    clock.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* scroll progress */
+  var prog = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    prog.style.width = (max>0 ? (h.scrollTop/max*100) : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* reveal + settle */
+  var targets = document.querySelectorAll('.reveal,.settle,.hline,.vline,.mo');
+  if(reduce){
+    targets.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    targets.forEach(function(el){ io.observe(el); });
+  }
+
+  /* copy hex */
+  document.querySelectorAll('.hex').forEach(function(el){
+    el.addEventListener('click', function(){
+      var v = el.getAttribute('data-hex');
+      var done = function(){
+        var old = el.textContent;
+        el.textContent = 'COPIED ' + v;
+        setTimeout(function(){ el.textContent = old; }, 1200);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(v).then(done).catch(done);
+      } else { done(); }
+    });
+  });
+
+  /* theme toggle */
+  var nightBtn = document.getElementById('tglNight');
+  var paperBtn = document.getElementById('tglPaper');
+  function setNight(on){
+    document.body.classList.toggle('night', on);
+    nightBtn.classList.toggle('on', on);
+    paperBtn.classList.toggle('on', !on);
+  }
+  nightBtn.addEventListener('click', function(){ setNight(true); });
+  paperBtn.addEventListener('click', function(){ setNight(false); });
+})();
+</script>
+</body>
+</html>

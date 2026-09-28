@@ -2,9 +2,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { CATEGORIES, PROVIDER_BASES, loadEnvFile, today, envFlag } from "./helpers.mjs";
-import { waitForIdleSlot } from "./slots.mjs";
+import { waitForIdleSlot, fetchModelSlots } from "./slots.mjs";
 
-export function resolveAiConfig(root) {
+export function resolveAiConfig(root, { requireKey = true } = {}) {
   loadEnvFile(path.join(root, ".env"));
   const provider = (process.env.AI_PROVIDER || "openrouter").toLowerCase();
   const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
@@ -13,7 +13,7 @@ export function resolveAiConfig(root) {
   const model = process.env.AI_MODEL;
   const modelApi = process.env.AI_MODEL_API || model;
   let baseUrl = process.env.AI_BASE_URL || PROVIDER_BASES[provider];
-  if (!apiKey) throw new Error("Missing AI_API_KEY in .env");
+  if (requireKey && !apiKey) throw new Error("Missing AI_API_KEY in .env");
   if (!model) throw new Error("Missing AI_MODEL in .env");
   if (!baseUrl) {
     throw new Error(
@@ -23,11 +23,12 @@ export function resolveAiConfig(root) {
   const thinkingEnabled = envFlag("THINKING_ENABLED", false);
   // Stream keeps the connection alive on long builds; default on.
   // Thinking text is only printed when THINKING_ENABLED=true.
+  // When false, requests also get /no_think + enable_thinking=false (Qwen/Gufo).
   const stream = envFlag("AI_STREAM", true);
   const waitForSlot = envFlag("WAIT_FOR_SLOT", true);
   return {
     provider,
-    apiKey,
+    apiKey: apiKey || "",
     model, // stored in run meta + folder slug
     modelApi, // request body "model"
     baseUrl: baseUrl.replace(/\/$/, ""),
@@ -39,20 +40,57 @@ export function resolveAiConfig(root) {
 
 export const ONE_HOUR_MS = 60 * 60 * 1000;
 
-/** Shared abort for Ctrl+C — aborts in-flight fetch so the TCP stream closes. */
+/** Shared abort for Ctrl+C/SIGTERM — close the in-flight SSE/TCP socket. */
 const shutdown = new AbortController();
 let shutdownHooked = false;
+/** @type {ReadableStreamDefaultReader<Uint8Array> | null} */
+let activeSseReader = null;
+/** @type {ReadableStream<Uint8Array> | null} */
+let activeSseBody = null;
+
+export function isShutdownAborted() {
+  return shutdown.signal.aborted;
+}
+
+export function getShutdownSignal() {
+  return shutdown.signal;
+}
+
+/** Force-cancel the in-flight SSE body so the gateway sees disconnect and frees the slot. */
+export function forceCloseActiveStream(reason = "aborted") {
+  const reader = activeSseReader;
+  const body = activeSseBody;
+  activeSseReader = null;
+  activeSseBody = null;
+  try {
+    reader?.cancel(reason);
+  } catch {
+    /* ignore */
+  }
+  try {
+    // Some runtimes expose cancel on the body itself
+    body?.cancel?.(reason);
+  } catch {
+    /* ignore */
+  }
+}
 
 function ensureShutdownHook() {
   if (shutdownHooked) return;
   shutdownHooked = true;
   const halt = (sig) => {
-    if (shutdown.signal.aborted) return;
-    console.error(`\n  ${sig} — aborting in-flight request (closing client stream)…`);
+    if (shutdown.signal.aborted) {
+      forceCloseActiveStream(`aborted by ${sig}`);
+      return;
+    }
+    console.error(`\n  ${sig} — aborting stream (closing SSE/TCP now)…`);
     shutdown.abort(new Error(`aborted by ${sig}`));
+    forceCloseActiveStream(`aborted by ${sig}`);
+    // Don't linger: exit after socket teardown so orphans can't keep the slot
+    setTimeout(() => process.exit(130), 150);
   };
-  process.once("SIGINT", () => halt("SIGINT"));
-  process.once("SIGTERM", () => halt("SIGTERM"));
+  process.on("SIGINT", () => halt("SIGINT"));
+  process.on("SIGTERM", () => halt("SIGTERM"));
 }
 
 function mergeAbortSignals(...signals) {
@@ -71,73 +109,159 @@ function mergeAbortSignals(...signals) {
   return out.signal;
 }
 
+function abortPromise(signal) {
+  return new Promise((_, reject) => {
+    if (!signal) return;
+    if (signal.aborted) {
+      reject(Object.assign(new Error("Aborted"), { name: "AbortError" }));
+      return;
+    }
+    signal.addEventListener(
+      "abort",
+      () => reject(Object.assign(new Error("Aborted"), { name: "AbortError" })),
+      { once: true }
+    );
+  });
+}
+
 async function readSseChatStream(
   res,
-  { showThinking = false, showContentTicks = false, onThinking, onContent } = {}
+  {
+    showThinking = false,
+    showContentTicks = false,
+    onThinking,
+    onContent,
+    signal = null,
+  } = {}
 ) {
+  if (!res.body) throw new Error("No response body for SSE stream");
   const reader = res.body.getReader();
+  activeSseReader = reader;
+  activeSseBody = res.body;
   const decoder = new TextDecoder();
   let buffer = "";
   let content = "";
   let thinking = "";
+  let usage = null;
   let sawThinking = false;
   let sawContent = false;
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split("\n");
-    buffer = parts.pop() || "";
+  const onAbort = () => {
+    forceCloseActiveStream("abort signal");
+  };
+  signal?.addEventListener("abort", onAbort, { once: true });
+  if (signal?.aborted) {
+    forceCloseActiveStream("already aborted");
+    throw Object.assign(new Error("Aborted"), { name: "AbortError" });
+  }
 
-    for (const line of parts) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith(":")) continue;
-      if (!trimmed.startsWith("data:")) continue;
-      const payload = trimmed.slice(5).trim();
-      if (payload === "[DONE]") continue;
-      let json;
-      try {
-        json = JSON.parse(payload);
-      } catch {
-        continue;
+  try {
+    while (true) {
+      if (signal?.aborted) {
+        await reader.cancel("aborted").catch(() => {});
+        throw Object.assign(new Error("Aborted"), { name: "AbortError" });
       }
-      const delta = json.choices?.[0]?.delta || {};
-      const t =
-        delta.reasoning_content ||
-        delta.reasoning ||
-        delta.thinking ||
-        (typeof delta.reasoning_details === "string" ? delta.reasoning_details : "");
-      const c = delta.content || "";
-      if (t) {
-        thinking += t;
-        if (showThinking) {
-          if (!sawThinking) {
-            process.stderr.write("\n  ── thinking ──\n");
-            sawThinking = true;
-          }
-          process.stderr.write(t);
+      const { done, value } = await Promise.race([
+        reader.read(),
+        abortPromise(signal),
+      ]);
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n");
+      buffer = parts.pop() || "";
+
+      for (const line of parts) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith(":")) continue;
+        if (!trimmed.startsWith("data:")) continue;
+        const payload = trimmed.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        let json;
+        try {
+          json = JSON.parse(payload);
+        } catch {
+          continue;
         }
-        onThinking?.(t);
-      }
-      if (c) {
-        content += c;
-        if (showContentTicks) {
-          if (!sawContent) {
-            process.stderr.write("\n  ── content ──\n");
-            sawContent = true;
+        if (json.usage) usage = json.usage;
+        const delta = json.choices?.[0]?.delta || {};
+        const t =
+          delta.reasoning_content ||
+          delta.reasoning ||
+          delta.thinking ||
+          (typeof delta.reasoning_details === "string"
+            ? delta.reasoning_details
+            : "");
+        const c = delta.content || "";
+        if (t) {
+          thinking += t;
+          if (showThinking) {
+            if (!sawThinking) {
+              process.stderr.write("\n  ── thinking ──\n");
+              sawThinking = true;
+            }
+            process.stderr.write(t);
           }
-          if (content.length % 2000 < c.length) process.stderr.write("·");
+          onThinking?.(t);
         }
-        onContent?.(c);
+        if (c) {
+          content += c;
+          if (showContentTicks) {
+            if (!sawContent) {
+              process.stderr.write("\n  ── content ──\n");
+              sawContent = true;
+            }
+            if (content.length % 2000 < c.length) process.stderr.write("·");
+          }
+          onContent?.(c);
+        }
       }
+    }
+  } finally {
+    signal?.removeEventListener("abort", onAbort);
+    if (activeSseReader === reader) activeSseReader = null;
+    if (activeSseBody === res.body) activeSseBody = null;
+    try {
+      reader.releaseLock();
+    } catch {
+      /* ignore */
     }
   }
 
   if ((showThinking && sawThinking) || (showContentTicks && sawContent)) {
     process.stderr.write("\n");
   }
-  return { content, thinking };
+  return { content, thinking, usage };
+}
+
+/** Append /think or /no_think to the last user turn (Qwen hybrid thinking). */
+export function applyThinkingControls(messages, thinkingEnabled) {
+  const tag = thinkingEnabled ? "/think" : "/no_think";
+  const out = messages.map((m) => {
+    if (Array.isArray(m.content)) {
+      return { ...m, content: m.content.map((p) => ({ ...p })) };
+    }
+    return { ...m };
+  });
+  for (let i = out.length - 1; i >= 0; i--) {
+    if (out[i].role !== "user") continue;
+    const c = out[i].content;
+    if (typeof c === "string") {
+      const cleaned = c.replace(/\s*\/(?:no_)?think\s*$/i, "").trimEnd();
+      out[i].content = `${cleaned}\n${tag}`;
+    } else if (Array.isArray(c)) {
+      const textIdx = c.findIndex((p) => p && p.type === "text");
+      if (textIdx >= 0) {
+        const cleaned = String(c[textIdx].text || "")
+          .replace(/\s*\/(?:no_)?think\s*$/i, "")
+          .trimEnd();
+        c[textIdx].text = `${cleaned}\n${tag}`;
+      } else {
+        c.push({ type: "text", text: tag });
+      }
+    }
+    break;
+  }
+  return out;
 }
 
 /**
@@ -145,9 +269,11 @@ async function readSseChatStream(
  *
  * - timeout defaults to 1 hour
  * - AI_STREAM=true (default): SSE stream (keepalive); quiet unless THINKING_ENABLED
- * - THINKING_ENABLED=true: print model thinking tokens live
+ * - THINKING_ENABLED=true: print model thinking tokens live + /think + enable_thinking
+ * - THINKING_ENABLED=false: /no_think on last user turn + enable_thinking=false
  * - NEVER auto-retry network drops mid-job
  * - Only retry HTTP 503 queue_timeout (request rejected; no job started)
+ * - Returns { content, duration_ms, thinking_enabled, model, model_api, … }
  */
 export async function chatCompletions({
   baseUrl,
@@ -176,18 +302,24 @@ export async function chatCompletions({
 
   // json_object + stream is flaky on many gateways — force non-stream for jsonMode
   const useStream = stream && !jsonMode;
+  const wiredMessages = applyThinkingControls(messages, thinkingEnabled);
 
   const body = {
     model: modelApi || model,
     temperature,
-    messages,
+    messages: wiredMessages,
     stream: useStream,
+    // Gufo / Qwen hybrid: explicit thinking switch (ignored by servers that don't care)
+    enable_thinking: Boolean(thinkingEnabled),
+    chat_template_kwargs: { enable_thinking: Boolean(thinkingEnabled) },
   };
   if (jsonMode) body.response_format = { type: "json_object" };
 
   ensureShutdownHook();
   const url = `${baseUrl}/chat/completions`;
   let lastErr;
+  const wallStart = Date.now();
+  let contextTokens = null;
 
   for (let attempt = 0; attempt <= queueRetries; attempt++) {
     if (shutdown.signal.aborted) {
@@ -214,10 +346,24 @@ export async function chatCompletions({
     );
 
     try {
-      await waitForIdleSlot(
+      const slot = await waitForIdleSlot(
         { baseUrl, apiKey, model, modelApi, waitForSlot },
         { need: 1, signal: shutdown.signal, label: modelApi || model }
       );
+      if (slot?.info?.context_tokens != null) {
+        contextTokens = slot.info.context_tokens;
+      } else if (contextTokens == null) {
+        try {
+          const info = await fetchModelSlots({
+            baseUrl,
+            apiKey,
+            modelApi: modelApi || model,
+          });
+          if (info.context_tokens != null) contextTokens = info.context_tokens;
+        } catch {
+          /* optional meta */
+        }
+      }
 
       const res = await fetch(url, {
         method: "POST",
@@ -256,26 +402,58 @@ export async function chatCompletions({
           await new Promise((r) => setTimeout(r, waitSec * 1000));
           continue;
         }
+
+        // Gufo/etc: response_format not implemented — drop and retry once
+        if (
+          res.status === 400 &&
+          body.response_format &&
+          /response_format|unsupported_field|not implemented/i.test(raw)
+        ) {
+          console.warn("  response_format unsupported — retrying without it…");
+          delete body.response_format;
+          lastErr = new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
+          continue;
+        }
+
         throw new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
       }
 
+      const pack = (content, usage = null) => ({
+        content,
+        duration_ms: Date.now() - wallStart,
+        thinking_enabled: Boolean(thinkingEnabled),
+        model,
+        model_api: modelApi || model,
+        temperature,
+        stream: useStream,
+        context_tokens: contextTokens,
+        usage: usage || null,
+        prompt_tokens: usage?.prompt_tokens ?? usage?.input_tokens ?? null,
+        completion_tokens:
+          usage?.completion_tokens ?? usage?.output_tokens ?? null,
+      });
+
       if (useStream) {
-        const { content, thinking } = await readSseChatStream(res, {
-          showThinking: thinkingEnabled,
-          showContentTicks: thinkingEnabled,
-          onThinking: () => {
-            gotBytes = true;
-          },
-          onContent: () => {
-            gotBytes = true;
-          },
-        });
-        const out =
-          (content && content.trim()) ||
-          (thinking && thinking.trim()) ||
-          "";
-        if (!out) throw new Error("Empty streamed model content");
-        return out;
+        const { content, thinking: _thinking, usage } = await readSseChatStream(
+          res,
+          {
+            showThinking: thinkingEnabled,
+            showContentTicks: thinkingEnabled,
+            signal,
+            onThinking: () => {
+              gotBytes = true;
+            },
+            onContent: () => {
+              gotBytes = true;
+            },
+          }
+        );
+        // Never persist reasoning/thinking as the demo — only assistant content.
+        const out = (content && content.trim()) || "";
+        if (!out) {
+          throw new Error("Empty streamed model content (no assistant content deltas)");
+        }
+        return pack(out, usage);
       }
 
       const raw = await res.text();
@@ -284,15 +462,15 @@ export async function chatCompletions({
       const msg = data.choices?.[0]?.message || {};
       const content =
         (typeof msg.content === "string" && msg.content.trim() && msg.content) ||
-        (typeof msg.reasoning_content === "string" && msg.reasoning_content) ||
         "";
       if (!content) throw new Error(`Empty model content: ${raw.slice(0, 400)}`);
-      return content;
+      return pack(content, data.usage || null);
     } catch (err) {
       lastErr = err;
-      if (shutdown.signal.aborted) {
+      forceCloseActiveStream("error/abort cleanup");
+      if (shutdown.signal.aborted || err?.name === "AbortError") {
         throw new Error(
-          "Aborted by Ctrl+C — client stream closed. Server may still finish the current slot unless the gateway cancels on disconnect."
+          "Aborted — SSE/TCP stream closed (slot should free)"
         );
       }
       if (err?.name === "TimeoutError" || err?.cause?.name === "TimeoutError") {
@@ -305,7 +483,7 @@ export async function chatCompletions({
         : "";
       if (/fetch failed|ECONNRESET|EPIPE|UND_ERR|aborted/i.test(String(err.message) + cause)) {
         throw new Error(
-          `${err.message}${cause} — NOT retrying (LLM may still be running on the server)`
+          `${err.message}${cause} — NOT retrying (stream closed; do not re-POST)`
         );
       }
       throw err instanceof Error ? err : new Error(String(err));
@@ -355,7 +533,7 @@ export function parseMeta(text, filePath = "meta.yaml") {
     }
     obj[key] = val;
   }
-  for (const listKey of ["tags", "model_hints"]) {
+  for (const listKey of ["tags", "model_hints", "review_issues"]) {
     if (!Array.isArray(obj[listKey])) {
       obj[listKey] = obj[listKey] ? [obj[listKey]] : [];
     }
@@ -371,6 +549,10 @@ export function serializeMeta(meta) {
     .join("\n");
   const demo =
     meta.demo === null || meta.demo === undefined ? "null" : meta.demo;
+  const preview =
+    meta.preview === null || meta.preview === undefined || meta.preview === ""
+      ? "null"
+      : meta.preview;
   const defaultRun =
     meta.default_run === null || meta.default_run === undefined
       ? "null"
@@ -390,7 +572,7 @@ tags:
 ${tags}
 status: ${meta.status}
 summary: ${q(meta.summary)}
-preview: ${meta.preview}
+preview: ${preview}
 prompt: ${meta.prompt || "prompt.md"}
 extended: ${meta.extended || "prompt.full.md"}
 demo: ${demo}
@@ -463,5 +645,37 @@ export function extractHtmlDocument(text) {
   // trim trailing junk after </html>
   const end = html.toLowerCase().lastIndexOf("</html>");
   html = html.slice(0, end + "</html>".length);
+  assertDemoHtmlOk(html);
   return html;
+}
+
+/**
+ * Reject demos where planning prose leaked into the markup (white/broken pages).
+ * Does not touch THINKING_* settings — only validates the HTML we would write.
+ */
+export function assertDemoHtmlOk(html) {
+  if (!html || html.length < 1200) {
+    throw new Error("HTML too short to be a finished demo");
+  }
+  if (!/<style[\s>]/i.test(html) && !/\sstyle\s*=/i.test(html)) {
+    throw new Error("HTML missing <style> (incomplete demo)");
+  }
+  if (!/<body[\s>]/i.test(html) || !/<\/body>/i.test(html)) {
+    throw new Error("HTML missing <body>…</body>");
+  }
+  // Planning / chain-of-thought leaked as text nodes between tags
+  const leak =
+    />\s*(?:\?|\.\.\.)?\s*(?:If |Need |Could |Maybe |Let's |Let us |Put |Good\.|Also |Wait |Hmm |TODO\b)/i.test(
+      html
+    ) ||
+    /(?:Need position|Could make|Put inside|If outside|warum |Good\. On mobile)/i.test(
+      html
+    );
+  if (leak) {
+    throw new Error("HTML contains planning/thinking prose — refusing to save");
+  }
+  // Incomplete placeholders often left by aborted streams
+  if (/<\s*style\s*>\s*\.\.\.\s*<\/style>/i.test(html) || />\s*\.\.\.\s*</.test(html)) {
+    throw new Error("HTML contains unfinished '...' placeholders");
+  }
 }

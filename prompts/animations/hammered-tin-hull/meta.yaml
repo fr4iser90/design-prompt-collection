@@ -1,0 +1,26 @@
+id: hammered-tin-hull
+title: "Hammered Tin Hull"
+category: animations
+tags:
+  - tin
+  - metal-forming
+  - hammering
+  - soft-metal
+  - dents
+  - industrial-craft
+  - reflective
+status: polished
+summary: "Close-up of soft tin sheet being hammered into a curved hull, showing progressive dents, stretching, and dull metallic sheen."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

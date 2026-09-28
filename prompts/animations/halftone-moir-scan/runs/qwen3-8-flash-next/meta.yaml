@@ -1,0 +1,21 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 8760
+review_score: 8
+review_summary: "Strong execution of the brief with excellent typographic hierarchy and accurate color blending, though the background pattern is static rather than showing the requested circular/rotational moiré interference."
+reviewed_at: "2026-09-28T11:02:40.274Z"
+review_issues:
+  - "Background is a uniform grid rather than the requested 'three large, circular halftone grids'"
+  - "Yellow layer is visually absent (likely due to multiply blending on white or lack of overlap in this frame)"
+  - "Body copy is difficult to read due to high-contrast dot pattern interference"

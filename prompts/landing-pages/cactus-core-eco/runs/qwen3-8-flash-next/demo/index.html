@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cactus Core — Pure from the Desert</title>
+<meta name="description" content="Cactus Core crafts leather, dye and fibre from the nopal cactus. Grown on rain, tanned with the plant, returned to the earth.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,400..500&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --clay:#D3C5B5;
+    --clay-light:#E6DCCF;
+    --clay-deep:#CBB9A4;
+    --green:#5C7F56;
+    --green-deep:#43603E;
+    --green-soft:#7C9C74;
+    --grey:#333333;
+    --grey-soft:#5C574F;
+    --paper:#F4EEE4;
+    --line:rgba(51,51,51,.14);
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --maxw:1240px;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Quicksand',system-ui,sans-serif;
+    background:var(--clay);
+    color:var(--grey);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection{background:var(--green);color:var(--clay-light)}
+
+  h1,h2,h3,.display{font-family:'Fraunces',Georgia,serif;font-weight:400;line-height:1.02;letter-spacing:-.01em}
+  .display{font-weight:500}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,64px);position:relative;z-index:2}
+
+  .kicker{
+    font-family:'Quicksand';font-weight:600;font-size:.72rem;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--green-deep);display:inline-flex;align-items:center;gap:.7em;
+  }
+  .kicker::before{content:"";width:26px;height:1px;background:var(--green)}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px clamp(20px,5vw,64px);
+    transition:background .5s var(--ease),padding .5s var(--ease),box-shadow .5s var(--ease);
+  }
+  .nav.scrolled{background:rgba(211,197,181,.82);backdrop-filter:blur(12px);padding-top:14px;padding-bottom:14px;box-shadow:0 1px 0 var(--line)}
+  .brand{display:flex;align-items:center;gap:.55em;font-weight:700;letter-spacing:.02em;font-size:1.15rem;color:var(--grey)}
+  .brand svg{width:26px;height:26px;color:var(--green);flex:none}
+  .brand b{font-family:'Fraunces';font-weight:500}
+  .nav-links{display:flex;gap:clamp(18px,3vw,40px);align-items:center}
+  .nav-links a{font-weight:500;font-size:.92rem;position:relative;padding:4px 0;color:var(--grey)}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--green);transition:width .4s var(--ease)}
+  .nav-links a:hover{color:var(--green-deep)}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    border:1.5px solid var(--green);color:var(--green-deep);border-radius:40px;
+    padding:9px 20px;font-weight:600;transition:background .4s var(--ease),color .4s var(--ease);
+  }
+  .nav-cta:hover{background:var(--green);color:var(--paper)}
+  .nav-cta::after{display:none}
+  .burger{display:none;background:none;border:none;color:var(--grey);cursor:pointer;width:34px;height:34px}
+  .burger svg{width:100%;height:100%}
+
+  /* ---------- BUTTONS ---------- */
+  .btn{
+    position:relative;display:inline-flex;align-items:center;gap:.6em;
+    background:var(--green);color:var(--paper);border:none;cursor:pointer;
+    font-family:'Quicksand';font-weight:600;font-size:1rem;
+    padding:16px 32px;border-radius:60px;overflow:hidden;z-index:0;
+    transition:transform .4s var(--ease),box-shadow .4s var(--ease);
+  }
+  .btn::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at center,rgba(255,255,255,.35),transparent 60%);transform:scale(0);border-radius:50%;transition:transform .6s var(--ease)}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 30px -12px rgba(67,96,62,.6)}
+  .btn:hover::before{transform:scale(1.6)}
+  .btn.ghost{background:transparent;color:var(--grey-deep);border:1.5px solid var(--green)}
+  .btn.ghost::before{background:radial-gradient(circle at center,rgba(92,127,86,.18),transparent 60%)}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+  .hero-media{position:absolute;inset:0;z-index:0}
+  .hero-media img{width:100%;height:100%;object-fit:cover}
+  .hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(211,197,181,.35) 0%,rgba(211,197,181,.15) 40%,rgba(211,197,181,.55) 100%)}
+  .kenburns{animation:kenburns 26s ease-in-out infinite alternate;transform-origin:60% 40%}
+  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.14)}}
+  .hero-inner{position:relative;z-index:3;width:100%;padding-top:80px}
+  .hero-copy{max-width:720px}
+  .hero h1{
+    font-size:clamp(3rem,10.5vw,8.2rem);color:var(--grey);
+    font-weight:500;letter-spacing:-.02em;margin:22px 0 26px;
+    text-shadow:0 2px 30px rgba(211,197,181,.6);
+  }
+  .hero h1 em{font-style:italic;color:var(--green-deep);font-weight:400}
+  .hero p.lead{font-size:clamp(1.05rem,1.6vw,1.28rem);max-width:520px;color:var(--grey);margin-bottom:34px;font-weight:500}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .scroll-cue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--grey);font-weight:600}
+  .scroll-cue .line{width:1px;height:44px;background:var(--grey);position:relative;overflow:hidden}
+  .scroll-cue .line::after{content:"";position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--green);animation:cue 2.4s var(--ease) infinite}
+  @keyframes cue{0%{top:-100%}60%{top:100%}100%{top:100%}}
+  .hero-tag{position:absolute;right:clamp(20px,5vw,64px);bottom:40px;z-index:4;text-align:right;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--grey);font-weight:600;max-width:180px;line-height:1.5}
+  .hero-tag b{color:var(--green-deep)}
+
+  /* reveal */
+  [data-reveal]{opacity:0;transform:translateY(34px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+  [data-reveal].in{opacity:1;transform:none}
+  [data-reveal][data-delay="1"]{transition-delay:.12s}
+  [data-reveal][data-delay="2"]{transition-delay:.24s}
+  [data-reveal][data-delay="3"]{transition-delay:.36s}
+  .mask{display:block;overflow:hidden}
+  .mask>span{display:block;transform:translateY(110%);transition:transform 1.1s var(--ease)}
+  .mask.in>span{transform:none}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee{background:var(--green-deep);color:var(--clay-light);padding:22px 0;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+  .marquee-track{display:inline-flex;gap:0;animation:marquee 34s linear infinite}
+  .marquee span{font-family:'Fraunces';font-style:italic;font-size:clamp(1.3rem,3vw,2.1rem);padding:0 34px;display:inline-flex;align-items:center;gap:34px}
+  .marquee span::after{content:"✦";color:var(--green-soft);font-style:normal;font-size:.7em}
+  @keyframes marquee{to{transform:translateX(-50%)}}
+
+  /* ---------- SECTION SCAFFOLD ---------- */
+  section{position:relative}
+  .sec-head{max-width:640px;margin-bottom:clamp(40px,7vw,80px)}
+  .sec-head h2{font-size:clamp(2.2rem,5.5vw,4.2rem);margin:18px 0 18px;color:var(--grey)}
+  .sec-head h2 em{font-style:italic;color:var(--green-deep)}
+  .sec-head p{color:var(--grey-soft);font-size:1.08rem;max-width:520px}
+
+  /* ---------- SOURCE ---------- */
+  .source{padding:clamp(80px,12vw,150px) 0}
+  .source-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(40px,6vw,90px);align-items:center}
+  .source-text .stat-row{display:flex;gap:36px;margin:36px 0;flex-wrap:wrap}
+  .stat .num{font-family:'Fraunces';font-size:clamp(2.4rem,4vw,3.4rem);color:var(--green-deep);line-height:1;font-weight:500}
+  .stat .lbl{font-size:.82rem;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-soft);font-weight:600;margin-top:8px}
+  .source-list{list-style:none;margin-top:8px}
+  .source-list li{padding:16px 0;border-top:1px solid var(--line);display:flex;gap:16px;align-items:flex-start;font-weight:500}
+  .source-list li:last-child{border-bottom:1px solid var(--line)}
+  .source-list .dot{color:var(--green);flex:none;margin-top:4px}
+
+  .blob-wrap{position:relative;width:min(560px,100%);margin-left:auto}
+  .blob{width:100%;overflow:hidden;background:var(--clay-deep)}
+  .blob img{width:100%;height:100%;object-fit:cover;transition:transform 1.2s var(--ease)}
+  .b1{aspect-ratio:1/1.08;clip-path:polygon(50% 0%,66% 3%,81% 10%,92% 24%,97% 42%,96% 62%,88% 80%,72% 93%,52% 100%,30% 97%,14% 86%,4% 68%,2% 48%,7% 28%,20% 12%,35% 4%)}
+  .b2{aspect-ratio:1/1.02;clip-path:polygon(52% 2%,70% 5%,86% 16%,95% 34%,96% 55%,88% 76%,72% 91%,50% 98%,28% 94%,12% 80%,4% 60%,5% 38%,15% 18%,32% 6%)}
+  .b3{aspect-ratio:1/1.12;clip-path:polygon(50% 0%,72% 8%,88% 26%,96% 50%,88% 76%,68% 94%,44% 98%,22% 88%,6% 66%,2% 40%,12% 18%,30% 4%)}
+  .b4{aspect-ratio:1/1;clip-path:polygon(50% 1%,68% 4%,84% 14%,94% 32%,97% 54%,90% 76%,74% 92%,52% 99%,28% 95%,10% 82%,3% 60%,4% 36%,16% 16%,32% 5%)}
+  .blob.breathe{animation:breathe 9s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+  .blob-source{cursor:pointer}
+  .blob-source:hover img{transform:scale(1.08)}
+  .blob-reveal{position:absolute;inset:0;background:rgba(67,96,62,.82);color:var(--clay-light);display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(24px,4vw,48px);opacity:0;transition:opacity .55s var(--ease)}
+  .blob-source:hover .blob-reveal{opacity:1}
+  .blob-reveal .big{font-family:'Fraunces';font-size:clamp(2.6rem,5vw,4rem);line-height:1;color:#fff;font-weight:500}
+  .blob-reveal .sub{font-size:.9rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin-top:6px;color:var(--clay-light)}
+  .blob-reveal .note{font-size:.95rem;margin-top:16px;max-width:280px;opacity:.9}
+
+  /* ---------- MANIFESTO ---------- */
+  .manifesto{padding:clamp(60px,9vw,110px) 0;text-align:center;background:var(--clay-light)}
+  .manifesto .wrap{max-width:900px}
+  .manifesto .line{font-family:'Fraunces';font-size:clamp(1.9rem,5.2vw,4rem);line-height:1.16;color:var(--grey);font-weight:400}
+  .manifesto .line em{font-style:italic;color:var(--green-deep)}
+  .manifesto .sig{margin-top:40px;font-size:.8rem;letter-spacing:.24em;text-transform:uppercase;color:var(--grey-soft);font-weight:600}
+
+  /* ---------- LIFECYCLE ---------- */
+  .lifecycle{padding:clamp(80px,12vw,150px) 0}
+  .timeline{position:relative;margin-top:clamp(40px,6vw,70px);padding-left:clamp(40px,8vw,120px)}
+  .vine{position:absolute;left:clamp(14px,4vw,54px);top:10px;bottom:10px;width:6px;z-index:1;overflow:visible}
+  .vine path{fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round;stroke-dasharray:1000;stroke-dashoffset:1000;transition:stroke-dashoffset 2.6s var(--ease)}
+  .timeline.in .vine path{stroke-dashoffset:0}
+  .vine .leaf{fill:var(--green);opacity:0;transition:opacity .6s var(--ease) .8s}
+  .timeline.in .vine .leaf{opacity:.55}
+  .step{position:relative;padding:0 0 clamp(48px,7vw,80px)}
+  .step:last-child{padding-bottom:0}
+  .step::before{content:"";position:absolute;left:calc(clamp(14px,4vw,54px) - clamp(40px,8vw,120px) - 14px);top:6px;width:18px;height:18px;border-radius:50%;background:var(--clay);border:3px solid var(--green);z-index:2}
+  .step-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  .step-idx{font-family:'Fraunces';font-size:1rem;color:var(--green);font-weight:500}
+  .step-icon{width:44px;height:44px;color:var(--green-deep);flex:none}
+  .step h3{font-size:clamp(1.6rem,3.4vw,2.4rem);color:var(--grey);margin:0}
+  .step p{color:var(--grey-soft);max-width:560px;margin-top:12px;font-weight:500}
+  .step-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .step-tags span{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:var(--green-deep);border:1px solid var(--green);border-radius:30px;padding:5px 14px}
+
+  /* ---------- MATERIALS ---------- */
+  .materials{padding:clamp(80px,12vw,140px) 0;background:var(--clay-light)}
+  .mat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,4vw,56px);align-items:end}
+  .mat{position:relative}
+  .mat:nth-child(2){margin-top:clamp(20px,6vw,80px)}
+  .mat:nth-child(3){margin-top:clamp(10px,3vw,40px)}
+  .mat .blob img{filter:saturate(.92)}
+  .mat h3{font-size:clamp(1.4rem,2.6vw,2rem);margin:22px 0 8px;color:var(--grey)}
+  .mat p{color:var(--grey-soft);font-weight:500;font-size:.98rem;max-width:320px}
+  .mat .prop{display:flex;gap:14px;margin-top:14px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--green-deep)}
+
+  /* ---------- SHOP ---------- */
+  .shop{padding:clamp(80px,12vw,150px) 0}
+  .shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3.5vw,44px)}
+  .product{position:relative;display:block;cursor:pointer}
+  .product:nth-child(2){margin-top:clamp(30px,7vw,90px)}
+  .product:nth-child(3){margin-top:clamp(12px,3vw,44px)}
+  .product:nth-child(5){margin-top:clamp(12px,3vw,44px)}
+  .product:nth-child(6){margin-top:clamp(30px,7vw,90px)}
+  .product .blob img{transition:transform 1.1s var(--ease),filter .6s var(--ease)}
+  .product:hover .blob img{transform:scale(1.09);filter:brightness(.72)}
+  .product-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(20px,3vw,36px);opacity:0;transition:opacity .5s var(--ease);color:#fff}
+  .product:hover .product-overlay{opacity:1}
+  .product-overlay .name{font-family:'Fraunces';font-size:1.35rem;color:#fff}
+  .product-overlay .meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+  .product-overlay .price{font-weight:700;letter-spacing:.04em}
+  .product-overlay .add{background:var(--green);color:var(--paper);padding:9px 18px;border-radius:40px;font-weight:600;font-size:.82rem}
+  .product-info{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px}
+  .product-info .name{font-family:'Fraunces';font-size:1.2rem;color:var(--grey)}
+  .product-info .price{font-weight:700;color:var(--green-deep)}
+  .product-info .cat{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-soft);font-weight:600;margin-top:2px}
+
+  /* ---------- CTA ---------- */
+  .cta{position:relative;padding:clamp(90px,14vw,180px) 0;overflow:hidden;text-align:center;color:var(--clay-light)}
+  .cta-bg{position:absolute;inset:0;z-index:0}
+  .cta-bg img{width:100%;height:100%;object-fit:cover}
+  .cta-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(67,96,62,.86),rgba(51,51,51,.72))}
+  .cta .wrap{position:relative;z-index:2;max-width:760px}
+  .cta h2{font-size:clamp(2.4rem,6vw,4.8rem);color:var(--paper);margin:18px 0 22px}
+  .cta h2 em{font-style:italic;color:var(--clay)}
+  .cta p{max-width:520px;margin:0 auto 34px;color:rgba(244,238,228,.9);font-weight:500}
+  .cta .btn{background:var(--clay-light);color:var(--green-deep)}
+  .cta .btn:hover{box-shadow:0 14px 34px -12px rgba(0,0,0,.5)}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--grey);color:var(--clay-light);padding:clamp(70px,10vw,110px) 0 40px}
+  .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:40px}
+  .foot-brand .brand{color:var(--clay-light);font-size:1.5rem;margin-bottom:18px}
+  .foot-brand p{color:rgba(230,220,207,.7);max-width:280px;font-weight:500}
+  .foot-col h4{font-family:'Quicksand';font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green-soft);margin-bottom:18px;font-weight:700}
+  .foot-col a{display:block;color:rgba(230,220,207,.82);padding:6px 0;font-weight:500;transition:color .3s var(--ease),padding-left .3s var(--ease)}
+  .foot-col a:hover{color:#fff;padding-left:6px}
+  .news{display:flex;border:1px solid rgba(230,220,207,.3);border-radius:40px;overflow:hidden;margin-top:14px}
+  .news input{flex:1;background:none;border:none;padding:12px 18px;color:var(--clay-light);font-family:'Quicksand';font-size:.9rem;outline:none}
+  .news input::placeholder{color:rgba(230,220,207,.5)}
+  .news button{background:var(--green);color:var(--paper);border:none;padding:0 20px;font-weight:600;cursor:pointer;font-family:'Quicksand'}
+  .foot-bottom{margin-top:60px;padding-top:26px;border-top:1px solid rgba(230,220,207,.16);display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:.82rem;color:rgba(230,220,207,.6);letter-spacing:.04em}
+  .foot-bottom a{color:rgba(230,220,207,.7)}
+  .foot-bottom a:hover{color:#fff}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:900px){
+    .nav-links{display:none}
+    .burger{display:block}
+    .source-grid{grid-template-columns:1fr}
+    .blob-wrap{margin:0 auto}
+    .mat-grid{grid-template-columns:1fr 1fr}
+    .mat:nth-child(3){margin-top:0}
+    .shop-grid{grid-template-columns:1fr 1fr}
+    .product:nth-child(n){margin-top:0}
+    .foot-grid{grid-template-columns:1fr 1fr}
+    .foot-brand{grid-column:1/-1}
+  }
+  @media(max-width:560px){
+    .mat-grid,.shop-grid{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr}
+    .hero-tag{display:none}
+    .source-text .stat-row{gap:24px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition-duration:.001ms!important}
+    [data-reveal]{opacity:1;transform:none}
+    .mask>span{transform:none}
+    .vine path{stroke-dashoffset:0}
+    .vine .leaf{opacity:.55}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="#top" class="brand" aria-label="Cactus Core home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-3 0-5-2.5-5-6 0-2 .8-3.4.8-5.2C7.8 7 9.6 5 12 5s4.2 2 4.2 4.8c0 1.8.8 3.2.8 5.2 0 3.5-2 6-5 6Z"/><path d="M9.5 12c-1.4 0-2.4-1-2.4-2.4M14.5 10c1.4 0 2.4 1 2.4 2.4M12 21V9"/></svg>
+    <span>Cactus <b>Core</b></span>
+  </a>
+  <div class="nav-links">
+    <a href="#source">Source</a>
+    <a href="#materials">Materials</a>
+    <a href="#lifecycle">Lifecycle</a>
+    <a href="#shop">Shop</a>
+    <a href="#shop" class="nav-cta">Explore</a>
+  </div>
+  <button class="burger" id="burger" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-media">
+    <img class="kenburns" src="https://picsum.photos/seed/cactus-skin-macro-water/1920/1200" alt="Macro photograph of cactus skin with water droplets">
+  </div>
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <span class="kicker" data-reveal>Botanical materials · Grown on rain</span>
+      <h1>
+        <span class="mask" data-reveal><span>Pure from</span></span>
+        <span class="mask" data-reveal data-delay="1"><span>the <em>desert</em></span></span>
+      </h1>
+      <p class="lead" data-reveal data-delay="2">We turn the humble nopal cactus into leather, dye and fibre — tanned by the plant itself, needing almost no water and leaving no trace.</p>
+      <div class="hero-actions" data-reveal data-delay="3">
+        <a href="#materials" class="btn">Explore Materials</a>
+        <a href="#lifecycle" class="btn ghost">See the Lifecycle</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span>Scroll</span><span class="line"></span></div>
+  <div class="hero-tag"><b>Nopal cactus</b><br>Opuntia ficus-indica<br>Harvested by hand, Zacatecas</div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Zero irrigation</span><span>Plant-tanned</span><span>Carbon negative</span><span>Fully compostable</span><span>Hand harvested</span><span>Zero irrigation</span><span>Plant-tanned</span><span>Carbon negative</span><span>Fully compostable</span><span>Hand harvested</span>
+  </div>
+</div>
+
+<!-- SUSTAINABLE SOURCE -->
+<section class="source" id="source">
+  <div class="wrap">
+    <div class="source-grid">
+      <div class="source-text">
+        <span class="kicker" data-reveal>01 — Sustainable Source</span>
+        <div class="sec-head" style="margin-bottom:24px">
+          <h2 data-reveal>It drinks the <em>rare rain</em> and gives everything back.</h2>
+        </div>
+        <p style="color:var(--grey-soft);font-size:1.08rem;max-width:520px" data-reveal>The nopal cactus thrives where nothing else can. No irrigation, no pesticides, no ploughing — just sun, soil and a single harvest every eight years. We work with 40 farming cooperatives across the arid highlands.</p>
+        <div class="stat-row">
+          <div class="stat" data-reveal><div class="num">200<span style="font-size:.5em">L</span></div><div class="lbl">Water / metre²</div></div>
+          <div class="stat" data-reveal data-delay="1"><div class="num">0</div><div class="lbl">Pesticides used</div></div>
+          <div class="stat" data-reveal data-delay="2"><div class="num">8<span style="font-size:.5em">yr</span></div><div class="lbl">Regrowth cycle</div></div>
+        </div>
+        <ul class="source-list">
+          <li data-reveal><span class="dot">◆</span> Rain-fed cultivation across 1,200 hectares of restored highland soil.</li>
+          <li data-reveal data-delay="1"><span class="dot">◆</span> Co-operative harvests that pay fair, seasonal wages to 400 families.</li>
+          <li data-reveal data-delay="2"><span class="dot">◆</span> Every leaf returns to the field as compost — nothing is discarded.</li>
+        </ul>
+      </div>
+      <div class="blob-wrap" data-reveal>
+        <div class="blob b1 breathe blob-source">
+          <img src="https://picsum.photos/seed/cactus-farm-highland/900/980" alt="Cactus farm in the highlands">
+          <div class="blob-reveal">
+            <div class="big">200 L</div>
+            <div class="sub">Water per metre² / year</div>
+            <div class="note">Cattle leather asks for 17,000 litres. The cactus asks for rain and asks nothing more.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <div class="wrap">
+    <p class="line" data-reveal>We don't <em>take</em> from the desert.<br>We ask it to <em>share</em> — and it does, <em>freely</em>.</p>
+    <div class="sig" data-reveal data-delay="1">— The Cactus Core Field Notes, Vol. IV</div>
+  </div>
+</section>
+
+<!-- MATERIALS -->
+<section class="materials" id="materials">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker" data-reveal>02 — What the cactus becomes</span>
+      <h2 data-reveal>Three textures, <em>one leaf</em>.</h2>
+      <p data-reveal data-delay="1">From a single harvest we draw a supple hide, a living pigment and a strong natural fibre. Nothing leaves the plant unused.</p>
+    </div>
+    <div class="mat-grid">
+      <div class="mat" data-reveal>
+        <div class="blob b2 breathe"><img src="https://picsum.photos/seed/cactus-leather-texture/700/720" alt="Cactus leather texture"></div>
+        <h3>Desserto</h3>
+        <p>A soft, breathable hide tanned with the cactus's own tannins. Durable, water-resistant, animal-free.</p>
+        <div class="prop"><span>Leather</span><span>· 100% plant</span></div>
+      </div>
+      <div class="mat" data-reveal data-delay="1">
+        <div class="blob b3 breathe"><img src="https://picsum.photos/seed/cactus-dye-pigment/700/820" alt="Cactus dye pigment"></div>
+        <h3>Nopal Dye</h3>
+        <p>Deep botanical greens and ochres extracted from leaf and fruit — a colour that fades gently, never harshly.</p>
+        <div class="prop"><span>Pigment</span><span>· Non-toxic</span></div>
+      </div>
+      <div class="mat" data-reveal data-delay="2">
+        <div class="blob b4 breathe"><img src="https://picsum.photos/seed/cactus-fibre-weave/700/700" alt="Cactus fibre weave"></div>
+        <h3>Agave Weave</h3>
+        <p>Long, resilient fibres spun into cloth and cord — strong enough for a strap, fine enough for a lining.</p>
+        <div class="prop"><span>Fibre</span><span>· Compostable</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIFECYCLE -->
+<section class="lifecycle" id="lifecycle">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker" data-reveal>03 — Product Lifecycle</span>
+      <h2 data-reveal>From leaf to <em>earth again</em>.</h2>
+      <p data-reveal data-delay="1">Four honest steps. No hidden chemistry, no landfill, no landfill-bound offcuts.</p>
+    </div>
+
+    <div class="timeline" id="timeline">
+      <svg class="vine" viewBox="0 0 6 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M3 4 C 20 120, -14 240, 3 360 S 20 600, 3 720 S -14 900, 3 996" vector-effect="non-scaling-stroke"/>
+        <path class="leaf" d="M3 180 q 22 -10 26 -30 q -24 6 -26 30 Z"/>
+        <path class="leaf" d="M3 540 q -22 -10 -26 -30 q 24 6 26 30 Z"/>
+        <path class="leaf" d="M3 800 q 22 -10 26 -30 q -24 6 -26 30 Z"/>
+      </svg>
+
+      <div class="step" data-reveal>
+        <div class="step-head">
+          <span class="step-idx">Step 01</span>
+          <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-3 0-5-2.5-5-6 0-2 .8-3.4.8-5.2C7.8 7 9.6 5 12 5s4.2 2 4.2 4.8c0 1.8.8 3.2.8 5.2 0 3.5-2 6-5 6Z"/><path d="M9 13c-1.5 0-2.5-1-2.5-2.5M15 11c1.5 0 2.5 1 2.5 2.5"/></svg>
+          <h3>Harvest</h3>
+        </div>
+        <p>Mature leaves are cut by hand every eight years, leaving the plant rooted and thriving. The cut edge seals itself and keeps growing.</p>
+        <div class="step-tags"><span>Hand cut</span><span>Plant stays rooted</span></div>
+      </div>
+
+      <div class="step" data-reveal>
+        <div class="step-head">
+          <span class="step-idx">Step 02</span>
+          <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14c2-1 4-1 6 0s4 1 6 0 4-1 4-1"/><path d="M4 9c2-1 4-1 6 0s4 1 6 0 4-1 4-1"/><path d="M4 19c2-1 4-1 6 0s4 1 6 0 4-1 4-1"/></svg>
+          <h3>Sun-dry</h3>
+        </div>
+        <p>Leaves are laid on clay terraces and dried by desert sun for three days. No kilns, no fossil heat — only wind and light.</p>
+        <div class="step-tags"><span>Solar drying</span><span>Zero kiln energy</span></div>
+      </div>
+
+      <div class="step" data-reveal>
+        <div class="step-head">
+          <span class="step-idx">Step 03</span>
+          <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg>
+          <h3>Press &amp; Tan</h3>
+        </div>
+        <p>Fibre is pressed into sheets and tanned with the cactus's own tannins and a whisper of natural resin. The plant tans its own skin.</p>
+        <div class="step-tags"><span>Plant-tanned</span><span>Chrome-free</span></div>
+      </div>
+
+      <div class="step" data-reveal>
+        <div class="step-head">
+          <span class="step-idx">Step 04</span>
+          <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4 0-7-3-7-7 0-3 2-5 2-5 1 2 3 2 3 2M12 21c4 0 7-3 7-7 0-3-2-5-2-5-1 2-3 2-3 2"/><path d="M12 21V9"/></svg>
+          <h3>Compost</h3>
+        </div>
+        <p>At the end of a long life, the product is returned to soil. It breaks down in months, feeding the very fields the cactus came from.</p>
+        <div class="step-tags"><span>Fully compostable</span><span>Circular</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section class="shop" id="shop">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker" data-reveal>04 — Shop</span>
+      <h2 data-reveal>Objects that <em>belong</em> to the land.</h2>
+      <p data-reveal data-delay="1">Hover any piece to see its story and add it to your basket. Every item ships in compostable packaging.</p>
+    </div>
+
+    <div class="shop-grid">
+      <a class="product" href="#" data-reveal>
+        <div class="blob b2">
+          <img src="https://picsum.photos/seed/cactus-tote-bag/700/720" alt="Cactus Core Tote">
+          <div class="product-overlay"><div class="name">The Desert Tote</div><div class="meta"><span class="price">$148</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">The Desert Tote</div><div class="cat">Desserto Leather</div></div><span class="price">$148</span></div>
+      </a>
+
+      <a class="product" href="#" data-reveal data-delay="1">
+        <div class="blob b3">
+          <img src="https://picsum.photos/seed/cactus-notebook-cover/700/820" alt="Nopal Notebook">
+          <div class="product-overlay"><div class="name">Nopal Notebook</div><div class="meta"><span class="price">$34</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">Nopal Notebook</div><div class="cat">Pressed Hide</div></div><span class="price">$34</span></div>
+      </a>
+
+      <a class="product" href="#" data-reveal data-delay="2">
+        <div class="blob b4">
+          <img src="https://picsum.photos/seed/cactus-dye-bottle/700/700" alt="Nopal Dye Kit">
+          <div class="product-overlay"><div class="name">Nopal Dye Kit</div><div class="meta"><span class="price">$58</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">Nopal Dye Kit</div><div class="cat">Botanical Pigment</div></div><span class="price">$58</span></div>
+      </a>
+
+      <a class="product" href="#" data-reveal>
+        <div class="blob b1">
+          <img src="https://picsum.photos/seed/cactus-card-wallet/700/760" alt="Card Holder">
+          <div class="product-overlay"><div class="name">Card Holder</div><div class="meta"><span class="price">$42</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">Card Holder</div><div class="cat">Desserto Leather</div></div><span class="price">$42</span></div>
+      </a>
+
+      <a class="product" href="#" data-reveal data-delay="1">
+        <div class="blob b3">
+          <img src="https://picsum.photos/seed/cactus-woven-cushion/700/820" alt="Woven Cushion">
+          <div class="product-overlay"><div class="name">Woven Cushion</div><div class="meta"><span class="price">$96</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">Woven Cushion</div><div class="cat">Agave Weave</div></div><span class="price">$96</span></div>
+      </a>
+
+      <a class="product" href="#" data-reveal data-delay="2">
+        <div class="blob b2">
+          <img src="https://picsum.photos/seed/cactus-belt-strap/700/720" alt="Cactus Belt">
+          <div class="product-overlay"><div class="name">Cactus Belt</div><div class="meta"><span class="price">$72</span><span class="add">Add to Cart</span></div></div>
+        </div>
+        <div class="product-info"><div><div class="name">Cactus Belt</div><div class="cat">Desserto Leather</div></div><span class="price">$72</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-bg"><img src="https://picsum.photos/seed/cactus-desert-horizon/1920/1000" alt=""></div>
+  <div class="wrap">
+    <span class="kicker" style="color:var(--clay)" data-reveal>Join the harvest</span>
+    <h2 data-reveal data-delay="1">Grow a wardrobe that <em>gives back</em>.</h2>
+    <p data-reveal data-delay="2">Seasonal drops, farm stories and first access to new materials. No noise — just the desert, delivered.</p>
+    <a href="#shop" class="btn" data-reveal data-delay="3">Start Shopping</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;color:var(--green-soft)"><path d="M12 21c-3 0-5-2.5-5-6 0-2 .8-3.4.8-5.2C7.8 7 9.6 5 12 5s4.2 2 4.2 4.8c0 1.8.8 3.2.8 5.2 0 3.5-2 6-5 6Z"/><path d="M9.5 12c-1.4 0-2.4-1-2.4-2.4M14.5 10c1.4 0 2.4 1 2.4 2.4M12 21V9"/></svg>
+          <span>Cactus <b style="font-family:'Fraunces';font-weight:500">Core</b></span>
+        </div>
+        <p>Botanical materials grown on rain, tanned with the plant, and returned to the earth. Made in Zacatecas, worn everywhere.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Shop</h4>
+        <a href="#shop">Leather Goods</a>
+        <a href="#shop">Dyes &amp; Pigments</a>
+        <a href="#shop">Woven Home</a>
+        <a href="#shop">Gift Cards</a>
+      </div>
+      <div class="foot-col">
+        <h4>Company</h4>
+        <a href="#source">Our Source</a>
+        <a href="#lifecycle">Lifecycle</a>
+        <a href="#">Field Notes</a>
+        <a href="#">Co-operatives</a>
+      </div>
+      <div class="foot-col">
+        <h4>The Harvest Letter</h4>
+        <p style="color:rgba(230,220,207,.7);font-weight:500;font-size:.9rem">Seasonal drops &amp; farm stories.</p>
+        <form class="news" onsubmit="return false">
+          <input type="email" placeholder="Your email" aria-label="Email">
+          <button>Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2024 Cactus Core · Pure from the desert</span>
+      <span><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Carbon Report</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Nav scroll state
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -8% 0px'});
+
+  document.querySelectorAll('[data-reveal]').forEach(el => {
+    if(reduce){ el.classList.add('in'); } else { io.observe(el); }
+  });
+  document.querySelectorAll('.mask').forEach(el => {
+    if(reduce){ el.classList.add('in'); } else { io.observe(el); }
+  });
+
+  // Timeline vine draw
+  const tl = document.getElementById('timeline');
+  if(tl){
+    const tlo = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); tlo.unobserve(e.target); } });
+    }, {threshold:0.2});
+    if(reduce){ tl.classList.add('in'); } else { tlo.observe(tl); }
+  }
+
+  // Mobile menu (simple anchor jump fallback)
+  document.getElementById('burger').addEventListener('click', () => {
+    document.getElementById('shop').scrollIntoView({behavior: reduce ? 'auto' : 'smooth'});
+  });
+</script>
+</body>
+</html>

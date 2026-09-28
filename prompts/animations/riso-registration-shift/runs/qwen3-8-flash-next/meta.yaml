@@ -1,0 +1,19 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 7092
+review_score: 9
+review_summary: "Excellent execution of the Riso misregistration concept, perfectly capturing the mechanical aesthetic, color blending, and layout requirements."
+reviewed_at: "2026-09-28T11:06:05.874Z"
+review_issues:
+  - "The 'overlap' color appears as a dark forest green rather than the specified dark violet/brown, likely due to the specific opacity levels used in the multiply blend mode."

@@ -1,0 +1,25 @@
+id: code-canvas-dev-tool
+title: "Code Canvas Dev Tool"
+category: landing-pages
+tags:
+  - developer
+  - code
+  - monospace
+  - terminal
+  - landing
+  - dark-mode
+status: polished
+summary: "A landing page for 'Code Canvas', a new developer tool. The hero is a live code editor simulation where comments turn into UI elements."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,26 @@
+id: obsidian-sheer-slice
+title: "Obsidian Sheer Slice"
+category: animations
+tags:
+  - volcanic-glass
+  - fracture
+  - sharp-edge
+  - black-sheen
+  - conchoidal
+  - macro
+  - high-contrast
+status: polished
+summary: "A block of obsidian fractures along conchoidal lines, revealing razor-sharp edges with high-contrast specular highlights and internal sheen."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

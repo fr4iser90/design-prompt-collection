@@ -1,0 +1,24 @@
+id: terra-forma-adobe
+title: "Terra Forma Adobe"
+category: landing-pages
+tags:
+  - architecture
+  - adobe
+  - sustainable
+  - earthy
+  - minimal
+status: polished
+summary: "A landing page for Terra Forma, an adobe-brick architectural studio, using raw material textures, warm earth tones, and stark, geometric layouts inspired by desert vernacular."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

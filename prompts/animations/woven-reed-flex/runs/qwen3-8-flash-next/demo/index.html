@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Woven Reed Flex — Structure through Tension</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --reed:#d2b48c;
+    --reed-deep:#8b7355;
+    --bg:#3a2e1d;
+    --highlight:#f5e1c4;
+    --ink:#f5e1c4;
+    --ink-dim:#c9b596;
+    --line:rgba(245,225,196,.16);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#241c11;}
+  body{
+    font-family:"Space Mono",ui-monospace,monospace;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    cursor:crosshair;
+  }
+  #stage{position:fixed;inset:0;z-index:0;}
+  #stage canvas{display:block;width:100%;height:100%;}
+
+  /* atmospheric overlays */
+  .vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 90% at 42% 40%, transparent 42%, rgba(20,14,6,.55) 100%);}
+  .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* brand block */
+  .brand{position:fixed;left:clamp(20px,4.5vw,64px);bottom:clamp(24px,5vh,58px);z-index:4;pointer-events:none;
+    max-width:min(560px,80vw);}
+  .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--ink-dim);
+    display:flex;align-items:center;gap:.7em;margin-bottom:.9rem;
+    opacity:0;transform:translateY(12px);animation:rise .9s .2s cubic-bezier(.2,.7,.2,1) forwards;}
+  .kicker::before{content:"";width:34px;height:1px;background:linear-gradient(90deg,var(--highlight),transparent);}
+  .wordmark{font-family:"Fraunces",Georgia,serif;font-weight:500;line-height:.9;
+    font-size:clamp(2.7rem,8.2vw,6.6rem);letter-spacing:-.02em;color:var(--highlight);
+    text-shadow:0 2px 30px rgba(0,0,0,.5);}
+  .wordmark .l2{display:block;font-style:italic;font-weight:400;color:var(--reed);}
+  .wordmark span{display:block;overflow:hidden;}
+  .wordmark span i{display:block;font-style:inherit;transform:translateY(105%);
+    animation:reveal 1s cubic-bezier(.16,.84,.24,1) forwards;}
+  .wordmark span:nth-child(1) i{animation-delay:.35s}
+  .wordmark span:nth-child(2) i{animation-delay:.5s}
+  @keyframes reveal{to{transform:translateY(0)}}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  .tagline{margin-top:1.1rem;font-size:12.5px;line-height:1.7;letter-spacing:.02em;color:var(--ink-dim);
+    max-width:34ch;opacity:0;transform:translateY(12px);animation:rise .9s .8s cubic-bezier(.2,.7,.2,1) forwards;}
+  .tagline b{color:var(--highlight);font-weight:700;}
+
+  /* top meta bar */
+  .meta{position:fixed;top:clamp(18px,3.4vh,34px);left:clamp(20px,4.5vw,64px);right:clamp(20px,4.5vw,64px);
+    z-index:4;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;
+    font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);
+    pointer-events:none;opacity:0;animation:rise .9s .5s cubic-bezier(.2,.7,.2,1) forwards;}
+  .meta .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--reed);
+    margin-right:.7em;vertical-align:middle;box-shadow:0 0 0 0 rgba(210,180,140,.6);
+    animation:pulse 2.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(210,180,140,.55)}50%{box-shadow:0 0 0 6px rgba(210,180,140,0)}}
+  .meta .right{text-align:right;line-height:1.9;}
+  .meta .right b{color:var(--highlight);font-weight:700;}
+
+  /* HUD telemetry */
+  .hud{position:fixed;right:clamp(20px,4.5vw,64px);bottom:clamp(24px,5vh,58px);z-index:4;
+    text-align:right;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-dim);
+    pointer-events:none;opacity:0;animation:rise .9s .95s cubic-bezier(.2,.7,.2,1) forwards;}
+  .hud .row{display:flex;justify-content:flex-end;gap:.8em;margin-top:.5em;}
+  .hud .row span{min-width:52px;color:var(--highlight);font-weight:700;font-variant-numeric:tabular-nums;}
+  .meter{width:150px;height:3px;background:rgba(245,225,196,.14);margin-top:.9em;margin-left:auto;overflow:hidden;border-radius:2px;}
+  .meter i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--reed-deep),var(--highlight));transition:width .08s linear;}
+
+  /* hint */
+  .hint{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;
+    font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:rgba(245,225,196,.7);
+    padding:.9em 1.4em;border:1px solid var(--line);border-radius:2px;backdrop-filter:blur(2px);
+    pointer-events:none;transition:opacity .7s ease,transform .7s ease;}
+  .hint.gone{opacity:0;transform:translate(-50%,-50%) scale(.94);}
+
+  @media (max-width:640px){
+    .hud{display:none;}
+    .meta .right{font-size:9px;}
+    .tagline{font-size:11.5px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001s!important;animation-delay:0s!important;}
+    .wordmark span i{transform:none;}
+    .kicker,.tagline,.meta,.hud{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="meta">
+    <div><span class="dot"></span>Interlace Study — Plain Weave</div>
+    <div class="right">
+      <div>Material · <b>Phragmites Reed</b></div>
+      <div>Tension Model · <b>Soft-body / IK</b></div>
+    </div>
+  </div>
+
+  <div class="brand">
+    <div class="kicker">Wicker · Flexibility · Physics</div>
+    <h1 class="wordmark">
+      <span><i>Woven</i></span>
+      <span><i class="l2">Reed Flex</i></span>
+    </h1>
+    <p class="tagline"><b>Structure through tension.</b> Wicker holds its form not by rigidity, but by the elastic limit of every strand — deformed, released, recovered.</p>
+  </div>
+
+  <div class="hud">
+    <div class="row">Phase <span id="phase">REST</span></div>
+    <div class="row">Deflection <span id="defl">0.00</span></div>
+    <div class="row">Tension <span id="tens">0.00</span></div>
+    <div class="meter"><i id="meter"></i></div>
+  </div>
+
+  <div class="hint" id="hint">Press &amp; pull to flex the weave</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Renderer / Scene ---------- */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.08;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x241c11, 8, 17);
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 60);
+camera.position.set(0, 0.25, 7.2);
+camera.lookAt(0, 0, 0);
+
+/* ---------- Lighting ---------- */
+scene.add(new THREE.AmbientLight(0x6a5638, 0.55));
+
+const key = new THREE.DirectionalLight(0xffe6c0, 2.4);
+key.position.set(5, 7, 6);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 1; key.shadow.camera.far = 26;
+key.shadow.camera.left = -6; key.shadow.camera.right = 6;
+key.shadow.camera.top = 6; key.shadow.camera.bottom = -6;
+key.shadow.bias = -0.0006;
+key.shadow.radius = 4;
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0xbfd0ff, 0.5);
+rim.position.set(-6, -2, -4);
+scene.add(rim);
+
+const fill = new THREE.DirectionalLight(0xffcf9a, 0.55);
+fill.position.set(-4, 3, 6);
+scene.add(fill);
+
+/* ---------- Background (deep brown, not black) ---------- */
+const bg = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 26),
+  new THREE.MeshStandardMaterial({ color:0x241c11, roughness:1, metalness:0 })
+);
+bg.position.z = -2.2;
+bg.receiveShadow = true;
+scene.add(bg);
+
+/* ---------- Reed material ---------- */
+function makeReedTexture(){
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+  const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0,0,128,0);
+  grd.addColorStop(0,'#7c6647'); grd.addColorStop(.5,'#d2b48c'); grd.addColorStop(1,'#8b7355');
+  g.fillStyle = grd; g.fillRect(0,0,128,128);
+  for(let x=0;x<128;x+=2){
+    g.strokeStyle = `rgba(${40+Math.random()*40|0},${28+Math.random()*30|0},10,${0.05+Math.random()*0.12})`;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x+ (Math.random()*2-1),128); g.stroke();
+  }
+  for(let i=0;i<26;i++){
+    g.fillStyle = `rgba(245,225,196,${Math.random()*0.08})`;
+    g.fillRect(Math.random()*128, Math.random()*128, 1, 1);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const reedTex = makeReedTexture();
+
+function reedMaterial(color){
+  return new THREE.MeshStandardMaterial({
+    color, map:reedTex, roughness:0.55, metalness:0.02,
+    emissive:new THREE.Color(0x000000), emissiveIntensity:0
+  });
+}
+
+/* ---------- Weave layout ---------- */
+const N_V = 6, N_H = 5;
+const SP = 0.62;
+const R = 0.15;
+const HALF = 2.7;
+const V_X = [], H_Y = [];
+for(let i=0;i<N_V;i++) V_X.push((i-(N_V-1)/2)*SP);
+for(let j=0;j<N_H;j++) H_Y.push((j-(N_H-1)/2)*SP);
+
+const VERTS = 60;
+const cylGeo = (r, len, seg) => {
+  const g = new THREE.CylinderGeometry(r, r, len, seg, VERTS, false);
+  g.rotateX(Math.PI/2); // axis along Y, length along Y
+  return g;
+};
+
+const verticals = [];
+const horizontals = [];
+const weavers = []; // {strand, i}
+const strandByPos = new Map();
+
+for(let i=0;i<N_V;i++){
+  const m = new THREE.Mesh(cylGeo(R, 2*HALF, 22), reedMaterial(0xd2b48c));
+  m.castShadow = m.receiveShadow = true;
+  m.userData = { type:'v', idx:i, x:V_X[i], baseZ:0.06, z:0.06, defl:0, vel:0,
+                 base:new Float32Array(2*(VERTS+1)), phase:Math.random()*6.28 };
+  scene.add(m); verticals.push(m);
+}
+for(let j=0;j<N_H;j++){
+  const m = new THREE.Mesh(cylGeo(R, 2*HALF, 22), reedMaterial(0xc4a074));
+  m.castShadow = m.receiveShadow = true;
+  m.userData = { type:'h', idx:j, y:H_Y[j], baseZ:-0.06, z:-0.06, defl:0, vel:0,
+                 base:new Float32Array(2*(VERTS+1)), phase:Math.random()*6.28 };
+  scene.add(m); horizontals.push(m);
+}
+
+/* build weavers + lookup */
+for(const v of verticals){
+  for(let j=0;j<N_H;j++){
+    const over = ((v.userData.idx + j) % 2 === 0);
+    const wz = over ? 0.24 : -0.24;
+    const w = new THREE.Mesh(cylGeo(R*0.86, 0.5, 16), reedMaterial(0xe6cda4));
+    w.castShadow = true; w.receiveShadow = true;
+    w.userData = { type:'w', owner:v, j, wz };
+    scene.add(w); weavers.push(w);
+    strandByPos.set(v.userData.idx + ',' + j, w);
+  }
+}
+
+/* ---------- Physics ---------- */
+const PULL = { x:0, y:0, z:0.7 };
+const K = 26, DAMP = 5.4;
+const MAXZ = 1.55, MAXX = 1.35, MAXY = 1.35;
+const MAXDEF = 1.05;
+
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+function bendY(strand, y, pull){
+  const u = (y + HALF) / (2*HALF);
+  const shape = Math.pow(Math.sin(Math.PI*u), 1.15);
+  return shape * pull.z;
+}
+function bendX(strand, y, pull){
+  const u = (y + HALF) / (2*HALF);
+  const shape = Math.pow(Math.sin(Math.PI*u), 1.15);
+  return shape * pull.x;
+}
+function bendYforH(strand, x, pull){
+  const u = (x + HALF) / (2*HALF);
+  const shape = Math.pow(Math.sin(Math.PI*u), 1.15);
+  return shape * pull.y;
+}
+
+/* store base geometry (flat, before bending) for each strand */
+function storeBase(strand){
+  const pos = strand.geometry.attributes.position;
+  const b = strand.userData.base;
+  for(let i=0;i<pos.count;i++){
+    b[i*2] = pos.getX(i);
+    b[i*2+1] = pos.getZ(i);
+  }
+}
+verticals.forEach(storeBase);
+horizontals.forEach(storeBase);
+
+function updateStrand(strand, t){
+  const d = strand.userData;
+  const pos = strand.geometry.attributes.position;
+  const b = d.base;
+  const isV = d.type === 'v';
+  for(let i=0;i<pos.count;i++){
+    let x = b[i*2], y = b[i*2+1], z = b[i*2+1] ? 0 : 0;
+    // y is the length axis for both (horizontals are rotated)
+    const axis = pos.getY(i);
+    let bend = 0;
+    if(isV){
+      bend = bendY(strand, axis, PULL) + Math.sin(t*3.1 + d.phase + axis*2.2) * 0.006 * d.defl;
+      x = b[i*2] + bendX(strand, axis, PULL);
+      z = bend;
+    } else {
+      // for horizontals the length axis is local Y too (rotated into world X)
+      bend = bendYforH(strand, axis, PULL);
+      x = b[i*2] + bend; // local x becomes world z after rotation
+      z = b[i*2+1];
+    }
+    pos.setX(i, x);
+    pos.setZ(i, z);
+  }
+  pos.needsUpdate = true;
+  strand.geometry.computeVertexNormals();
+}
+
+/* ---------- Interaction ---------- */
+const ray = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const plane = new THREE.Plane(new THREE.Vector3(0,0,1), 0);
+const hit = new THREE.Vector3();
+let dragging = false;
+
+function setNDC(e){
+  const x = (e.touches?e.touches[0].clientX:e.clientX);
+  const y = (e.touches?e.touches[0].clientY:e.clientY);
+  ndc.set((x/innerWidth)*2-1, -(y/innerHeight)*2+1);
+}
+function pullFromPointer(e){
+  setNDC(e);
+  ray.setFromCamera(ndc, camera);
+  if(ray.ray.intersectPlane(plane, hit)){
+    PULL.x = clamp(hit.x, -MAXX, MAXX);
+    PULL.y = clamp(hit.y, -MAXY, MAXY);
+  }
+}
+addEventListener('pointerdown', e=>{ dragging=true; pullFromPointer(e); hideHint(); });
+addEventListener('pointermove', e=>{ if(dragging) pullFromPointer(e); });
+addEventListener('pointerup', ()=>{ dragging=false; });
+addEventListener('pointercancel', ()=>{ dragging=false; });
+
+/* auto demo pull */
+let lastAuto = 0;
+function autoPull(t){
+  if(dragging) return;
+  const cycle = 5.0;
+  const p = (t - lastAuto) % cycle;
+  if(p < 1.5){
+    const s = p/1.5;
+    const e = s*s*(3-2*s);
+    PULL.z = e * 0.95;
+    PULL.x = Math.sin(t*0.5)*0.15*e;
+    PULL.y = Math.cos(t*0.4)*0.12*e;
+  } else if(p < 4.2){
+    PULL.z = 0; PULL.x = 0; PULL.y = 0;
+  } else {
+    PULL.z = 0; PULL.x = 0; PULL.y = 0;
+  }
+}
+
+/* ---------- HUD ---------- */
+const elPhase = document.getElementById('phase');
+const elDefl = document.getElementById('defl');
+const elTens = document.getElementById('tens');
+const elMeter = document.getElementById('meter');
+const hint = document.getElementById('hint');
+let hintHidden = false;
+function hideHint(){ if(!hintHidden){ hint.classList.add('gone'); hintHidden=true; } }
+
+/* ---------- Loop ---------- */
+const clock = new THREE.Clock();
+let frame = 0;
+
+function step(dt, t){
+  // target
+  const tz = dragging ? clamp(PULL.z + 0.55, 0, MAXZ) : PULL.z;
+  // spring verticals toward target
+  for(const v of verticals){
+    const d = v.userData;
+    const acc = K*(tz - d.defl) - DAMP*d.vel;
+    d.vel += acc*dt;
+    d.defl += d.vel*dt;
+  }
+  // horizontals follow the average vertical deflection with lag
+  let avg = 0; for(const v of verticals) avg += v.userData.defl; avg/=N_V;
+  for(const h of horizontals){
+    const d = h.userData;
+    const acc = K*0.8*(avg - d.defl) - DAMP*1.1*d.vel;
+    d.vel += acc*dt;
+    d.defl += d.vel*dt;
+  }
+
+  // write geometry
+  for(const v of verticals){
+    const d = v.userData;
+    // scale PULL for this strand's own deflection (shared target)
+    updateStrand(v, t);
+    // dynamic shadow: closer = darker contact handled by light; tint highlight by deflection
+    v.material.emissiveIntensity = clamp(d.defl*0.05, 0, 0.06);
+    v.material.color.setHSL(0.09, 0.4, 0.62 + d.defl*0.05);
+  }
+  for(const h of horizontals){ updateStrand(h, t); }
+
+  // weavers ride their owner + compress when tension high
+  const compress = clamp(avg, 0, 1);
+  for(const w of weavers){
+    const o = w.userData.owner.userData;
+    const j = w.userData.j;
+    const y = H_Y[j];
+    const wz = w.userData.wz * (1 - 0.55*compress);
+    w.position.set(o.x + bendX(o, y, PULL), y, o.defl + wz);
+    // orient along owner tangent (approx)
+    const a = o.defl;
+    w.scale.z = 1 - 0.35*compress;
+    w.rotation.x = Math.atan2(0, 1); // vertical weavers stay vertical
+  }
+
+  // HUD
+  if((frame % 4) === 0){
+    const defl = clamp(avg,0,1);
+    const tension = clamp(Math.abs(avg),0,1);
+    elDefl.textContent = defl.toFixed(2);
+    elTens.textContent = tension.toFixed(2);
+    elMeter.style.width = (tension*100).toFixed(0)+'%';
+    elPhase.textContent = tension>0.35 ? 'TENSION' : (tension>0.06 ? 'RECOVERY' : 'REST');
+  }
+  frame++;
+}
+
+/* gentle camera drift */
+function drift(t){
+  camera.position.x = Math.sin(t*0.18)*0.18;
+  camera.position.y = 0.25 + Math.cos(t*0.13)*0.10;
+  camera.lookAt(0,0,0);
+}
+
+/* ---------- Post ---------- */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.28, 0.6, 0.82);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.033);
+  const t = clock.elapsedTime;
+  autoPull(t);
+  step(dt, t);
+  drift(t);
+  composer.render();
+}
+animate();
+
+/* ---------- Resize ---------- */
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

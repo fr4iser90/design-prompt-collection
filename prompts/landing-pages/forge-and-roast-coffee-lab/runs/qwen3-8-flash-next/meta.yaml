@@ -1,0 +1,24 @@
+model: "qwen3.8-flash-next"
+model_slug: qwen3-8-flash-next
+model_api: "chat"
+provider: "custom"
+built_at: "2026-09-27"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 5854
+rejected_at: "2026-09-28T06:22:25.337Z"
+last_review_score: 2
+last_review_summary: "Unstyled HTML with raw meta text, default blue links, and no visual design or layout."
+last_reject_reason: "score_2_below_5"
+review_score: 8
+review_summary: "Strong, on-brief hero with matte black base, ember-red accents, and expressive oversized type."
+reviewed_at: "2026-09-28T06:36:54.297Z"
+review_issues:
+  - "Hero lacks the requested oversized product photography"
+  - "Background is nearly flat (very subtle gradient only)"

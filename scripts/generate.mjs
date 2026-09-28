@@ -175,8 +175,8 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
       const runs = e.runs || [];
       if (runs.length) {
         md += `#### Model runs\n\n`;
-        md += `| Preview | Model | Demo |\n`;
-        md += `|:-------:|-------|------|\n`;
+        md += `| Preview | Model | Think | Ctx | Time | Score | Demo |\n`;
+        md += `|:-------:|-------|:-----:|----:|-----:|------:|------|\n`;
         for (const r of runs) {
           const img = r.preview_rel
             ? `![${r.model}](${r.preview_rel})`
@@ -186,12 +186,39 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
             e.default_run_obj && e.default_run_obj.slug === r.slug
               ? " **(default)**"
               : "";
-          md += `| ${img} | \`${r.model}\`${mark} | ${demo} |\n`;
+          const score =
+            r.review_score != null && Number.isFinite(Number(r.review_score))
+              ? String(r.review_score)
+              : "—";
+          const think =
+            r.thinking_enabled == null
+              ? "—"
+              : r.thinking_enabled
+                ? "on"
+                : "off";
+          const ctx =
+            r.context_tokens != null && Number.isFinite(r.context_tokens)
+              ? String(r.context_tokens)
+              : "—";
+          const time =
+            r.duration_ms != null && Number.isFinite(r.duration_ms)
+              ? `${Math.round(r.duration_ms / 1000)}s`
+              : "—";
+          const modelCell = r.model_api
+            ? `\`${r.model}\`<br><sub>\`${r.model_api}\`</sub>`
+            : `\`${r.model}\``;
+          md += `| ${img} | ${modelCell}${mark} | ${think} | ${ctx} | ${time} | ${score} | ${demo} |\n`;
+          if (r.review_summary) {
+            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | |\n`;
+          }
         }
         md += `\n`;
       } else {
-        const fallbackPreview = path.posix.join(e.path, e.preview || "preview.svg");
-        md += `![${e.title}](${fallbackPreview})\n\n`;
+        if (e.preview && e.preview !== "null") {
+          md += `![${e.title}](${path.posix.join(e.path, e.preview)})\n\n`;
+        } else {
+          md += `_No shot preview yet._\n\n`;
+        }
         md += `_No model runs yet — \`npm run ai:build\` then \`npm run shots\`._\n\n`;
       }
 
@@ -205,7 +232,7 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
 prompts/<category>/<id>/
   meta.yaml
   prompt.md / prompt.full.md
-  preview.svg                 # placeholder until first shot
+  preview: null until first shot
   runs/<model-slug>/
     meta.yaml                 # model + provider + timestamps
     demo/index.html           # implementation for THAT model
@@ -219,6 +246,7 @@ prompts/<category>/<id>/
 | \`npm run ai:new\` | New prompt briefs (stores \`source_model\`) |
 | \`npm run ai:build\` | Build \`runs/<model>/\` demo (no overwrite across models) |
 | \`npm run shots\` | Screenshot each run → README |
+| \`npm run review\` | Vision score; below rebuild floor → drop demo + rebuild |
 | \`npm run pages\` | Static site \`site/dist\` |
 | \`npm run pipeline\` | build → shots → pages → index |
 | \`npm run build\` | validate + regenerate README / index / catalog |
@@ -244,10 +272,14 @@ function main() {
       status: e.status,
       summary: e.summary,
       path: e.path,
-      preview: path.posix.join(e.path, e.preview),
+      preview:
+        e.preview && e.preview !== "null"
+          ? path.posix.join(e.path, e.preview)
+          : null,
       prompt: path.posix.join(e.path, e.prompt || "prompt.md"),
       extended: path.posix.join(e.path, e.extended || "prompt.full.md"),
-      demo: e.demo ? path.posix.join(e.path, e.demo) : null,
+      demo:
+        e.demo && e.demo !== "null" ? path.posix.join(e.path, e.demo) : null,
       default_run: e.default_run || e.default_run_obj?.slug || null,
       source_model: e.source_model && e.source_model !== "null" ? e.source_model : null,
       source_provider:
@@ -258,12 +290,22 @@ function main() {
       runs: (e.runs || []).map((r) => ({
         slug: r.slug,
         model: r.model,
+        model_api: r.model_api,
         provider: r.provider,
         built_at: r.built_at,
+        thinking_enabled: r.thinking_enabled,
+        stream: r.stream,
+        temperature: r.temperature,
+        context_tokens: r.context_tokens,
+        duration_ms: r.duration_ms,
+        prompt_tokens: r.prompt_tokens,
+        completion_tokens: r.completion_tokens,
         demo: r.demo_rel,
         preview: r.preview_rel,
         has_demo: r.has_demo,
         has_preview: r.has_preview,
+        review_score: r.review_score,
+        review_summary: r.review_summary,
       })),
     })),
   };

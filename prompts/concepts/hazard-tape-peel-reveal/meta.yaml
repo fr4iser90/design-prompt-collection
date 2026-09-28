@@ -1,0 +1,27 @@
+id: hazard-tape-peel-reveal
+title: "Hazard Tape Peel Reveal"
+category: concepts
+tags:
+  - hazard-tape
+  - peel-motion
+  - construction
+  - sticky
+  - adhesive
+  - warning
+  - site-survey
+  - material-physics
+status: draft
+summary: "A UI layer covered in diagonal hazard tape that peels away to reveal safe, clean content underneath, emphasizing physical adhesive resistance and tearing physics."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAINLESS — Brushed Light Sweep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --steel:#B0BEC5; --white:#FFFFFF; --shadow:#455A64; --slate:#263238;
+  --ink:#0a0e10; --text:#c4cfd4; --muted:#7b8b93;
+  --edge:rgba(255,255,255,.08);
+  --mono:'Space Mono',ui-monospace,monospace;
+  --disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:radial-gradient(130% 120% at 50% 26%, #1d282d 0%, var(--slate) 46%, #12181b 100%);
+  color:var(--text); font-family:var(--mono); -webkit-font-smoothing:antialiased;
+  overflow-x:hidden; min-height:100vh;
+}
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(58% 52% at 50% 38%, rgba(176,190,197,.07), transparent 70%);
+  animation:breathe 12s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+.grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.vignette{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,.55) 100%)}
+
+.wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;min-height:100vh;
+  display:flex;flex-direction:column;gap:clamp(22px,4vh,44px);padding:clamp(20px,3vw,40px)}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.brand{display:flex;align-items:baseline;gap:10px;color:var(--text)}
+.brand .mk{font-family:var(--disp);font-size:19px;letter-spacing:.12em;color:var(--steel)}
+.brand .sub{font-size:10px;color:var(--muted);letter-spacing:.22em}
+.nav{display:flex;gap:26px}
+.nav a{color:var(--muted);text-decoration:none;position:relative;padding:4px 0;transition:color .3s}
+.nav a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--steel);transition:width .35s ease}
+.nav a:hover{color:var(--text)}.nav a:hover::after{width:100%}
+.status{display:flex;align-items:center;gap:8px}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--steel);box-shadow:0 0 8px var(--steel);animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* panel */
+.panel{position:relative;flex:1;min-height:clamp(360px,58vh,720px);border-radius:5px;overflow:hidden;
+  background:linear-gradient(180deg,#12181b,#0a0e10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 0 0 1px var(--edge), 0 40px 90px -40px rgba(0,0,0,.9)}
+canvas#steel{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* etched wordmark */
+.etched{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(10px,1.6vw,18px);text-align:center;padding:20px;pointer-events:none;z-index:3;
+  mix-blend-mode:color-dodge}
+.wordmark{font-family:var(--disp);font-weight:400;font-size:clamp(4.4rem,17vw,15rem);line-height:.82;
+  letter-spacing:.04em;color:#fff;text-shadow:0 0 34px rgba(255,255,255,.22)}
+.tagline{font-family:var(--mono);font-weight:700;font-size:clamp(.58rem,1.1vw,.82rem);
+  letter-spacing:.42em;text-transform:uppercase;color:#fff}
+.reveal{position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:linear-gradient(90deg,#04070a 0%,#04070a 45%,#111a1f 56%,#04070a 72%,#04070a 100%);
+  transition:background .12s linear}
+
+/* corner brackets */
+.brk{position:absolute;width:22px;height:22px;z-index:5;pointer-events:none;border:1px solid rgba(255,255,255,.28)}
+.brk.tl{top:16px;left:16px;border-right:0;border-bottom:0}
+.brk.tr{top:16px;right:16px;border-left:0;border-bottom:0}
+.brk.bl{bottom:16px;left:16px;border-right:0;border-top:0}
+.brk.br{bottom:16px;right:16px;border-left:0;border-top:0}
+.hud{position:absolute;z-index:5;pointer-events:none;font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.42);text-transform:uppercase}
+.hud.tl{top:18px;left:46px}
+.hud.tr{top:18px;right:46px;text-align:right}
+.hud.bl{bottom:18px;left:46px}
+
+/* lower */
+.lower{display:grid;grid-template-columns:1.5fr 1fr;gap:clamp(20px,3vw,44px);align-items:end}
+.lead{font-family:var(--disp);font-weight:400;font-size:clamp(2.2rem,6vw,4.4rem);line-height:.92;
+  letter-spacing:.02em;color:var(--steel)}
+.lead span{color:var(--text)}
+.lead em{font-style:normal;color:#fff}
+.desc{margin-top:16px;max-width:46ch;font-size:13px;line-height:1.7;color:var(--muted)}
+.desc b{color:var(--text);font-weight:700}
+
+.specs{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--edge);
+  border:1px solid var(--edge);border-radius:4px;overflow:hidden}
+.specs .cell{background:linear-gradient(180deg,#10171b,#0b1013);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.specs .k{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.specs .v{font-size:13px;letter-spacing:.06em;color:var(--text)}
+.specs .v b{color:var(--steel);font-weight:700}
+
+.hint{margin-top:18px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.hint .dot{width:8px;height:8px;border-radius:50%;background:var(--steel);animation:pulse 2s infinite}
+
+/* footer */
+.footer{display:flex;justify-content:space-between;gap:16px;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);border-top:1px solid var(--edge);padding-top:16px}
+
+@media(max-width:820px){
+  .lower{grid-template-columns:1fr}
+  .nav{display:none}
+  .hud.tr,.hud.br{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .ambient,.status i,.hint .dot{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><span class="mk">STAINLESS</span><span class="sub">/ SURFACE LAB</span></div>
+    <nav class="nav"><a href="#">Materials</a><a href="#">Finish</a><a href="#">Spec</a><a href="#">Contact</a></nav>
+    <div class="status"><i></i> Live · 60fps</div>
+  </header>
+
+  <section class="panel" id="panel">
+    <canvas id="steel"></canvas>
+    <div class="etched">
+      <div class="wordmark">STAINLESS</div>
+      <div class="tagline">Brushed · Anisotropic · No.4 Finish</div>
+    </div>
+    <div class="reveal" id="reveal"></div>
+    <span class="brk tl"></span><span class="brk tr"></span><span class="brk bl"></span><span class="brk br"></span>
+    <div class="hud tl">SPECULAR FIELD</div>
+    <div class="hud tr">GX <span id="gx">0.50</span> · GY <span id="gy">0.50</span></div>
+    <div class="hud bl">LIGHT SWEEP · MOVE CURSOR</div>
+  </section>
+
+  <section class="lower">
+    <div>
+      <h1 class="lead">THE STEEL <span>IN</span> <em>CHEF PRECISION</em></h1>
+      <p class="desc">A macro study of <b>brushed stainless</b> reacting to a single moving light. The highlight <b>stretches along the grain</b> and snaps as the source travels — the specular signature of a No.4 finish, rendered in real time. Move your cursor to scrub the light.</p>
+      <div class="hint"><span class="dot"></span> Drag across the plate to reveal the texture</div>
+    </div>
+    <div class="specs">
+      <div class="cell"><span class="k">Alloy</span><span class="v">AISI <b>304</b></span></div>
+      <div class="cell"><span class="k">Finish</span><span class="v">No.4 <b>Brushed</b></span></div>
+      <div class="cell"><span class="k">Grit</span><span class="v"><b>180</b> · horizontal</span></div>
+      <div class="cell"><span class="k">Roughness</span><span class="v"><b>0.32</b> Ra</span></div>
+      <div class="cell"><span class="k">Reflectance</span><span class="v"><b>0.62</b></span></div>
+      <div class="cell"><span class="k">Model</span><span class="v">Aniso <b>GGX</b></span></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>STAINLESS · SURFACE LAB</span>
+    <span>© 2024 — SPECULAR STUDY</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const canvas=document.getElementById('steel');
+  const ctx=canvas.getContext('2d');
+  const panel=document.getElementById('panel');
+  const reveal=document.getElementById('reveal');
+  const gxEl=document.getElementById('gx'), gyEl=document.getElementById('gy');
+
+  let W=0,H=0,dpr=1;
+  let tx=0.5,ty=0.5,mx=0.5,my=0.5;
+  let t=0, last=performance.now();
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // brushed metal texture: fine horizontal grain
+  let brush=null;
+  function makeBrush(){
+    const c=document.createElement('canvas'); c.width=4;c.height=480;
+    const g=c.getContext('2d');
+    for(let y=0;y<480;y++){
+      const v=200+Math.round(Math.random()*55);
+      g.fillStyle='rgb('+v+','+v+','+v+')';
+      g.fillRect(0,y,4,1);
+    }
+    return ctx.createPattern(c,'repeat');
+  }
+
+  function resize(){
+    const r=panel.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=r.width; H=r.height;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    brush=makeBrush();
+  }
+
+  function lightPos(){
+    if(reduced){
+      const p=(performance.now()/7000)%1;
+      return {x:0.5+0.4*Math.sin(p*Math.PI*2), y:0.5+0.08*Math.cos(p*Math.PI*2)};
+    }
+    return {x:tx,y:ty};
+  }
+
+  function draw(){
+    const {x:lx,y:ly}=lightPos();
+    ctx.clearRect(0,0,W,H);
+
+    // base steel gradient
+    let bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#9aa8af'); bg.addColorStop(.5,'#b4c0c6'); bg.addColorStop(1,'#829098');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    // brushed grain (anisotropic: stretched horizontally)
+    ctx.save();
+    ctx.globalAlpha=0.22; ctx.globalCompositeOperation='overlay';
+    ctx.translate(0,0); ctx.scale(3.4,1);
+    ctx.fillStyle=brush; ctx.fillRect(0,0,W/3.4,H);
+    ctx.restore();
+
+    // broad ambient reflection streak
+    let amb=ctx.createLinearGradient(0,H*0.12,0,H*0.42);
+    amb.addColorStop(0,'rgba(255,255,255,0)');
+    amb.addColorStop(0.5,'rgba(255,255,255,0.14)');
+    amb.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=amb; ctx.fillRect(0,0,W,H);
+
+    // moving light — anisotropic: wide horizontally, narrow vertically
+    const px=lx*W, py=ly*H;
+    const rx=W*0.52, ry=H*0.09;
+    ctx.save();
+    ctx.translate(px,py); ctx.scale(1,ry/rx);
+    let g=ctx.createRadialGradient(0,0,0,0,0,rx);
+    g.addColorStop(0,'rgba(255,255,255,0.95)');
+    g.addColorStop(0.14,'rgba(255,255,255,0.42)');
+    g.addColorStop(0.42,'rgba(255,255,255,0.10)');
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(0,0,rx,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // bright specular core — snaps along the grain
+    ctx.save();
+    ctx.translate(px,py); ctx.scale(1,ry/rx);
+    let core=ctx.createRadialGradient(0,0,0,0,0,rx*0.16);
+    core.addColorStop(0,'rgba(255,255,255,1)');
+    core.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=core;
+    ctx.beginPath(); ctx.arc(0,0,rx*0.16,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // edge shadow / crevice
+    let sh=ctx.createLinearGradient(0,H*0.6,0,H);
+    sh.addColorStop(0,'rgba(69,90,100,0)');
+    sh.addColorStop(1,'rgba(38,50,56,0.7)');
+    ctx.fillStyle=sh; ctx.fillRect(0,0,W,H);
+
+    // etched reveal mask driven by light
+    const pct=lx*100;
+    reveal.style.background='linear-gradient(90deg,#04070a 0%,#04070a '+(pct-24)+'%,#111a1f '+(pct-6)+'%,#04070a '+(pct+10)+'%,#04070a 100%)';
+
+    gxEl.textContent=lx.toFixed(2); gyEl.textContent=ly.toFixed(2);
+  }
+
+  function loop(now){
+    const dt=Math.min((now-last)/1000,0.05); last=now; t+=dt;
+    const k=reduced?1:(1-Math.exp(-dt*6));
+    mx+=(tx-mx)*k; my+=(ty-my)*k;
+    if(!reduced){
+      const p=(t*0.045)%1;
+      const driftX=0.5+0.30*Math.sin(p*Math.PI*2);
+      const driftY=0.5+0.05*Math.cos(p*Math.PI*2);
+      tx=driftX*0.34+mx*0.66;
+      ty=driftY*0.34+my*0.66;
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function setFromEvent(e){
+    const r=panel.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX);
+    const cy=(e.touches?e.touches[0].clientY:e.clientY);
+    tx=Math.min(1,Math.max(0,(cx-r.left)/r.width));
+    ty=Math.min(1,Math.max(0,(cy-r.top)/r.height));
+  }
+  window.addEventListener('mousemove',setFromEvent,{passive:true});
+  panel.addEventListener('touchmove',e=>{setFromEvent(e);e.preventDefault();},{passive:false});
+  window.addEventListener('resize',resize);
+
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

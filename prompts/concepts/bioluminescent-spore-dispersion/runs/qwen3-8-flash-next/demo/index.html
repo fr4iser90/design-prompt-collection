@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bioluminescent Spore Dispersion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#050a0f;overflow:hidden}
+  body{font-family:'Space Mono',ui-monospace,monospace;-webkit-font-smoothing:antialiased;cursor:none}
+  canvas#scene{position:fixed;inset:0;display:block;touch-action:none}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:radial-gradient(125% 120% at 50% 44%,transparent 52%,rgba(0,0,0,.55) 100%)}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:6;opacity:.05;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:140px 140px}
+  .hud{position:fixed;z-index:8;color:rgba(255,255,255,.42);pointer-events:none;
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;line-height:1.9}
+  .hud .b{color:rgba(255,255,255,.14)}
+  .hud .v{color:rgba(0,245,212,.72)}
+  .hud.bl{left:clamp(16px,3vw,34px);bottom:clamp(16px,3vw,30px)}
+  .hud.br{right:clamp(16px,3vw,34px);bottom:clamp(16px,3vw,30px);text-align:right}
+  .hud .k{display:inline-block;min-width:8.5em;color:rgba(255,255,255,.24)}
+  .cursor{position:fixed;left:0;top:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;
+    border:1px solid rgba(0,245,212,.5);pointer-events:none;z-index:9;mix-blend-mode:screen;
+    opacity:0;transition:opacity .5s ease,transform .12s ease}
+  .cursor::after{content:"";position:absolute;left:50%;top:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;
+    border-radius:50%;background:rgba(0,245,212,.95);box-shadow:0 0 8px rgba(0,245,212,.85)}
+  .cursor.on{opacity:.85}
+  .cursor.press{transform:scale(.55)}
+  @media (prefers-reduced-motion:reduce){.cursor{display:none}}
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="cursor" id="cursor"></div>
+
+  <div class="hud bl">
+    <div><span class="b">◦</span> Bioluminescent Spore Dispersion</div>
+    <div><span class="b">◦</span> move to disturb the stillness</div>
+  </div>
+  <div class="hud br">
+    <div><span class="k">spores</span><span class="v" id="hSpores">0000</span></div>
+    <div><span class="k">dispersion</span><span class="v" id="hDisp">0.00</span></div>
+    <div><span class="k">field</span><span class="v" id="hField">stable</span></div>
+    <div><span class="k">depth</span><span class="v" id="hDepth">0.00</span></div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d', {alpha:false});
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cursorEl = document.getElementById('cursor');
+
+  // ---- palette ----
+  const CORE = {r:0, g:245, b:212};
+  const HALO = {r:123, g:255, b:205};
+
+  // ---- sizing ----
+  let W=0, H=0, DPR=1, MAXD=0, spores=[], MAX=0;
+
+  // ---- perlin noise (classic Ken Perlin, seeded) ----
+  const perm = new Uint8Array(512);
+  (function(){
+    const p = new Uint8Array(256);
+    for(let i=0;i<256;i++) p[i]=i;
+    let seed = 1337;
+    const rnd = ()=> (seed = (seed*16807)%2147483647)/2147483647;
+    for(let i=255;i>0;i--){ const j=(rnd()*(i+1))|0; const t=p[i]; p[i]=p[j]; p[j]=t; }
+    for(let i=0;i<512;i++) perm[i]=p[i&255];
+  })();
+  function fade(t){return t*t*t*(t*(t*6-15)+10);}
+  function lerp(a,b,t){return a+t*(b-a);}
+  function grad(h,x,y){ switch(h&3){case 0:return x+y;case 1:return -x+y;case 2:return x-y;default:return -x-y;} }
+  function noise2(x,y){
+    const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+    x-=Math.floor(x); y-=Math.floor(y);
+    const u=fade(x), v=fade(y);
+    const A=perm[X]+Y, B=perm[X+1]+Y;
+    return lerp(lerp(grad(perm[A],x,y),grad(perm[B],x-1,y),u),
+                lerp(grad(perm[A+1],x,y-1),grad(perm[B+1],x-1,y-1),u), v);
+  }
+
+  // ---- glow sprite cache ----
+  const spriteCache = new Map();
+  function getSprite(size){
+    const s=Math.max(1,Math.round(size));
+    let c=spriteCache.get(s);
+    if(c) return c;
+    c=document.createElement('canvas'); c.width=c.height=s;
+    const g=c.getContext('2d');
+    const r=s/2;
+    const grd=g.createRadialGradient(r,r,0,r,r,r);
+    grd.addColorStop(0,'rgba(255,255,255,1)');
+    grd.addColorStop(0.22,'rgba(255,255,255,0.55)');
+    grd.addColorStop(0.5,'rgba(255,255,255,0.14)');
+    grd.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=grd; g.fillRect(0,0,s,s);
+    spriteCache.set(s,c);
+    return c;
+  }
+
+  // ---- spores ----
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function pickColor(){
+    const t=Math.random();
+    const r=lerp(CORE.r,HALO.r,t), g=lerp(CORE.g,HALO.g,t), b=lerp(CORE.b,HALO.b,t);
+    return (r|0)+','+(g|0)+','+(b|0);
+  }
+  function respawn(s){
+    s.x=Math.random()*W;
+    s.y=Math.random()*H;
+    s.baseAlpha=0.2+Math.random()*0.55;
+    s.twPhase=Math.random()*6.283;
+    s.twSpeed=0.5+Math.random()*1.1;
+    s.depth=0.15+Math.random()*0.85;
+    s.size=2+Math.random()*6;
+    s.color=pickColor();
+    s.vx=0; s.vy=0;
+    s.energy=0;
+    s.born=performance.now();
+  }
+  function buildSpores(){
+    MAX = Math.round(Math.min(520, Math.max(150, (W*H)/6000)));
+    spores.length=0;
+    for(let i=0;i<MAX;i++){
+      const s={}; respawn(s);
+      s.born = performance.now() - Math.random()*3000; // staggered entrance
+      spores.push(s);
+    }
+  }
+
+  // ---- pointer state ----
+  const pointer={x:-9999,y:-9999,px:-9999,py:-9999,vx:0,vy:0,active:false,down:false,strength:1};
+  function movePointer(cx,cy){
+    const nx=cx, ny=cy;
+    if(!pointer.active){ pointer.px=nx; pointer.py=ny; }
+    pointer.vx=nx-pointer.px; pointer.vy=ny-pointer.py;
+    pointer.px=pointer.x; pointer.py=pointer.y;
+    pointer.x=nx; pointer.y=ny;
+    pointer.active=true;
+  }
+  window.addEventListener('pointermove', e=>movePointer(e.clientX,e.clientY), {passive:true});
+  window.addEventListener('pointerdown', e=>{ pointer.down=true; pointer.strength=1.85; movePointer(e.clientX,e.clientY); cursorEl.classList.add('press'); }, {passive:true});
+  window.addEventListener('pointerup',   ()=>{ pointer.down=false; pointer.strength=1; cursorEl.classList.remove('press'); }, {passive:true});
+  window.addEventListener('pointerleave',()=>{ pointer.active=false; pointer.x=-9999; pointer.y=-9999; pointer.vx=0; pointer.vy=0; cursorEl.classList.remove('on'); }, {passive:true});
+  window.addEventListener('pointerenter',()=>{ pointer.active=true; cursorEl.classList.add('on'); }, {passive:true});
+
+  // ---- background layers ----
+  let bgGrad=null, foliage=null;
+  function buildBg(){
+    bgGrad=ctx.createLinearGradient(0,0,0,H);
+    bgGrad.addColorStop(0,'#04080c');
+    bgGrad.addColorStop(0.5,'#050a0f');
+    bgGrad.addColorStop(1,'#030609');
+    foliage=document.createElement('canvas'); foliage.width=W; foliage.height=H;
+    const g=foliage.getContext('2d');
+    g.fillStyle='#0f1a14';
+    const blobs=Math.max(7, Math.round(W*H/130000));
+    for(let i=0;i<blobs;i++){
+      const cx=Math.random()*W, cy=Math.random()*H, r=40+Math.random()*170;
+      const rg=g.createRadialGradient(cx,cy,0,cx,cy,r);
+      rg.addColorStop(0,'rgba(15,26,20,'+(0.05+Math.random()*0.06).toFixed(3)+')');
+      rg.addColorStop(1,'rgba(15,26,20,0)');
+      g.fillStyle=rg; g.fillRect(cx-r,cy-r,r*2,r*2);
+    }
+    // hanging foliage strands
+    const strands=Math.max(4, Math.round(W/190));
+    for(let i=0;i<strands;i++){
+      const x=rand(0,W), len=rand(H*0.28,H*0.6), sway=rand(0.02,0.06), ph=rand(0,6.283);
+      g.strokeStyle='rgba(11,20,15,0.5)'; g.lineWidth=1;
+      g.beginPath();
+      for(let y=0;y<=len;y+=6){ g.lineTo(x+Math.sin(y*sway+ph)*8, y); }
+      g.stroke();
+    }
+  }
+
+  function resize(){
+    DPR=Math.min(2, window.devicePixelRatio||1);
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=Math.round(W*DPR); canvas.height=Math.round(H*DPR);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    MAXD=Math.hypot(W,H);
+    buildBg();
+    buildSpores();
+  }
+
+  // ---- HUD ----
+  const hSpores=document.getElementById('hSpores');
+  const hDisp=document.getElementById('hDisp');
+  const hField=document.getElementById('hField');
+  const hDepth=document.getElementById('hDepth');
+  let dispSmooth=0, depthSmooth=0;
+
+  function updateHUD(now){
+    hSpores.textContent=String(spores.length).padStart(4,'0');
+    hDisp.textContent=dispSmooth.toFixed(2);
+    hDepth.textContent=depthSmooth.toFixed(2);
+    hField.textContent = dispSmooth>0.15 ? 'disturbed' : (pointer.active?'attuned':'still');
+  }
+
+  // ---- render loop ----
+  let last=performance.now(), t=0;
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000)||0; last=now; t=now/1000;
+    const dts=dt*60;
+
+    // pointer velocity decay
+    pointer.vx*=0.82; pointer.vy*=0.82;
+    const speed=Math.hypot(pointer.vx,pointer.vy);
+    const R=150+Math.min(110, speed*2.2);
+    const R2=R*R;
+    const fx=pointer.x, fy=pointer.y;
+
+    // background
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle=bgGrad; ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=0.6; ctx.drawImage(foliage,0,0); ctx.globalAlpha=1;
+
+    // ambient depth glow
+    const amb=ctx.createRadialGradient(W*0.5,H*0.62,0,W*0.5,H*0.62,MAXD*0.72);
+    amb.addColorStop(0,'rgba(10,42,42,0.20)');
+    amb.addColorStop(1,'rgba(10,42,42,0)');
+    ctx.fillStyle=amb; ctx.fillRect(0,0,W,H);
+
+    // cursor breath glow
+    if(pointer.active){
+      const cg=ctx.createRadialGradient(fx,fy,0,fx,fy,R*0.9);
+      cg.addColorStop(0,'rgba(0,245,212,0.05)');
+      cg.addColorStop(1,'rgba(0,245,212,0)');
+      ctx.fillStyle=cg; ctx.fillRect(fx-R,fy-R,R*2,R*2);
+    }
+
+    // spores
+    ctx.globalCompositeOperation='lighter';
+    let disp=0, dsum=0;
+    for(let i=0;i<spores.length;i++){
+      const s=spores[i];
+      const age=(now-s.born)/1000;
+      const appear=Math.min(1, age/3);
+
+      // noise-driven lateral sway + upward drift
+      const n=noise2(s.x*0.0016, s.y*0.0016 - t*0.05);
+      s.vx += n*0.02*dts;
+      s.vy -= (0.05+0.10*s.depth)*dts;
+
+      // pointer repulsion + reaction
+      if(pointer.active){
+        const dx=s.x-fx, dy=s.y-fy, d2=dx*dx+dy*dy;
+        if(d2<R2){
+          const d=Math.sqrt(d2)||0.0001;
+          const f=(1-d/R);
+          const push=f*0.9*pointer.strength;
+          s.vx += (dx/d)*push*dts;
+          s.vy += (dy/d)*push*dts;
+          s.energy += f*dts*2.4;
+          disp += f;
+        }
+      }
+      s.energy*=Math.pow(0.9, dts);
+      if(s.energy>1.5) s.energy=1.5;
+
+      // integrate
+      s.x+=s.vx; s.y+=s.vy;
+      s.vx*=Math.pow(0.94,dts); s.vy*=Math.pow(0.94,dts);
+
+      // wrap
+      if(s.y<-24){ s.y=H+24; s.x=Math.random()*W; }
+      if(s.x<-24) s.x=W+24; else if(s.x>W+24) s.x=-24;
+
+      // draw
+      const tw=0.7+0.3*Math.sin(s.twPhase+t*s.twSpeed);
+      let alpha=s.baseAlpha*tw*appear*(1+s.energy*0.6);
+      if(alpha<=0.003) continue;
+      if(alpha>1) alpha=1;
+      const size=s.size*(1+s.energy*0.5);
+      const draw=size*4;
+      const spr=getSprite(draw);
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle='rgb('+s.color+')';
+      ctx.beginPath(); ctx.arc(s.x,s.y,size,0,6.283); ctx.fill();
+      ctx.drawImage(spr, s.x-draw/2, s.y-draw/2, draw, draw);
+      dsum += s.depth;
+    }
+    ctx.globalAlpha=1;
+
+    // hud smoothing
+    dispSmooth += ((disp/Math.max(1,spores.length))*4 - dispSmooth)*0.1;
+    depthSmooth += ((dsum/Math.max(1,spores.length)) - depthSmooth)*0.05;
+    updateHUD(now);
+
+    // custom cursor
+    if(pointer.active){ cursorEl.classList.add('on'); cursorEl.style.transform='translate('+fx+'px,'+fy+'px)'; }
+
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

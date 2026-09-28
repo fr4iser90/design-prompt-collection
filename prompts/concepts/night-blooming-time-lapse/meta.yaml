@@ -1,0 +1,27 @@
+id: night-blooming-time-lapse
+title: "Night Blooming Time-Lapse"
+category: concepts
+tags:
+  - time-lapse
+  - botanical
+  - night-blooming
+  - animation
+  - nocturnal
+  - unfurl
+  - moonlight
+  - organic
+status: polished
+summary: "A seamless loop animation of a night-blooming flower (like a Moonflower) unfurling under a moonlit sky, with soft focus and slow, deliberate motion."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

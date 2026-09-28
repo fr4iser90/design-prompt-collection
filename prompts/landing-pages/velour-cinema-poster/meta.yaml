@@ -1,0 +1,25 @@
+id: velour-cinema-poster
+title: "Velour Cinema Poster"
+category: landing-pages
+tags:
+  - cinema
+  - film
+  - poster
+  - noir
+  - kinetic-type
+  - landing
+status: polished
+summary: "A movie release landing page for 'Velour', a noir film. The hero is a dynamic poster where title text interacts with light beams and shadows."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

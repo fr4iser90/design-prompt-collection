@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLUX — Magnetic Morph Wordmark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --canvas:#f0f0f0;
+    --ink:#111111;
+    --blue:#0055ff;
+    --line:rgba(17,17,17,.13);
+    --faint:rgba(17,17,17,.42);
+    --mono:'Space Mono', ui-monospace, monospace;
+    --disp:'Syne', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--mono);
+    color:var(--ink);
+    background-color:var(--canvas);
+    background-image:radial-gradient(rgba(17,17,17,.055) 1px, transparent 1.4px);
+    background-size:26px 26px;
+    background-position:center;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    cursor:crosshair;
+  }
+  ::selection{background:var(--blue);color:#fff}
+
+  /* ---------- Atmospheric layers ---------- */
+  .field{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .field::before{
+    content:"";position:absolute;inset:0;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:130px 130px;opacity:.5;
+  }
+  .field::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 52%, rgba(17,17,17,.07) 100%);
+  }
+  .corner{position:fixed;width:26px;height:26px;border:1.5px solid rgba(17,17,17,.28);z-index:2;pointer-events:none}
+  .corner.tl{top:20px;left:20px;border-right:0;border-bottom:0}
+  .corner.tr{top:20px;right:20px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:20px;left:20px;border-right:0;border-top:0}
+  .corner.br{bottom:20px;right:20px;border-left:0;border-top:0}
+
+  /* ---------- Header ---------- */
+  .top{
+    position:fixed;top:0;left:0;right:0;z-index:5;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:26px clamp(20px,4vw,54px);
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  }
+  .top .mark{display:flex;align-items:center;gap:10px;font-weight:700}
+  .top .mark i{width:9px;height:9px;background:var(--blue);display:inline-block;transform:rotate(45deg)}
+  .top .meta{display:flex;gap:clamp(14px,3vw,40px);color:var(--faint)}
+  .top .meta b{color:var(--ink);font-weight:700}
+  .live{display:inline-flex;align-items:center;gap:7px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.6)}}
+
+  /* ---------- Stage / Wordmark ---------- */
+  .stage{
+    position:relative;z-index:3;min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    padding:0 20px;
+  }
+  .eyebrow{
+    font-size:clamp(10px,1.4vw,12px);letter-spacing:.55em;text-transform:uppercase;
+    color:var(--faint);margin-bottom:clamp(18px,4vh,42px);text-indent:.55em;
+  }
+  .wordmark{
+    display:flex;align-items:flex-end;
+    gap:clamp(2px,1.4vw,20px);
+    font-family:var(--disp);font-weight:800;
+    font-size:clamp(4.5rem,24vw,20rem);line-height:.82;
+    letter-spacing:-.02em;color:var(--ink);user-select:none;
+  }
+  .letter{
+    display:inline-block;will-change:transform;
+    transform-origin:50% 92%;
+    transform:translate(var(--tx,0px),var(--ty,0px)) rotate(var(--rot,0deg)) scale(var(--sc,1)) skewX(var(--skx,0deg)) skewY(var(--sky,0deg));
+    transition:transform .55s cubic-bezier(.175,.885,.32,1.275);
+  }
+  .wordmark.active .letter{transition:none}
+  .underline{
+    height:4px;width:0;max-width:min(90vw,1200px);margin-top:clamp(14px,3vh,30px);
+    background:var(--blue);
+    transform:translateX(var(--ux,0px)) scaleX(var(--sx,0));transform-origin:center;
+    opacity:0;transition:opacity .6s ease;
+    box-shadow:0 0 18px rgba(0,85,255,.35);
+  }
+  .hint{
+    margin-top:clamp(20px,4vh,44px);font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--faint);display:flex;align-items:center;gap:10px;
+  }
+  .hint b{color:var(--blue)}
+
+  /* ---------- Cursor magnetic node ---------- */
+  .cursor{
+    position:fixed;top:0;left:0;z-index:9;width:40px;height:40px;margin:-20px 0 0 -20px;
+    border:1.5px solid var(--blue);border-radius:50%;pointer-events:none;
+    transform:translate(var(--cx,50vw),var(--cy,50vh)) scale(var(--cs,1));
+    opacity:0;transition:opacity .3s ease;mix-blend-mode:multiply;
+  }
+  .cursor::before{content:"";position:absolute;inset:0;margin:auto;width:5px;height:5px;background:var(--blue);border-radius:50%}
+  .cursor.show{opacity:.9}
+
+  /* ---------- Footer readout ---------- */
+  .foot{
+    position:fixed;bottom:0;left:0;right:0;z-index:5;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    padding:22px clamp(20px,4vw,54px);
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+  }
+  .foot .r{display:flex;gap:clamp(12px,2.5vw,34px);flex-wrap:wrap;justify-content:flex-end}
+  .foot .r span b{color:var(--ink)}
+  .foot .r .val{color:var(--blue);font-weight:700}
+
+  /* ---------- Intro ---------- */
+  .reveal{opacity:0;transform:translateY(18px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .wm-letter{opacity:0;animation:letterIn .8s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes letterIn{from{opacity:0;transform:translateY(30px) rotate(-3deg)}to{opacity:1}}
+
+  @media (max-width:640px){
+    .top .meta{display:none}
+    .foot .r{gap:12px}
+    .foot .r .hide-sm{display:none}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .letter{transition:none !important}
+    .reveal,.wm-letter{animation:none !important;opacity:1 !important;transform:none !important}
+    .live i{animation:none}
+    .cursor{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="field" aria-hidden="true"></div>
+  <span class="corner tl"></span><span class="corner tr"></span>
+  <span class="corner bl"></span><span class="corner br"></span>
+
+  <header class="top reveal" style="animation-delay:.05s">
+    <div class="mark"><i></i> FLUX®</div>
+    <div class="meta">
+      <span class="live"><i></i> MAGNETIC&nbsp;ENGINE</span>
+      <span>STATE <b id="state">IDLE</b></span>
+      <span class="hide-sm">FIELD&nbsp;RADIUS <b>40%</b></span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <p class="eyebrow reveal" style="animation-delay:.15s">Identity System — 01</p>
+    <div class="wordmark" id="wordmark" aria-label="FLUX">
+      <span class="letter wm-letter" data-i="0" style="animation-delay:.25s">F</span>
+      <span class="letter wm-letter" data-i="1" style="animation-delay:.35s">L</span>
+      <span class="letter wm-letter" data-i="2" style="animation-delay:.45s">U</span>
+      <span class="letter wm-letter" data-i="3" style="animation-delay:.55s">X</span>
+    </div>
+    <div class="underline" id="underline" aria-hidden="true"></div>
+    <p class="hint reveal" style="animation-delay:.7s">Move your cursor <b>through the letters</b></p>
+  </main>
+
+  <footer class="foot reveal" style="animation-delay:.5s">
+    <div>© 2024 FLUX — Tension &amp; Release</div>
+    <div class="r">
+      <span>Δ&nbsp;X <b class="val" id="dx">0.0</b></span>
+      <span>Δ&nbsp;Y <b class="val" id="dy">0.0</b></span>
+      <span>ROT <b class="val" id="rot">0.0°</b></span>
+      <span class="hide-sm">PULL <b class="val" id="pull">0%</b></span>
+    </div>
+  </footer>
+
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wordmark = document.getElementById('wordmark');
+  const letters = Array.from(wordmark.querySelectorAll('.letter'));
+  const underline = document.getElementById('underline');
+  const cursor = document.getElementById('cursor');
+  const stateEl = document.getElementById('state');
+  const dxEl = document.getElementById('dx');
+  const dyEl = document.getElementById('dy');
+  const rotEl = document.getElementById('rot');
+  const pullEl = document.getElementById('pull');
+
+  const N = letters.length;
+  const centers = [];
+  let maxDist = 1;
+  let active = false;
+  let raf = null;
+  let px = 0, py = 0;
+  let underX = 0, underSX = 0, underO = 0;
+
+  function measure(){
+    centers.length = 0;
+    let min = Infinity, max = -Infinity;
+    letters.forEach(el=>{
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      centers.push({cx, cy, el});
+      min = Math.min(min, cx); max = Math.max(max, cx);
+    });
+    maxDist = Math.max(max - min, 1);
+  }
+
+  function setTransform(i, tx, ty, rot, sc, skx, sky){
+    const s = centers[i].el.style;
+    s.setProperty('--tx', tx.toFixed(2)+'px');
+    s.setProperty('--ty', ty.toFixed(2)+'px');
+    s.setProperty('--rot', rot.toFixed(3)+'deg');
+    s.setProperty('--sc', sc.toFixed(4));
+    s.setProperty('--skx', skx.toFixed(3)+'deg');
+    s.setProperty('--sky', sky.toFixed(3)+'deg');
+  }
+
+  function resetAll(){
+    centers.forEach((c,i)=>setTransform(i,0,0,0,1,0,0));
+    if(stateEl) stateEl.textContent = 'IDLE';
+  }
+
+  function frame(){
+    raf = null;
+    const dx = px - underX, dy = py - underY();
+    underX += dx*0.18; underY = py;
+    const mag = Math.hypot(dx, dy);
+    underSX = Math.min(1, mag/140);
+    underO = Math.min(0.9, mag/90);
+    underline.style.setProperty('--ux', (underX - window.innerWidth/2).toFixed(1)+'px');
+    underline.style.setProperty('--sx', underSX.toFixed(3));
+    underline.style.opacity = underO;
+
+    // update cursor node
+    cursor.style.setProperty('--cx', px+'px');
+    cursor.style.setProperty('--cy', py+'px');
+    cursor.style.setProperty('--cs', (1 + Math.min(0.6, mag/300)).toFixed(3));
+
+    let peakPull = 0, peakRot = 0, peakX = 0, peakY = 0;
+
+    for(let i=0;i<N;i++){
+      const c = centers[i];
+      const vx = px - c.cx;
+      const vy = py - c.cy;
+      const dist = Math.hypot(vx, vy) || 0.0001;
+      const influence = Math.max(0, 1 - dist/(maxDist*1.7));
+      const pull = influence * influence; // ease proximity
+
+      let tx = vx * 0.40 * pull;
+      let ty = vy * 0.40 * pull;
+      const rot = (vx / maxDist) * 5 * pull;
+      const sc = 1 + 0.06 * pull;
+      const skx = -(vy / maxDist) * 6 * pull;
+      const sky = (vx / maxDist) * 4 * pull;
+
+      setTransform(i, tx, ty, rot, sc, skx, sky);
+
+      if(pull > peakPull){
+        peakPull = pull; peakRot = rot; peakX = tx; peakY = ty;
+      }
+    }
+
+    if(stateEl) stateEl.textContent = 'MAGNETIC';
+    if(dxEl) dxEl.textContent = peakX.toFixed(1);
+    if(dyEl) dyEl.textContent = peakY.toFixed(1);
+    if(rotEl) rotEl.textContent = peakRot.toFixed(1)+'°';
+    if(pullEl) pullEl.textContent = Math.round(peakPull*100)+'%';
+
+    if(active) raf = requestAnimationFrame(frame);
+  }
+
+  let underY = ()=>py;
+
+  function onMove(e){
+    px = e.clientX; py = e.clientY;
+    if(!active){
+      active = true;
+      wordmark.classList.add('active');
+      cursor.classList.add('show');
+      underX = px; underY = ()=>py;
+    }
+    if(!raf) raf = requestAnimationFrame(frame);
+  }
+
+  function onLeave(){
+    active = false;
+    wordmark.classList.remove('active');
+    cursor.classList.remove('show');
+    underline.style.opacity = 0;
+    underline.style.setProperty('--sx', 0);
+    resetAll();
+  }
+
+  window.addEventListener('pointermove', onMove, {passive:true});
+  document.addEventListener('mouseleave', onLeave);
+  window.addEventListener('blur', onLeave);
+  window.addEventListener('resize', ()=>{ measure(); resetAll(); });
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(measure); }
+
+  // initial measure after layout settles
+  requestAnimationFrame(()=>requestAnimationFrame(measure));
+
+  // If reduced motion: keep it fully static, no cursor node, no transforms.
+  if(reduce){
+    window.removeEventListener('pointermove', onMove);
+    resetAll();
+  }
+})();
+</script>
+</body>
+</html>

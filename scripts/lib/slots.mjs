@@ -25,6 +25,7 @@ export async function fetchModelSlots({ baseUrl, apiKey, modelApi }) {
       slots_busy: null,
       slots_total: null,
       load_state: null,
+      context_tokens: null,
       raw: list.map((m) => m.id),
     };
   }
@@ -36,7 +37,27 @@ export async function fetchModelSlots({ baseUrl, apiKey, modelApi }) {
     slots_total: entry.slots_total ?? null,
     load_state: entry.load_state ?? entry.status ?? null,
     status: entry.status ?? null,
+    context_tokens: pickContextTokens(entry),
   };
+}
+
+/** Context size from /v1/models fields when present. */
+export function pickContextTokens(entry) {
+  if (!entry || typeof entry !== "object") return null;
+  const candidates = [
+    entry.context_length,
+    entry.ctx_size,
+    entry.n_ctx,
+    entry.max_model_len,
+    entry.max_context_length,
+    entry.context_window,
+    entry.meta?.context_length,
+  ];
+  for (const c of candidates) {
+    const n = Number(c);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return null;
 }
 
 /**

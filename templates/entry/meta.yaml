@@ -5,7 +5,7 @@ tags:
   - replace-me
 status: draft
 summary: "Write a sharp one-line teaser (20–220 chars) describing the design intent."
-preview: preview.svg
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null

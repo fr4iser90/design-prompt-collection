@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Axiom Foundry — Identity Reveal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0C1B16;
+    --panel:#17352B;
+    --gold:#C9A227;
+    --gold-lt:#F3D98A;
+    --gold-dk:#7A5F16;
+    --line:rgba(201,162,39,.20);
+    --text:#E9E4D2;
+    --muted:#8FA599;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow:hidden;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;
+    min-height:100vh;
+    min-height:100svh;
+    display:grid;
+    place-items:center;
+    padding:clamp(16px,4vw,54px);
+    overflow:hidden;
+    isolation:isolate;
+  }
+
+  /* atmosphere */
+  .bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+  .bg-grid{
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(to right,rgba(201,162,39,.05) 1px,transparent 1px),
+      linear-gradient(to bottom,rgba(201,162,39,.05) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(ellipse 72% 62% at 50% 46%,#000 38%,transparent 82%);
+            mask-image:radial-gradient(ellipse 72% 62% at 50% 46%,#000 38%,transparent 82%);
+    opacity:.55;
+  }
+  .bg-vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse 80% 70% at 50% 44%,transparent 42%,rgba(4,11,8,.78) 100%);
+  }
+  .bg-glow{
+    position:absolute;left:50%;top:44%;width:min(78vw,780px);aspect-ratio:1;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle,rgba(201,162,39,.11),transparent 62%);
+    filter:blur(8px);
+    animation:glowPulse 7s ease-in-out infinite;
+  }
+  @keyframes glowPulse{0%,100%{opacity:.55}50%{opacity:.9}}
+  .grain{
+    position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .particles{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .particles span{
+    position:absolute;bottom:-8px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 6px rgba(201,162,39,.55);
+    opacity:0;will-change:transform,opacity;
+    animation:rise linear infinite;
+  }
+  @keyframes rise{
+    0%{transform:translate3d(0,0,0);opacity:0}
+    12%{opacity:var(--o)}
+    88%{opacity:var(--o)}
+    100%{transform:translate3d(var(--dx),-104vh,0);opacity:0}
+  }
+
+  /* ---------- FRAME / HUD ---------- */
+  .frame{position:absolute;inset:clamp(14px,2.4vw,30px);z-index:6;pointer-events:none;
+    animation:fadeUp .9s ease .1s both}
+  .corner{position:absolute;width:22px;height:22px;border:1.5px solid var(--gold);opacity:.55}
+  .corner.tl{top:0;left:0;border-right:0;border-bottom:0}
+  .corner.tr{top:0;right:0;border-left:0;border-bottom:0}
+  .corner.bl{bottom:0;left:0;border-right:0;border-top:0}
+  .corner.br{bottom:0;right:0;border-left:0;border-top:0}
+
+  .hud{position:absolute;inset:0;font-family:var(--mono);color:var(--muted);
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+  .hud .tl{position:absolute;top:0;left:30px}
+  .hud .tr{position:absolute;top:0;right:30px;text-align:right}
+  .hud .bl{position:absolute;bottom:0;left:30px}
+  .hud .br{position:absolute;bottom:0;right:30px;text-align:right}
+  .hud b{color:var(--gold);font-weight:600}
+  .status{display:inline-flex;align-items:center;gap:8px}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 8px var(--gold);animation:blink 1.6s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .rec{display:inline-flex;align-items:center;gap:7px;color:var(--gold)}
+  .rec i{width:8px;height:8px;border-radius:50%;background:#E0563B;box-shadow:0 0 8px #E0563B;
+    animation:blink 1s steps(1) infinite}
+
+  /* ---------- LOGO ---------- */
+  .logo-wrap{position:relative;z-index:4;width:min(72vw,780px);
+    animation:fadeUp 1s ease .25s both}
+  .logo{display:block;width:100%;height:auto;overflow:visible}
+
+  .monogram{transform-box:fill-box;transform-origin:center;
+    animation:breathe 6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.004)}}
+
+  .ring,.ring-inner,.ring2,.ring3,.cross{
+    fill:none;stroke:var(--gold);stroke-width:3;
+    stroke-dasharray:100;stroke-dashoffset:100;stroke-linecap:round;
+  }
+  .ring{stroke-width:4}
+  .ring-inner{stroke-width:1.5;opacity:.75}
+  .ring2{stroke-width:1.5;opacity:.8}
+  .ring3{stroke-width:1.5;opacity:.6}
+  .cross{stroke-width:2;opacity:.85}
+
+  .glyph{fill:none;stroke:var(--gold);stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+  .glyph-outer{stroke-width:16}
+  .glyph-inner{stroke-width:9}
+
+  .wordmark{opacity:0}
+  .wm-text{fill:var(--gold);font-family:var(--mono);font-weight:600;letter-spacing:.16em}
+  .wm-text-shadow{fill:#000;opacity:.28}
+
+  .sweep{opacity:0;mix-blend-mode:screen}
+  .sweep-band{fill:url(#sweepGrad)}
+
+  /* ---------- TIMELINE ---------- */
+  .timeline{position:absolute;bottom:clamp(46px,7vh,72px);left:50%;transform:translateX(-50%);
+    z-index:6;display:flex;align-items:center;gap:16px;width:min(560px,82vw);
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);animation:fadeUp .9s ease .4s both}
+  .tl-track{position:relative;flex:1;height:2px;background:rgba(201,162,39,.18);overflow:visible}
+  .tl-fill{position:absolute;left:0;top:0;height:100%;width:0;background:var(--gold);
+    box-shadow:0 0 8px rgba(201,162,39,.6);transition:width .05s linear}
+  .tl-tick{position:absolute;top:-3px;width:1px;height:8px;background:rgba(201,162,39,.4)}
+  .tl-tick span{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    font-size:9px;letter-spacing:.1em;color:var(--muted);white-space:nowrap}
+  .tl-play{pointer-events:auto;background:transparent;border:1px solid var(--line);color:var(--gold);
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:7px 13px;cursor:pointer;transition:.25s;display:inline-flex;align-items:center;gap:8px}
+  .tl-play:hover{background:rgba(201,162,39,.1);border-color:var(--gold)}
+  .tl-play svg{width:9px;height:11px;fill:var(--gold)}
+
+  .hint{position:absolute;bottom:clamp(20px,3vh,30px);left:50%;transform:translateX(-50%);
+    z-index:6;font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(143,165,153,.7);animation:fadeUp .9s ease .5s both}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ---------- REDUCED MOTION ---------- */
+  .reduced .particles{display:none}
+  .reduced .bg-glow{animation:none;opacity:.7}
+  .reduced .status .dot,.reduced .rec i{animation:none}
+  .reduced .monogram{animation:none}
+  .reduced .ring,.reduced .ring-inner,.reduced .ring2,.reduced .ring3,.reduced .cross,
+  .reduced .glyph{stroke-dashoffset:0}
+  .reduced .ring,.reduced .ring-inner,.reduced .ring2,.reduced .ring3,.reduced .cross,
+  .reduced .glyph{opacity:0}
+  .reduced .wordmark{opacity:1}
+  .reduced .sweep{display:none}
+  .reduced .tl-play{display:none}
+  .reduced .hint{color:var(--muted)}
+
+  @media (max-width:640px){
+    .hud .tl,.hud .tr{font-size:10px}
+    .hud .bl{display:none}
+    .logo-wrap{width:86vw}
+    .timeline{width:88vw;gap:10px}
+    .tl-tick span{font-size:8px}
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="bg">
+      <div class="bg-glow"></div>
+      <div class="bg-grid"></div>
+      <div class="bg-vignette"></div>
+      <div class="grain"></div>
+    </div>
+    <div class="particles" id="particles"></div>
+
+    <div class="frame">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+    </div>
+
+    <div class="hud">
+      <div class="tl">AXIOM&nbsp;·&nbsp;FOUNDRY</div>
+      <div class="tr"><span class="rec"><i></i>REC · 00:03:00</span></div>
+      <div class="bl">IDENTITY&nbsp;/&nbsp;MORPH&nbsp;SPEC&nbsp;—&nbsp;REV&nbsp;04</div>
+      <div class="br"><span class="status"><span class="dot"></span><span id="phase">MONOGRAM</span></span></div>
+    </div>
+
+    <div class="logo-wrap">
+      <svg class="logo" viewBox="0 0 900 420" role="img"
+           aria-label="Axiom Foundry logo morphing from a circular monogram into the wordmark AXIOM">
+        <defs>
+          <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0"   stop-color="#C9A227" stop-opacity="0"/>
+            <stop offset="0.5" stop-color="#F3D98A" stop-opacity="0.9"/>
+            <stop offset="1"   stop-color="#C9A227" stop-opacity="0"/>
+          </linearGradient>
+          <clipPath id="wmClip">
+            <text class="wm-text" x="450" y="260" font-size="150" text-anchor="middle">AXIOM</text>
+          </clipPath>
+        </defs>
+
+        <!-- registration crosshair -->
+        <g class="cross">
+          <line x1="450" y1="108" x2="450" y2="126"/>
+          <line x1="450" y1="294" x2="450" y2="312"/>
+          <line x1="298" y1="210" x2="316" y2="210"/>
+          <line x1="584" y1="210" x2="602" y2="210"/>
+        </g>
+
+        <!-- circular monogram -->
+        <g class="monogram" id="monogram">
+          <path class="ring" pathLength="100" d="M450 110 A100 100 0 0 1 450 310 A100 100 0 0 1 450 110"/>
+          <path class="ring-inner" pathLength="100" d="M450 124 A86 86 0 0 1 450 296 A86 86 0 0 1 450 124"/>
+          <path class="ring2" pathLength="100" d="M450 138 A72 72 0 0 1 450 282 A72 72 0 0 1 450 138"/>
+          <path class="ring3" pathLength="100" d="M450 152 A58 58 0 0 1 450 268 A58 58 0 0 1 450 152"/>
+          <path class="glyph glyph-outer" pathLength="100" d="M450 150 L510 275 L390 275 Z"/>
+          <path class="glyph glyph-inner" pathLength="100" d="M450 200 L480 262 L420 262 Z"/>
+        </g>
+
+        <!-- wordmark -->
+        <g class="wordmark" id="wordmark">
+          <text class="wm-text-shadow" x="452" y="262" font-size="150" text-anchor="middle">AXIOM</text>
+          <text class="wm-text" x="450" y="260" font-size="150" text-anchor="middle">AXIOM</text>
+        </g>
+
+        <!-- metallic light sweep -->
+        <g class="sweep" id="sweep">
+          <g clip-path="url(#wmClip)">
+            <rect class="sweep-band" x="-180" y="90" width="150" height="240" transform="skewX(-20)"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="timeline">
+      <button class="tl-play" id="play" aria-label="Play morph sequence">
+        <svg viewBox="0 0 10 12"><path d="M0 0 L10 6 L0 12 Z"/></svg>
+        <span id="playlabel">Play</span>
+      </button>
+      <div class="tl-track">
+        <div class="tl-fill" id="tlfill"></div>
+        <div class="tl-tick" style="left:0%"><span>DRAW</span></div>
+        <div class="tl-tick" style="left:33%"><span>CYCLE</span></div>
+        <div class="tl-tick" style="left:60%"><span>COLLAPSE</span></div>
+        <div class="tl-tick" style="left:78%"><span>SWEEP</span></div>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">Click stage to replay the morph</div>
+  </div>
+
+<script>
+(function(){
+  const stage=document.getElementById('stage');
+  const phaseEl=document.getElementById('phase');
+  const tlfill=document.getElementById('tlfill');
+  const playBtn=document.getElementById('play');
+  const playLabel=document.getElementById('playlabel');
+  const hint=document.getElementById('hint');
+
+  const DUR=3000;
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- dust particles ---- */
+  const pc=document.getElementById('particles');
+  const count=window.innerWidth<640?14:34;
+  for(let i=0;i<count;i++){
+    const s=document.createElement('span');
+    const size=Math.random()*2.4+0.6;
+    s.style.left=(Math.random()*100)+'%';
+    s.style.width=s.style.height=size+'px';
+    s.style.setProperty('--dx',(Math.random()*44-22)+'px');
+    s.style.setProperty('--o',(Math.random()*0.5+0.15).toFixed(2));
+    s.style.animationDuration=(Math.random()*10+9)+'s';
+    s.style.animationDelay=(-Math.random()*16)+'s';
+    pc.appendChild(s);
+  }
+
+  /* ---- element refs ---- */
+  const ring=document.querySelector('.ring');
+  const ringInner=document.querySelector('.ring-inner');
+  const ring2=document.querySelector('.ring2');
+  const ring3=document.querySelector('.ring3');
+  const cross=document.querySelector('.cross');
+  const gOuter=document.querySelector('.glyph-outer');
+  const gInner=document.querySelector('.glyph-inner');
+  const mono=document.getElementById('monogram');
+  const wordmark=document.getElementById('wordmark');
+  const sweep=document.getElementById('sweep');
+  const band=sweep.querySelector('.sweep-band');
+
+  /* ---- easing helpers ---- */
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeOut=t=>1-Math.pow(1-t,3);
+  const easeInOut=t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+
+  let playing=false, raf=null, startTime=0;
+
+  function setPhase(name){ if(phaseEl.textContent!==name) phaseEl.textContent=name; }
+
+  function render(p){
+    // p in [0,1]
+    // 1. stroke draw (0 – .267)
+    let draw = easeOut(clamp(p/0.267,0,1));
+    [ring,ringInner,ring2,ring3,cross,gOuter,gInner].forEach((el,i)=>{
+      el.style.strokeDashoffset = String(100 - draw*100);
+    });
+
+    // 2. monogram hold + collapse (.267 – .60)
+    let collapse = easeInOut(clamp((p-0.333)/0.267,0,1));
+    let mScale = lerp(1, 0.04, collapse);
+    let mRot   = collapse*160;
+    let mOp    = 1 - clamp((p-0.48)/0.12,0,1);
+    mono.style.transform = 'translate(450px,210px) scale('+mScale.toFixed(4)+') rotate('+mRot.toFixed(2)+'deg) translate(-450px,-210px)';
+    mono.style.opacity = mOp.toFixed(3);
+
+    // 3. wordmark reveal (.50 – .72)
+    let wm = easeOut(clamp((p-0.50)/0.22,0,1));
+    wordmark.style.opacity = wm.toFixed(3);
+    wordmark.style.transform = 'translate(450px,210px) scale('+lerp(0.9,1,wm).toFixed(4)+') translate(-450px,-210px)';
+
+    // 4. metallic light sweep (.72 – .94)
+    let sw = clamp((p-0.72)/0.22,0,1);
+    if(sw>0 && sw<1){
+      sweep.style.opacity='1';
+      let x = lerp(-200, 1050, easeInOut(sw));
+      band.setAttribute('x', x.toFixed(1));
+    } else {
+      sweep.style.opacity='0';
+    }
+
+    // timeline
+    tlfill.style.width=(p*100)+'%';
+
+    // phase label
+    if(p<0.267) setPhase('DRAW');
+    else if(p<0.40) setPhase('CYCLE');
+    else if(p<0.52) setPhase('COLLAPSE');
+    else if(p<0.72) setPhase('FORM');
+    else if(p<0.94) setPhase('SWEEP');
+    else setPhase('LOCKED');
+  }
+
+  function tick(now){
+    const p=clamp((now-startTime)/DUR,0,1);
+    render(p);
+    if(p<1){ raf=requestAnimationFrame(tick); }
+    else { playing=false; playLabel.textContent='Replay'; }
+  }
+
+  function play(){
+    if(playing) return;
+    playing=true;
+    playLabel.textContent='Play';
+    startTime=performance.now();
+    raf=requestAnimationFrame(tick);
+  }
+
+  /* ---- reduced motion: show final wordmark, no animation ---- */
+  if(reduced){
+    stage.classList.add('reduced');
+    render(1);
+    tlfill.style.width='100%';
+    setPhase('LOCKED');
+    hint.textContent='Reduced motion · final wordmark';
+  } else {
+    render(0);
+    // autoplay shortly after load
+    setTimeout(play, 700);
+    stage.addEventListener('click', play);
+    playBtn.addEventListener('click', function(e){ e.stopPropagation(); play(); });
+    document.addEventListener('keydown', function(e){
+      if(e.code==='Space'){ e.preventDefault(); play(); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

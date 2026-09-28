@@ -1,0 +1,26 @@
+id: steam-circuit-kitchen
+title: "Steam Circuit Kitchen"
+category: landing-pages
+tags:
+  - steam
+  - steamboat
+  - circuit
+  - digital
+  - hot
+  - minimal
+  - red
+status: polished
+summary: "Landing page for 'Circuit & Steam', a modern steamboat restaurant. Merges traditional steam imagery with digital circuit board motifs, creating a 'network of heat' aesthetic."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

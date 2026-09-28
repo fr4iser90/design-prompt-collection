@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fibrous Paper Tear — a tactile reveal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F9F7F2;
+    --paper-edge:#D4CBB3;
+    --fiber:#FFFFFF;
+    --dark:#2B2B2B;
+    --dark-2:#191919;
+    --taupe:#8C8272;
+    --ink:#2B2B2B;
+    --f-body:"Space Mono", ui-monospace, "Courier New", monospace;
+    --f-disp:"Special Elite", "Courier New", monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{
+    font-family:var(--f-body);
+    background:var(--dark-2);
+    color:#EDE9E0;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- fixed stage ---------- */
+  .stage{
+    position:fixed; inset:0; overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 50% 40%, #242424 0%, #171717 70%, #101010 100%);
+    z-index:1;
+  }
+  /* faint vertical fold shadow where the two halves meet */
+  .fold-shadow{
+    position:absolute; top:0; bottom:0; left:50%; width:26vw;
+    transform:translateX(-50%);
+    background:linear-gradient(90deg, transparent, rgba(0,0,0,.55) 50%, transparent);
+    opacity:0; filter:blur(6px); pointer-events:none; z-index:2;
+  }
+
+  /* ---------- revealed layer (text) ---------- */
+  .reveal{
+    position:absolute; inset:0; z-index:3;
+    display:grid; place-items:center;
+    padding:6vw; text-align:center;
+  }
+  .reveal-inner{max-width:min(760px,90vw)}
+  .reveal-inner .eyebrow{
+    font-size:clamp(.62rem,1.4vw,.8rem); letter-spacing:.42em;
+    text-transform:uppercase; color:var(--taupe);
+    margin-bottom:clamp(1rem,3vw,1.8rem);
+  }
+  .reveal-inner h1{
+    font-family:var(--f-disp); font-weight:400;
+    font-size:clamp(2.1rem,7.4vw,5.6rem); line-height:.98;
+    letter-spacing:-.01em; color:#F4F1EA;
+    text-shadow:0 2px 0 rgba(0,0,0,.5);
+  }
+  .reveal-inner h1 em{
+    font-style:normal; color:var(--taupe);
+    display:inline-block; transform:rotate(-1.4deg);
+  }
+  .reveal-inner p{
+    margin-top:clamp(1rem,2.6vw,1.6rem);
+    font-size:clamp(.85rem,1.8vw,1.05rem); line-height:1.7;
+    color:#B9B3A6; max-width:46ch;
+  }
+  .reveal-inner .sig{
+    margin-top:clamp(1.4rem,3vw,2.2rem);
+    font-size:.7rem; letter-spacing:.34em; text-transform:uppercase;
+    color:#6f6a5f;
+  }
+
+  /* ---------- canvas: fibers + grain ---------- */
+  #fx{position:absolute; inset:0; z-index:5; pointer-events:none}
+
+  /* ---------- paper halves ---------- */
+  .paper{
+    position:absolute; top:0; height:100%; width:100%;
+    background-color:var(--paper);
+    background-image:
+      repeating-linear-gradient(93deg, rgba(120,108,80,.035) 0 2px, transparent 2px 6px),
+      repeating-linear-gradient(3deg, rgba(255,255,255,.05) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(87deg, rgba(150,138,110,.03) 0 1px, transparent 1px 4px);
+    box-shadow:0 30px 70px rgba(0,0,0,.55);
+    will-change:transform;
+  }
+  .paper::before{ /* subtle warm shading toward the tear */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 0%, rgba(255,255,255,.5), transparent 60%);
+  }
+  .paper::after{ /* ambient grain baked onto the paper */
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.12;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .paper-left{left:0}
+  .paper-right{left:0}
+
+  /* ---------- fixed chrome ---------- */
+  .chrome{position:absolute; inset:0; z-index:10; pointer-events:none}
+  .corner{position:absolute; padding:clamp(16px,3vw,30px);
+    font-size:.66rem; letter-spacing:.3em; text-transform:uppercase}
+  .tl{top:0; left:0; color:#cfc9bd}
+  .tl b{color:#fff; font-weight:700}
+  .tr{top:0; right:0; text-align:right; color:#9c968a}
+  .bl{bottom:0; left:0; color:#8f897d}
+  .br{bottom:0; right:0; text-align:right; color:#8f897d}
+  .tl b{letter-spacing:.24em}
+  .tl .dot{color:var(--taupe)}
+
+  /* the interactive trigger sits above the paper */
+  .trigger{
+    position:absolute; left:50%; bottom:clamp(26px,7vh,64px);
+    transform:translateX(-50%); z-index:12; pointer-events:auto;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+    background:none; border:none; cursor:pointer; color:var(--ink);
+    font-family:var(--f-body);
+  }
+  .trigger .ring{
+    width:74px; height:74px; border-radius:50%;
+    border:1.5px solid rgba(43,43,43,.55);
+    display:grid; place-items:center; position:relative;
+    transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s;
+  }
+  .trigger .ring::before{
+    content:""; position:absolute; inset:-10px; border-radius:50%;
+    border:1px solid rgba(43,43,43,.22); animation:pulse 2.6s ease-out infinite;
+  }
+  @keyframes pulse{0%{transform:scale(.86);opacity:.9}100%{transform:scale(1.5);opacity:0}}
+  .trigger:hover .ring{transform:scale(1.08); border-color:rgba(43,43,43,.9)}
+  .trigger svg{width:26px;height:26px}
+  .trigger .lbl{font-size:.66rem; letter-spacing:.34em; text-transform:uppercase}
+  .trigger .lbl small{display:block; margin-top:5px; font-size:.56rem; letter-spacing:.22em; color:rgba(43,43,43,.55)}
+  .trigger[hidden]{display:none}
+
+  /* ---------- scroll spacer ---------- */
+  .spacer{position:relative; z-index:0; height:240vh; pointer-events:none}
+
+  /* ---------- reduced motion ---------- */
+  .rm .trigger .ring::before{animation:none}
+  @media (prefers-reduced-motion: reduce){
+    .trigger .ring::before{animation:none}
+  }
+
+  /* ---------- mobile: horizontal tear ---------- */
+  @media (max-width:760px){
+    .paper{left:0; top:0; width:100%; height:100%}
+    .trigger{bottom:clamp(20px,10vh,40px)}
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage" id="stage">
+    <div class="fold-shadow" id="fold"></div>
+
+    <!-- revealed dark layer + text -->
+    <div class="reveal">
+      <div class="reveal-inner">
+        <div class="eyebrow">Fibrous Paper Tear · study №07</div>
+        <h1>Somewhere beneath the surface,<br>a <em>message</em> waits to be torn open.</h1>
+        <p>Not a slide. Not a fade. A slow, ragged pull — fibers stretching to their limit, then letting go, one at a time.</p>
+        <div class="sig">— cotton stock · 300gsm · hand-torn</div>
+      </div>
+    </div>
+
+    <!-- the two paper halves -->
+    <div class="paper paper-left" id="left"></div>
+    <div class="paper paper-right" id="right"></div>
+
+    <!-- fibers + grain -->
+    <canvas id="fx"></canvas>
+
+    <!-- fixed chrome -->
+    <div class="chrome">
+      <div class="corner tl"><b>TEAR<span class="dot">·</span>STUDY</b></div>
+      <div class="corner tr">cotton rag · 300gsm<br>hand-torn edge</div>
+      <div class="corner bl" id="status">[ ready — pull to tear ]</div>
+      <div class="corner br" id="pct">00%</div>
+    </div>
+
+    <!-- trigger -->
+    <button class="trigger" id="trigger" aria-label="Tear the paper">
+      <span class="ring">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18"/><path d="M8 7l4-4 4 4"/><path d="M8 17l4 4 4-4"/>
+        </svg>
+      </span>
+      <span class="lbl">Tear the paper<small id="modeLbl">scroll to pull · or click</small></span>
+    </button>
+  </div>
+
+  <div class="spacer" aria-hidden="true"></div>
+
+<script>
+(function(){
+  "use strict";
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(REDUCED) document.documentElement.classList.add('rm');
+
+  const stage   = document.getElementById('stage');
+  const leftEl  = document.getElementById('left');
+  const rightEl = document.getElementById('right');
+  const fold    = document.getElementById('fold');
+  const canvas  = document.getElementById('fx');
+  const ctx     = canvas.getContext('2d');
+  const trigger = document.getElementById('trigger');
+  const statusEl= document.getElementById('status');
+  const pctEl   = document.getElementById('pct');
+  const modeLbl = document.getElementById('modeLbl');
+
+  // ---------- state ----------
+  const state = {
+    W:0, H:0, dpr:1,
+    orientation:'vertical',
+    axisLen:0,
+    tearHalf:0,
+    fibers:[],
+    grain:null,
+    grainPhase:0,
+    progress:0,
+    playing:false,
+    startScroll:0,
+    raf:0
+  };
+
+  // ---------- helpers ----------
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeOutCubic=t=>1-Math.pow(1-t,3);
+  const easeInOutCubic=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+
+  // ---------- grain tile ----------
+  function buildGrain(){
+    const s=256, c=document.createElement('canvas');
+    c.width=c.height=s; const g=c.getContext('2d');
+    const img=g.createImageData(s,s);
+    for(let i=0;i<img.data.length;i+=4){
+      const v=Math.random()*255;
+      img.data[i]=img.data[i+1]=img.data[i+2]=v;
+      img.data[i+3]=18;
+    }
+    g.putImageData(img,0,0);
+    state.grain=c;
+  }
+
+  // ---------- ragged edge + fibers ----------
+  function buildGeometry(){
+    const W=state.W, H=state.H;
+    const vertical = state.orientation==='vertical';
+    const axisLen  = vertical?H:W;
+    state.axisLen=axisLen;
+
+    const rng=mulberry32(20240607);
+    const N=Math.max(60, Math.round(axisLen/7));
+    const tearHalf=clamp(axisLen*0.011, 6, 15);
+    state.tearHalf=tearHalf;
+
+    // ragged offsets along the axis (relative to centerline)
+    const offs=new Array(N);
+    let o=0;
+    for(let i=0;i<N;i++){
+      const t=i/(N-1);
+      o+=(rng()-0.5)*tearHalf*0.9;
+      o=clamp(o,-tearHalf,tearHalf);
+      // taper the very ends so it closes off
+      const edge=Math.sin(t*Math.PI);
+      offs[i]=o*(0.35+0.65*edge);
+    }
+
+    const cx = vertical?W/2:0;
+    const cy = vertical?0:H/2;
+    const base = vertical?cx:cy;
+
+    // left/top polygon: axis 0..base+off
+    const L=[], R=[];
+    for(let i=0;i<N;i++){
+      const a=i/(N-1)*axisLen;
+      const x=vertical?base+offs[i]:a;
+      const y=vertical?a:base+offs[i];
+      L.push([x,y]);
+      R.push([x,y]);
+    }
+
+    function poly(pts, far, vertical){
+      let s='';
+      for(const p of pts) s+=p[0].toFixed(1)+'px '+p[1].toFixed(1)+'px,';
+      if(vertical){
+        s+= far.toFixed(1)+'px '+axisLen.toFixed(1)+'px,'+ far.toFixed(1)+'px 0px';
+      }else{
+        s+= axisLen.toFixed(1)+'px '+far.toFixed(1)+'px,'+ '0px '+far.toFixed(1)+'px';
+      }
+      return 'polygon('+s+')';
+    }
+    leftEl.style.clipPath  = poly(L, -2, vertical);
+    rightEl.style.clipPath = poly(R, axisLen+2, vertical);
+
+    // fibers — anchored on the ragged boundary of each half
+    const fibers=[];
+    const count=Math.max(70, Math.round(axisLen/4));
+    for(let i=0;i<count;i++){
+      const t=i/(count-1);
+      const idx=Math.min(N-1, Math.round(t*(N-1)));
+      const off=offs[idx];
+      const a=t*axisLen;
+      let ax,ay,bx,by;
+      if(vertical){ ax=base+off; ay=a; bx=base+off; by=a; }
+      else{ ax=a; ay=base+off; bx=a; by=base+off; }
+      const snapGap=tearHalf*0.55 + rng()*tearHalf*3.4;
+      fibers.push({
+        ax,ay,bx,by,
+        off:off,
+        snap:snapGap,
+        phase:rng()*Math.PI*2,
+        freq:0.5+rng()*1.4,
+        w:0.5+rng()*1.3,
+        alpha:0.55+rng()*0.45,
+        brk:false
+      });
+    }
+    state.fibers=fibers;
+  }
+
+  // ---------- resize ----------
+  function resize(){
+    const W=window.innerWidth, H=window.innerHeight;
+    state.W=W; state.H=H;
+    state.dpr=Math.min(window.devicePixelRatio||1, 2);
+    canvas.width=W*state.dpr; canvas.height=H*state.dpr;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(state.dpr,0,0,state.dpr,0,0);
+    state.orientation = W<760 ? 'horizontal' : 'vertical';
+    modeLbl.textContent = state.orientation==='vertical'
+      ? 'scroll to pull · or click'
+      : 'swipe down · or tap';
+    buildGeometry();
+    applyProgress(state.progress);
+  }
+
+  // ---------- apply tear progress ----------
+  function applyProgress(p){
+    state.progress=p;
+    const t=easeInOutCubic(p);
+    const sep = t * state.axisLen * 0.62;      // max separation
+    const vertical = state.orientation==='vertical';
+    const tx = vertical ? sep : 0;
+    const ty = vertical ? 0 : sep;
+
+    // slight settle overshoot near the end
+    const settle = p>0.9 ? easeOutBack((p-0.9)/0.1)*0.012 : 0;
+    const s = 1 + settle;
+
+    leftEl.style.transform  = `translate3d(${-tx}px,${-ty}px,0) scale(${s})`;
+    rightEl.style.transform = `translate3d(${tx}px,${ty}px,0) scale(${s})`;
+
+    // fold shadow + depth
+    fold.style.opacity = clamp(t*0.9,0,0.9);
+    const blur = 18 + sep*0.5;
+    leftEl.style.boxShadow  = `${-sep*0.15}px ${sep*0.35}px ${blur}px rgba(0,0,0,.6)`;
+    rightEl.style.boxShadow = `${sep*0.15}px ${sep*0.35}px ${blur}px rgba(0,0,0,.6)`;
+
+    // chrome readout
+    pctEl.textContent = String(Math.round(p*100)).padStart(2,'0')+'%';
+    statusEl.textContent = p<0.02 ? '[ ready — pull to tear ]'
+      : p>=1 ? '[ torn open — fibers released ]'
+      : '[ tearing · fibers snapping ]';
+  }
+
+  // ---------- render loop ----------
+  function drawFibers(){
+    const p=state.progress;
+    if(p<=0.001 || state.fibers.length===0) return;
+    const sep = easeInOutCubic(p)*state.axisLen*0.62;
+    const vertical = state.orientation==='vertical';
+    const time=performance.now()/1000;
+
+    ctx.lineCap='round';
+    for(const f of state.fibers){
+      const gap = sep;
+      if(gap >= f.snap){
+        f.brk=true;
+        continue;
+      }
+      const strain = gap/f.snap;                 // 0..1
+      const wig = Math.sin(time*f.freq + f.phase) * (0.6+strain*3);
+      ctx.beginPath();
+      if(vertical){
+        const mx=(f.ax+f.bx)/2 + wig;
+        ctx.moveTo(f.ax, f.ay);
+        ctx.quadraticCurveTo(mx, f.ay, f.bx, f.by);
+      }else{
+        const my=(f.ay+f.by)/2 + wig;
+        ctx.moveTo(f.ax, f.ay);
+        ctx.quadraticCurveTo(f.ax, my, f.bx, f.by);
+      }
+      // bright white core, faint warm halo
+      ctx.strokeStyle='rgba(255,255,255,'+(f.alpha*(1-strain*0.65)).toFixed(3)+')';
+      ctx.lineWidth=f.w*(1-strain*0.5);
+      ctx.stroke();
+    }
+  }
+
+  function drawGrain(){
+    if(!state.grain) return;
+    if(!REDUCED) state.grainPhase += 1;
+    const ox=(state.grainPhase*13)%256;
+    const oy=(state.grainPhase*7)%256;
+    ctx.save();
+    ctx.globalAlpha=0.06;
+    for(let x=-ox;x<state.W;x+=256)
+      for(let y=-oy;y<state.H;y+=256)
+        ctx.drawImage(state.grain,x,y);
+    ctx.restore();
+  }
+
+  function frame(){
+    ctx.clearRect(0,0,state.W,state.H);
+    drawFibers();
+    drawGrain();
+    if(state.playing || !REDUCED) state.raf=requestAnimationFrame(frame);
+  }
+
+  // ---------- scroll-driven ----------
+  function onScroll(){
+    const doc=document.documentElement;
+    const max=doc.scrollHeight-window.innerHeight;
+    const p=max>0?clamp(window.scrollY/max,0,1):0;
+    applyProgress(p);
+    trigger.hidden = p>0.03;
+  }
+
+  // ---------- click / tap auto-play ----------
+  function autoTear(){
+    if(state.playing) return;
+    state.playing=true;
+    const from=state.progress;
+    const dur = REDUCED?0:2600;
+    const start=performance.now();
+    state.startScroll=window.scrollY;
+    function step(now){
+      const t=dur===0?1:clamp((now-start)/dur,0,1);
+      const p=lerp(from,1,easeInOutCubic(t));
+      applyProgress(p);
+      // mirror to scroll so the reveal text stays reachable
+      const max=document.documentElement.scrollHeight-window.innerHeight;
+      window.scrollTo(0, from + p*(1-from)*max*0.999);
+      trigger.hidden = p>0.03;
+      if(t<1) requestAnimationFrame(step);
+      else state.playing=false;
+    }
+    if(REDUCED){ applyProgress(1); window.scrollTo(0,document.documentElement.scrollHeight); trigger.hidden=true; state.playing=false; }
+    else requestAnimationFrame(step);
+  }
+
+  // ---------- wire up ----------
+  trigger.addEventListener('click', autoTear);
+  window.addEventListener('scroll', onScroll, {passive:true});
+  let rt;
+  window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(resize,150); });
+
+  // ---------- init ----------
+  buildGrain();
+  resize();
+  applyProgress(0);
+  onScroll();
+  if(REDUCED){
+    // static frame: render once
+    ctx.clearRect(0,0,state.W,state.H); drawGrain();
+  }else{
+    state.raf=requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

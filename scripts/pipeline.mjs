@@ -31,7 +31,8 @@ const skipBuild = argv.includes("--skip-build");
 const passthrough = argv.filter((a) => a !== "--skip-build");
 
 if (!skipBuild) run("ai:build", passthrough);
-run("shots", passthrough.filter((a) => a !== "--force")); // force means rebuild demos; shots always refresh
+run("shots", passthrough.filter((a) => a !== "--force"));
+run("review", ["--missing", ...passthrough.filter((a) => a !== "--force")]);
 run("pages");
 run("build");
 

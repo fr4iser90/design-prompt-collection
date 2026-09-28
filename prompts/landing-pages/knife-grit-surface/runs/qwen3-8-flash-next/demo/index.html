@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edge & Stone — Premium Sharpening Stones & Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#18181B; --bg2:#101012; --panel:#1E1E22;
+  --ink:#E4E4E7; --muted:#A1A1AA; --dim:#71717A;
+  --line:rgba(228,228,231,.10); --line2:rgba(228,228,231,.20);
+  --steel:#3F3F46; --steel-lt:#9CA0A8; --warm:#D9B98A; --warm2:#EAD7B0;
+  --ease:cubic-bezier(.16,1,.3,1); --sharp:cubic-bezier(.7,0,.2,1);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Oswald',sans-serif;font-weight:400;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--warm);color:#18181B}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Mono',monospace}
+.wrap{width:min(1240px,92vw);margin-inline:auto}
+
+/* ---------- global grain overlay ---------- */
+.grain{position:fixed;inset:0;background-image:var(--grain);background-size:140px;opacity:.05;mix-blend-mode:overlay;pointer-events:none;z-index:9998}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:9997;background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(0,0,0,.55) 100%)}
+
+/* ---------- top ticker ---------- */
+.ticker{border-bottom:1px solid var(--line);background:var(--bg2);overflow:hidden;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.ticker-track{display:flex;gap:2.5rem;white-space:nowrap;padding:.55rem 0;width:max-content;animation:tick 42s linear infinite}
+.ticker-track span{display:inline-flex;align-items:center;gap:2.5rem}
+.ticker-track b{color:var(--warm);font-weight:400}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 0;background:rgba(24,24,27,.72);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:.7rem;font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:.06em;line-height:1}
+.brand .mark{width:26px;height:26px;position:relative;flex:none}
+.brand .mark::before,.brand .mark::after{content:"";position:absolute;background:var(--ink)}
+.brand .mark::before{inset:0 50% 0 0;clip-path:polygon(100% 0,100% 100%,0 50%)}
+.brand .mark::after{inset:0 0 0 50%;background:var(--steel-lt);clip-path:polygon(0 0,100% 50%,0 100%)}
+.nav-links{display:flex;gap:2.2rem;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.nav-links a{position:relative;padding:.2rem 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--warm);transition:width .35s var(--ease)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{width:100%}
+.cart{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.14em;border:1px solid var(--line2);padding:.55rem .9rem;color:var(--ink);transition:.3s}
+.cart:hover{background:var(--ink);color:var(--bg)}
+.burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:.4rem}
+.burger span{width:24px;height:2px;background:var(--ink);transition:.3s}
+
+/* ---------- hero ---------- */
+.hero{position:relative;display:grid;grid-template-columns:1.05fr 1fr;min-height:calc(100vh - 92px);align-items:stretch;border-bottom:1px solid var(--line);overflow:hidden}
+.hero-left{padding:clamp(2rem,4vw,4rem) clamp(1.5rem,4vw,4rem);display:flex;flex-direction:column;justify-content:center;gap:1.6rem;position:relative;z-index:3}
+.kicker{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;color:var(--warm);display:flex;align-items:center;gap:.8rem}
+.kicker::before{content:"";width:34px;height:1px;background:var(--warm)}
+h1.wordmark{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(4.4rem,13vw,10.5rem);line-height:.82;letter-spacing:.01em;text-transform:uppercase}
+h1.wordmark .amp{color:var(--warm);font-size:.55em;vertical-align:.08em}
+.lead{max-width:42ch;color:var(--muted);font-size:1.02rem;font-weight:300}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.4rem}
+.btn{display:inline-flex;align-items:center;gap:.7rem;padding:.95rem 1.6rem;font-family:'Oswald';font-weight:500;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--ink);transition:.35s var(--ease)}
+.btn.solid{background:var(--ink);color:var(--bg)}
+.btn.solid:hover{background:var(--warm);border-color:var(--warm)}
+.btn.ghost{color:var(--ink)}
+.btn.ghost:hover{background:var(--ink);color:var(--bg)}
+.btn .arw{transition:transform .35s var(--ease)}
+.btn:hover .arw{transform:translateX(5px)}
+.hero-meta{display:flex;gap:2rem;margin-top:1rem;flex-wrap:wrap}
+.hero-meta div{display:flex;flex-direction:column;gap:.15rem}
+.hero-meta .n{font-family:'Space Mono',monospace;font-size:1.5rem;color:var(--ink)}
+.hero-meta .l{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+
+.hero-right{position:relative;overflow:hidden;border-left:1px solid var(--line)}
+.hero-img{position:absolute;inset:-6%;width:112%;height:112%;object-fit:cover;filter:grayscale(1) contrast(1.18) brightness(.82);transform:scale(1.05)}
+.hero-right::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,rgba(24,24,27,.55) 22%,rgba(24,24,27,.15) 60%,rgba(24,24,27,.6) 100%)}
+/* glint sweep */
+.glint{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.glint::before{content:"";position:absolute;top:-20%;left:-30%;width:26%;height:140%;background:linear-gradient(100deg,transparent,rgba(234,215,176,.55),rgba(255,255,255,.75),rgba(234,215,176,.4),transparent);transform:rotate(14deg) translateX(-120%);filter:blur(2px);mix-blend-mode:screen;animation:glint 7.5s var(--sharp) infinite}
+@keyframes glint{0%,55%{transform:rotate(14deg) translateX(-120%)}78%{transform:rotate(14deg) translateX(460%)}100%{transform:rotate(14deg) translateX(460%)}}
+/* cut line */
+.cutline{position:absolute;top:0;left:0;width:1px;height:100%;background:linear-gradient(180deg,transparent,var(--warm2),transparent);z-index:5;animation:cut 7.5s var(--sharp) infinite}
+@keyframes cut{0%,55%{opacity:0;transform:scaleY(.2)}72%{opacity:1;transform:scaleY(1)}100%{opacity:0;transform:scaleY(1)}}
+.spec-tag{position:absolute;z-index:6;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.1em;color:var(--ink);background:rgba(16,16,18,.72);border:1px solid var(--line2);padding:.4rem .6rem;backdrop-filter:blur(3px)}
+.spec-tag .dot{display:inline-block;width:6px;height:6px;background:var(--warm);margin-right:.4rem;vertical-align:middle}
+.spec-tag.t1{top:16%;left:12%}
+.spec-tag.t2{bottom:22%;right:10%}
+.spec-tag.t3{top:44%;right:16%}
+
+/* ---------- section shell ---------- */
+section{position:relative}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;padding-top:clamp(4rem,8vw,7rem);margin-bottom:clamp(2.4rem,5vw,4rem);flex-wrap:wrap}
+.sec-index{font-family:'Space Mono',monospace;font-size:.78rem;letter-spacing:.2em;color:var(--warm)}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.6rem,7vw,5.5rem);line-height:.9;text-transform:uppercase;letter-spacing:.02em;margin-top:.6rem}
+.sec-desc{max-width:38ch;color:var(--muted);font-weight:300;font-size:.98rem}
+.hair{height:1px;background:var(--line);width:100%}
+
+/* ---------- anatomy ---------- */
+.anatomy{padding-bottom:clamp(4rem,8vw,7rem)}
+.anatomy-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(2rem,4vw,4rem);align-items:center}
+.diagram{position:relative;aspect-ratio:16/9;background:linear-gradient(160deg,#1c1c20,#121214);border:1px solid var(--line);overflow:hidden}
+.diagram .blade-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.25) brightness(.9)}
+.diagram::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 120% at 30% 40%,transparent 40%,rgba(16,16,18,.7))}
+.pin{position:absolute;width:10px;height:10px;border:1px solid var(--warm);background:var(--bg);border-radius:0;transform:rotate(45deg);z-index:3}
+.pin::after{content:"";position:absolute;inset:2px;background:var(--warm)}
+.anno{position:absolute;z-index:4;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.06em;color:var(--ink);white-space:nowrap;display:flex;align-items:center;gap:.5rem}
+.anno .ln{height:1px;background:var(--line2);width:38px}
+.anno b{color:var(--warm);font-weight:400}
+/* pins positioned relative to diagram box */
+.p1{top:26%;left:38%}.a1{top:20%;left:calc(38% + 22px)}
+.p2{top:44%;left:52%}.a2{top:38%;left:calc(52% + 22px)}
+.p3{top:70%;left:44%}.a3{top:64%;left:calc(44% + 22px)}
+.p4{top:56%;left:20%}.a4{top:62%;left:calc(20% - 96px)}
+.p5{top:38%;left:70%}.a5{top:32%;left:calc(70% + 22px)}
+.specs{display:flex;flex-direction:column;gap:0}
+.spec-row{display:flex;justify-content:space-between;align-items:baseline;padding:1.1rem 0;border-bottom:1px solid var(--line);gap:1rem}
+.spec-row:first-child{border-top:1px solid var(--line)}
+.spec-row .k{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.spec-row .v{font-family:'Space Mono',monospace;font-size:1rem;color:var(--ink);text-align:right}
+.spec-row .v .u{color:var(--warm);font-size:.7rem;margin-left:.3rem}
+
+/* ---------- grit scale ---------- */
+.grit{padding-bottom:clamp(4rem,8vw,7rem)}
+.grit-scale{position:relative;border:1px solid var(--line);background:var(--bg2);overflow:hidden}
+.grit-band{position:absolute;inset:0;transition:background .5s ease}
+.grit-inner{position:relative;z-index:2;padding:clamp(2rem,4vw,3.5rem)}
+.grit-readout{display:flex;justify-content:space-between;align-items:flex-start;gap:2rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.grit-num{font-family:'Bebas Neue',sans-serif;font-size:clamp(4rem,12vw,9rem);line-height:.8;color:var(--ink)}
+.grit-num .u{font-size:.28em;color:var(--warm);letter-spacing:.1em;margin-left:.3rem}
+.grit-stage{max-width:40ch}
+.grit-stage .st{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--warm)}
+.grit-stage .tx{color:var(--muted);font-weight:300;margin-top:.6rem;font-size:1rem}
+.grit-slider{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:pointer}
+.grit-slider::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--steel),var(--steel-lt),var(--warm))}
+.grit-slider::-moz-range-track{height:2px;background:linear-gradient(90deg,var(--steel),var(--steel-lt),var(--warm))}
+.grit-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:44px;background:var(--ink);margin-top:-21px;border:1px solid var(--bg);box-shadow:0 0 0 1px var(--line2),0 0 22px rgba(217,185,138,.5)}
+.grit-slider::-moz-range-thumb{width:14px;height:44px;background:var(--ink);border:1px solid var(--bg);border-radius:0;box-shadow:0 0 22px rgba(217,185,138,.5)}
+.grit-ticks{display:flex;justify-content:space-between;margin-top:.6rem;font-family:'Space Mono',monospace;font-size:.66rem;color:var(--dim);letter-spacing:.1em}
+
+/* ---------- technique ---------- */
+.technique{padding-bottom:clamp(4rem,8vw,7rem)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.step{background:var(--bg);padding:clamp(1.6rem,3vw,2.4rem);position:relative;transition:background .4s}
+.step:hover{background:var(--panel)}
+.step .no{font-family:'Bebas Neue',sans-serif;font-size:3.4rem;line-height:.8;color:var(--steel-lt);transition:color .4s}
+.step:hover .no{color:var(--warm)}
+.step h4{font-family:'Oswald';font-weight:600;font-size:1.15rem;letter-spacing:.02em;margin:1rem 0 .7rem;text-transform:uppercase}
+.step p{color:var(--muted);font-weight:300;font-size:.9rem}
+.step .dur{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.14em;color:var(--dim);margin-top:1.2rem;text-transform:uppercase}
+
+/* ---------- products ---------- */
+.products{padding-bottom:clamp(4rem,8vw,7rem)}
+.prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,2vw,1.6rem)}
+.prod{position:relative;border:1px solid var(--line);background:linear-gradient(150deg,#1c1c20,#141416);padding:1.2rem;transition:transform .5s var(--ease),border-color .4s;transform-style:preserve-3d}
+.prod:hover{border-color:var(--warm)}
+.prod .frame{position:relative;aspect-ratio:4/5;overflow:hidden;background:#0d0d0f}
+.prod .frame img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.15) brightness(.85);transition:transform .8s var(--ease),filter .5s}
+.prod:hover .frame img{transform:scale(1.06);filter:grayscale(.3) contrast(1.2) brightness(.95)}
+.prod .frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(16,16,18,.85));z-index:2}
+.prod .grit-badge{position:absolute;top:.7rem;left:.7rem;z-index:3;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;background:rgba(16,16,18,.8);border:1px solid var(--line2);padding:.35rem .55rem;color:var(--warm)}
+.prod .cat{position:absolute;bottom:.8rem;left:.8rem;z-index:3;font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.prod-body{padding-top:1.1rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.prod-body h3{font-family:'Oswald';font-weight:500;font-size:1.15rem;letter-spacing:.01em;text-transform:uppercase}
+.prod-body .price{font-family:'Space Mono',monospace;font-size:.95rem;color:var(--ink)}
+.prod-body .sub{font-size:.78rem;color:var(--dim);letter-spacing:.08em;margin-top:.2rem}
+.prod .add{margin-top:1rem;width:100%;border:1px solid var(--line2);background:none;color:var(--ink);padding:.7rem;font-family:'Oswald';font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:.3s}
+.prod .add:hover{background:var(--ink);color:var(--bg)}
+/* featured wide */
+.prod.wide{grid-column:span 3;display:grid;grid-template-columns:1.4fr 1fr;gap:0;padding:0;border-color:var(--line2)}
+.prod.wide .frame{aspect-ratio:auto;height:100%;min-height:320px}
+.prod.wide .prod-body{flex-direction:column;justify-content:center;align-items:flex-start;padding:clamp(1.6rem,4vw,3rem);gap:.4rem}
+.prod.wide h3{font-size:clamp(1.6rem,3vw,2.4rem)}
+.prod.wide .price{font-size:1.3rem}
+.prod.wide .add{width:auto;margin-top:1.6rem;padding:.85rem 1.8rem}
+
+/* ---------- stats ---------- */
+.stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:clamp(2rem,4vw,3.2rem) 1rem;text-align:center;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat .n{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,6vw,4.5rem);line-height:.9;color:var(--ink)}
+.stat .n .s{color:var(--warm)}
+.stat .l{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:.6rem}
+
+/* ---------- quotes ---------- */
+.quotes{padding:clamp(4rem,8vw,7rem) 0}
+.quote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.quote{background:var(--bg);padding:clamp(1.6rem,3vw,2.4rem);display:flex;flex-direction:column;gap:1.4rem}
+.quote .mk{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--warm);line-height:.6}
+.quote p{font-weight:300;color:var(--ink);font-size:1.02rem}
+.quote .who{font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:auto}
+.quote .who b{color:var(--warm);font-weight:400}
+
+/* ---------- newsletter ---------- */
+.news{border-top:1px solid var(--line);background:linear-gradient(180deg,var(--bg),var(--bg2));padding:clamp(4rem,8vw,6rem) 0}
+.news-inner{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,5vw,5rem);align-items:center}
+.news h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.4rem,6vw,4.5rem);line-height:.9;text-transform:uppercase}
+.news p{color:var(--muted);font-weight:300;margin-top:1rem;max-width:40ch}
+.news-form{display:flex;border:1px solid var(--line2)}
+.news-form input{flex:1;background:transparent;border:0;color:var(--ink);padding:1.1rem 1.2rem;font-family:'Oswald';font-size:.95rem;letter-spacing:.04em;outline:none}
+.news-form input::placeholder{color:var(--dim)}
+.news-form button{background:var(--ink);color:var(--bg);border:0;padding:0 1.6rem;font-family:'Oswald';font-weight:600;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;transition:.3s}
+.news-form button:hover{background:var(--warm)}
+.news-note{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.1em;color:var(--dim);margin-top:1rem}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:clamp(3rem,6vw,5rem) 0 2rem;background:var(--bg2)}
+.foot-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;margin-bottom:3rem}
+.foot-brand .brand{font-size:2.4rem}
+.foot-brand p{color:var(--muted);font-weight:300;max-width:34ch;margin-top:1rem;font-size:.92rem}
+.foot-col h5{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--warm);margin-bottom:1.2rem}
+.foot-col a{display:block;color:var(--muted);font-size:.9rem;padding:.35rem 0;transition:.3s}
+.foot-col a:hover{color:var(--ink);padding-left:.4rem}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:1.6rem;border-top:1px solid var(--line);flex-wrap:wrap;gap:1rem;font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateX(-34px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal.up{transform:translateY(34px)}
+.reveal.up.in{transform:none}
+[data-d="1"]{transition-delay:.08s}[data-d="2"]{transition-delay:.16s}[data-d="3"]{transition-delay:.24s}[data-d="4"]{transition-delay:.32s}
+
+/* ---------- responsive ---------- */
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr;min-height:auto}
+  .hero-right{min-height:52vh;border-left:0;border-top:1px solid var(--line)}
+  .anatomy-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .prod-grid{grid-template-columns:repeat(2,1fr)}
+  .prod.wide{grid-column:span 2;grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:0}
+  .quote-grid{grid-template-columns:1fr}
+  .news-inner{grid-template-columns:1fr}
+  .foot-top{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .burger{display:flex}
+  .nav-links.open{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--bg);border-bottom:1px solid var(--line);padding:1.4rem 6vw;gap:1.2rem}
+}
+@media(max-width:560px){
+  .steps{grid-template-columns:1fr}
+  .prod-grid{grid-template-columns:1fr}
+  .prod.wide{grid-column:span 1}
+  .stats-grid{grid-template-columns:1fr}
+  .stat{border-right:0;border-bottom:1px solid var(--line)}
+  .foot-top{grid-template-columns:1fr}
+  .hero-meta{gap:1.4rem}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+  .glint,.cutline{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<!-- ticker -->
+<div class="ticker">
+  <div class="ticker-track" id="tick">
+    <span><b>FREE SHIPPING</b> ON ORDERS OVER $150 &nbsp;•&nbsp; NATURAL WATER STONES &nbsp;•&nbsp; JAPANESE CRAFT SINCE 1974 &nbsp;•&nbsp; <b>1000 / 3000 / 6000</b> GRIT PROGRESSION &nbsp;•&nbsp; FLATTENING INCLUDED &nbsp;•&nbsp; LIFETIME EDGE GUARANTEE &nbsp;•&nbsp; </span>
+    <span><b>FREE SHIPPING</b> ON ORDERS OVER $150 &nbsp;•&nbsp; NATURAL WATER STONES &nbsp;•&nbsp; JAPANESE CRAFT SINCE 1974 &nbsp;•&nbsp; <b>1000 / 3000 / 6000</b> GRIT PROGRESSION &nbsp;•&nbsp; FLATTENING INCLUDED &nbsp;•&nbsp; LIFETIME EDGE GUARANTEE &nbsp;•&nbsp; </span>
+  </div>
+</div>
+
+<!-- nav -->
+<header>
+  <nav class="nav wrap">
+    <a class="brand" href="#top"><span class="mark"></span>EDGE&nbsp;&amp;&nbsp;STONE</a>
+    <div class="nav-links" id="links">
+      <a href="#anatomy">The Edge</a>
+      <a href="#grit">The Stone</a>
+      <a href="#technique">The Technique</a>
+      <a href="#shop">Shop</a>
+    </div>
+    <a class="cart" href="#shop">Cart · 0</a>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </nav>
+</header>
+
+<!-- hero -->
+<section class="hero" id="top">
+  <div class="hero-left">
+    <div class="kicker reveal">Premium Sharpening Stones &amp; Tools</div>
+    <h1 class="wordmark reveal" data-d="1">Sharpen<br>Your Edge<span class="amp">.</span></h1>
+    <p class="lead reveal" data-d="2">Cold-pressed water stones and precision honing tools engineered for a mirror-finish edge. Built for chefs, hunters, and collectors who measure sharpness in microns.</p>
+    <div class="hero-cta reveal" data-d="3">
+      <a class="btn solid" href="#shop">Shop Stones <span class="arw">→</span></a>
+      <a class="btn ghost" href="#technique">Learn The Technique</a>
+    </div>
+    <div class="hero-meta reveal" data-d="4">
+      <div><span class="n" data-count="40">0</span><span class="l">Years of Craft</span></div>
+      <div><span class="n" data-count="3">0</span><span class="l">Grit Stages</span></div>
+      <div><span class="n" data-count="12000">0</span><span class="l">Max Grit</span></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img class="hero-img" src="https://picsum.photos/seed/macro-steel-knife-blade/1100/1400" alt="Macro photograph of a steel knife blade catching light">
+    <div class="glint"></div>
+    <div class="cutline"></div>
+    <div class="spec-tag t1"><span class="dot"></span>EDGE 15°</div>
+    <div class="spec-tag t2"><span class="dot"></span>STONING 1000</div>
+    <div class="spec-tag t3"><span class="dot"></span>STEEL 58HRC</div>
+  </div>
+</section>
+
+<!-- anatomy -->
+<section class="anatomy wrap" id="anatomy">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">01 / THE EDGE</div>
+      <h2 class="sec-title reveal" data-d="1">Anatomy<br>Of A Blade</h2>
+    </div>
+    <p class="sec-desc reveal" data-d="2">Every edge is a geometry. Understand the surface you sharpen — from spine to apex — and the stone does the rest.</p>
+  </div>
+  <div class="anatomy-grid">
+    <div class="diagram reveal">
+      <img class="blade-img" src="https://picsum.photos/seed/chef-knife-profile-steel/1200/700" alt="Chef knife blade profile">
+      <span class="pin p1"></span><span class="anno a1"><span class="ln"></span><b>SPINE</b> — thick, unsharpened</span>
+      <span class="pin p2"></span><span class="anno a2"><span class="ln"></span><b>PLATE</b> — primary bevel</span>
+      <span class="pin p3"></span><span class="anno a3"><span class="ln"></span><b>APEX</b> — the cutting edge</span>
+      <span class="pin p4"></span><span class="anno a4"><b>BOLSTER</b> — balance point<span class="ln"></span></span>
+      <span class="pin p5"></span><span class="anno a5"><span class="ln"></span><b>TIP</b> — fine control</span>
+    </div>
+    <div class="specs reveal" data-d="1">
+      <div class="spec-row"><span class="k">Steel Hardness</span><span class="v">58–62<span class="u">HRC</span></span></div>
+      <div class="spec-row"><span class="k">Edge Angle</span><span class="v">15<span class="u">°/side</span></span></div>
+      <div class="spec-row"><span class="k">Apex Thickness</span><span class="v">&lt; 1<span class="u">µm</span></span></div>
+      <div class="spec-row"><span class="k">Grind</span><span class="v">Convex Hollow</span></div>
+      <div class="spec-row"><span class="k">Finish</span><span class="v">Mirror Polish</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- grit scale -->
+<section class="grit wrap" id="grit">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">02 / THE STONE</div>
+      <h2 class="sec-title reveal" data-d="1">Read The<br>Grit</h2>
+    </div>
+    <p class="sec-desc reveal" data-d="2">Drag the scale. Watch the surface evolve from coarse stone to polished steel as the abrasive grain refines.</p>
+  </div>
+  <div class="grit-scale reveal">
+    <div class="grit-band" id="band"></div>
+    <div class="grit-inner">
+      <div class="grit-readout">
+        <div class="grit-num"><span id="gnum">1000</span><span class="u">GRIT</span></div>
+        <div class="grit-stage">
+          <div class="st" id="gstage">Coarse · Repair</div>
+          <p class="tx" id="gtext">Aggressive abrasive for reshaping a chipped or rolled edge. Fast material removal, rough scratch pattern.</p>
+        </div>
+      </div>
+      <input class="grit-slider" id="slider" type="range" min="100" max="12000" step="50" value="1000" aria-label="Grit level">
+      <div class="grit-ticks">
+        <span>100</span><span>1000</span><span>3000</span><span>6000</span><span>12000</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- technique -->
+<section class="technique wrap" id="technique">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">03 / THE TECHNIQUE</div>
+      <h2 class="sec-title reveal" data-d="1">Four Moves<br>To A Mirror</h2>
+    </div>
+    <p class="sec-desc reveal" data-d="2">Precision is a habit. Keep the angle constant, let the stone do the work, and finish on the finest grit.</p>
+  </div>
+  <div class="steps">
+    <div class="step reveal"><div class="no">01</div><h4>Soak</h4><p>Submerge the water stone until bubbles stop rising. A saturated surface carries the slurry that cuts.</p><div class="dur">10–15 min</div></div>
+    <div class="step reveal" data-d="1"><div class="no">02</div><h4>Coarse Grind</h4><p>Set a fixed 15° angle and draw across the 1000 grit. Work each side until a burr forms along the full edge.</p><div class="dur">2–3 min / side</div></div>
+    <div class="step reveal" data-d="2"><div class="no">03</div><h4>Refine</h4><p>Step to 3000 grit, then 6000. Lighten pressure as grit rises — you're polishing, not removing.</p><div class="dur">1 min / grit</div></div>
+    <div class="step reveal" data-d="3"><div class="no">04</div><h4>Strop &amp; Test</h4><p>Remove the burr on leather, then test against paper. A true edge falls through with zero resistance.</p><div class="dur">30 sec</div></div>
+  </div>
+</section>
+
+<!-- products -->
+<section class="products wrap" id="shop">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">04 / THE KIT</div>
+      <h2 class="sec-title reveal" data-d="1">Stones &amp;<br>Steel Tools</h2>
+    </div>
+    <p class="sec-desc reveal" data-d="2">Isolated, inspected, and graded. Each stone ships with a flattening plate and a signed grit certificate.</p>
+  </div>
+  <div class="prod-grid">
+    <article class="prod wide reveal" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/waterstone-combo-set/900/700" alt="Combo waterstone set"><span class="grit-badge">1000 / 6000</span><span class="cat">Best Seller · Set</span></div>
+      <div class="prod-body">
+        <div class="cat mono" style="position:static;color:var(--warm)">THE COMPLETE EDGE KIT</div>
+        <h3>Edge &amp; Stone<br>Complete Kit</h3>
+        <p class="sub" style="color:var(--muted);max-width:38ch">Dual-grit waterstone, flattening plate, non-slip base, and leather strop. Everything from chip repair to mirror finish in one box.</p>
+        <div class="price">$189</div>
+        <button class="add">Add To Cart</button>
+      </div>
+    </article>
+
+    <article class="prod reveal" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/whetstone-1000-grit/600/750" alt="1000 grit waterstone"><span class="grit-badge">GRIT 1000</span><span class="cat">Coarse</span></div>
+      <div class="prod-body"><div><h3>Repair Stone</h3><div class="sub mono">Natural · 210×70mm</div></div><div class="price">$48</div></div>
+      <button class="add">Add To Cart</button>
+    </article>
+
+    <article class="prod reveal" data-d="1" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/whetstone-3000-grit/600/750" alt="3000 grit waterstone"><span class="grit-badge">GRIT 3000</span><span class="cat">Medium</span></div>
+      <div class="prod-body"><div><h3>Refine Stone</h3><div class="sub mono">Natural · 210×70mm</div></div><div class="price">$54</div></div>
+      <button class="add">Add To Cart</button>
+    </article>
+
+    <article class="prod reveal" data-d="2" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/whetstone-6000-grit/600/750" alt="6000 grit waterstone"><span class="grit-badge">GRIT 6000</span><span class="cat">Fine</span></div>
+      <div class="prod-body"><div><h3>Mirror Stone</h3><div class="sub mono">Natural · 210×70mm</div></div><div class="price">$62</div></div>
+      <button class="add">Add To Cart</button>
+    </article>
+
+    <article class="prod reveal" data-d="1" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/leather-strop-honing/600/750" alt="Leather strop"><span class="grit-badge">STROP</span><span class="cat">Finish</span></div>
+      <div class="prod-body"><div><h3>Leather Strop</h3><div class="sub mono">Buffing Compound</div></div><div class="price">$38</div></div>
+      <button class="add">Add To Cart</button>
+    </article>
+
+    <article class="prod reveal" data-d="2" data-tilt>
+      <div class="frame"><img src="https://picsum.photos/seed/angle-guide-sharpening/600/750" alt="Angle guide"><span class="grit-badge">GUIDE</span><span class="cat">Tool</span></div>
+      <div class="prod-body"><div><h3>Angle Guide</h3><div class="sub mono">Fixed 15°</div></div><div class="price">$26</div></div>
+      <button class="add">Add To Cart</button>
+    </article>
+  </div>
+</section>
+
+<!-- stats -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat reveal"><div class="n"><span data-count="1974">0</span></div><div class="l">Founded</div></div>
+    <div class="stat reveal" data-d="1"><div class="n"><span data-count="12000">0</span><span class="s">+</span></div><div class="l">Max Grit</div></div>
+    <div class="stat reveal" data-d="2"><div class="n"><span data-count="58">0</span><span class="s">°</span></div><div class="l">HRC Steel</div></div>
+    <div class="stat reveal" data-d="3"><div class="n"><span data-count="99">0</span><span class="s">%</span></div><div class="l">Edge Retention</div></div>
+  </div>
+</section>
+
+<!-- quotes -->
+<section class="quotes wrap">
+  <div class="quote-grid">
+    <div class="quote reveal"><div class="mk">“</div><p>The grit progression is flawless. Went from a chipped gyuto to a paper-shaving mirror edge in under ten minutes.</p><div class="who"><b>M. Okada</b> — Head Chef, Kyoto</div></div>
+    <div class="quote reveal" data-d="1"><div class="mk">“</div><p>Cold, precise, and honest. These stones don't lie about sharpness — you feel it the moment the burr forms.</p><div class="who"><b>D. Voss</b> — Custom Knife Maker</div></div>
+    <div class="quote reveal" data-d="2"><div class="mk">“</div><p>The flattening plate alone is worth the price. My stones have stayed dead flat for two years of daily use.</p><div class="who"><b>R. Halloway</b> — Field Guide, Montana</div></div>
+  </div>
+</section>
+
+<!-- newsletter -->
+<section class="news">
+  <div class="news-inner wrap">
+    <div class="reveal">
+      <h2>Join The<br>Grind</h2>
+      <p>Grit guides, technique breakdowns, and early access to limited natural stones. No noise — only edges.</p>
+    </div>
+    <div class="reveal" data-d="1">
+      <form class="news-form" onsubmit="return false">
+        <input type="email" placeholder="your@email.com" aria-label="Email">
+        <button type="submit">Subscribe</button>
+      </form>
+      <div class="news-note">1 email / month. Unsubscribe anytime.</div>
+    </div>
+  </div>
+</section>
+
+<!-- footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a class="brand" href="#top"><span class="mark"></span>EDGE&nbsp;&amp;&nbsp;STONE</a>
+        <p>Premium water stones and honing tools for a mirror-finish edge. Crafted for the obsessive.</p>
+      </div>
+      <div class="foot-col"><h5>Shop</h5><a href="#shop">Water Stones</a><a href="#shop">Honing Tools</a><a href="#shop">Kits</a><a href="#shop">Gift Cards</a></div>
+      <div class="foot-col"><h5>Learn</h5><a href="#anatomy">The Edge</a><a href="#grit">Grit Guide</a><a href="#technique">Technique</a><a href="#">Maintenance</a></div>
+      <div class="foot-col"><h5>Company</h5><a href="#">Our Craft</a><a href="#">Sourcing</a><a href="#">Contact</a><a href="#">Stockists</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2024 Edge &amp; Stone — All Edges Reserved</span>
+      <span>Instagram · YouTube · Journal</span>
+      <span>Sharp Since 1974</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* mobile menu */
+  const burger=document.getElementById('burger'), links=document.getElementById('links');
+  burger.addEventListener('click',()=>links.classList.toggle('open'));
+  links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>links.classList.remove('open')));
+
+  /* reveal */
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.14});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* count up */
+  function countUp(el){
+    const target=+el.dataset.count, dur=1400, start=performance.now();
+    const fmt=n=>n.toLocaleString('en-US');
+    if(reduce){el.textContent=fmt(target);return;}
+    function step(t){
+      const p=Math.min((t-start)/dur,1), e=1-Math.pow(1-p,3);
+      el.textContent=fmt(Math.round(target*e));
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  const cio=new IntersectionObserver((es)=>{
+    es.forEach(e=>{if(e.isIntersecting){countUp(e.target);cio.unobserve(e.target);}});
+  },{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+  /* grit slider */
+  const slider=document.getElementById('slider'), band=document.getElementById('band');
+  const gnum=document.getElementById('gnum'), gstage=document.getElementById('gstage'), gtext=document.getElementById('gtext');
+  const stages=[
+    {max:1000, name:'Coarse · Repair', txt:'Aggressive abrasive for reshaping a chipped or rolled edge. Fast material removal, rough scratch pattern.'},
+    {max:3000, name:'Medium · Refine', txt:'Balanced cutting. Removes coarse scratches and begins defining the true edge geometry.'},
+    {max:6000, name:'Fine · Polish', txt:'Light pressure, slow strokes. The surface begins to reflect — the edge turns razor-smooth.'},
+    {max:12000, name:'Ultra · Mirror', txt:'Near-polishing grit. Produces a mirror finish and a keen, refined apex for delicate work.'}
+  ];
+  function setBand(v){
+    const t=(v-100)/(12000-100); // 0..1
+    const s=Math.round(3+t*13);
+    const c1=Math.round(20+t*34), c2=Math.round(20+t*52), c3=Math.round(24+t*80);
+    const warm=Math.round(t*10);
+    band.style.background=
+      'repeating-linear-gradient(90deg, rgba(255,255,255,'+(0.04+t*0.10)+') 0 1px, transparent 1px '+(2+t*16)+'px),'+
+      'repeating-linear-gradient(0deg, rgba(0,0,0,0.35) 0 1px, transparent 1px '+(2+t*10)+'px),'+
+      'linear-gradient(120deg, rgb('+c1+','+c1+','+(c1+2)+'), rgb('+c2+','+c2+','+(c2+3)+'), rgb('+c3+','+c3+','+(c3+4)+'))';
+  }
+  function update(){
+    const v=+slider.value;
+    gnum.textContent=v.toLocaleString('en-US');
+    const st=stages.find(s=>v<=s.max)||stages[stages.length-1];
+    gstage.textContent=st.name; gtext.textContent=st.txt;
+    setBand(v);
+  }
+  slider.addEventListener('input',update); update();
+
+  /* tilt */
+  if(!reduce){
+    document.querySelectorAll('[data-tilt]').forEach(card=>{
+      card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const px=(e.clientX-r.left)/r.width-.5, py=(e.clientY-r.top)/r.height-.5;
+        card.style.transform='perspective(900px) rotateY('+(px*6)+'deg) rotateX('+(-py*6)+'deg) translateY(-4px)';
+      });
+      card.addEventListener('mouseleave',()=>{card.style.transform='';});
+    });
+  }
+
+  /* subtle hero parallax */
+  if(!reduce){
+    const hi=document.querySelector('.hero-img');
+    window.addEventListener('scroll',()=>{
+      const y=window.scrollY;
+      if(y<window.innerHeight) hi.style.transform='scale(1.05) translateY('+(y*0.06)+'px)';
+    },{passive:true});
+  }
+})();
+</script>
+</body>
+</html>

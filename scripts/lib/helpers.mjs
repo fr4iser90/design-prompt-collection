@@ -146,7 +146,7 @@ tags:
 ${entry.tags.map((t) => `  - ${t}`).join("\n")}
 status: ${entry.status}
 summary: "${entry.summary.replaceAll('"', '\\"')}"
-preview: preview.svg
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
@@ -160,22 +160,9 @@ model_hints:
   - chatgpt
   - claude
 `;
-  const [c1, c2, accent] = entry.colors?.length >= 3
-    ? entry.colors
-    : ["#1a1f2e", "#0d1117", "#58a6ff"];
-
   fs.writeFileSync(path.join(dir, "meta.yaml"), meta);
   fs.writeFileSync(path.join(dir, "prompt.md"), entry.prompt_md.trim() + "\n");
   fs.writeFileSync(path.join(dir, "prompt.full.md"), entry.prompt_full_md.trim() + "\n");
-  fs.writeFileSync(
-    path.join(dir, "preview.svg"),
-    previewSvg({
-      category: entry.category,
-      title: entry.title,
-      c1,
-      c2,
-      accent,
-    })
-  );
+  // no preview.svg — shot pipeline sets real preview.png
   return path.posix.join("prompts", entry.category, entry.id);
 }

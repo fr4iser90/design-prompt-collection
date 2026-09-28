@@ -1,0 +1,27 @@
+id: dune-strata-geology-map
+title: "Dune Strata Geology Map"
+category: concepts
+tags:
+  - geology
+  - minimalist
+  - topography
+  - arid
+  - interactive-map
+  - data-visualization
+  - bone-white
+  - long-shadows
+status: polished
+summary: "An interactive topographical visualization of desert strata, featuring long, sharp shadows and heat-haze distortion on a bone-white background."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linen Press Tension — Soft-Body Fabric Study</title>
+<meta name="description" content="A soft-body simulation of white ceramic pressing into textured linen. A tactile study of weight, weave, and compression.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --linen:#F5F5F0;
+    --ceramic:#FFFFFF;
+    --shadow:#A9A9A9;
+    --weave:#E0E0E0;
+    --ink:#232320;
+    --ink-soft:#5c5c55;
+    --line:rgba(35,35,32,.14);
+    --line-soft:rgba(35,35,32,.08);
+    --serif:"Fraunces", Georgia, "Times New Roman", serif;
+    --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--linen);
+    color:var(--ink);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ---------- atmospheric backdrop ---------- */
+  .atmos{
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 72% 6%, #ffffff 0%, #f6f6f1 34%, #ecece4 72%, #e4e4db 100%),
+      linear-gradient(180deg, transparent 60%, rgba(169,169,169,.10) 100%);
+  }
+  .atmos::after{
+    content:""; position:absolute; inset:0; opacity:.5; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    position:relative; z-index:5;
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+    padding:clamp(20px,4vw,40px) clamp(20px,5vw,64px) clamp(10px,2vw,20px);
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .mark{
+    width:44px; height:44px; flex:none; position:relative;
+    border:1px solid var(--line); border-radius:50%;
+    display:grid; place-items:center;
+    background:linear-gradient(150deg,#fff, #f1f1ea);
+  }
+  .mark::before{
+    content:""; width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 38% 34%, #fff, #d9d9d1);
+    box-shadow:inset 0 -2px 3px rgba(0,0,0,.12);
+  }
+  .mark::after{
+    content:""; position:absolute; width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--line-soft);
+  }
+  .wordmark{
+    font-family:var(--serif); font-weight:400;
+    font-size:clamp(20px,2.6vw,30px); letter-spacing:.01em; line-height:1;
+    font-variation-settings:"opsz" 40;
+  }
+  .wordmark em{ font-style:italic; font-weight:300; }
+  .masthead .meta{
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-soft); text-align:right; line-height:1.9;
+  }
+  .masthead .meta b{ color:var(--ink); font-weight:700; }
+
+  /* ---------- stage ---------- */
+  .stage{
+    position:relative; width:100%;
+    height:clamp(400px, 62vh, 660px);
+    overflow:hidden;
+    background:transparent;
+  }
+  .stage::before{ /* vignette to seat the sheet */
+    content:""; position:absolute; inset:0; pointer-events:none; z-index:2;
+    background:radial-gradient(120% 120% at 50% 42%, transparent 55%, rgba(120,120,112,.10) 100%);
+  }
+  #cloth{ display:block; width:100%; height:100%; cursor:crosshair; }
+
+  .stage-tag{
+    position:absolute; top:18px; left:clamp(16px,4vw,40px); z-index:4;
+    font-size:10.5px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex; align-items:center; gap:10px;
+  }
+  .stage-tag .dot{ width:6px; height:6px; border-radius:50%; background:var(--ink);
+    box-shadow:0 0 0 0 rgba(35,35,32,.5); animation:pulse 3.2s ease-out infinite; }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(35,35,32,.35);}
+    70%{ box-shadow:0 0 0 9px rgba(35,35,32,0);}
+    100%{ box-shadow:0 0 0 0 rgba(35,35,32,0);}
+  }
+
+  /* ---------- readout ---------- */
+  .readout{
+    position:absolute; top:18px; right:clamp(16px,4vw,40px); z-index:4;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-soft); text-align:right; line-height:1.7;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .readout .val{ color:var(--ink); font-weight:700; }
+  .readout .val .bar{
+    display:inline-block; vertical-align:middle; margin-left:8px;
+    width:60px; height:4px; background:var(--line); position:relative; overflow:hidden;
+  }
+  .readout .val .bar i{
+    position:absolute; left:0; top:0; bottom:0; width:0%;
+    background:linear-gradient(90deg,#8f8f88,var(--ink));
+    transition:width .12s linear;
+  }
+  .readout .phase{ margin-top:4px; }
+
+  /* ---------- controls ---------- */
+  .controls{
+    position:absolute; left:clamp(16px,4vw,40px); bottom:22px; z-index:4;
+    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  }
+  .controls button{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink); background:rgba(255,255,255,.55);
+    border:1px solid var(--line); border-radius:2px;
+    padding:9px 14px; cursor:pointer; backdrop-filter:blur(2px);
+    transition:background .3s ease, transform .3s cubic-bezier(.2,.7,.2,1), color .3s;
+  }
+  .controls button:hover{ background:#fff; transform:translateY(-2px); }
+  .controls button:active{ transform:translateY(0); }
+  .controls button[aria-pressed="true"]{ background:var(--ink); color:var(--linen); border-color:var(--ink); }
+
+  /* ---------- hero overlay ---------- */
+  .hero{
+    position:absolute; inset:0; z-index:3; pointer-events:none;
+    display:flex; align-items:flex-end;
+    padding:clamp(22px,5vw,64px);
+  }
+  .hero-inner{ max-width:min(680px,92%); }
+  .kicker{
+    font-size:11px; letter-spacing:.34em; text-transform:uppercase;
+    color:var(--ink-soft); margin:0 0 18px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .kicker::before{ content:""; width:38px; height:1px; background:var(--ink); opacity:.5; }
+  .hero h1{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(2.6rem, 6.4vw, 5.6rem);
+    line-height:.94; letter-spacing:-.015em; margin:0 0 22px;
+    font-variation-settings:"opsz" 144;
+    color:var(--ink);
+    text-shadow:0 1px 0 rgba(255,255,255,.55), 0 14px 34px rgba(255,255,255,.5);
+  }
+  .hero h1 em{ font-style:italic; font-weight:400; }
+  .hero .lede{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(1.02rem, 1.5vw, 1.24rem); line-height:1.55;
+    max-width:44ch; margin:0 0 26px; color:#3a3a34;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);
+  }
+  .hero .spec{
+    display:flex; flex-wrap:wrap; gap:10px 26px;
+    font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft);
+  }
+  .hero .spec span{ display:flex; align-items:baseline; gap:8px; }
+  .hero .spec b{ color:var(--ink); font-weight:700; letter-spacing:.06em; }
+
+  /* ---------- content below ---------- */
+  .content{
+    position:relative; z-index:1;
+    padding:clamp(48px,8vw,110px) clamp(20px,5vw,64px) 0;
+    background:linear-gradient(180deg, rgba(245,245,240,0), var(--linen) 22%);
+  }
+  .content-inner{ max-width:1180px; margin:0 auto; }
+  .section-lead{
+    display:grid; grid-template-columns:1.1fr .9fr; gap:clamp(24px,5vw,70px);
+    align-items:end; padding-bottom:clamp(34px,5vw,60px);
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:var(--ink-soft);
+    margin:0 0 20px;
+  }
+  .section-lead h2{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(1.9rem,3.6vw,3.1rem); line-height:1.02; letter-spacing:-.01em;
+    margin:0; font-variation-settings:"opsz" 90;
+  }
+  .section-lead h2 em{ font-style:italic; }
+  .section-lead p{
+    font-family:var(--serif); font-weight:300; font-size:clamp(1rem,1.3vw,1.16rem);
+    line-height:1.6; color:#40403a; margin:0;
+  }
+
+  .grid{
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:0; margin-top:clamp(30px,5vw,56px);
+  }
+  .cell{
+    padding:clamp(24px,3vw,40px) clamp(18px,2.4vw,34px);
+    border-top:1px solid var(--line);
+    border-left:1px solid var(--line);
+    position:relative;
+  }
+  .cell:nth-child(3n+1){ border-left:none; }
+  .cell .idx{
+    font-size:11px; letter-spacing:.2em; color:var(--ink-soft);
+    display:flex; align-items:center; gap:12px; margin-bottom:26px;
+  }
+  .cell .idx::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .cell h3{
+    font-family:var(--serif); font-weight:400; font-size:clamp(1.15rem,1.7vw,1.45rem);
+    margin:0 0 12px; letter-spacing:.005em; font-variation-settings:"opsz" 30;
+  }
+  .cell p{ font-family:var(--serif); font-weight:300; font-size:1rem; line-height:1.6; color:#4a4a43; margin:0; }
+
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:0; margin-top:clamp(30px,5vw,56px);
+    border-top:1px solid var(--line);
+  }
+  .stat{ padding:clamp(24px,3vw,40px) clamp(14px,2vw,26px); border-left:1px solid var(--line); }
+  .stat:first-child{ border-left:none; }
+  .stat .num{
+    font-family:var(--serif); font-weight:300; font-size:clamp(2.1rem,4vw,3.4rem);
+    line-height:1; letter-spacing:-.02em; font-variation-settings:"opsz" 120;
+  }
+  .stat .num small{ font-size:.42em; color:var(--ink-soft); letter-spacing:.02em; }
+  .stat .lab{ font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); margin-top:12px; line-height:1.5; }
+
+  /* ---------- footer ---------- */
+  .foot{
+    position:relative; z-index:1; margin-top:clamp(48px,8vw,110px);
+    border-top:1px solid var(--line);
+    padding:clamp(28px,4vw,44px) clamp(20px,5vw,64px) clamp(40px,6vw,72px);
+    display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap;
+  }
+  .foot .f-brand{ font-family:var(--serif); font-size:clamp(1.4rem,2.4vw,2rem); font-weight:300; }
+  .foot .f-brand em{ font-style:italic; }
+  .foot .f-meta{ font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); text-align:right; line-height:1.9; }
+
+  /* ---------- reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(26px);
+    transition:opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+  .d1{ transition-delay:.08s; } .d2{ transition-delay:.16s; } .d3{ transition-delay:.24s; }
+  .d4{ transition-delay:.32s; } .d5{ transition-delay:.40s; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .section-lead{ grid-template-columns:1fr; align-items:start; }
+    .grid{ grid-template-columns:1fr; }
+    .cell{ border-left:none; }
+    .stats{ grid-template-columns:repeat(2,1fr); }
+    .stat:nth-child(2n+1){ border-left:none; }
+  }
+  @media (max-width:640px){
+    .masthead .meta{ text-align:left; }
+    .hero{ align-items:flex-start; padding-top:clamp(70px,14vw,120px); }
+    .readout{ top:auto; bottom:22px; right:clamp(16px,4vw,40px); }
+    .controls{ bottom:auto; top:52px; }
+    .stage{ height:clamp(460px, 66vh, 620px); }
+  }
+  @media (max-width:420px){
+    .stats{ grid-template-columns:1fr; }
+    .stat{ border-left:none; border-top:1px solid var(--line); }
+    .stat:first-child{ border-top:none; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .stage-tag .dot{ animation:none; }
+    .controls button{ transition:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="atmos" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="wordmark">Linen <em>Press</em></span>
+    </div>
+    <div class="meta">
+      <div><b>Soft-body fabric study</b></div>
+      <div>North light · 5500K · diffused</div>
+      <div>Ceramic Ø 26cm on plain-weave linen</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage" id="stage">
+      <canvas id="cloth" aria-label="Animated soft-body simulation: a white ceramic plate pressing into textured linen fabric."></canvas>
+
+      <div class="stage-tag"><span class="dot" aria-hidden="true"></span> Live simulation</div>
+
+      <div class="readout" aria-hidden="true">
+        <div>Load <span class="val"><span id="loadVal">0</span> g<span class="bar"><i id="loadBar"></i></span></span></div>
+        <div>Deformation <span class="val"><span id="defVal">0</span> mm</span></div>
+        <div class="phase">Phase <span class="val" id="phaseVal">settling</span></div>
+      </div>
+
+      <div class="controls">
+        <button id="btnPress" type="button">Re-press</button>
+        <button id="btnLift" type="button" aria-pressed="false">Lift mode</button>
+        <button id="btnSound" type="button" aria-pressed="false">Sound</button>
+      </div>
+
+      <div class="hero">
+        <div class="hero-inner">
+          <p class="kicker">Tactile hospitality</p>
+          <h1>Weight,<br><em>weave,</em><br>compression.</h1>
+          <p class="lede">A study of the moment fine ceramic meets fine linen — where the cloth doesn't simply squash, it bunches, resists, and settles with the quiet momentum of real fibre.</p>
+          <div class="spec">
+            <span><b>Plain</b> weave</span>
+            <span><b>Matte</b> ceramic</span>
+            <span><b>Radial</b> wrinkle field</span>
+            <span><b>Cursor</b> = second press</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="content-inner">
+        <div class="section-lead">
+          <div class="reveal">
+            <p class="eyebrow">The material</p>
+            <h2>Not a texture overlay.<br>A <em>deforming</em> surface.</h2>
+          </div>
+          <p class="reveal d1">Every point of the sheet is a mass under tension. As the plate descends the grid compresses beneath the rim, threads densify and darken, and the surplus cloth is pushed outward into soft radial folds that carry their own weight and settle over time.</p>
+        </div>
+
+        <div class="grid">
+          <div class="cell reveal">
+            <div class="idx">01 — Compression</div>
+            <h3>It bunches, not flattens</h3>
+            <p>Displacement is driven by a soft-body field. Under the rim the fabric gathers into wrinkles that propagate outward with momentum rather than pinning flat.</p>
+          </div>
+          <div class="cell reveal d1">
+            <div class="idx">02 — Weave</div>
+            <h3>The grain follows the fold</h3>
+            <p>A crisp plain-weave is drawn per triangle. Where the cloth stretches the weave opens and brightens; where it compresses it tightens and darkens.</p>
+          </div>
+          <div class="cell reveal d2">
+            <div class="idx">03 — Light</div>
+            <h3>North light, soft shadows</h3>
+            <p>Diffused daylight grazes the surface. Fold geometry re-angles the normals, so highlight and shadow shift continuously as the linen settles.</p>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat reveal"><div class="num">Ø26<small>cm</small></div><div class="lab">Ceramic plate</div></div>
+          <div class="stat reveal d1"><div class="num">1.2<small>g/cm²</small></div><div class="lab">Linen weight</div></div>
+          <div class="stat reveal d2"><div class="num">5500<small>K</small></div><div class="lab">Diffused daylight</div></div>
+          <div class="stat reveal d3"><div class="num">48<small>Hz</small></div><div class="lab">Simulation cadence</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="f-brand">Linen <em>Press</em> — Tension</div>
+    <div class="f-meta">
+      <div>Soft-body · Canvas 2D · No dependencies</div>
+      <div>Drag to press · Hold to lift a corner</div>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const canvas = document.getElementById("cloth");
+  const ctx = canvas.getContext("2d", { alpha:true });
+  const stage = document.getElementById("stage");
+
+  // ---- readout refs
+  const loadVal = document.getElementById("loadVal");
+  const loadBar = document.getElementById("loadBar");
+  const defVal  = document.getElementById("defVal");
+  const phaseVal= document.getElementById("phaseVal");
+
+  // ---- state
+  let cols=0, rows=0, spacing=0, W=0, H=0, dpr=1;
+  let pos, vel, rest;
+  let plate = { cx:0, cy:0, r:0, z:0 };
+  let plateState = "descend";
+  let settleTimer = 0;
+  let cycleTimer = 0;
+  let lastLoad = 0;
+  let lastDef = 0;
+
+  const pointer = { x:0, y:0, active:false, down:false };
+  let liftMode = false;
+
+  const CFG = {
+    mass:1, stiffness:0.05, damping:0.855,
+    plateLoad:1200, plateK:0.16,
+    pointerLoad:520, pointerK:0.2, liftMax:-120,
+    settleTime:2600, cycleTime:8200,
+    liftThreshold:0.06,
+    light:{ x:-0.55, y:-0.6, z:0.58 }
+  };
+
+  // ---------- colour helpers ----------
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  function mix(a,b,t){ return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)]; }
+  function shade(c,amt){
+    let r,g,b;
+    if(amt>0){ r=lerp(c[0],255,amt); g=lerp(c[1],255,amt); b=lerp(c[2],255,amt); }
+    else { r=lerp(c[0],0,-amt); g=lerp(c[1],0,-amt); b=lerp(c[2],0,-amt); }
+    return "rgb("+(r|0)+","+(g|0)+","+(b|0)+")";
+  }
+
+  // ---------- geometry ----------
+  function buildGrid(){
+    const rect = stage.getBoundingClientRect();
+    W = Math.max(1, rect.width); H = Math.max(1, rect.height);
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
+    canvas.style.width = W+"px"; canvas.style.height = H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    const base = (W<560)?40:(W<920?33:27);
+    cols = Math.max(10, Math.ceil(W/base));
+    rows = Math.max(10, Math.ceil(H/base));
+    spacing = Math.max(W/cols, H/rows);
+
+    const n = cols*rows;
+    pos = new Float32Array(n*3);
+    vel = new Float32Array(n*3);
+    rest= new Float32Array(n*2);
+    for(let j=0;j<rows;j++){
+      for(let i=0;i<cols;i++){
+        const k=(j*cols+i)*3;
+        const x=i*spacing, y=j*spacing;
+        rest[j*cols+i*1]; // noop
+        rest[(j*cols+i)*2]=x; rest[(j*cols+i)*2+1]=y;
+        // gentle resting drape
+        const z = Math.sin(x*0.012+1.3)*2.2 + Math.cos(y*0.015)*2.0;
+        pos[k]=x; pos[k+1]=y; pos[k+2]=z;
+        vel[k]=0; vel[k+1]=0; vel[k+2]=0;
+      }
+    }
+
+    plate.cx = W*0.62;
+    plate.cy = H*0.46;
+    plate.r  = Math.min(W,H)*0.17;
+    plate.z  = reduce ? 0 : 260;
+    plateState = reduce ? "rest" : "descend";
+    settleTimer = 0; cycleTimer = 0;
+  }
+
+  // ---------- physics ----------
+  function step(dt){
+    const dtf = clamp(dt, 0.001, 0.033);
+    const k = CFG.stiffness, d = CFG.damping;
+    const pr = plate.r, pr2 = pr*pr;
+    const plz = plate.z;
+    const pl2 = pr2*0.62;
+    const pActive = pointer.active;
+    const pR = spacing*2.3, pR2 = pR*pR;
+    const pZ = (liftMode && pointer.down) ? CFG.liftMax : 0;
+    const pLoad = liftMode ? CFG.pointerLoad : CFG.pointerLoad;
+    const pK = CFG.pointerK;
+
+    for(let j=0;j<rows;j++){
+      const edgeRow = (j===0 || j===rows-1);
+      for(let i=0;i<cols;i++){
+        const idx=(j*cols+i)*3;
+        const edgeCol = (i===0 || i===cols-1);
+        const isEdge = edgeRow||edgeCol;
+        const px=pos[idx], py=pos[idx+1], pz=pos[idx+2];
+        const rx=rest[idx], ry=rest[idx+1];
+
+        let ax=(rx-px)*k, ay=(ry-py)*k, az=(0-pz)*k;
+
+        // plate
+        if(plz>-1){
+          const dx=px-plate.cx, dy=py-plate.cy, d2=dx*dx+dy*dy;
+          if(d2<pr2){
+            const q=1-d2/pr2;
+            const target=plz+q*q*20;
+            az += (target-pz)*CFG.plateK;
+            if(pz>plz){ const f=CFG.plateLoad*q; ax+=(dx*f)/250; ay+=(dy*f)/250; }
+          } else if(d2<pl2){
+            const q=(pr2-d2)/(pl2-pr2);
+            az += (-14*q*q - pz)*0.02;
+          }
+        }
+
+        // pointer
+        if(pActive){
+          const dx=px-pointer.x, dy=py-pointer.y, d2=dx*dx+dy*dy;
+          if(d2<pR2){
+            const q=1-d2/pR2;
+            const target=pZ+q*q*10;
+            az += (target-pz)*pK;
+            if(!liftMode && pz>pZ){ const f=pLoad*q; ax+=(dx*f)/250; ay+=(dy*f)/250; }
+          }
+        }
+
+        // integrate
+        vel[idx]  =(vel[idx]+ax)*d;
+        vel[idx+1]=(vel[idx+1]+ay)*d;
+        vel[idx+2]=(vel[idx+2]+az)*d;
+
+        if(isEdge){
+          pos[idx]=rx; pos[idx+1]=ry; pos[idx+2]=0;
+          vel[idx]=0; vel[idx+1]=0; vel[idx+2]=0;
+        } else {
+          pos[idx]  += vel[idx];
+          pos[idx+1]+= vel[idx+1];
+          pos[idx+2]+= vel[idx+2];
+        }
+      }
+    }
+  }
+
+  function updatePlate(dt){
+    if(reduce) return;
+    const s=dt/1000;
+    if(plateState==="descend"){
+      plate.z -= 70*s;
+      if(plate.z<=0){ plate.z=0; plateState="settle"; settleTimer=CFG.settleTime; }
+    } else if(plateState==="settle"){
+      settleTimer-=dt;
+      if(settleTimer<=0){ plateState="rest"; cycleTimer=CFG.cycleTime; }
+    } else if(plateState==="rest"){
+      cycleTimer-=dt;
+      if(cycleTimer<=0){ plateState="descend"; }
+    }
+  }
+
+  // ---------- render ----------
+  const linBase=[245,245,240];
+  const linDark=[150,150,143];
+  const linHi  =[255,255,255];
+  const L=CFG.light; const Llen=Math.hypot(L.x,L.y,L.z);
+  const lx=L.x/Llen, ly=L.y/Llen, lz=L.z/Llen;
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+
+    // plate cast shadow
+    if(plate.z>-1){
+      const sh = clamp(1 - plate.z/220, 0, 1);
+      const sr = plate.r*(1.05 + plate.z*0.0016);
+      const ox = -plate.z*0.10, oy = plate.z*0.16;
+      const g = ctx.createRadialGradient(plate.cx+ox, plate.cy+oy, sr*0.15, plate.cx+ox, plate.cy+oy, sr);
+      g.addColorStop(0, "rgba(150,150,143,"+(0.30*sh)+")");
+      g.addColorStop(0.7,"rgba(150,150,143,"+(0.12*sh)+")");
+      g.addColorStop(1, "rgba(150,150,143,0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.ellipse(plate.cx+ox, plate.cy+oy, sr, sr*0.92, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // fabric triangles
+    const sx=spacing*0.5, sy=spacing*0.5;
+    for(let j=0;j<rows-1;j++){
+      for(let i=0;i<cols-1;i++){
+        const a=(j*cols+i)*3, b=(j*cols+i+1)*3, c=((j+1)*cols+i)*3, dd=((j+1)*cols+i+1)*3;
+
+        // triangle 1
+        drawTri(a,b,c);
+        // triangle 2
+        drawTri(b,dd,c);
+      }
+    }
+
+    // weave overlay
+    drawWeave();
+
+    // plate
+    drawPlate();
+  }
+
+  function triColor(a,b,c){
+    const ax=pos[a],ay=pos[a+1],az=pos[a+2];
+    const bx=pos[b],by=pos[b+1],bz=pos[b+2];
+    const cx=pos[c],cy=pos[c+1],cz=pos[c+2];
+    let ux=bx-ax, uy=by-ay, uz=bz-az;
+    let vx=cx-ax, vy=cy-ay, vz=cz-az;
+    let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx;
+    const nl=Math.hypot(nx,ny,nz)||1; nx/=nl; ny/=nl; nz/=nl;
+    let diff = nx*lx+ny*ly+nz*lz;
+    diff = clamp(diff*0.85, -1, 1);
+    let col = diff>=0 ? mix(linBase, linHi, diff) : mix(linBase, linDark, -diff);
+    const zc=(az+bz+cz)/3;
+    const dens = clamp(-zc/14, 0, 1);
+    col = mix(col, linDark, dens*0.42);
+    return "rgb("+((col[0]|0))+","+((col[1]|0))+","+((col[2]|0))+")";
+  }
+
+  function drawTri(a,b,c){
+    ctx.fillStyle = triColor(a,b,c);
+    ctx.beginPath();
+    ctx.moveTo(pos[a],pos[a+1]);
+    ctx.lineTo(pos[b],pos[b+1]);
+    ctx.lineTo(pos[c],pos[c+1]);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawWeave(){
+    const n=cols*rows;
+    const zmin=1e9, zmax=-1e9;
+    let mn=1e9, mx=-1e9;
+    for(let k=2;k<n*3;k+=3){ if(pos[k]<mn)mn=pos[k]; if(pos[k]>mx)mx=pos[k]; }
+    const range=(mx-mn)||1;
+    ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(255,255,255,0.10)";
+    ctx.beginPath();
+    for(let j=0;j<rows;j++){
+      for(let i=0;i<cols;i++){
+        const k=(j*cols+i)*3;
+        const x=pos[k]+spacing*0.5, y=pos[k+1]+spacing*0.5;
+        const t=(pos[k+2]-mn)/range;
+        const alpha=0.05+0.13*t;
+        ctx.globalAlpha=alpha;
+        ctx.moveTo(x,y); ctx.lineTo(x+spacing*0.42,y+spacing*0.42);
+      }
+    }
+    ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+
+  function drawPlate(){
+    const cx=plate.cx, cy=plate.cy, r=plate.r;
+    // contact shadow
+    if(plate.z>-1){
+      const g=ctx.createRadialGradient(cx,cy,r*0.2,cx,cy,r*1.12);
+      g.addColorStop(0,"rgba(120,120,113,0.22)");
+      g.addColorStop(0.75,"rgba(120,120,113,0.10)");
+      g.addColorStop(1,"rgba(120,120,113,0)");
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(cx,cy,r*1.12,0,Math.PI*2); ctx.fill();
+    }
+    // body
+    const bg=ctx.createRadialGradient(cx-r*0.35,cy-r*0.42,r*0.1,cx,cy,r*1.05);
+    bg.addColorStop(0,"#ffffff");
+    bg.addColorStop(0.62,"#f4f4f0");
+    bg.addColorStop(0.9,"#e7e7e1");
+    bg.addColorStop(1,"#dcdcd4");
+    ctx.fillStyle=bg;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+
+    // rim ring
+    ctx.lineWidth=Math.max(1.5,r*0.02);
+    ctx.strokeStyle="rgba(180,180,173,0.55)";
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.985,0,Math.PI*2); ctx.stroke();
+
+    // well
+    ctx.lineWidth=Math.max(1,r*0.012);
+    ctx.strokeStyle="rgba(150,150,143,0.28)";
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.66,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,0.6)";
+    ctx.beginPath(); ctx.arc(cx,cy,r*0.64,0,Math.PI*2); ctx.stroke();
+
+    // soft gloss
+    ctx.globalAlpha=0.5;
+    const sg=ctx.createRadialGradient(cx-r*0.34,cy-r*0.4,1,cx-r*0.34,cy-r*0.4,r*0.5);
+    sg.addColorStop(0,"rgba(255,255,255,0.9)");
+    sg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=sg;
+    ctx.beginPath(); ctx.arc(cx-r*0.34,cy-r*0.4,r*0.5,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+
+  // ---------- readout ----------
+  let readoutAcc=0;
+  function updateReadout(dt){
+    readoutAcc+=dt;
+    if(readoutAcc<120) return;
+    readoutAcc=0;
+    let load=0, def=0;
+    const pr2=plate.r*plate.r;
+    for(let k=2;k<cols*rows*3;k+=3){
+      const z=pos[k];
+      if(z<def) def=z;
+      load += Math.max(0,-z);
+    }
+    lastDef = def;
+    const defMM = Math.max(0, -def)*0.12;
+    const loadG = Math.round((plateState==="descend"?plateLoadApprox():lastLoad));
+    lastLoad = loadG;
+    loadVal.textContent = loadG;
+    defVal.textContent = defMM.toFixed(1);
+    loadBar.style.width = clamp(loadG/1200*100,0,100)+"%";
+    phaseVal.textContent = plateState==="descend" ? "descending"
+      : plateState==="settle" ? "settling" : "at rest";
+  }
+  function plateLoadApprox(){
+    // approximate load from contact depth
+    let load=0; const pr2=plate.r*plate.r;
+    for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+      const k=(j*cols+i)*3;
+      const dx=pos[k]-plate.cx, dy=pos[k+1]-plate.cy;
+      const d2=dx*dx+dy*dy;
+      if(d2<pr2){ const q=1-d2/pr2; load += Math.max(0,pos[k+2]-plate.z)*q; }
+    }
+    return Math.round(load*0.9);
+  }
+
+  // ---------- loop ----------
+  let last=performance.now();
+  function frame(now){
+    let dt=now-last; last=now;
+    if(dt>50) dt=50;
+    updatePlate(dt);
+    step(dt);
+    render();
+    updateReadout(dt);
+    if(!reduce) requestAnimationFrame(frame);
+  }
+
+  // ---------- interaction ----------
+  function toLocal(e){
+    const rect=canvas.getBoundingClientRect();
+    let x,y;
+    if(e.touches && e.touches.length){ x=e.touches[0].clientX; y=e.touches[0].clientY; }
+    else if(e.clientX!==undefined){ x=e.clientX; y=e.clientY; }
+    else return;
+    pointer.x=x-rect.left; pointer.y=y-rect.top;
+  }
+  canvas.addEventListener("pointermove",(e)=>{ toLocal(e); pointer.active=true; pointer.down=(e.buttons===1); });
+  canvas.addEventListener("pointerdown",(e)=>{ toLocal(e); pointer.active=true; pointer.down=true; canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId); });
+  window.addEventListener("pointerup",()=>{ pointer.down=false; });
+  canvas.addEventListener("pointerleave",()=>{ pointer.active=false; pointer.down=false; });
+
+  // ---------- controls ----------
+  document.getElementById("btnPress").addEventListener("click",()=>{
+    if(reduce){ plate.z=0; plateState="rest"; render(); return; }
+    plate.z=260; plateState="descend";
+  });
+  const btnLift=document.getElementById("btnLift");
+  btnLift.addEventListener("click",()=>{
+    liftMode=!liftMode;
+    btnLift.setAttribute("aria-pressed", liftMode?"true":"false");
+  });
+
+  // ---------- sound (optional) ----------
+  let audioCtx=null, noiseBuf=null, rustleGain=null, rustleFilter=null, rustleSrc=null, soundOn=false, lastRustle=0;
+  function initAudio(){
+    if(audioCtx) return;
+    try{
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      const len=audioCtx.sampleRate*1.2;
+      noiseBuf=audioCtx.createBuffer(1,len,audioCtx.sampleRate);
+      const d=noiseBuf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1);
+      rustleGain=audioCtx.createGain(); rustleGain.gain.value=0;
+      rustleFilter=audioCtx.createBiquadFilter(); rustleFilter.type="bandpass";
+      rustleFilter.frequency.value=1500; rustleFilter.Q.value=0.7;
+      rustleSrc=audioCtx.createBufferSource(); rustleSrc.buffer=noiseBuf; rustleSrc.loop=true;
+      rustleSrc.connect(rustleFilter); rustleFilter.connect(rustleGain); rustleGain.connect(audioCtx.destination);
+      rustleSrc.start();
+    }catch(err){ audioCtx=null; }
+  }
+  const btnSound=document.getElementById("btnSound");
+  btnSound.addEventListener("click",()=>{
+    soundOn=!soundOn;
+    btnSound.setAttribute("aria-pressed", soundOn?"true":"false");
+    if(soundOn){ initAudio(); if(audioCtx&&audioCtx.state==="suspended") audioCtx.resume(); }
+    else if(rustleGain){ rustleGain.gain.value=0; }
+  });
+  function updateSound(dt){
+    if(!soundOn||!audioCtx||!rustleGain) return;
+    let d=0;
+    for(let k=2;k<cols*rows*3;k+=3){ d+=Math.abs(vel[k]); }
+    const norm=clamp(d/(cols*rows)*0.6,0,1);
+    const target=norm*0.05;
+    rustleGain.gain.setTargetAtTime(target, audioCtx.currentTime, 0.15);
+  }
+
+  // ---------- reveal ----------
+  if(!reduce){
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+    },{ threshold:0.15 });
+    document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+  } else {
+    document.querySelectorAll(".reveal").forEach(el=>el.classList.add("in"));
+  }
+
+  // ---------- boot ----------
+  buildGrid();
+  if(reduce){
+    // settle a touch then render one frame
+    for(let i=0;i<80;i++) step(16);
+    render(); updateReadout(200);
+  } else {
+    requestAnimationFrame(frame);
+  }
+
+  let rt;
+  window.addEventListener("resize",()=>{
+    clearTimeout(rt);
+    rt=setTimeout(()=>{ buildGrid(); if(reduce){ for(let i=0;i<60;i++) step(16); render(); } }, 180);
+  });
+})();
+</script>
+</body>
+</html>

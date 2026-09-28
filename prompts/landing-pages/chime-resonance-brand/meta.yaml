@@ -1,0 +1,25 @@
+id: chime-resonance-brand
+title: "Chime Resonance Brand"
+category: landing-pages
+tags:
+  - audio
+  - haptic
+  - sonic
+  - identity
+  - landing
+  - kinetic-type
+status: polished
+summary: "A sonic branding landing page for Chime, where typography vibrates with audio frequencies and letters act as resonant chambers."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Staggered mask reveal: an editorial darkroom title sequence in ink, paper, and letterpress timing." />
+  <title>Staggered Mask Reveal — Press Room</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* =========================================================
+       TIMING TOKENS
+       Duration is per masked line. Stagger is musical, not random.
+       Distance is expressed as a percentage of the line box.
+       ========================================================= */
+    :root {
+      --duration: 820ms;
+      --stagger: 90ms;
+      --distance: 110%;
+      --duration-ui: 700ms;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Darkroom / print-shop palette */
+      --darkroom: #1a1512;
+      --walnut: #3b2f2a;
+      --paper: #f0e6d8;
+      --paper-dim: rgba(240, 230, 216, 0.68);
+      --hairline: rgba(240, 230, 216, 0.12);
+      --ink-red: #b42318;
+
+      --grain-opacity: 0.04;
+    }
+
+    @media (max-width: 640px) {
+      :root {
+        --duration: 700ms;
+        --distance: 104%;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    html {
+      background: var(--darkroom);
+    }
+
+    body {
+      margin: 0;
+      color: var(--paper);
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Warm dark grade: not flat black, but a dimmed print room. */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(120% 80% at 12% 8%, rgba(95, 67, 52, 0.38), transparent 58%),
+        radial-gradient(100% 100% at 88% 92%, rgba(59, 47, 42, 0.58), transparent 55%),
+        linear-gradient(180deg, #1b1613 0%, #120f0d 100%);
+    }
+
+    /* 4% grain overlay: paper tooth, not noise mush. */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      opacity: var(--grain-opacity);
+      mix-blend-mode: overlay;
+      background-size: 180px 180px;
+      background-repeat: repeat;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      align-content: center;
+      gap: clamp(1.75rem, 3.5vh, 2.75rem);
+      max-width: 1180px;
+      margin-inline: auto;
+      padding: clamp(2rem, 5vh, 4rem) 6vw;
+    }
+
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--hairline);
+      font-size: clamp(0.68rem, 1.1vw, 0.78rem);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--paper-dim);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--paper);
+      font-weight: 500;
+    }
+
+    .mark {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: var(--ink-red);
+      box-shadow: 0 0 0 1px rgba(240, 230, 216, 0.25);
+    }
+
+    .meta {
+      max-width: 48%;
+      text-align: right;
+    }
+
+    .headline {
+      margin: 0;
+      font-family: "Fraunces", "Times New Roman", serif;
+      font-optical-sizing: auto;
+      font-weight: 600;
+      font-size: clamp(2.1rem, 7.8vw, 6.25rem);
+      line-height: 0.95;
+      letter-spacing: -0.035em;
+      text-transform: uppercase;
+    }
+
+    .headline.small {
+      font-size: clamp(1.6rem, 5.2vw, 3.75rem);
+      letter-spacing: -0.025em;
+    }
+
+    /* Line-based overflow masks: letterpress beds opening. */
+    .mask {
+      display: block;
+      overflow: hidden;
+      margin-bottom: -0.05em;
+    }
+
+    .mask:last-child {
+      margin-bottom: 0;
+    }
+
+    .line {
+      display: block;
+      line-height: 1;
+      white-space: nowrap;
+      transform: none;
+      transition:
+        transform var(--duration) var(--ease);
+      transition-delay: calc(var(--i, 0) * var(--stagger));
+      will-change: transform;
+    }
+
+    .period {
+      display: inline-block;
+      width: 0.1em;
+      height: 0.1em;
+      margin-left: 0.12em;
+      border-radius: 50%;
+      background: var(--ink-red);
+      vertical-align: 0.12em;
+    }
+
+    .lede,
+    .note {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--paper-dim);
+      font-size: clamp(1rem, 1.4vw, 1.18rem);
+      line-height: 1.6;
+      transition:
+        opacity var(--duration-ui) var(--ease),
+        transform var(--duration-ui) var(--ease);
+      transition-delay: calc(var(--stagger) * 3);
+    }
+
+    .note {
+      max-width: 52ch;
+      font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+    }
+
+    .cta {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: fit-content;
+      padding-bottom: 0.35rem;
+      color: var(--paper);
+      font-weight: 500;
+      font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+      letter-spacing: 0.02em;
+      text-decoration: none;
+    }
+
+    .cta::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 1px;
+      background: var(--ink-red);
+      transform-origin: left;
+      transform: scaleX(1);
+      transition: transform var(--duration-ui) var(--ease);
+      transition-delay: calc(var(--stagger) * 4);
+    }
+
+    .arrow {
+      display: inline-block;
+      transition: transform 400ms var(--ease);
+    }
+
+    .cta:hover .arrow,
+    .cta:focus-visible .arrow {
+      transform: translateX(0.35em);
+    }
+
+    .cta:focus-visible {
+      outline: 1px solid var(--paper);
+      outline-offset: 5px;
+    }
+
+    .specimen {
+      min-height: 60vh;
+      min-height: 60svh;
+      display: grid;
+      align-content: center;
+      gap: 1.25rem;
+      max-width: 1180px;
+      margin-inline: auto;
+      padding: clamp(4rem, 12vh, 8rem) 6vw;
+      border-top: 1px solid var(--hairline);
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--paper-dim);
+    }
+
+    /* JS-gated entrance states. No JS => final state remains readable. */
+    html.js .line {
+      transform: translateY(var(--distance));
+    }
+
+    html.js [data-reveal].is-revealed .line {
+      transform: translateY(0);
+    }
+
+    html.js .lede,
+    html.js .note {
+      opacity: 0;
+      transform: translateY(0.6rem);
+    }
+
+    html.js [data-reveal].is-revealed .lede,
+    html.js [data-reveal].is-revealed .note {
+      opacity: 1;
+      transform: none;
+    }
+
+    html.js .cta::after {
+      transform: scaleX(0);
+    }
+
+    html.js [data-reveal].is-revealed .cta::after {
+      transform: scaleX(1);
+    }
+
+    @media (max-width: 640px) {
+      .masthead {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+      }
+
+      .meta {
+        max-width: 100%;
+        text-align: left;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html.js .line,
+      html.js .lede,
+      html.js .note,
+      html.js .cta::after,
+      .arrow {
+        transform: none;
+        opacity: 1;
+        transition: none;
+      }
+
+      html.js .cta::after {
+        transform: scaleX(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero" data-reveal>
+      <header class="masthead">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"></span>
+          Press Room
+        </div>
+        <div class="meta">Case 01 / Staggered Mask Reveal</div>
+      </header>
+
+      <h1 class="headline" aria-label="Type printed into place">
+        <span class="mask" style="--i: 0">
+          <span class="line" aria-hidden="true">Type</span>
+        </span>
+        <span class="mask" style="--i: 1">
+          <span class="line" aria-hidden="true">Printed</span>
+        </span>
+        <span class="mask" style="--i: 2">
+          <span class="line" aria-hidden="true">Into Place<span class="period"></span></span>
+        </span>
+      </h1>
+
+      <p class="lede">
+        A darkroom case study in letterpress timing, paper grain, and the quiet
+        choreography of setting display type by hand.
+      </p>
+
+      <a class="cta" href="#case-study">
+        Open the case study
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </section>
+
+    <section class="specimen" data-reveal id="case-study">
+      <p class="eyebrow">On scroll — once</p>
+
+      <h2 class="headline small" aria-label="Ink rises, paper remembers">
+        <span class="mask" style="--i: 0">
+          <span class="line" aria-hidden="true">Ink Rises</span>
+        </span>
+        <span class="mask" style="--i: 1">
+          <span class="line" aria-hidden="true">Paper Remembers</span>
+        </span>
+      </h2>
+
+      <p class="note">
+        The same overflow mask can carry a pull quote, a chapter title, or a
+        slow caption without adding ambient motion after the type settles.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add("js");
+
+      var revealEls = Array.prototype.slice.call(document.querySelectorAll("[data-reveal]"));
+      var reduced =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function reveal(el) {
+        el.classList.add("is-revealed");
+      }
+
+      function revealAll() {
+        for (var i = 0; i < revealEls.length; i += 1) {
+          reveal(revealEls[i]);
+        }
+      }
+
+      function init() {
+        if (reduced || !("IntersectionObserver" in window)) {
+          revealAll();
+          return;
+        }
+
+        var io = new IntersectionObserver(
+          function (entries) {
+            for (var i = 0; i < entries.length; i += 1) {
+              if (entries[i].isIntersecting) {
+                reveal(entries[i].target);
+                io.unobserve(entries[i].target);
+              }
+            }
+          },
+          {
+            threshold: 0.18,
+            rootMargin: "0px 0px -8% 0px"
+          }
+        );
+
+        for (var i = 0; i < revealEls.length; i += 1) {
+          io.observe(revealEls[i]);
+        }
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

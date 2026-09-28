@@ -1,0 +1,27 @@
+id: index-card-sort-system
+title: "Index Card Sort System"
+category: landing-pages
+tags:
+  - index-card
+  - research
+  - physical
+  - stack
+  - handwritten
+  - organization
+  - minimal
+  - trust
+status: polished
+summary: "A landing page for \\\"SortWell,\\\" a research organization tool, using a stacked index card aesthetic, hand-drawn underlines, and a clean, paper-like background to evoke organized thinking."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next/demo/index.html
+default_run: qwen3-8-flash-next
+source_model: "qwen3.8-flash-next"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
