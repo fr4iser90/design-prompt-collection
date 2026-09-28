@@ -107,9 +107,21 @@ async function shotRun(browser, entry, run) {
     deviceScaleFactor: 1,
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(30000);
   try {
-    await page.goto(demoUrl, { waitUntil: "networkidle", timeout: 60000 });
+    // Don't wait for networkidle — Google Fonts / external assets can hang forever.
+    // Abort common webfont CDNs so screenshots stay local and fast.
+    await page.route("**/*fonts.googleapis.com/**", (route) => route.abort());
+    await page.route("**/*fonts.gstatic.com/**", (route) => route.abort());
+    await page.route("**/*fonts.bunny.net/**", (route) => route.abort());
+    await page.goto(demoUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    // Brief settle for CSS layout / canvas first paint (not network)
     await new Promise((r) => setTimeout(r, 800));
+    try {
+      await page.waitForLoadState("load", { timeout: 5000 });
+    } catch {
+      /* fonts blocked / slow — continue with what we have */
+    }
     const broken = await page.evaluate(() => {
       const body = document.body;
       if (!body) return "no_body";
