@@ -18,6 +18,7 @@
     "ai:build": "node scripts/ai-build.mjs",
     "shots": "node scripts/shots.mjs",
     "playwright:install": "node node_modules/playwright/cli.js install chromium",
+    "playwright:check": "node scripts/playwright-check.mjs",
     "review": "node scripts/review.mjs",
     "pages": "node scripts/pages.mjs",
     "pages:deploy": "node scripts/deploy-pages.mjs",

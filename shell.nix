@@ -42,6 +42,10 @@ pkgs.mkShell {
       echo "    npm run ai:new | ai:build | shots | review | pipeline | ship"
       echo "    npm run pages | pages:deploy | build | check"
       echo ""
+      echo "  Playwright"
+      echo "    npm run playwright:check     # CDP+screenshot smoke test"
+      echo "    npm run review -- --force    # vision re-score (ensures shots)"
+      echo ""
       echo "  Stop worker:  touch STOP   ·   Quiet banner: DPC_QUIET=1 nix-shell"
       echo ""
     fi

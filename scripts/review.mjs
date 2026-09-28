@@ -4,9 +4,14 @@
 //
 //   npm run review
 //   npm run review -- --id vector-harbor-magnetic-nav
-//   npm run review -- --missing   # only runs without a score yet
+//   npm run review -- --missing        # only runs without a score yet
+//   npm run review -- --force          # re-score all (uses existing previews)
+//   npm run review -- --force --ensure-shots
+//       # if preview missing → run shots first, then score (default ON)
+//   npm run review -- --no-shots       # never call shots; skip runs without preview
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   modelSlug,
@@ -41,12 +46,15 @@ function parseCli(argv) {
     id: null,
     missing: false,
     force: false,
+    ensureShots: true,
     limit: Infinity,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--missing") out.missing = true;
     else if (a === "--force") out.force = true;
+    else if (a === "--ensure-shots") out.ensureShots = true;
+    else if (a === "--no-shots") out.ensureShots = false;
     else if (a === "--category" || a === "-c") out.category = argv[++i];
     else if (a === "--id" || a === "-i") out.id = argv[++i];
     else if (a === "--limit" || a === "-n") out.limit = Number(argv[++i]);
@@ -216,24 +224,64 @@ function needsScore(run) {
   return run.review_score == null || !Number.isFinite(Number(run.review_score));
 }
 
-function collectJobs(args, onlySlug) {
+/** Runs that should be considered for scoring (demo required; preview optional until ensure). */
+function collectCandidates(args, onlySlug) {
   let entries = walkEntries(ROOT).filter((e) => e.status !== "archived");
   if (args.category) entries = entries.filter((e) => e.category === args.category);
   if (args.id) entries = entries.filter((e) => e.id === args.id);
   const jobs = [];
   for (const entry of entries) {
     migrateLegacyRun(entry.dir, "legacy");
-    let runs = listRuns(entry.dir, entry.rel).filter((r) => r.has_demo && r.has_preview);
+    let runs = listRuns(entry.dir, entry.rel).filter((r) => r.has_demo);
     if (onlySlug) runs = runs.filter((r) => r.slug === onlySlug);
     for (const run of runs) {
       if (!args.force) {
-        if (args.missing && !needsScore(run)) continue;
-        if (!args.missing && !needsScore(run)) continue;
+        if (!needsScore(run)) continue;
       }
       jobs.push({ entry, run });
     }
   }
   return jobs.slice(0, args.limit);
+}
+
+function ensureMissingShots(jobs) {
+  const missing = jobs.filter((j) => !j.run.has_preview);
+  if (!missing.length) return;
+
+  console.log(
+    `Missing preview for ${missing.length} run(s) — running shots first…`
+  );
+  // Prefer per-id when few/unique; otherwise --missing for the whole tree.
+  const ids = [...new Set(missing.map((j) => j.entry.id))];
+  const args =
+    ids.length === 1
+      ? ["--id", ids[0], "--missing"]
+      : ["--missing"];
+
+  const r = spawnSync(
+    process.execPath,
+    [path.join(ROOT, "scripts", "shots.mjs"), ...args],
+    {
+      cwd: ROOT,
+      encoding: "utf8",
+      stdio: "inherit",
+      env: process.env,
+      shell: process.platform === "win32",
+    }
+  );
+  if (r.status !== 0) {
+    console.warn(
+      `  shots exited ${r.status} — continuing with whatever previews exist`
+    );
+  }
+
+  // Refresh has_preview flags from disk
+  for (const job of missing) {
+    const preview = path.join(job.run.dir, "preview.png");
+    job.run.has_preview = fs.existsSync(preview);
+    job.run.preview_abs = job.run.has_preview ? preview : null;
+    job.run.preview_name = job.run.has_preview ? "preview.png" : null;
+  }
 }
 
 async function main() {
@@ -252,15 +300,30 @@ async function main() {
   }
 
   const slug = modelSlug(cfg.model);
-  const filtered = args.id ? collectJobs(args, null) : collectJobs(args, slug);
+  let filtered = args.id ? collectCandidates(args, null) : collectCandidates(args, slug);
 
   if (!filtered.length) {
-    console.log("Nothing to score (need demo+preview; use --missing or --force).");
+    console.log(
+      "Nothing to score (need demos; use --missing / --force, or build first)."
+    );
+    return;
+  }
+
+  if (args.ensureShots) {
+    ensureMissingShots(filtered);
+  }
+
+  filtered = filtered.filter((j) => j.run.has_preview);
+  if (!filtered.length) {
+    console.log(
+      "Nothing to score — no preview.png (run shots, or drop --no-shots)."
+    );
     return;
   }
 
   console.log(
-    `Scoring ${filtered.length} run(s) via api=${cfg.modelApi} (rebuild if score < ${rebuildBelowScore()})`
+    `Scoring ${filtered.length} run(s) via api=${cfg.modelApi} (rebuild if score < ${rebuildBelowScore()})` +
+      (args.force ? " [force]" : "")
   );
   let ok = 0;
   let rebuilt = 0;

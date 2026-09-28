@@ -1,7 +1,8 @@
-// Ensure Playwright can launch a browser (bundled or system Chromium).
+// Ensure Playwright can launch a browser (bundled or system Chromium via CDP).
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import net from "node:net";
+import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -134,6 +135,115 @@ async function loadPlaywrightModule() {
   }
 }
 
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const s = net.createServer();
+    s.listen(0, "127.0.0.1", () => {
+      const addr = s.address();
+      const port = typeof addr === "object" && addr ? addr.port : 0;
+      s.close((err) => (err ? reject(err) : resolve(port)));
+    });
+    s.on("error", reject);
+  });
+}
+
+async function waitForCdp(port, timeoutMs = 20000) {
+  const start = Date.now();
+  let lastErr;
+  while (Date.now() - start < timeoutMs) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/json/version`);
+      if (res.ok) return await res.json();
+    } catch (err) {
+      lastErr = err;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw new Error(
+    `Chromium CDP not ready on :${port} (${lastErr?.message || "timeout"})`
+  );
+}
+
+/**
+ * NixOS / mismatched Playwright: chromium.launch(executablePath) often hangs
+ * forever on goto/setContent. Spawning with --remote-debugging-port + CDP works.
+ */
+async function launchSystemViaCdp(playwright, executablePath) {
+  const port = await freePort();
+  // Do NOT pass --disable-gpu / --disable-software-rasterizer together:
+  // heavy canvas + SVG filters then peg the renderer and page.screenshot never returns.
+  // SwiftShader gives a real (software) GL path so particles/grain still paint correctly.
+  const args = [
+    "--headless=new",
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-extensions",
+    "--disable-background-networking",
+    "--font-render-hinting=none",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
+    `--remote-debugging-port=${port}`,
+    "--remote-debugging-address=127.0.0.1",
+    "about:blank",
+  ];
+  const child = spawn(executablePath, args, {
+    stdio: ["ignore", "ignore", "pipe"],
+    env: process.env,
+  });
+  let stderr = "";
+  child.stderr?.on("data", (d) => {
+    stderr += String(d);
+    if (stderr.length > 4000) stderr = stderr.slice(-4000);
+  });
+  child.on("exit", (code, signal) => {
+    if (code && code !== 0) {
+      console.warn(
+        `  chromium exited code=${code} signal=${signal || ""}` +
+          (stderr ? `\n  ${stderr.slice(0, 400)}` : "")
+      );
+    }
+  });
+
+  try {
+    await waitForCdp(port);
+  } catch (err) {
+    try {
+      child.kill("SIGKILL");
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`${err.message}${stderr ? `\n${stderr.slice(0, 500)}` : ""}`);
+  }
+
+  const browser = await playwright.chromium.connectOverCDP(
+    `http://127.0.0.1:${port}`
+  );
+
+  const origClose = browser.close.bind(browser);
+  browser.close = async (...closeArgs) => {
+    try {
+      await origClose(...closeArgs);
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (!child.killed) child.kill("SIGTERM");
+    } catch {
+      /* ignore */
+    }
+    setTimeout(() => {
+      try {
+        if (!child.killed) child.kill("SIGKILL");
+      } catch {
+        /* ignore */
+      }
+    }, 2000);
+  };
+
+  return browser;
+}
+
 /**
  * Returns { playwright, executablePath, ok, mode }.
  * ok=false → shots deferred; caller should not exit the worker.
@@ -143,17 +253,16 @@ export async function ensurePlaywrightSoft() {
   let bundled = bundledChromiumPath(playwright);
   let system = findSystemChrome();
 
+  if (system) {
+    console.log(`  playwright: using system browser ${system}`);
+    return { playwright, executablePath: system, ok: true, mode: "system-cdp" };
+  }
+
   if (bundled) {
     console.log(`  playwright: bundled chromium ok`);
     return { playwright, executablePath: null, ok: true, mode: "bundled" };
   }
 
-  if (system) {
-    console.log(`  playwright: using system browser ${system}`);
-    return { playwright, executablePath: system, ok: true, mode: "system" };
-  }
-
-  // No browser yet — try download once (may timeout; soft)
   console.warn(
     "  no bundled/system Chromium — trying download (shots need a browser)…"
   );
@@ -162,13 +271,13 @@ export async function ensurePlaywrightSoft() {
   bundled = bundledChromiumPath(fresh);
   system = findSystemChrome();
 
+  if (system) {
+    console.log(`  playwright: using system browser ${system}`);
+    return { playwright: fresh, executablePath: system, ok: true, mode: "system-cdp" };
+  }
   if (bundled) {
     console.log(`  playwright: bundled chromium ok after install`);
     return { playwright: fresh, executablePath: null, ok: true, mode: "bundled" };
-  }
-  if (system) {
-    console.log(`  playwright: using system browser ${system}`);
-    return { playwright: fresh, executablePath: system, ok: true, mode: "system" };
   }
 
   console.warn(
@@ -191,6 +300,7 @@ export async function ensurePlaywright() {
 }
 
 export async function launchChromium(playwright = null) {
+  fixPlaywrightBrowsersPath();
   const soft = playwright
     ? {
         playwright,
@@ -209,28 +319,35 @@ export async function launchChromium(playwright = null) {
   const system = soft.executablePath || findSystemChrome();
   const bundled = bundledChromiumPath(soft.playwright);
 
-  const attempts = [];
-  if (bundled) {
-    attempts.push(() => chromium.launch({ headless: true }));
-  }
+  // Prefer CDP + system chromium (reliable on NixOS). launch(executablePath) hangs.
   if (system) {
-    attempts.push(() =>
-      chromium.launch({ headless: true, executablePath: system })
-    );
-  }
-  // Playwright channel discovery (some distros)
-  attempts.push(() => chromium.launch({ headless: true, channel: "chromium" }));
-  attempts.push(() => chromium.launch({ headless: true, channel: "chrome" }));
-
-  let lastErr;
-  for (const attempt of attempts) {
     try {
-      return await attempt();
+      console.log(`  chromium: CDP launch ${system}`);
+      // Avoid nix playwright-browsers path interfering with CDP
+      fixPlaywrightBrowsersPath();
+      return await launchSystemViaCdp(soft.playwright, system);
     } catch (err) {
-      lastErr = err;
+      console.warn(`  CDP launch failed: ${err.message}`);
     }
   }
-  throw lastErr instanceof Error
-    ? lastErr
-    : new Error(String(lastErr || "chromium launch failed"));
+
+  const args = [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
+  ];
+  if (bundled) {
+    try {
+      console.log("  chromium: bundled launch");
+      return await chromium.launch({ headless: true, args });
+    } catch (err) {
+      console.warn(`  bundled launch failed: ${err.message}`);
+    }
+  }
+
+  throw new Error(
+    "Could not launch Chromium for screenshots (CDP + bundled failed)"
+  );
 }

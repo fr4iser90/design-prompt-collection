@@ -533,7 +533,7 @@ Microscopic bone-white dust particles caught in a thermal updraft, spiraling upw
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 149s | — | [open](prompts/animations/bone-dust-spiral/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/bone-dust-spiral/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 149s | — | [open](prompts/animations/bone-dust-spiral/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

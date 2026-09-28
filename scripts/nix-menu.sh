@@ -22,6 +22,8 @@ cheat() {
 │    ai-build          Demos bauen                             │
 │    shots             Screenshots                             │
 │    review            Vision-Score / rebuild                  │
+│    review-force      Alle Runs neu scoren (fehlt Shot→shot)  │
+│    playwright-check  Chromium/CDP Screenshot Smoke-Test      │
 │    pipeline / ship   Full pipeline (+ check)                 │
 │    pages / pages-deploy  Site bauen / Pages triggern         │
 │                                                              │
@@ -59,6 +61,8 @@ options=(
   "ai:build"
   "shots"
   "review"
+  "review --force (ensure shots)"
+  "playwright:check"
   "pipeline"
   "ship"
   "pages"
@@ -81,15 +85,17 @@ select opt in "${options[@]}"; do
     7) run "npm run ai:build"; break ;;
     8) run "npm run shots"; break ;;
     9) run "npm run review"; break ;;
-    10) run "npm run pipeline"; break ;;
-    11) run "npm run ship"; break ;;
-    12) run "npm run pages"; break ;;
-    13) run "npm run pages:deploy"; break ;;
-    14) run "npm run build"; break ;;
-    15) run "npm run check"; break ;;
-    16) run "git status -sb"; break ;;
-    17) cheat; continue ;;
-    18|q|Q) echo "bye"; break ;;
+    10) run "npm run review -- --force"; break ;;
+    11) run "npm run playwright:check"; break ;;
+    12) run "npm run pipeline"; break ;;
+    13) run "npm run ship"; break ;;
+    14) run "npm run pages"; break ;;
+    15) run "npm run pages:deploy"; break ;;
+    16) run "npm run build"; break ;;
+    17) run "npm run check"; break ;;
+    18) run "git status -sb"; break ;;
+    19) cheat; continue ;;
+    20|q|Q) echo "bye"; break ;;
     *) echo "Ungültig: $REPLY"; continue ;;
   esac
 done

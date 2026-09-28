@@ -89,6 +89,22 @@ System-Chromium wenn vorhanden; Download ist optional und darf timeouten.
 Auf NixOS: `chromium` im PATH (z.B. `nix-shell` mit chromium) oder später
 `PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT=300000 npm run playwright:install`.
 
+Smoke-Test (nix-shell):
+
+```bash
+npm run playwright:check
+```
+
+Vision neu scoren (vorhandene `preview.png`; fehlt → zuerst `shots`):
+
+```bash
+npm run review -- --force              # alle Runs des aktuellen AI_MODEL
+npm run review -- --force --id my-id   # ein Entry
+npm run review -- --force --no-shots   # nur vorhandene Previews, nichts shottten
+```
+
+Demo-HTML auf Disk wird von `shots`/`review` **nie** editiert.
+
 ## One-shot
 
 ```bash
