@@ -136,6 +136,7 @@ async function readSseChatStream(
     showContentTicks = false,
     onThinking,
     onContent,
+    onFirstToken,
     signal = null,
   } = {}
 ) {
@@ -150,6 +151,13 @@ async function readSseChatStream(
   let usage = null;
   let sawThinking = false;
   let sawContent = false;
+  let firstTokenAt = null;
+
+  const markFirst = () => {
+    if (firstTokenAt != null) return;
+    firstTokenAt = Date.now();
+    onFirstToken?.(firstTokenAt);
+  };
 
   const onAbort = () => {
     forceCloseActiveStream("abort signal");
@@ -198,6 +206,7 @@ async function readSseChatStream(
             : "");
         const c = delta.content || "";
         if (t) {
+          markFirst();
           thinking += t;
           if (showThinking) {
             if (!sawThinking) {
@@ -209,6 +218,7 @@ async function readSseChatStream(
           onThinking?.(t);
         }
         if (c) {
+          markFirst();
           content += c;
           if (showContentTicks) {
             if (!sawContent) {
@@ -235,7 +245,7 @@ async function readSseChatStream(
   if ((showThinking && sawThinking) || (showContentTicks && sawContent)) {
     process.stderr.write("\n");
   }
-  return { content, thinking, usage };
+  return { content, thinking, usage, firstTokenAt };
 }
 
 /** Append /think or /no_think to the last user turn (Qwen hybrid thinking). */
@@ -278,7 +288,12 @@ export function applyThinkingControls(messages, thinkingEnabled) {
  * - THINKING_ENABLED=false: /no_think on last user turn + enable_thinking=false
  * - NEVER auto-retry network drops mid-job
  * - Only retry HTTP 503 queue_timeout (request rejected; no job started)
- * - Returns { content, duration_ms, thinking_enabled, model, model_api, … }
+ * - Timings (ms):
+ *     queue_wait_ms — slot poll + 503 retry sleeps
+ *     ttft_ms       — POST start → first thinking/content token (stream only)
+ *     gen_ms        — first token → stream end (non-stream: whole response body)
+ *     duration_ms   — alias of gen_ms (README "Gen" / primary benchmark)
+ *     wall_ms       — wall clock including queue wait
  */
 export async function chatCompletions({
   baseUrl,
@@ -324,23 +339,24 @@ export async function chatCompletions({
   const url = `${baseUrl}/chat/completions`;
   let lastErr;
   const wallStart = Date.now();
+  let queueWaitMs = 0;
   let contextTokens = null;
 
   for (let attempt = 0; attempt <= queueRetries; attempt++) {
     if (shutdown.signal.aborted) {
       throw new Error("Aborted before request (Ctrl+C)");
     }
-    const started = Date.now();
+    const attemptStart = Date.now();
     let gotBytes = false;
     const heartbeat = setInterval(() => {
       if (gotBytes && (thinkingEnabled || !useStream)) return;
       if (gotBytes && useStream && !thinkingEnabled) {
-        const sec = Math.round((Date.now() - started) / 1000);
+        const sec = Math.round((Date.now() - attemptStart) / 1000);
         console.log(`  … streaming ${sec}s`);
         return;
       }
       if (gotBytes) return;
-      const sec = Math.round((Date.now() - started) / 1000);
+      const sec = Math.round((Date.now() - attemptStart) / 1000);
       const max = Math.round(timeoutMs / 1000);
       console.log(`  … waiting for first token ${sec}s / ${max}s`);
     }, heartbeatMs);
@@ -351,10 +367,12 @@ export async function chatCompletions({
     );
 
     try {
+      const slotT0 = Date.now();
       const slot = await waitForIdleSlot(
         { baseUrl, apiKey, model, modelApi, waitForSlot },
         { need: 1, signal: shutdown.signal, label: modelApi || model }
       );
+      queueWaitMs += Date.now() - slotT0;
       if (slot?.info?.context_tokens != null) {
         contextTokens = slot.info.context_tokens;
       } else if (contextTokens == null) {
@@ -369,6 +387,9 @@ export async function chatCompletions({
           /* optional meta */
         }
       }
+
+      const requestStart = Date.now();
+      let firstTokenAt = null;
 
       const res = await fetch(url, {
         method: "POST",
@@ -404,7 +425,9 @@ export async function chatCompletions({
             `  queue full (503) — waiting ${waitSec}s then retry ${attempt + 1}/${queueRetries}`
           );
           lastErr = new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
+          const sleepT0 = Date.now();
           await new Promise((r) => setTimeout(r, waitSec * 1000));
+          queueWaitMs += Date.now() - sleepT0;
           continue;
         }
 
@@ -423,42 +446,80 @@ export async function chatCompletions({
         throw new Error(`Provider HTTP ${res.status}: ${raw.slice(0, 800)}`);
       }
 
-      const pack = (content, usage = null) => ({
-        content,
-        duration_ms: Date.now() - wallStart,
-        thinking_enabled: Boolean(thinkingEnabled),
-        model,
-        model_api: modelApi || model,
-        temperature,
-        stream: useStream,
-        context_tokens: contextTokens,
-        usage: usage || null,
-        prompt_tokens: usage?.prompt_tokens ?? usage?.input_tokens ?? null,
-        completion_tokens:
-          usage?.completion_tokens ?? usage?.output_tokens ?? null,
-      });
+      const pack = (content, usage = null, timing = {}) => {
+        const doneAt = Date.now();
+        const ttft =
+          timing.ttft_ms != null
+            ? timing.ttft_ms
+            : timing.firstTokenAt != null
+              ? timing.firstTokenAt - requestStart
+              : null;
+        const gen =
+          timing.gen_ms != null
+            ? timing.gen_ms
+            : timing.firstTokenAt != null
+              ? doneAt - timing.firstTokenAt
+              : doneAt - requestStart;
+        const wall = doneAt - wallStart;
+        const promptTokens =
+          usage?.prompt_tokens ?? usage?.input_tokens ?? null;
+        const completionTokens =
+          usage?.completion_tokens ?? usage?.output_tokens ?? null;
+        const totalTokens =
+          usage?.total_tokens ??
+          (promptTokens != null && completionTokens != null
+            ? promptTokens + completionTokens
+            : null);
+        return {
+          content,
+          // duration_ms = generation only (benchmark primary)
+          duration_ms: gen,
+          gen_ms: gen,
+          ttft_ms: ttft,
+          queue_wait_ms: queueWaitMs,
+          wall_ms: wall,
+          thinking_enabled: Boolean(thinkingEnabled),
+          model,
+          model_api: modelApi || model,
+          temperature,
+          stream: useStream,
+          context_tokens: contextTokens,
+          usage: usage || null,
+          prompt_tokens: promptTokens,
+          completion_tokens: completionTokens,
+          total_tokens: totalTokens,
+        };
+      };
 
       if (useStream) {
-        const { content, thinking: _thinking, usage } = await readSseChatStream(
-          res,
-          {
-            showThinking: thinkingEnabled,
-            showContentTicks: thinkingEnabled,
-            signal,
-            onThinking: () => {
-              gotBytes = true;
-            },
-            onContent: () => {
-              gotBytes = true;
-            },
-          }
-        );
+        const {
+          content,
+          thinking: _thinking,
+          usage,
+          firstTokenAt: streamFirst,
+        } = await readSseChatStream(res, {
+          showThinking: thinkingEnabled,
+          showContentTicks: thinkingEnabled,
+          signal,
+          onFirstToken: (t) => {
+            firstTokenAt = t;
+            gotBytes = true;
+          },
+          onThinking: () => {
+            gotBytes = true;
+          },
+          onContent: () => {
+            gotBytes = true;
+          },
+        });
         // Never persist reasoning/thinking as the demo — only assistant content.
         const out = (content && content.trim()) || "";
         if (!out) {
           throw new Error("Empty streamed model content (no assistant content deltas)");
         }
-        return pack(out, usage);
+        return pack(out, usage, {
+          firstTokenAt: streamFirst || firstTokenAt,
+        });
       }
 
       const raw = await res.text();
@@ -469,7 +530,11 @@ export async function chatCompletions({
         (typeof msg.content === "string" && msg.content.trim() && msg.content) ||
         "";
       if (!content) throw new Error(`Empty model content: ${raw.slice(0, 400)}`);
-      return pack(content, data.usage || null);
+      // Non-stream: no TTFT; gen = full response time after POST
+      return pack(content, data.usage || null, {
+        ttft_ms: null,
+        gen_ms: Date.now() - requestStart,
+      });
     } catch (err) {
       lastErr = err;
       forceCloseActiveStream("error/abort cleanup");

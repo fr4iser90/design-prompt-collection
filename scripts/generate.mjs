@@ -182,8 +182,9 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
       if (runs.length) {
         md += `#### Model runs\n\n`;
         // Model = AI_MODEL. Engine = AI_ENGINE. Never put AI_MODEL_API (e.g. "chat") in Model.
-        md += `| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |\n`;
-        md += `|:-------:|-------|--------|:-----:|----:|-----:|------:|------|\n`;
+        // Ctx = max window from gateway; In/Out = usage; TTFT/Gen = timings (not wall/queue).
+        md += `| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |\n`;
+        md += `|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|\n`;
         for (const r of runs) {
           const img = r.preview_rel
             ? `![${r.model}](${r.preview_rel})`
@@ -205,14 +206,23 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
               : r.thinking_enabled
                 ? "on"
                 : "off";
-          const ctx =
-            r.context_tokens != null && Number.isFinite(r.context_tokens)
-              ? String(r.context_tokens)
+          const fmtTok = (n) =>
+            n != null && Number.isFinite(n)
+              ? n >= 1000
+                ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`
+                : String(n)
               : "—";
-          const time =
-            r.duration_ms != null && Number.isFinite(r.duration_ms)
-              ? `${Math.round(r.duration_ms / 1000)}s`
-              : "—";
+          const fmtMs = (ms) => {
+            if (ms == null || !Number.isFinite(ms)) return "—";
+            if (ms < 1000) return `${Math.round(ms)}ms`;
+            const s = ms / 1000;
+            return s < 10 ? `${s.toFixed(1)}s` : `${Math.round(s)}s`;
+          };
+          const ctx = fmtTok(r.context_tokens);
+          const inn = fmtTok(r.prompt_tokens);
+          const out = fmtTok(r.completion_tokens);
+          const ttft = fmtMs(r.ttft_ms);
+          const gen = fmtMs(r.gen_ms ?? r.duration_ms);
           const modelCell = `\`${r.model}\``;
           let engineCell = "—";
           if (r.engine && r.engine_link) {
@@ -220,9 +230,9 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
           } else if (r.engine) {
             engineCell = `\`${r.engine}\``;
           }
-          md += `| ${img} | ${modelCell} | ${engineCell} | ${think} | ${ctx} | ${time} | ${score} | ${demo} |\n`;
+          md += `| ${img} | ${modelCell} | ${engineCell} | ${think} | ${ctx} | ${inn} | ${out} | ${ttft} | ${gen} | ${score} | ${demo} |\n`;
           if (r.review_summary) {
-            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | | |\n`;
+            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | | | | | |\n`;
           }
         }
         md += `\n`;
@@ -313,8 +323,13 @@ function main() {
         temperature: r.temperature,
         context_tokens: r.context_tokens,
         duration_ms: r.duration_ms,
+        gen_ms: r.gen_ms,
+        ttft_ms: r.ttft_ms,
+        queue_wait_ms: r.queue_wait_ms,
+        wall_ms: r.wall_ms,
         prompt_tokens: r.prompt_tokens,
         completion_tokens: r.completion_tokens,
+        total_tokens: r.total_tokens,
         demo: r.demo_rel,
         preview: r.preview_rel,
         has_demo: r.has_demo,

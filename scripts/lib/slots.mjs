@@ -52,6 +52,9 @@ export function pickContextTokens(entry) {
     entry.max_context_length,
     entry.context_window,
     entry.meta?.context_length,
+    entry.meta?.n_ctx,
+    entry.parameters?.context_length,
+    entry.parameters?.n_ctx,
   ];
   for (const c of candidates) {
     const n = Number(c);

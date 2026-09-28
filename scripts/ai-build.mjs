@@ -143,8 +143,13 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     temperature: result.temperature,
     context_tokens: result.context_tokens,
     duration_ms: result.duration_ms,
+    gen_ms: result.gen_ms ?? result.duration_ms,
+    ttft_ms: result.ttft_ms,
+    queue_wait_ms: result.queue_wait_ms,
+    wall_ms: result.wall_ms,
     prompt_tokens: result.prompt_tokens,
     completion_tokens: result.completion_tokens,
+    total_tokens: result.total_tokens,
     // fresh build — clear live score so review runs again
     review_score: null,
     review_summary: null,
@@ -166,11 +171,24 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     demo: path.posix.join("runs", slug, "demo/index.html"),
     preview: null,
   });
-  const secs = Math.round(result.duration_ms / 1000);
+  const fmtSec = (ms) =>
+    ms != null && Number.isFinite(ms) ? `${(ms / 1000).toFixed(ms < 10000 ? 1 : 0)}s` : "—";
   const think = result.thinking_enabled ? "on" : "off";
+  const tok = [
+    result.prompt_tokens != null ? `in=${result.prompt_tokens}` : null,
+    result.completion_tokens != null ? `out=${result.completion_tokens}` : null,
+    result.context_tokens != null ? `ctx_max=${result.context_tokens}` : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
   console.log(
-    `  wrote ${entry.rel}/runs/${slug}/demo/index.html (${secs}s, thinking=${think}` +
-      (result.context_tokens != null ? `, ctx=${result.context_tokens}` : "") +
+    `  wrote ${entry.rel}/runs/${slug}/demo/index.html` +
+      ` (gen=${fmtSec(result.gen_ms ?? result.duration_ms)}` +
+      ` ttft=${fmtSec(result.ttft_ms)}` +
+      ` queue=${fmtSec(result.queue_wait_ms)}` +
+      ` wall=${fmtSec(result.wall_ms)}` +
+      `, thinking=${think}` +
+      (tok ? `, ${tok}` : "") +
       ")"
   );
 }

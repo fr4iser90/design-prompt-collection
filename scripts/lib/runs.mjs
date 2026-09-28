@@ -213,8 +213,13 @@ export function writeRunMeta(runPath, data) {
     temperature: numOrNull(merged.temperature),
     context_tokens: numOrNull(merged.context_tokens),
     duration_ms: numOrNull(merged.duration_ms),
+    gen_ms: numOrNull(merged.gen_ms),
+    ttft_ms: numOrNull(merged.ttft_ms),
+    queue_wait_ms: numOrNull(merged.queue_wait_ms),
+    wall_ms: numOrNull(merged.wall_ms),
     prompt_tokens: numOrNull(merged.prompt_tokens),
     completion_tokens: numOrNull(merged.completion_tokens),
+    total_tokens: numOrNull(merged.total_tokens),
     build_attempts: numOrNull(merged.build_attempts) || 0,
     reject_reason: merged.reject_reason || null,
     rejected_at: merged.rejected_at || null,
@@ -257,12 +262,21 @@ build_attempts: ${meta.build_attempts}
   if (meta.context_tokens != null) {
     text += `context_tokens: ${meta.context_tokens}\n`;
   }
-  if (meta.duration_ms != null) text += `duration_ms: ${meta.duration_ms}\n`;
+  // duration_ms = gen_ms (primary); keep legacy field + explicit breakdown
+  const genMs = meta.gen_ms != null ? meta.gen_ms : meta.duration_ms;
+  if (genMs != null) text += `duration_ms: ${genMs}\n`;
+  if (meta.gen_ms != null) text += `gen_ms: ${meta.gen_ms}\n`;
+  if (meta.ttft_ms != null) text += `ttft_ms: ${meta.ttft_ms}\n`;
+  if (meta.queue_wait_ms != null) text += `queue_wait_ms: ${meta.queue_wait_ms}\n`;
+  if (meta.wall_ms != null) text += `wall_ms: ${meta.wall_ms}\n`;
   if (meta.prompt_tokens != null) {
     text += `prompt_tokens: ${meta.prompt_tokens}\n`;
   }
   if (meta.completion_tokens != null) {
     text += `completion_tokens: ${meta.completion_tokens}\n`;
+  }
+  if (meta.total_tokens != null) {
+    text += `total_tokens: ${meta.total_tokens}\n`;
   }
   if (meta.reject_reason) text += `reject_reason: ${q(meta.reject_reason)}\n`;
   if (meta.rejected_at) text += `rejected_at: ${q(meta.rejected_at)}\n`;
@@ -363,8 +377,13 @@ export function listRuns(entryDir, entryRelPosix) {
       temperature: numOrNull(meta.temperature),
       context_tokens: numOrNull(meta.context_tokens),
       duration_ms: numOrNull(meta.duration_ms),
+      gen_ms: numOrNull(meta.gen_ms) ?? numOrNull(meta.duration_ms),
+      ttft_ms: numOrNull(meta.ttft_ms),
+      queue_wait_ms: numOrNull(meta.queue_wait_ms),
+      wall_ms: numOrNull(meta.wall_ms),
       prompt_tokens: numOrNull(meta.prompt_tokens),
       completion_tokens: numOrNull(meta.completion_tokens),
+      total_tokens: numOrNull(meta.total_tokens),
       dir,
       has_demo: fs.existsSync(demoAbs),
       has_preview: Boolean(previewName),

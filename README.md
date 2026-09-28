@@ -33,10 +33,10 @@ A dark-mode navigation landing page using rotating light beams, radar-like inter
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/beacon-signal-nav/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/beacon-signal-nav/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'night-watch bridge' aesthetic with a strong, functional radar hero and perfect adherence to the color and typography constraints._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/beacon-signal-nav/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.7s | 9 | [open](prompts/landing-pages/beacon-signal-nav/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'night-watch bridge' aesthetic with a strong, functional radar hero and perfect adherence to the color and typography constraints._ | | | | | | | | | |
 
 ---
 
@@ -50,10 +50,10 @@ A landing page for 'Cactus Core', an eco-conscious product brand using cactus-ba
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/cactus-core-eco/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 6 | [open](prompts/landing-pages/cactus-core-eco/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A visually pleasing but generic landing page that fails to adhere to the specific 'cactus macro' and 'organic shapes' brief, relying on a standard template layout._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/cactus-core-eco/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.9s | 6 | [open](prompts/landing-pages/cactus-core-eco/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A visually pleasing but generic landing page that fails to adhere to the specific 'cactus macro' and 'organic shapes' brief, relying on a standard template layout._ | | | | | | | | | |
 
 ---
 
@@ -67,10 +67,10 @@ A sonic branding landing page for Chime, where typography vibrates with audio fr
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/chime-resonance-brand/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 9 | [open](prompts/landing-pages/chime-resonance-brand/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a strong, kinetic hero composition that perfectly balances the massive typography with the subtle sound wave details._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/chime-resonance-brand/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.0s | 9 | [open](prompts/landing-pages/chime-resonance-brand/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a strong, kinetic hero composition that perfectly balances the massive typography with the subtle sound wave details._ | | | | | | | | | |
 
 ---
 
@@ -84,10 +84,10 @@ A landing page for 'Code Canvas', a new developer tool. The hero is a live code 
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/code-canvas-dev-tool/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 6 | [open](prompts/landing-pages/code-canvas-dev-tool/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong typography and color palette, but the hero is a text block rather than the requested stylized code editor visual._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/code-canvas-dev-tool/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.0s | 6 | [open](prompts/landing-pages/code-canvas-dev-tool/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong typography and color palette, but the hero is a text block rather than the requested stylized code editor visual._ | | | | | | | | | |
 
 ---
 
@@ -101,10 +101,10 @@ A landing page for a digital manuscript archive, featuring gold-leaf drop caps, 
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/codex-leaf-gold-illumination/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/codex-leaf-gold-illumination/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A faithful, elegant implementation that perfectly captures the 'quiet, reverent, academic' atmosphere with excellent typography and texture._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/codex-leaf-gold-illumination/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.3s | 9 | [open](prompts/landing-pages/codex-leaf-gold-illumination/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A faithful, elegant implementation that perfectly captures the 'quiet, reverent, academic' atmosphere with excellent typography and texture._ | | | | | | | | | |
 
 ---
 
@@ -118,10 +118,10 @@ A utility landing page for 'FrostLine', a temperature-sensitive logistics provid
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/cold-chain-logistics/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/landing-pages/cold-chain-logistics/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the industrial cold-chain aesthetic with perfect typography, layout, and atmospheric details._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/cold-chain-logistics/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.7s | 9 | [open](prompts/landing-pages/cold-chain-logistics/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the industrial cold-chain aesthetic with perfect typography, layout, and atmospheric details._ | | | | | | | | | |
 
 ---
 
@@ -135,10 +135,10 @@ Landing page for 'Microbe & Time', a fermentation supply brand. Dark, mysterious
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/fermentation-vault/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/fermentation-vault/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'mysterious library' brief with perfect atmospheric lighting and typography._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/fermentation-vault/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.5s | 9 | [open](prompts/landing-pages/fermentation-vault/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'mysterious library' brief with perfect atmospheric lighting and typography._ | | | | | | | | | |
 
 ---
 
@@ -152,10 +152,10 @@ A dark, industrial coffee-roaster landing page with ember-red accents, hard grid
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/forge-and-roast-coffee-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/landing-pages/forge-and-roast-coffee-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong, on-brief hero with matte black base, ember-red accents, and expressive oversized type._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/forge-and-roast-coffee-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.9s | 8 | [open](prompts/landing-pages/forge-and-roast-coffee-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong, on-brief hero with matte black base, ember-red accents, and expressive oversized type._ | | | | | | | | | |
 
 ---
 
@@ -169,10 +169,10 @@ A typeface foundry landing page for 'Glyph', where the hero is a live, editable 
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/glyph-foundry-typespecimen/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/glyph-foundry-typespecimen/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a strong, brutalist layout that perfectly balances the hero typography with functional UI controls._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/glyph-foundry-typespecimen/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.1s | 9 | [open](prompts/landing-pages/glyph-foundry-typespecimen/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a strong, brutalist layout that perfectly balances the hero typography with functional UI controls._ | | | | | | | | | |
 
 ---
 
@@ -186,10 +186,10 @@ A high-contrast transit disruption landing page using hazard stripes, monospaced
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/gridlock-transit-alert/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 4s | 9 | [open](prompts/landing-pages/gridlock-transit-alert/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the utility aesthetic, perfectly matching the brief's requirements for typography, color, and layout._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/gridlock-transit-alert/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 4.2s | 9 | [open](prompts/landing-pages/gridlock-transit-alert/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the utility aesthetic, perfectly matching the brief's requirements for typography, color, and layout._ | | | | | | | | | |
 
 ---
 
@@ -203,10 +203,10 @@ A weather-intelligence landing page for Halyard, a marine routing startup, built
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/halyard-marine-forecast/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 4s | 8 | [open](prompts/landing-pages/halyard-marine-forecast/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong atmospheric hero with excellent typography and data-viz integration, though the headline wrapping is slightly awkward._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/halyard-marine-forecast/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 4.5s | 8 | [open](prompts/landing-pages/halyard-marine-forecast/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong atmospheric hero with excellent typography and data-viz integration, though the headline wrapping is slightly awkward._ | | | | | | | | | |
 
 ---
 
@@ -220,10 +220,10 @@ A landing page for 'VoltEdge', an energy grid management software, featuring haz
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/high-voltage-grid/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/landing-pages/high-voltage-grid/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong industrial aesthetic with excellent typography hierarchy and hazard branding, though the background lacks the requested animated electrical arcs._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/high-voltage-grid/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.8s | 8 | [open](prompts/landing-pages/high-voltage-grid/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong industrial aesthetic with excellent typography hierarchy and hazard branding, though the background lacks the requested animated electrical arcs._ | | | | | | | | | |
 
 ---
 
@@ -237,10 +237,10 @@ A landing page for \\\"SortWell,\\\" a research organization tool, using a stack
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/index-card-sort-system/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/landing-pages/index-card-sort-system/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'physical index card' concept with perfect adherence to color, typography, and layout constraints._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/index-card-sort-system/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.3s | 9 | [open](prompts/landing-pages/index-card-sort-system/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'physical index card' concept with perfect adherence to color, typography, and layout constraints._ | | | | | | | | | |
 
 ---
 
@@ -254,10 +254,10 @@ Product-drop landing for Kiln ceramics: object as full-bleed hero, restrained ty
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/kiln-commerce-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 5s | 9 | [open](prompts/landing-pages/kiln-commerce-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Exceptional adherence to the brief with a strong, atmospheric hero that perfectly captures the 'kiln heat' mood._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/kiln-commerce-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.2s | 9 | [open](prompts/landing-pages/kiln-commerce-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Exceptional adherence to the brief with a strong, atmospheric hero that perfectly captures the 'kiln heat' mood._ | | | | | | | | | |
 
 ---
 
@@ -271,10 +271,10 @@ Landing page for 'Edge & Stone', a knife sharpening and blade care brand. Focuse
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/knife-grit-surface/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/landing-pages/knife-grit-surface/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong, atmospheric landing page with excellent typography and a high-contrast, industrial aesthetic that perfectly matches the brief._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/knife-grit-surface/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.2s | 8 | [open](prompts/landing-pages/knife-grit-surface/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong, atmospheric landing page with excellent typography and a high-contrast, industrial aesthetic that perfectly matches the brief._ | | | | | | | | | |
 
 ---
 
@@ -288,10 +288,10 @@ A landing page for \\\"VeriLedger,\\\" an audit software platform, using bluepri
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/ledger-blueprint-reconciliation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 6 | [open](prompts/landing-pages/ledger-blueprint-reconciliation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A clean, on-brand hero section that nails the typography and grid aesthetic but lacks the specific 'reconciliation' visual metaphor requested._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/ledger-blueprint-reconciliation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.8s | 6 | [open](prompts/landing-pages/ledger-blueprint-reconciliation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A clean, on-brand hero section that nails the typography and grid aesthetic but lacks the specific 'reconciliation' visual metaphor requested._ | | | | | | | | | |
 
 ---
 
@@ -305,10 +305,10 @@ An engineering firm landing page using blueprint aesthetics, visible grid system
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/load-bearing-structure/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/load-bearing-structure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent adherence to the 'blueprint' aesthetic with precise execution of the visual rules, typography, and layout._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/load-bearing-structure/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.3s | 9 | [open](prompts/landing-pages/load-bearing-structure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent adherence to the 'blueprint' aesthetic with precise execution of the visual rules, typography, and layout._ | | | | | | | | | |
 
 ---
 
@@ -322,10 +322,10 @@ A landing page for \\\"MicroSearch,\\\" a digital archive service, using a high-
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/microfiche-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 9 | [open](prompts/landing-pages/microfiche-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the retro-tech noir aesthetic with perfect adherence to the high-contrast and typography constraints._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/microfiche-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.0s | 9 | [open](prompts/landing-pages/microfiche-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the retro-tech noir aesthetic with perfect adherence to the high-contrast and typography constraints._ | | | | | | | | | |
 
 ---
 
@@ -339,10 +339,10 @@ A landing page for 'Mirage Fabric Studio', a luxury textile designer. Uses heat-
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/mirage-fabric-studio/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 8 | [open](prompts/landing-pages/mirage-fabric-studio/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A strong, atmospheric landing page that captures the luxury aesthetic and fluidity requested, though the background image is static rather than the requested video._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/mirage-fabric-studio/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.7s | 8 | [open](prompts/landing-pages/mirage-fabric-studio/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A strong, atmospheric landing page that captures the luxury aesthetic and fluidity requested, though the background image is static rather than the requested video._ | | | | | | | | | |
 
 ---
 
@@ -356,10 +356,10 @@ Trust-forward fintech landing: crisp north-light atmosphere, brand-led hero, one
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/northline-fintech-clarity/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 4s | 9 | [open](prompts/landing-pages/northline-fintech-clarity/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A masterful execution of the 'Northline' brief, perfectly capturing the 'paper precision' and 'calm authority' mood with a striking typographic hierarchy and atmospheric background._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/northline-fintech-clarity/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 4.3s | 9 | [open](prompts/landing-pages/northline-fintech-clarity/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A masterful execution of the 'Northline' brief, perfectly capturing the 'paper precision' and 'calm authority' mood with a striking typographic hierarchy and atmospheric background._ | | | | | | | | | |
 
 ---
 
@@ -373,10 +373,10 @@ A city mobility landing page for PulseLane, featuring animated route paths, kine
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/pulselane-urban-mobility/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/pulselane-urban-mobility/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a strong brand-first hero, perfect color palette, and a clean, atmospheric composition._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/pulselane-urban-mobility/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.7s | 9 | [open](prompts/landing-pages/pulselane-urban-mobility/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a strong brand-first hero, perfect color palette, and a clean, atmospheric composition._ | | | | | | | | | |
 
 ---
 
@@ -390,10 +390,10 @@ A landing page for 'ScanArchive', a digital radio signal archive, using CRT scan
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong execution of the retro-terminal aesthetic with excellent typography and color usage, though the layout feels slightly sparse in the first viewport._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.5s | 8 | [open](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong execution of the retro-terminal aesthetic with excellent typography and color usage, though the layout feels slightly sparse in the first viewport._ | | | | | | | | | |
 
 ---
 
@@ -407,9 +407,9 @@ A landing page for Solaris Energy, a desert-focused solar power startup, using d
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 329s | — | — |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 329s | — | — |
 
 ---
 
@@ -423,10 +423,10 @@ Landing page for 'Vapor & Steel', a sous-vide equipment brand. Features vacuum-s
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/sous-vide-precision-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/landing-pages/sous-vide-precision-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong execution of the 'lab' aesthetic with excellent typography hierarchy and atmospheric UI overlays._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/sous-vide-precision-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.7s | 8 | [open](prompts/landing-pages/sous-vide-precision-lab/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong execution of the 'lab' aesthetic with excellent typography hierarchy and atmospheric UI overlays._ | | | | | | | | | |
 
 ---
 
@@ -440,10 +440,10 @@ Landing page for 'Circuit & Steam', a modern steamboat restaurant. Merges tradit
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/steam-circuit-kitchen/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 5s | 9 | [open](prompts/landing-pages/steam-circuit-kitchen/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'Steam Circuit' concept with a strong visual hierarchy, perfect color palette adherence, and a cohesive cyberpunk aesthetic._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/steam-circuit-kitchen/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.5s | 9 | [open](prompts/landing-pages/steam-circuit-kitchen/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'Steam Circuit' concept with a strong visual hierarchy, perfect color palette adherence, and a cohesive cyberpunk aesthetic._ | | | | | | | | | |
 
 ---
 
@@ -457,10 +457,10 @@ A landing page for 'LoadSafe', a structural monitoring service, using blueprint 
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/structural-load-report/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/structural-load-report/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'engineering report' aesthetic with perfect adherence to the brief's visual and layout requirements._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/structural-load-report/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.3s | 9 | [open](prompts/landing-pages/structural-load-report/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'engineering report' aesthetic with perfect adherence to the brief's visual and layout requirements._ | | | | | | | | | |
 
 ---
 
@@ -474,10 +474,10 @@ A landing page for Terra Forma, an adobe-brick architectural studio, using raw m
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/terra-forma-adobe/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/landing-pages/terra-forma-adobe/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A visually stunning landing page that perfectly captures the 'Terra Forma' brand identity through its use of raw earth tones, expressive typography, and a cohesive atmospheric composition._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/terra-forma-adobe/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.1s | 9 | [open](prompts/landing-pages/terra-forma-adobe/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A visually stunning landing page that perfectly captures the 'Terra Forma' brand identity through its use of raw earth tones, expressive typography, and a cohesive atmospheric composition._ | | | | | | | | | |
 
 ---
 
@@ -491,10 +491,10 @@ Full-bleed coastal agency hero: brand-first, tide-line motion, no cards — only
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/tidal-studio-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/landing-pages/tidal-studio-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A refined, atmospheric hero that nails the 'quiet luxury' mood with strong typography and a clean composition._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/tidal-studio-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.9s | 8 | [open](prompts/landing-pages/tidal-studio-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A refined, atmospheric hero that nails the 'quiet luxury' mood with strong typography and a clean composition._ | | | | | | | | | |
 
 ---
 
@@ -508,10 +508,10 @@ A digital archive landing page featuring rubber-stamp aesthetics, paper-textured
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/vault-archive-stamp/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 5s | 9 | [open](prompts/landing-pages/vault-archive-stamp/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Exceptional execution of the 'bureaucratic retro-modern' brief with perfect adherence to visual rules, typography, and thematic elements._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/vault-archive-stamp/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.1s | 9 | [open](prompts/landing-pages/vault-archive-stamp/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Exceptional execution of the 'bureaucratic retro-modern' brief with perfect adherence to visual rules, typography, and thematic elements._ | | | | | | | | | |
 
 ---
 
@@ -525,10 +525,10 @@ A movie release landing page for 'Velour', a noir film. The hero is a dynamic po
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/velour-cinema-poster/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 9 | [open](prompts/landing-pages/velour-cinema-poster/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the film noir aesthetic with strong typography and atmospheric lighting._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/velour-cinema-poster/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.6s | 9 | [open](prompts/landing-pages/velour-cinema-poster/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the film noir aesthetic with strong typography and atmospheric lighting._ | | | | | | | | | |
 
 ---
 
@@ -544,10 +544,10 @@ Brand motion for Axiom Foundry morphing a circular monogram into a wordmark with
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/axiom-foundry-logo-morph/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/animations/axiom-foundry-logo-morph/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong brand-motion composition with correct palette, expressive monogram, and a clean timeline UI that reads as a single intentional frame._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/axiom-foundry-logo-morph/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.6s | 8 | [open](prompts/animations/axiom-foundry-logo-morph/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong brand-motion composition with correct palette, expressive monogram, and a clean timeline UI that reads as a single intentional frame._ | | | | | | | | | |
 
 ---
 
@@ -561,9 +561,9 @@ Microscopic bone-white dust particles caught in a thermal updraft, spiraling upw
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 149s | — | [open](prompts/animations/bone-dust-spiral/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 149s | — | [open](prompts/animations/bone-dust-spiral/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -577,10 +577,10 @@ A heavy, textured paper layer tears open to reveal a hidden layer, emphasizing t
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/fibrous-paper-tear/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/animations/fibrous-paper-tear/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'Fibrous Paper Tear' concept, with a convincing static representation of the tear line, paper texture, and depth._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/fibrous-paper-tear/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.0s | 9 | [open](prompts/animations/fibrous-paper-tear/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'Fibrous Paper Tear' concept, with a convincing static representation of the tear line, paper texture, and depth._ | | | | | | | | | |
 
 ---
 
@@ -594,9 +594,9 @@ Macro animation of white porcelain cooling, revealing intricate crackle glaze pa
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 96s | — | — |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 96s | — | — |
 
 ---
 
@@ -610,10 +610,10 @@ Overlapping CMYK halftone dot grids rotate slowly, creating hypnotic moiré inte
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 9s | 8 | [open](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong execution of the brief with excellent typographic hierarchy and accurate color blending, though the background pattern is static rather than showing the requested circular/rotational moiré interference._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.8s | 8 | [open](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong execution of the brief with excellent typographic hierarchy and accurate color blending, though the background pattern is static rather than showing the requested circular/rotational moiré interference._ | | | | | | | | | |
 
 ---
 
@@ -627,10 +627,10 @@ A sheet of hammered copper reacts to invisible forces, rippling with liquid-meta
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/hammered-copper-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/animations/hammered-copper-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong industrial aesthetic with excellent typography and atmospheric background, though the copper texture appears somewhat soft/blurry rather than sharp._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/hammered-copper-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.0s | 8 | [open](prompts/animations/hammered-copper-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong industrial aesthetic with excellent typography and atmospheric background, though the copper texture appears somewhat soft/blurry rather than sharp._ | | | | | | | | | |
 
 ---
 
@@ -644,10 +644,10 @@ Close-up of soft tin sheet being hammered into a curved hull, showing progressiv
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/hammered-tin-hull/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 9 | [open](prompts/animations/hammered-tin-hull/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'cold working' concept with a realistic, dull silver material and a clear visual representation of the 'mosaic' facets._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/hammered-tin-hull/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.5s | 9 | [open](prompts/animations/hammered-tin-hull/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'cold working' concept with a realistic, dull silver material and a clear visual representation of the 'mosaic' facets._ | | | | | | | | | |
 
 ---
 
@@ -661,10 +661,10 @@ The precise moment an ink brush lifts from paper, showing the ink's viscosity, t
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/ink-brush-lifting/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 9s | 6 | [open](prompts/animations/ink-brush-lifting/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A clean, minimalist composition that captures the mood well but lacks the requested photorealistic macro detail and material texture._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/ink-brush-lifting/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.8s | 6 | [open](prompts/animations/ink-brush-lifting/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A clean, minimalist composition that captures the mood well but lacks the requested photorealistic macro detail and material texture._ | | | | | | | | | |
 
 ---
 
@@ -678,10 +678,10 @@ Simulating the physical compression of paper under a heavy letterpress block. Te
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/letterpress-emboss-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 5s | 9 | [open](prompts/animations/letterpress-emboss-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the letterpress effect with realistic shadow logic and a clean, tactile composition._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/letterpress-emboss-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.0s | 9 | [open](prompts/animations/letterpress-emboss-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the letterpress effect with realistic shadow logic and a clean, tactile composition._ | | | | | | | | | |
 
 ---
 
@@ -695,10 +695,10 @@ A macro animation of high-thread-count linen being pressed by a clean, white cer
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/linen-press-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/animations/linen-press-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'craft' aesthetic with a sophisticated, high-contrast typographic layout and a clean, well-rendered 3D plate._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/linen-press-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.1s | 8 | [open](prompts/animations/linen-press-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'craft' aesthetic with a sophisticated, high-contrast typographic layout and a clean, well-rendered 3D plate._ | | | | | | | | | |
 
 ---
 
@@ -712,10 +712,10 @@ Nav labels gently orbit/attract toward the cursor with spring damping — tactil
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/magnetic-cursor-orbit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 6 | [open](prompts/animations/magnetic-cursor-orbit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Clean, premium dark editorial layout with a clear nav and spring-constant documentation, but the background is flat and the core magnetic/orbit interaction is invisible in a static shot._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/magnetic-cursor-orbit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.5s | 6 | [open](prompts/animations/magnetic-cursor-orbit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Clean, premium dark editorial layout with a clear nav and spring-constant documentation, but the background is flat and the core magnetic/orbit interaction is invisible in a static shot._ | | | | | | | | | |
 
 ---
 
@@ -729,10 +729,10 @@ Cursor-bound navigation rail for Vector Harbor where items lean, scale, and magn
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/magnetic-nav-rail/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 9s | 6 | [open](prompts/animations/magnetic-nav-rail/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Clean, on-brief nav rail with correct palette and icons, but the brand name 'Vector Harbor' is absent and the page is mostly empty._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/magnetic-nav-rail/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 9.1s | 6 | [open](prompts/animations/magnetic-nav-rail/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Clean, on-brief nav rail with correct palette and icons, but the brand name 'Vector Harbor' is absent and the page is mostly empty._ | | | | | | | | | |
 
 ---
 
@@ -746,10 +746,10 @@ High-speed slow-motion visualization of molten glass pouring, emphasizing extrem
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/molten-glass-pour/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/animations/molten-glass-pour/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a visually striking, realistic molten glass render and sophisticated typography._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/molten-glass-pour/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.8s | 9 | [open](prompts/animations/molten-glass-pour/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a visually striking, realistic molten glass render and sophisticated typography._ | | | | | | | | | |
 
 ---
 
@@ -763,9 +763,9 @@ Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold f
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | — | — | — | — | — |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | — | — | — | — | — | — | — | — |
 
 ---
 
@@ -779,10 +779,10 @@ A block of obsidian fractures along conchoidal lines, revealing razor-sharp edge
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/obsidian-sheer-slice/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 6 | [open](prompts/animations/obsidian-sheer-slice/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong typographic composition and brand presence, but the visual focus is a generic lightning graphic rather than the requested macro obsidian fracture._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/obsidian-sheer-slice/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.3s | 6 | [open](prompts/animations/obsidian-sheer-slice/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong typographic composition and brand presence, but the visual focus is a generic lightning graphic rather than the requested macro obsidian fracture._ | | | | | | | | | |
 
 ---
 
@@ -796,10 +796,10 @@ A time-lapse animation of polished brass tarnishing, where dark verdigris blooms
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/oxidized-brass-tarnish/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/animations/oxidized-brass-tarnish/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent atmospheric execution of the brief with realistic verdigris textures, strong typography, and a cohesive material-aging aesthetic._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/oxidized-brass-tarnish/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.8s | 8 | [open](prompts/animations/oxidized-brass-tarnish/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent atmospheric execution of the brief with realistic verdigris textures, strong typography, and a cohesive material-aging aesthetic._ | | | | | | | | | |
 
 ---
 
@@ -813,10 +813,10 @@ Three-plane scroll parallax with depth fog — landscape storytelling that stays
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/parallax-depth-layers/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 5s | 8 | [open](prompts/animations/parallax-depth-layers/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent atmospheric execution with clear depth layering and strong typography, though the foreground silhouette could be more distinct._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/parallax-depth-layers/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.3s | 8 | [open](prompts/animations/parallax-depth-layers/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent atmospheric execution with clear depth layering and strong typography, though the foreground silhouette could be more distinct._ | | | | | | | | | |
 
 ---
 
@@ -830,10 +830,10 @@ A continuous loop of two-color screen print shifting in and out of perfect regis
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/riso-registration-shift/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/animations/riso-registration-shift/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the Riso misregistration concept, perfectly capturing the mechanical aesthetic, color blending, and layout requirements._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/riso-registration-shift/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.1s | 9 | [open](prompts/animations/riso-registration-shift/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the Riso misregistration concept, perfectly capturing the mechanical aesthetic, color blending, and layout requirements._ | | | | | | | | | |
 
 ---
 
@@ -847,10 +847,10 @@ A macro animation of saffron threads dissolving in clear water, creating intrica
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/saffron-watercolor-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 8 | [open](prompts/animations/saffron-watercolor-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'high-key studio' aesthetic with a sophisticated, editorial layout that perfectly balances typography and the fluid simulation._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/saffron-watercolor-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.6s | 8 | [open](prompts/animations/saffron-watercolor-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'high-key studio' aesthetic with a sophisticated, editorial layout that perfectly balances typography and the fluid simulation._ | | | | | | | | | |
 
 ---
 
@@ -878,10 +878,10 @@ Editorial headline reveal via line masks and stagger — cinematic entrance with
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/staggered-mask-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/animations/staggered-mask-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong editorial composition with a characterful display face, warm dark grade, and clean hierarchy that fits the darkroom/print-shop mood._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/staggered-mask-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.4s | 8 | [open](prompts/animations/staggered-mask-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong editorial composition with a characterful display face, warm dark grade, and clean hierarchy that fits the darkroom/print-shop mood._ | | | | | | | | | |
 
 ---
 
@@ -895,10 +895,10 @@ A macro shot of a brushed stainless steel surface where a moving light source re
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/stainless-brushed-light-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 6 | [open](prompts/animations/stainless-brushed-light-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _The layout is clean and industrial, but the hero visual is too dark to demonstrate the requested brushed metal texture or light sweep effect._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/stainless-brushed-light-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.3s | 6 | [open](prompts/animations/stainless-brushed-light-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _The layout is clean and industrial, but the hero visual is too dark to demonstrate the requested brushed metal texture or light sweep effect._ | | | | | | | | | |
 
 ---
 
@@ -926,10 +926,10 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 6 | [open](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong typography and atmospheric background, but the 3D scene fails to render the actual 'woven' structure, appearing as disconnected floating pills._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.1s | 6 | [open](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong typography and atmospheric background, but the 3D scene fails to render the actual 'woven' structure, appearing as disconnected floating pills._ | | | | | | | | | |
 
 ---
 
@@ -945,10 +945,10 @@ A generative visual where bioluminescent spores drift upward in a dark void, rea
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/bioluminescent-spore-dispersion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/concepts/bioluminescent-spore-dispersion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A faithful, atmospheric execution of the brief with excellent color palette and particle variance, though the background lacks the requested 'foliage shadow' depth._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/bioluminescent-spore-dispersion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.8s | 8 | [open](prompts/concepts/bioluminescent-spore-dispersion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A faithful, atmospheric execution of the brief with excellent color palette and particle variance, though the background lacks the requested 'foliage shadow' depth._ | | | | | | | | | |
 
 ---
 
@@ -962,10 +962,10 @@ A product configurator where users change the layup of carbon fiber, with real-t
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/carbon-fiber-weave-configurator/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/concepts/carbon-fiber-weave-configurator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a strong central visual, accurate lighting simulation, and a clean, technical UI._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/carbon-fiber-weave-configurator/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.2s | 9 | [open](prompts/concepts/carbon-fiber-weave-configurator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a strong central visual, accurate lighting simulation, and a clean, technical UI._ | | | | | | | | | |
 
 ---
 
@@ -979,10 +979,10 @@ An interactive topographical visualization of desert strata, featuring long, sha
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/dune-strata-geology-map/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/concepts/dune-strata-geology-map/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'data-as-art' brief, perfectly capturing the minimalist, arid, and technical aesthetic with high-fidelity typography and layout._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/dune-strata-geology-map/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.8s | 9 | [open](prompts/concepts/dune-strata-geology-map/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'data-as-art' brief, perfectly capturing the minimalist, arid, and technical aesthetic with high-fidelity typography and layout._ | | | | | | | | | |
 
 ---
 
@@ -996,10 +996,10 @@ Art-direction system: modular editorial brutalism — concrete grid, ink type, r
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/editorial-brutalist-system/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 12s | 8 | [open](prompts/concepts/editorial-brutalist-system/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong, confident brutalist-editorial hero with a monumental BLOCK wordmark and disciplined type, though the background is nearly flat._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/editorial-brutalist-system/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 12s | 8 | [open](prompts/concepts/editorial-brutalist-system/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong, confident brutalist-editorial hero with a monumental BLOCK wordmark and disciplined type, though the background is nearly flat._ | | | | | | | | | |
 
 ---
 
@@ -1027,10 +1027,10 @@ A color selection interface where hues are represented by physical ceramic glaze
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/kiln-fired-glaze-sample/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 8 | [open](prompts/concepts/kiln-fired-glaze-sample/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A highly atmospheric and tactile interface that perfectly captures the 'potter's shelf' metaphor through excellent lighting and 3D rendering._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/kiln-fired-glaze-sample/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.9s | 8 | [open](prompts/concepts/kiln-fired-glaze-sample/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A highly atmospheric and tactile interface that perfectly captures the 'potter's shelf' metaphor through excellent lighting and 3D rendering._ | | | | | | | | | |
 
 ---
 
@@ -1044,10 +1044,10 @@ Typography that behaves like folded linen. Text is printed on fabric that crease
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/linen-fold-typography/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 9s | 6 | [open](prompts/concepts/linen-fold-typography/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A clean, atmospheric composition that captures the mood but fails to render the core 'folded fabric' metaphor, looking more like standard serif typography with a drop shadow._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/linen-fold-typography/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.9s | 6 | [open](prompts/concepts/linen-fold-typography/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A clean, atmospheric composition that captures the mood but fails to render the core 'folded fabric' metaphor, looking more like standard serif typography with a drop shadow._ | | | | | | | | | |
 
 ---
 
@@ -1061,10 +1061,10 @@ A brand wordmark where letters act like magnetic poles. On hover, adjacent lette
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/magnetic-morph-wordmark/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/concepts/magnetic-morph-wordmark/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the brief with a bold, high-contrast wordmark and clean technical UI elements._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/magnetic-morph-wordmark/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.7s | 9 | [open](prompts/concepts/magnetic-morph-wordmark/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the brief with a bold, high-contrast wordmark and clean technical UI elements._ | | | | | | | | | |
 
 ---
 
@@ -1078,10 +1078,10 @@ A UI component library where elements appear to dissolve or warp due to simulate
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/mirage-optical-illusion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 6 | [open](prompts/concepts/mirage-optical-illusion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Captures the minimalist aesthetic and typography well, but fails to show the actual UI components (Input, Button, Toggle) requested in the brief._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/mirage-optical-illusion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.4s | 6 | [open](prompts/concepts/mirage-optical-illusion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Captures the minimalist aesthetic and typography well, but fails to show the actual UI components (Input, Button, Toggle) requested in the brief._ | | | | | | | | | |
 
 ---
 
@@ -1095,10 +1095,10 @@ A seamless loop animation of a night-blooming flower (like a Moonflower) unfurli
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/night-blooming-time-lapse/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 9s | 6 | [open](prompts/concepts/night-blooming-time-lapse/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Captures the correct mood and color palette, but the flower subject looks like a generic 3D spiral or cookie rather than a realistic botanical bloom._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/night-blooming-time-lapse/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.7s | 6 | [open](prompts/concepts/night-blooming-time-lapse/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Captures the correct mood and color palette, but the flower subject looks like a generic 3D spiral or cookie rather than a realistic botanical bloom._ | | | | | | | | | |
 
 ---
 
@@ -1112,10 +1112,10 @@ Night-garden brand moodboard for Lumenflora: bioluminescent botanicals, velvet d
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/nocturnal-garden-moodboard/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/concepts/nocturnal-garden-moodboard/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Strong atmospheric moodboard hero with expressive serif type and bioluminescent glow that perfectly captures the 'nocturnal botanicals' brief._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/nocturnal-garden-moodboard/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.9s | 8 | [open](prompts/concepts/nocturnal-garden-moodboard/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Strong atmospheric moodboard hero with expressive serif type and bioluminescent glow that perfectly captures the 'nocturnal botanicals' brief._ | | | | | | | | | |
 
 ---
 
@@ -1129,10 +1129,10 @@ A data card where the 'value' is revealed by cleaning a tarnished coin. Scrubbin
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/oxidized-coin-valuation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 8 | [open](prompts/concepts/oxidized-coin-valuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent atmospheric execution of the 'oxidized' concept with a strong, moody aesthetic and clear data integration._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/oxidized-coin-valuation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.3s | 8 | [open](prompts/concepts/oxidized-coin-valuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent atmospheric execution of the 'oxidized' concept with a strong, moody aesthetic and clear data integration._ | | | | | | | | | |
 
 ---
 
@@ -1160,10 +1160,10 @@ Typography that reacts to vocal frequency. Letters expand, contract, and distort
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/resonant-vowel-visualizer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/concepts/resonant-vowel-visualizer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'membrane' concept, perfectly visualizing the kinetic typography rules with a strong atmospheric background and clear data visualization._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/resonant-vowel-visualizer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.4s | 9 | [open](prompts/concepts/resonant-vowel-visualizer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'membrane' concept, perfectly visualizing the kinetic typography rules with a strong atmospheric background and clear data visualization._ | | | | | | | | | |
 
 ---
 
@@ -1177,10 +1177,10 @@ A status indicator that visualizes the slow carbonation of slaked lime, where a 
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/slaked-lime-cure-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 8 | [open](prompts/concepts/slaked-lime-cure-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'material transformation' metaphor with a strong brutalist aesthetic and appropriate typography._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/slaked-lime-cure-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.6s | 8 | [open](prompts/concepts/slaked-lime-cure-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'material transformation' metaphor with a strong brutalist aesthetic and appropriate typography._ | | | | | | | | | |
 
 ---
 
@@ -1194,10 +1194,10 @@ Design toolkit blending soft UI radii with industrial material cues — aluminum
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/soft-industrial-toolkit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 9 | [open](prompts/concepts/soft-industrial-toolkit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent execution of the 'soft industrial' brief with a strong, machine-true typographic hero and a clean, token-focused layout._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/soft-industrial-toolkit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 5.8s | 9 | [open](prompts/concepts/soft-industrial-toolkit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent execution of the 'soft industrial' brief with a strong, machine-true typographic hero and a clean, token-focused layout._ | | | | | | | | | |
 
 ---
 
@@ -1225,10 +1225,10 @@ A digital fabric swatch selector featuring high-res textures of desert-worn text
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/sun-bleached-textile-swatches/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 6s | 8 | [open](prompts/concepts/sun-bleached-textile-swatches/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent adherence to the 'sun-bleached' aesthetic with a sophisticated, editorial layout and perfect typography choices._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/sun-bleached-textile-swatches/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.3s | 8 | [open](prompts/concepts/sun-bleached-textile-swatches/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent adherence to the 'sun-bleached' aesthetic with a sophisticated, editorial layout and perfect typography choices._ | | | | | | | | | |
 
 ---
 
@@ -1242,10 +1242,10 @@ Celestial mechanics meets typography. Text orbits a central point, with speed an
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/typographic-tidal-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 8s | 8 | [open](prompts/concepts/typographic-tidal-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _A strong, atmospheric execution of the brief that successfully renders 3D orbital typography with depth and perspective._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/typographic-tidal-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.7s | 8 | [open](prompts/concepts/typographic-tidal-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _A strong, atmospheric execution of the brief that successfully renders 3D orbital typography with depth and perspective._ | | | | | | | | | |
 
 ---
 
@@ -1259,10 +1259,10 @@ Macro-view of dark, glossy leaves where water droplets form, merge, and roll off
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/wet-leaf-surface-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 7s | 9 | [open](prompts/concepts/wet-leaf-surface-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
-| | _Excellent adherence to the 'nocturnal macro' brief with realistic physics, atmospheric lighting, and sophisticated typography._ | | | | | | |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/wet-leaf-surface-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 6.6s | 9 | [open](prompts/concepts/wet-leaf-surface-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| | _Excellent adherence to the 'nocturnal macro' brief with realistic physics, atmospheric lighting, and sophisticated typography._ | | | | | | | | | |
 
 ---
 
@@ -1276,9 +1276,9 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 #### Model runs
 
-| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |
-|:-------:|-------|--------|:-----:|----:|-----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | 190s | — | — |
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 190s | — | — |
 
 ---
 

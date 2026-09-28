@@ -76,6 +76,7 @@ npm run slots
 | `SLOT_POLL_MS` | `15000` | Poll-Intervall |
 | `WORKER_IDLE_MS` | `20000` | Sleep wenn idle / keine Slots |
 | `THINKING_ENABLED` | `false` | `true` → `/think` + live dump; `false` → `/no_think` + `enable_thinking=false` |
+| Run meta timings | — | `ttft_ms` (first token), `gen_ms`/`duration_ms` (generate), `queue_wait_ms`, `wall_ms`; tokens: `context_tokens` (max), `prompt_tokens`, `completion_tokens` |
 | `REBUILD_BELOW_SCORE` | `5` | Score darunter → Demo löschen → Rebuild |
 | `BUILD_MAX_ATTEMPTS` | `3` | danach `abandoned` |
 
