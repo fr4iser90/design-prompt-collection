@@ -231,9 +231,7 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
             engineCell = `\`${r.engine}\``;
           }
           md += `| ${img} | ${modelCell} | ${engineCell} | ${think} | ${ctx} | ${inn} | ${out} | ${ttft} | ${gen} | ${score} | ${demo} |\n`;
-          if (r.review_summary) {
-            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | | | | | |\n`;
-          }
+          // review_summary stays in run meta / index.json — not as a table row (clutters README)
         }
         md += `\n`;
       } else {
