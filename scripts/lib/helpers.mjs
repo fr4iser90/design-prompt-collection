@@ -46,6 +46,40 @@ export function loadEnvFile(envPath) {
   return true;
 }
 
+/**
+ * Env for non-interactive `git push` using GITHUB_TOKEN / GH_TOKEN.
+ * Sets http.extraheader (same pattern as GitHub Actions) — does not rewrite remotes.
+ * Returns { env, viaToken } — caller should not log the token.
+ */
+export function gitPushEnv(baseEnv = process.env, { remoteUrl = null } = {}) {
+  const env = { ...baseEnv, GIT_TERMINAL_PROMPT: "0" };
+  const token = (env.GITHUB_TOKEN || env.GH_TOKEN || "").trim();
+  if (!token) return { env, viaToken: false };
+
+  let host = "github.com";
+  if (remoteUrl) {
+    try {
+      if (remoteUrl.startsWith("https://") || remoteUrl.startsWith("http://")) {
+        host = new URL(remoteUrl).host;
+      } else if (remoteUrl.startsWith("git@")) {
+        // git@github.com:owner/repo.git
+        const m = remoteUrl.match(/^git@([^:]+):/);
+        if (m) host = m[1];
+      }
+    } catch {
+      /* keep default */
+    }
+  }
+
+  // Basic x-access-token:PAT — works for classic + fine-grained HTTPS
+  const basic = Buffer.from(`x-access-token:${token}`, "utf8").toString("base64");
+  const n = Number(env.GIT_CONFIG_COUNT || 0);
+  env.GIT_CONFIG_COUNT = String(n + 1);
+  env[`GIT_CONFIG_KEY_${n}`] = `http.https://${host}/.extraheader`;
+  env[`GIT_CONFIG_VALUE_${n}`] = `AUTHORIZATION: basic ${basic}`;
+  return { env, viaToken: true, host };
+}
+
 export function parseArgs(argv) {
   const out = {
     category: null,

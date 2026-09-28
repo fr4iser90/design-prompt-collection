@@ -132,6 +132,8 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     model_slug: slug,
     model_api: result.model_api || cfg.modelApi || cfg.model,
     provider: cfg.provider,
+    engine: cfg.engine || null,
+    engine_link: cfg.engineLink || null,
     demo: "demo/index.html",
     preview: null,
     status: "built",

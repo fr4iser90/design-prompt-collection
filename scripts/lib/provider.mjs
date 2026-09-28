@@ -8,10 +8,13 @@ export function resolveAiConfig(root, { requireKey = true } = {}) {
   loadEnvFile(path.join(root, ".env"));
   const provider = (process.env.AI_PROVIDER || "openrouter").toLowerCase();
   const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
-  // AI_MODEL = label / runs/<slug>/ name
-  // AI_MODEL_API = id sent to /v1/chat/completions (defaults to AI_MODEL)
+  // AI_MODEL = display name + runs/<slug>/ folder
+  // AI_MODEL_API = id sent to /v1/chat/completions (defaults to AI_MODEL; e.g. gateway alias "chat")
+  // AI_ENGINE / AI_ENGINE_LINK = runtime (gufo, llamacpp, …) stored in run meta + README
   const model = process.env.AI_MODEL;
   const modelApi = process.env.AI_MODEL_API || model;
+  const engine = (process.env.AI_ENGINE || "").trim() || null;
+  const engineLink = (process.env.AI_ENGINE_LINK || "").trim() || null;
   let baseUrl = process.env.AI_BASE_URL || PROVIDER_BASES[provider];
   if (requireKey && !apiKey) throw new Error("Missing AI_API_KEY in .env");
   if (!model) throw new Error("Missing AI_MODEL in .env");
@@ -31,6 +34,8 @@ export function resolveAiConfig(root, { requireKey = true } = {}) {
     apiKey: apiKey || "",
     model, // stored in run meta + folder slug
     modelApi, // request body "model"
+    engine,
+    engineLink,
     baseUrl: baseUrl.replace(/\/$/, ""),
     thinkingEnabled,
     stream,

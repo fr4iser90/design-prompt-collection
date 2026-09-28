@@ -69,7 +69,7 @@ npm run slots
 | `--fill-when-below` | `1` | fill erst wenn `build_queue < N` (1 = erst wenn leer) |
 | `--max-parallel` | `2` | parallele Builds (1 Slot frei lassen) |
 | `--commit` / `WORKER_COMMIT` | off | nach Cycle wenn shots+scores fertig (Builds dürfen noch offen sein) |
-| `--push` / `WORKER_PUSH` | off | danach `git push` (eigenes Flag) |
+| `--push` / `WORKER_PUSH` | off | danach `git push` (eigenes Flag; HTTPS nutzt `GITHUB_TOKEN` aus `.env`) |
 | `--stop-after-push` / `WORKER_STOP_AFTER_PUSH` | off | nach erstem erfolgreichen Push STOP schreiben + exit |
 | `--gh-pages` / `WORKER_GH_PAGES` | off | nach Push: `site/dist` bauen + Pages-Workflow triggern |
 | `WAIT_FOR_SLOT` | `true` | vor jedem LLM-Call auf idle Slot warten |

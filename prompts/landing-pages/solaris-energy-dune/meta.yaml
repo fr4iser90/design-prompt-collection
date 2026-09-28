@@ -9,11 +9,11 @@ tags:
   - sustainable
 status: draft
 summary: "A landing page for Solaris Energy, a desert-focused solar power startup, using dune-like curves, bright solar-yellow accents, and data-driven visuals against a bone-white background."
-preview: runs/legacy/preview.png
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
-default_run: legacy
+default_run: null
 source_model: "qwen3.8-flash-next"
 source_provider: "custom"
 created: "2026-09-28"

@@ -182,6 +182,8 @@ async function reviewRun(cfg, entry, run) {
     model_slug: run.slug,
     model_api: result.model_api || cfg.modelApi || prev.model_api,
     provider: run.provider || cfg.provider,
+    engine: run.engine || cfg.engine || prev.engine || null,
+    engine_link: run.engine_link || cfg.engineLink || prev.engine_link || null,
     demo: run.demo_name || "demo/index.html",
     preview: run.preview_name || "preview.png",
     status: "ok",

@@ -1,0 +1,14 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: null
+status: abandoned
+build_attempts: 3
+reject_reason: "build_fail:Aborted — SSE/TCP stream closed (slot should free)"
+rejected_at: "2026-09-28T06:56:35.020Z"
+last_reject_reason: "build_fail:Aborted — SSE/TCP stream closed (slot should free)"

@@ -3,7 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildCatalog, writeCatalog } from "./lib/catalog.mjs";
-import { listRuns, migrateLegacyRun, pickDefaultRun } from "./lib/runs.mjs";
+import {
+  listRuns,
+  migrateLegacyRun,
+  pickDefaultRun,
+  visibleRuns,
+} from "./lib/runs.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -83,14 +88,15 @@ function walkEntries() {
       const meta = parseMeta(fs.readFileSync(metaPath, "utf8"), metaPath);
       const entryPath = path.posix.join("prompts", category, id);
       migrateLegacyRun(dir, "legacy");
-      const runs = listRuns(dir, entryPath);
+      const allRuns = listRuns(dir, entryPath);
+      const runs = visibleRuns(allRuns);
       entries.push({
         ...meta,
         path: entryPath,
         dir,
         meta_path: path.posix.join("prompts", category, id, "meta.yaml"),
         runs,
-        default_run_obj: pickDefaultRun(runs, meta.default_run),
+        default_run_obj: pickDefaultRun(allRuns, meta.default_run),
       });
     }
   }
@@ -175,17 +181,20 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
       const runs = e.runs || [];
       if (runs.length) {
         md += `#### Model runs\n\n`;
-        md += `| Preview | Model | Think | Ctx | Time | Score | Demo |\n`;
-        md += `|:-------:|-------|:-----:|----:|-----:|------:|------|\n`;
+        // Model = AI_MODEL. Engine = AI_ENGINE. Never put AI_MODEL_API (e.g. "chat") in Model.
+        md += `| Preview | Model | Engine | Think | Ctx | Time | Score | Demo |\n`;
+        md += `|:-------:|-------|--------|:-----:|----:|-----:|------:|------|\n`;
         for (const r of runs) {
           const img = r.preview_rel
             ? `![${r.model}](${r.preview_rel})`
             : "—";
-          const demo = r.has_demo ? `[open](${r.demo_rel})` : "—";
-          const mark =
-            e.default_run_obj && e.default_run_obj.slug === r.slug
-              ? " **(default)**"
-              : "";
+          const isDefault =
+            e.default_run_obj && e.default_run_obj.slug === r.slug;
+          const demo = r.has_demo
+            ? isDefault
+              ? `[open](${r.demo_rel}) · default`
+              : `[open](${r.demo_rel})`
+            : "—";
           const score =
             r.review_score != null && Number.isFinite(Number(r.review_score))
               ? String(r.review_score)
@@ -204,12 +213,16 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
             r.duration_ms != null && Number.isFinite(r.duration_ms)
               ? `${Math.round(r.duration_ms / 1000)}s`
               : "—";
-          const modelCell = r.model_api
-            ? `\`${r.model}\`<br><sub>\`${r.model_api}\`</sub>`
-            : `\`${r.model}\``;
-          md += `| ${img} | ${modelCell}${mark} | ${think} | ${ctx} | ${time} | ${score} | ${demo} |\n`;
+          const modelCell = `\`${r.model}\``;
+          let engineCell = "—";
+          if (r.engine && r.engine_link) {
+            engineCell = `[${r.engine}](${r.engine_link})`;
+          } else if (r.engine) {
+            engineCell = `\`${r.engine}\``;
+          }
+          md += `| ${img} | ${modelCell} | ${engineCell} | ${think} | ${ctx} | ${time} | ${score} | ${demo} |\n`;
           if (r.review_summary) {
-            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | |\n`;
+            md += `| | _${String(r.review_summary).replaceAll("|", "/")}_ | | | | | | |\n`;
           }
         }
         md += `\n`;
@@ -292,6 +305,8 @@ function main() {
         model: r.model,
         model_api: r.model_api,
         provider: r.provider,
+        engine: r.engine,
+        engine_link: r.engine_link,
         built_at: r.built_at,
         thinking_enabled: r.thinking_enabled,
         stream: r.stream,

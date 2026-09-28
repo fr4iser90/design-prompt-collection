@@ -11,11 +11,11 @@ tags:
   - haptic
 status: draft
 summary: "Macro animation of white porcelain cooling, revealing intricate crackle glaze patterns with a shifting subsurface light reflection."
-preview: runs/legacy/preview.png
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
-default_run: legacy
+default_run: null
 source_model: "qwen3.8-flash-next"
 source_provider: "custom"
 created: "2026-09-28"

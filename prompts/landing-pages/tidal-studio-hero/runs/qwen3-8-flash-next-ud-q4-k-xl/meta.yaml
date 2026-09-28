@@ -1,0 +1,20 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+duration_ms: 5922
+review_score: 8
+review_summary: "A refined, atmospheric hero that nails the 'quiet luxury' mood with strong typography and a clean composition."
+reviewed_at: "2026-09-28T06:22:50.927Z"
+review_issues:
+  - "Background is a smooth gradient rather than a textured photo/painterly plane with grain as requested."
+  - "CTA button is a solid pill shape, which slightly conflicts with the 'swelling underline' motion description (though it looks good)."

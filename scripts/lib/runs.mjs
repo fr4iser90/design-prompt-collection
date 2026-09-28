@@ -201,6 +201,8 @@ export function writeRunMeta(runPath, data) {
     model_slug: merged.model_slug || modelSlug(merged.model),
     model_api: merged.model_api || null,
     provider: merged.provider || null,
+    engine: merged.engine || null,
+    engine_link: merged.engine_link || null,
     built_at: merged.built_at || today(),
     updated: today(),
     demo: merged.demo || "demo/index.html",
@@ -237,7 +239,10 @@ model_slug: ${meta.model_slug}
 `;
   if (meta.model_api) text += `model_api: ${q(meta.model_api)}\n`;
   text += `provider: ${q(meta.provider)}
-built_at: "${meta.built_at}"
+`;
+  if (meta.engine) text += `engine: ${q(meta.engine)}\n`;
+  if (meta.engine_link) text += `engine_link: ${q(meta.engine_link)}\n`;
+  text += `built_at: "${meta.built_at}"
 updated: "${meta.updated}"
 demo: ${meta.demo}
 preview: ${meta.preview ? meta.preview : "null"}
@@ -294,6 +299,20 @@ export function readRunMeta(runPath) {
   return parseMeta(fs.readFileSync(p, "utf8"), p);
 }
 
+/** Migrated pre-runs/ snapshots — not a real model benchmark. */
+export function isLegacyRun(run) {
+  if (!run) return false;
+  const slug = String(run.slug || run.model_slug || "").toLowerCase();
+  const model = String(run.model || "").toLowerCase();
+  const provider = String(run.provider || "").toLowerCase();
+  return slug === "legacy" || model === "legacy" || provider === "legacy";
+}
+
+/** Runs shown in README / index (excludes legacy migration folders). */
+export function visibleRuns(runs) {
+  return (runs || []).filter((r) => !isLegacyRun(r));
+}
+
 /** Discover all model runs for an entry (filesystem is source of truth). */
 export function listRuns(entryDir, entryRelPosix) {
   const root = runsRoot(entryDir);
@@ -332,6 +351,8 @@ export function listRuns(entryDir, entryRelPosix) {
       model: meta.model || slug,
       model_api: meta.model_api || null,
       provider: meta.provider || null,
+      engine: meta.engine || null,
+      engine_link: meta.engine_link || null,
       built_at: meta.built_at || null,
       status: meta.status || "built",
       build_attempts: numOrNull(meta.build_attempts) || 0,
@@ -438,14 +459,18 @@ export function repairStaleEntryPointers(entries, updateMetaFields) {
   return n;
 }
 
-/** Pick default run: meta.default_run, else newest with shot preview, else newest with demo. */
+/** Pick default run: meta.default_run, else newest with shot preview, else newest with demo.
+ * Prefers non-legacy runs so migration snapshots never win the default badge. */
 export function pickDefaultRun(runs, defaultSlug) {
   if (!runs.length) return null;
+  const preferred = visibleRuns(runs);
+  const pool = preferred.length ? preferred : runs;
   if (defaultSlug) {
-    const hit = runs.find((r) => r.slug === defaultSlug);
+    const hit = pool.find((r) => r.slug === defaultSlug);
     if (hit) return hit;
+    // Explicit default_run pointing at legacy: fall through to a real run if any
   }
-  const withPreview = [...runs]
+  const withPreview = [...pool]
     .filter(
       (r) =>
         r.has_preview &&
@@ -454,9 +479,9 @@ export function pickDefaultRun(runs, defaultSlug) {
     )
     .reverse();
   if (withPreview.length) return withPreview[0];
-  const withDemo = [...runs].filter((r) => r.has_demo).reverse();
+  const withDemo = [...pool].filter((r) => r.has_demo).reverse();
   if (withDemo.length) return withDemo[0];
-  return runs[runs.length - 1];
+  return pool[pool.length - 1];
 }
 
 /**
@@ -481,6 +506,7 @@ export function migrateLegacyRun(entryDir, slug = "legacy") {
       writeRunMeta(dest, {
         model: slug,
         model_slug: slug,
+        provider: "legacy",
         demo: fs.existsSync(targetDemo) ? "demo/index.html" : null,
         preview: fs.existsSync(targetPreview) ? "preview.png" : null,
       });

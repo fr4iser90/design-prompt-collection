@@ -154,6 +154,8 @@ async function shotRun(browser, entry, run) {
       model: run.model,
       model_slug: run.slug,
       provider: run.provider,
+      engine: run.engine || prev.engine || null,
+      engine_link: run.engine_link || prev.engine_link || null,
       demo: "demo/index.html",
       preview: "preview.png",
       status: "shot",

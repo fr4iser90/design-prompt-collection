@@ -26,7 +26,8 @@
     "worker": "node scripts/worker.mjs",
     "worker:status": "node scripts/worker.mjs --status",
     "stop": "node scripts/stop-worker.mjs",
-    "slots": "node scripts/slots-status.mjs"
+    "slots": "node scripts/slots-status.mjs",
+    "migrate:runs": "node scripts/migrate-run-slug.mjs"
   },
   "engines": {
     "node": ">=18"

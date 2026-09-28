@@ -18,7 +18,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { modelSlug, hasRunDemo, listRuns, migrateLegacyRun, isAbandonedRun, repairStaleEntryPointers } from "./lib/runs.mjs";
 import { fetchModelSlots, waitForIdleSlot } from "./lib/slots.mjs";
-import { envFlag } from "./lib/helpers.mjs";
+import { envFlag, gitPushEnv, loadEnvFile } from "./lib/helpers.mjs";
 import { resolveAiConfig, walkEntries, updateMetaFields } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -425,10 +425,44 @@ function tryCommit(state, opts, summary) {
 
 function tryPush(state, opts) {
   if (!opts.push) return false;
+  // Ensure .env token is loaded even if resolveAiConfig skipped
+  loadEnvFile(path.join(ROOT, ".env"));
+
+  const remote = spawnSync("git", ["remote", "get-url", "origin"], {
+    cwd: ROOT,
+    encoding: "utf8",
+  });
+  const remoteUrl = (remote.stdout || "").trim() || null;
+
+  if (remoteUrl && /^git@|^ssh:\/\//i.test(remoteUrl)) {
+    console.log("  push via SSH remote (GITHUB_TOKEN unused — SSH key auth)…");
+    const push = spawnSync("git", ["push"], {
+      cwd: ROOT,
+      stdio: "inherit",
+      env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+    });
+    if (push.status === 0) {
+      state.pushes = (state.pushes || 0) + 1;
+      saveState(state);
+      console.log("  ✓ pushed");
+      return true;
+    }
+    console.warn("  push failed — check SSH key / remote");
+    return false;
+  }
+
+  const { env, viaToken, host } = gitPushEnv(process.env, { remoteUrl });
+
+  if (viaToken) {
+    console.log(`  push via GITHUB_TOKEN (${host})…`);
+  } else {
+    console.log("  push (no GITHUB_TOKEN — using git credentials)…");
+  }
+
   const push = spawnSync("git", ["push"], {
     cwd: ROOT,
     stdio: "inherit",
-    env: process.env,
+    env,
   });
   if (push.status === 0) {
     state.pushes = (state.pushes || 0) + 1;
@@ -436,7 +470,9 @@ function tryPush(state, opts) {
     console.log("  ✓ pushed");
     return true;
   }
-  console.warn("  push failed — fix remote/auth and push manually");
+  console.warn(
+    "  push failed — check GITHUB_TOKEN scopes (repo + workflow) or git remote auth"
+  );
   return false;
 }
 

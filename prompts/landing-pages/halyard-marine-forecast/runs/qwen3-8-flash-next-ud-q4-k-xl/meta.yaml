@@ -1,0 +1,20 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-27"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+duration_ms: 4461
+review_score: 8
+review_summary: "Strong atmospheric hero with excellent typography and data-viz integration, though the headline wrapping is slightly awkward."
+reviewed_at: "2026-09-28T06:22:29.801Z"
+review_issues:
+  - "Headline 'HALYARD' wraps awkwardly to a second line ('D')"
+  - "Body text overlaps with the route ribbon line"
