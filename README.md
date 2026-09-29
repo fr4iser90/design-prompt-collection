@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 204 | 204 | 172 | 32 |
+| 212 | 204 | 180 | 32 |
 
 ## Quick start
 
@@ -3021,6 +3021,20 @@ Guide a steel ball to a goal by placing magnets that visualize real-time magneti
 
 ---
 
+### Syncthron Drive
+
+Engage a sliding gear exactly when teeth align with rotating drivers. Misalignment grinds the shaft. Reach 5000 RPM to win.
+
+**Status:** polished · `canvas2d` `rhythm-timing` `mechanical` `precision` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/gear-shift-syncthron/prompt.md) · [extended](prompts/games/gear-shift-syncthron/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Gimbal Lock
 
 Rotate gimbals to align a laser with a moving target; fight precession and RPM decay to keep the beam steady.
@@ -3037,6 +3051,20 @@ Rotate gimbals to align a laser with a moving target; fight precession and RPM d
 
 ---
 
+### Pulse Fix
+
+Defibrillate the arrhythmia. Click precisely on the QRS spike to stabilize the ECG line. Miss the beat, and the patient flatlines.
+
+**Status:** polished · `canvas2d` `rhythm-timing` `medical` `pattern-recognition` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/heartbeat-defibrillator/prompt.md) · [extended](prompts/games/heartbeat-defibrillator/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Harmonic Chorus
 
 Adjust pendulum length to match resonant frequency of glass targets. Release to swing; correct timing shatters glass. Fail on mismatch or timeout.
@@ -3050,6 +3078,20 @@ Adjust pendulum length to match resonant frequency of glass targets. Release to 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/pendulum-wave-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.7s | 450s | 9 | [open](prompts/games/pendulum-wave-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Echo Chamber Sync
+
+Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to emit expanding rings, hitting targets within tight tolerance while avoiding noise hazards. Features responsive desktop/mobile controls,…
+
+**Status:** polished · `canvas2d` `rhythm-timing` `sonar` `audio-visual` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/sonar-pulse-echo-sync/prompt.md) · [extended](prompts/games/sonar-pulse-echo-sync/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3084,6 +3126,34 @@ Interactive 3D aurora curtain built with vertex-displaced planes and additive bl
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.8s | 308s | 2 | [open](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Topological Chiral Ribbon
+
+A raw WebGL parametric surface morphing between Mobius and hyperbolic paraboloid states via vertex shader scrubbing, revealing Gaussian curvature through Fresnel-shifted chiral coloring.
+
+**Status:** polished · `webgl` `topology` `vertex-shader` `parametric-surface` `geometry` `math-art` `raw-webgl` `sdf` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/chiral-mobius-strip-ribbon/prompt.md) · [extended](prompts/webgl/chiral-mobius-strip-ribbon/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Laser Interference Pattern
+
+A full-screen WebGL simulation of two coherent light sources creating shifting moiré patterns and standing waves via accurate wave superposition math in a fragment shader.
+
+**Status:** polished · `webgl` `interference` `wave-sim` `optics` `fragment-shader` `abstract` `three-js` `raw-shader` `physics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/holographic-interference-plate/prompt.md) · [extended](prompts/webgl/holographic-interference-plate/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3135,7 +3205,35 @@ Interactive 3D velvet cushion where mouse drag physically deforms the mesh and r
 
 ---
 
+### Hydraulic Voxel Erosion
+
+Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; compute shaders simulate water flow and sediment transport, carving deep channels into procedural terrain with visible wetness maps.
+
+**Status:** polished · `webgl` `compute-shader` `erosion` `procedural` `voxel` `terrain` `deliverable-single-file-html-css-js` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/voxel-erosion-hydraulic-map/prompt.md) · [extended](prompts/webgl/voxel-erosion-hydraulic-map/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ## Editorial
+
+### Foundry & Flaw
+
+Editorial design for Matrix Quarterly simulating lead type casting. Features Bodoni Moda headlines, IBM Plex Mono body, and a 12-column grid with beveled 'furniture' lines. Includes drop animations, re-casting…
+
+**Status:** polished · `typography` `casting` `lead` `weight` `grid` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/hammered-lead-type/prompt.md) · [extended](prompts/editorial/hammered-lead-type/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
 
 ### The Chef's Fold
 
@@ -3150,6 +3248,20 @@ A recipe journal where the layout behaves like a folded linen napkin. Scrolling 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.9s | 448s | 2 | [open](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### The Iron Oxide Archive
+
+A digital folio where black stamped text oxidizes into rust flakes as you scroll, revealing archival layers beneath. Hovering polishes text back to reveal hidden history.
+
+**Status:** polished · `oxidation` `decay` `history` `reveal` `iron` `editorial` `tactile` `scroll-driven` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/oxidized-iron-marginalia/prompt.md) · [extended](prompts/editorial/oxidized-iron-marginalia/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3263,7 +3375,7 @@ A conceptual grocery interface using physical ledger metaphors: items hang as pa
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.4s | 269s | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 499ms | 169s | 1 | [open](prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

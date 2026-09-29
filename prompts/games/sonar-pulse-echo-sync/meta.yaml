@@ -1,0 +1,25 @@
+id: sonar-pulse-echo-sync
+title: "Echo Chamber Sync"
+category: games
+tags:
+  - canvas2d
+  - rhythm-timing
+  - sonar
+  - audio-visual
+  - state-stack
+  - game
+status: polished
+summary: "Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to emit expanding rings, hitting targets within tight tolerance while avoiding noise hazards. Features responsive desktop/mobile controls,…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

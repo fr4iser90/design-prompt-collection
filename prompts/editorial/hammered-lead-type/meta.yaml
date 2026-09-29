@@ -1,0 +1,24 @@
+id: hammered-lead-type
+title: "Foundry & Flaw"
+category: editorial
+tags:
+  - typography
+  - casting
+  - lead
+  - weight
+  - grid
+status: polished
+summary: "Editorial design for Matrix Quarterly simulating lead type casting. Features Bodoni Moda headlines, IBM Plex Mono body, and a 12-column grid with beveled 'furniture' lines. Includes drop animations, re-casting…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

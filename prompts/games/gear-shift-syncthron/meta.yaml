@@ -1,0 +1,25 @@
+id: gear-shift-syncthron
+title: "Syncthron Drive"
+category: games
+tags:
+  - canvas2d
+  - rhythm-timing
+  - mechanical
+  - precision
+  - state-stack
+  - game
+status: polished
+summary: "Engage a sliding gear exactly when teeth align with rotating drivers. Misalignment grinds the shaft. Reach 5000 RPM to win."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

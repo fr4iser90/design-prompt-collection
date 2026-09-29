@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T12:32:37.561Z",
+  "generated_at": "2026-09-29T13:13:13.870Z",
   "schema": "schema/entry.schema.json",
-  "count": 204,
+  "count": 212,
   "categories": [
     "landing-pages",
     "animations",
@@ -11613,6 +11613,37 @@
       ]
     },
     {
+      "id": "gear-shift-syncthron",
+      "title": "Syncthron Drive",
+      "category": "games",
+      "tags": [
+        "canvas2d",
+        "rhythm-timing",
+        "mechanical",
+        "precision",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Engage a sliding gear exactly when teeth align with rotating drivers. Misalignment grinds the shaft. Reach 5000 RPM to win.",
+      "path": "prompts/games/gear-shift-syncthron",
+      "preview": null,
+      "prompt": "prompts/games/gear-shift-syncthron/prompt.md",
+      "extended": "prompts/games/gear-shift-syncthron/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "gyroscopic-precession",
       "title": "Gimbal Lock",
       "category": "games",
@@ -11673,6 +11704,37 @@
           "review_summary": "Strong visual identity and typography, but the layout is cluttered with overlapping UI elements and the gyroscope visual is missing."
         }
       ]
+    },
+    {
+      "id": "heartbeat-defibrillator",
+      "title": "Pulse Fix",
+      "category": "games",
+      "tags": [
+        "canvas2d",
+        "rhythm-timing",
+        "medical",
+        "pattern-recognition",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Defibrillate the arrhythmia. Click precisely on the QRS spike to stabilize the ECG line. Miss the beat, and the patient flatlines.",
+      "path": "prompts/games/heartbeat-defibrillator",
+      "preview": null,
+      "prompt": "prompts/games/heartbeat-defibrillator/prompt.md",
+      "extended": "prompts/games/heartbeat-defibrillator/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "pendulum-wave-sync",
@@ -11736,6 +11798,37 @@
           "review_summary": "Excellent execution of the physics toy concept with a cohesive dark aesthetic, expressive typography, and clear HUD integration."
         }
       ]
+    },
+    {
+      "id": "sonar-pulse-echo-sync",
+      "title": "Echo Chamber Sync",
+      "category": "games",
+      "tags": [
+        "canvas2d",
+        "rhythm-timing",
+        "sonar",
+        "audio-visual",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to emit expanding rings, hitting targets within tight tolerance while avoiding noise hazards. Features responsive desktop/mobile controls,…",
+      "path": "prompts/games/sonar-pulse-echo-sync",
+      "preview": null,
+      "prompt": "prompts/games/sonar-pulse-echo-sync/prompt.md",
+      "extended": "prompts/games/sonar-pulse-echo-sync/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "suspension-bridge-tension",
@@ -11860,6 +11953,73 @@
           "review_summary": "The page displays a WebGL initialization error, failing to render the required aurora borealis scene."
         }
       ]
+    },
+    {
+      "id": "chiral-mobius-strip-ribbon",
+      "title": "Topological Chiral Ribbon",
+      "category": "webgl",
+      "tags": [
+        "webgl",
+        "topology",
+        "vertex-shader",
+        "parametric-surface",
+        "geometry",
+        "math-art",
+        "raw-webgl",
+        "sdf"
+      ],
+      "status": "polished",
+      "summary": "A raw WebGL parametric surface morphing between Mobius and hyperbolic paraboloid states via vertex shader scrubbing, revealing Gaussian curvature through Fresnel-shifted chiral coloring.",
+      "path": "prompts/webgl/chiral-mobius-strip-ribbon",
+      "preview": null,
+      "prompt": "prompts/webgl/chiral-mobius-strip-ribbon/prompt.md",
+      "extended": "prompts/webgl/chiral-mobius-strip-ribbon/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "holographic-interference-plate",
+      "title": "Laser Interference Pattern",
+      "category": "webgl",
+      "tags": [
+        "webgl",
+        "interference",
+        "wave-sim",
+        "optics",
+        "fragment-shader",
+        "abstract",
+        "three-js",
+        "raw-shader",
+        "physics"
+      ],
+      "status": "polished",
+      "summary": "A full-screen WebGL simulation of two coherent light sources creating shifting moiré patterns and standing waves via accurate wave superposition math in a fragment shader.",
+      "path": "prompts/webgl/holographic-interference-plate",
+      "preview": null,
+      "prompt": "prompts/webgl/holographic-interference-plate/prompt.md",
+      "extended": "prompts/webgl/holographic-interference-plate/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "ink-in-water-shader-simulation",
@@ -12047,6 +12207,68 @@
       ]
     },
     {
+      "id": "voxel-erosion-hydraulic-map",
+      "title": "Hydraulic Voxel Erosion",
+      "category": "webgl",
+      "tags": [
+        "webgl",
+        "compute-shader",
+        "erosion",
+        "procedural",
+        "voxel",
+        "terrain",
+        "deliverable-single-file-html-css-js"
+      ],
+      "status": "polished",
+      "summary": "Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; compute shaders simulate water flow and sediment transport, carving deep channels into procedural terrain with visible wetness maps.",
+      "path": "prompts/webgl/voxel-erosion-hydraulic-map",
+      "preview": null,
+      "prompt": "prompts/webgl/voxel-erosion-hydraulic-map/prompt.md",
+      "extended": "prompts/webgl/voxel-erosion-hydraulic-map/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "hammered-lead-type",
+      "title": "Foundry & Flaw",
+      "category": "editorial",
+      "tags": [
+        "typography",
+        "casting",
+        "lead",
+        "weight",
+        "grid"
+      ],
+      "status": "polished",
+      "summary": "Editorial design for Matrix Quarterly simulating lead type casting. Features Bodoni Moda headlines, IBM Plex Mono body, and a 12-column grid with beveled 'furniture' lines. Includes drop animations, re-casting…",
+      "path": "prompts/editorial/hammered-lead-type",
+      "preview": null,
+      "prompt": "prompts/editorial/hammered-lead-type/prompt.md",
+      "extended": "prompts/editorial/hammered-lead-type/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "linen-fold-accordion",
       "title": "The Chef's Fold",
       "category": "editorial",
@@ -12105,6 +12327,39 @@
           "review_summary": "Hero viewport is essentially blank—only a small nav logo and links, with no large Playfair headline, no hero content, and no visible fold structure."
         }
       ]
+    },
+    {
+      "id": "oxidized-iron-marginalia",
+      "title": "The Iron Oxide Archive",
+      "category": "editorial",
+      "tags": [
+        "oxidation",
+        "decay",
+        "history",
+        "reveal",
+        "iron",
+        "editorial",
+        "tactile",
+        "scroll-driven"
+      ],
+      "status": "polished",
+      "summary": "A digital folio where black stamped text oxidizes into rust flakes as you scroll, revealing archival layers beneath. Hovering polishes text back to reveal hidden history.",
+      "path": "prompts/editorial/oxidized-iron-marginalia",
+      "preview": null,
+      "prompt": "prompts/editorial/oxidized-iron-marginalia/prompt.md",
+      "extended": "prompts/editorial/oxidized-iron-marginalia/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "sous-vide-bubble-alignment",
@@ -12485,10 +12740,10 @@
       "status": "polished",
       "summary": "A conceptual grocery interface using physical ledger metaphors: items hang as paper tags on a central wire. Cutting tags triggers snappy animations, while cart weight influences the wire's ambient sway.",
       "path": "prompts/interfaces/mon-nob-grocery-ledger",
-      "preview": null,
+      "preview": "prompts/interfaces/mon-nob-grocery-ledger/preview.png",
       "prompt": "prompts/interfaces/mon-nob-grocery-ledger/prompt.md",
       "extended": "prompts/interfaces/mon-nob-grocery-ledger/prompt.full.md",
-      "demo": null,
+      "demo": "prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
       "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
@@ -12514,20 +12769,20 @@
           "stream": true,
           "temperature": 0.65,
           "context_tokens": null,
-          "duration_ms": 268921,
-          "gen_ms": 268921,
-          "ttft_ms": 7385,
-          "queue_wait_ms": 104,
-          "wall_ms": 276466,
+          "duration_ms": 168710,
+          "gen_ms": 168710,
+          "ttft_ms": 499,
+          "queue_wait_ms": 138,
+          "wall_ms": 169414,
           "prompt_tokens": null,
           "completion_tokens": null,
           "total_tokens": null,
           "demo": "prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
-          "preview": null,
-          "has_demo": false,
-          "has_preview": false,
-          "review_score": null,
-          "review_summary": null
+          "preview": "prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "Blank off-white page with no wire, tags, brand name, or ledger—nothing rendered."
         }
       ]
     },

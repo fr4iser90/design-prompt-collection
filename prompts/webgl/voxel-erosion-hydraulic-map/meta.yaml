@@ -1,0 +1,26 @@
+id: voxel-erosion-hydraulic-map
+title: "Hydraulic Voxel Erosion"
+category: webgl
+tags:
+  - webgl
+  - compute-shader
+  - erosion
+  - procedural
+  - voxel
+  - terrain
+  - deliverable-single-file-html-css-js
+status: polished
+summary: "Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; compute shaders simulate water flow and sediment transport, carving deep channels into procedural terrain with visible wetness maps."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
