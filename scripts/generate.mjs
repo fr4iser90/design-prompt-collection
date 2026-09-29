@@ -5,11 +5,11 @@ import { fileURLToPath } from "node:url";
 import { buildCatalog, writeCatalog } from "./lib/catalog.mjs";
 import {
   listRuns,
-  migrateLegacyRun,
   pickDefaultRun,
-  visibleRuns,
+  repairStaleEntryPointers,
 } from "./lib/runs.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
+import { updateMetaFields, walkEntries as walkFsEntries } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -88,9 +88,8 @@ function walkEntries() {
       if (!fs.existsSync(metaPath)) continue;
       const meta = parseMeta(fs.readFileSync(metaPath, "utf8"), metaPath);
       const entryPath = path.posix.join("prompts", category, id);
-      migrateLegacyRun(dir, "legacy");
       const allRuns = listRuns(dir, entryPath);
-      const runs = visibleRuns(allRuns);
+      const runs = allRuns;
       entries.push({
         ...meta,
         path: entryPath,
@@ -280,6 +279,13 @@ Other AIs should read \`AGENTS.md\` and write entries that pass \`npm run build\
 }
 
 function main() {
+  const repaired = repairStaleEntryPointers(
+    walkFsEntries(ROOT),
+    updateMetaFields
+  );
+  if (repaired) {
+    console.log(`Repaired ${repaired} stale entry pointer(s).`);
+  }
   const entries = walkEntries();
   const index = {
     generated_at: new Date().toISOString(),

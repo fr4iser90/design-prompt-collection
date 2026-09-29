@@ -17,7 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { modelSlug, hasRunDemo, listRuns, migrateLegacyRun, isAbandonedRun, repairStaleEntryPointers } from "./lib/runs.mjs";
+import { modelSlug, hasRunDemo, listRuns, isAbandonedRun, repairStaleEntryPointers } from "./lib/runs.mjs";
 import { fetchModelSlots, waitForIdleSlot } from "./lib/slots.mjs";
 import { envFlag, gitPushEnv, loadEnvFile, FILL_CATEGORIES } from "./lib/helpers.mjs";
 import { resolveAiConfig, walkEntries, updateMetaFields } from "./lib/provider.mjs";
@@ -215,7 +215,6 @@ function pendingBuilds(cfg, opts) {
   entries = entries.filter((e) => e.category !== "experiments");
   const out = [];
   for (const e of entries) {
-    migrateLegacyRun(e.dir, "legacy");
     if (isAbandonedRun(e.dir, slug)) continue;
     if (!hasRunDemo(e.dir, slug)) out.push(e);
   }
@@ -227,7 +226,6 @@ function pendingShots(opts) {
   if (opts.category) entries = entries.filter((e) => e.category === opts.category);
   const out = [];
   for (const e of entries) {
-    migrateLegacyRun(e.dir, "legacy");
     const runs = listRuns(e.dir, e.rel).filter((r) => r.has_demo && !r.has_preview);
     if (runs.length) out.push(e);
   }
@@ -240,7 +238,6 @@ function pendingReviews(cfg, opts) {
   if (opts.category) entries = entries.filter((e) => e.category === opts.category);
   const out = [];
   for (const e of entries) {
-    migrateLegacyRun(e.dir, "legacy");
     const runs = listRuns(e.dir, e.rel).filter(
       (r) =>
         r.slug === slug &&
@@ -262,7 +259,6 @@ function inventory(cfg, opts) {
   const builds = [];
   const done = [];
   for (const e of entries) {
-    migrateLegacyRun(e.dir, "legacy");
     if (isAbandonedRun(e.dir, slug)) {
       done.push(e); // gave up — not in build queue
       continue;

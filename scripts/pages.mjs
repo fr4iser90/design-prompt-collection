@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { walkEntries } from "./lib/provider.mjs";
 import { buildCatalog, writeCatalog } from "./lib/catalog.mjs";
-import { listRuns, migrateLegacyRun, pickDefaultRun } from "./lib/runs.mjs";
+import { listRuns, pickDefaultRun } from "./lib/runs.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,7 +98,6 @@ function main() {
   const entries = walkEntries(ROOT)
     .filter((e) => e.status !== "archived")
     .map((e) => {
-      migrateLegacyRun(e.dir, "legacy");
       e.runs = listRuns(e.dir, e.rel);
       e.default_run_obj = pickDefaultRun(e.runs, e.default_run);
       return e;

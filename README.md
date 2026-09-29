@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 185 | 189 | 162 | 23 |
+| 185 | 185 | 153 | 32 |
 
 ## Quick start
 
@@ -379,7 +379,7 @@ A data indexing interface styled as a large-format cyanotype print, where user i
 
 A landing page for 'Yeast & Time', a home fermentation kit brand, using a real-time clock visualization where bubbles rise to indicate the progress of a batch.
 
-**Status:** polished · `fermentation` `time` `clock` `bubbles` `patience` `craft` `amber` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `fermentation` `time` `clock` `bubbles` `patience` `craft` `amber` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/landing-pages/fermentation-clock-timer/prompt.md) · [extended](prompts/landing-pages/fermentation-clock-timer/prompt.full.md)
 
@@ -963,7 +963,6 @@ A landing page for Solaris Energy, a desert-focused solar power startup, using d
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 329s | — | — |
 
 ---
@@ -1164,7 +1163,7 @@ A digital archive landing page featuring rubber-stamp aesthetics, paper-textured
 
 A landing page for 'Ink & Vellum', a high-end calligraphy service, featuring handwritten marginalia that annotates the main text, warm parchment tones, and static, dignified typography.
 
-**Status:** polished · `vellum` `handwriting` `marginalia` `manuscript` `annotation` `warm-neutral` `serif` `static` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `vellum` `handwriting` `marginalia` `manuscript` `annotation` `warm-neutral` `serif` `static` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/landing-pages/vellum-scribe-marginalia/prompt.md) · [extended](prompts/landing-pages/vellum-scribe-marginalia/prompt.full.md)
 
@@ -1196,7 +1195,7 @@ A movie release landing page for 'Velour', a noir film. The hero is a dynamic po
 
 A landing page for 'WeaveWorks', a heat exchanger manufacturer. The hero is a complex, animated SVG of woven copper pipes that pulse with heat (orange glow) and tighten/loosen to demonstrate efficiency.
 
-**Status:** polished · `copper` `weave` `heat` `engineering` `textile` `industrial` `warm` `complex-geometry` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `copper` `weave` `heat` `engineering` `textile` `industrial` `warm` `complex-geometry` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/landing-pages/woven-copper-heat-exchanger/prompt.md) · [extended](prompts/landing-pages/woven-copper-heat-exchanger/prompt.full.md)
 
@@ -1358,7 +1357,7 @@ A wooden library card catalog drawer slides out smoothly. Inside, hundreds of in
 
 Sunlight filtering through rippling water casts dancing caustic patterns on a tiled pool floor. Seamless loop of light and shadow, evoking cool, submerged calm.
 
-**Status:** polished · `caustics` `water-surface` `light-play` `ambient` `refraction` `tileable` `calm` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `caustics` `water-surface` `light-play` `ambient` `refraction` `tileable` `calm` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/animations/caustic-light-refraction-tile/prompt.md) · [extended](prompts/animations/caustic-light-refraction-tile/prompt.full.md)
 
@@ -1454,7 +1453,7 @@ A translucent siphonophore bell expands and contracts in the crushing dark, emit
 
 Numerical classification codes orbit a central void in concentric rings, representing the hierarchical structure of knowledge. Hovering a ring expands its metadata in a clean, north-light interface.
 
-**Status:** polished · `classification` `library` `orbit` `data-viz` `minimalist` `archival` `interaction` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `classification` `library` `orbit` `data-viz` `minimalist` `archival` `interaction` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/animations/dewey-decimal-orbit/prompt.md) · [extended](prompts/animations/dewey-decimal-orbit/prompt.full.md)
 
@@ -1470,7 +1469,7 @@ Numerical classification codes orbit a central void in concentric rings, represe
 
 A minimalist composition where the shadow of a passing dust devil stretches and distorts across a flat, bone-white desert floor.
 
-**Status:** polished · `wind` `shadow` `arid-minimal` `dust-devil` `negative-space` `motion-blur` `desert` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `wind` `shadow` `arid-minimal` `dust-devil` `negative-space` `motion-blur` `desert` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/animations/dust-devil-shadow-play/prompt.md) · [extended](prompts/animations/dust-devil-shadow-play/prompt.full.md)
 
@@ -1590,7 +1589,6 @@ Macro animation of white porcelain cooling, revealing intricate crackle glaze pa
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 96s | — | — |
 
 ---
@@ -1863,7 +1861,6 @@ Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold f
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | — | — | — | — | — | — | — | — |
 
 ---
@@ -1952,7 +1949,7 @@ Two pristine white porcelain lugs rotate and engage with a satisfying, audible '
 
 A brass analog pressure gauge needle trembles and snaps against the redline zone, visualizing system stress and safety protocols with mechanical precision.
 
-**Status:** polished · `analog-gauge` `safety-limit` `needle-physics` `utility-ui` `industrial-monitoring` `haptic-feedback` `status-alert` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `analog-gauge` `safety-limit` `needle-physics` `utility-ui` `industrial-monitoring` `haptic-feedback` `status-alert` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/animations/pressure-gauge-redline-fluctuation/prompt.md) · [extended](prompts/animations/pressure-gauge-redline-fluctuation/prompt.full.md)
 
@@ -2562,7 +2559,7 @@ A UI component library where elements appear to dissolve or warp due to simulate
 
 An interactive material study of Tadelakt, Moroccan lime plaster. Users 'polish' rough stone with a river stone to reveal a smooth, water-resistant, glossy surface.
 
-**Status:** polished · `tadelakt` `morocco` `plaster` `polish` `stone` `texture` `interactive` `material` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `tadelakt` `morocco` `plaster` `polish` `stone` `texture` `interactive` `material` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/concepts/moroccan-tadelakt-polish/prompt.md) · [extended](prompts/concepts/moroccan-tadelakt-polish/prompt.full.md)
 
@@ -2930,7 +2927,7 @@ Celestial mechanics meets typography. Text orbits a central point, with speed an
 
 A slow-motion visualization of volcanic ash falling and settling in distinct strata, creating a textured, gray-scale topography over time.
 
-**Status:** polished · `volcanic` `particle-system` `accumulation` `gray-scale` `texture` `slow-motion` `geology` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+**Status:** draft · `volcanic` `particle-system` `accumulation` `gray-scale` `texture` `slow-motion` `geology` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/concepts/volcanic-ash-layer-accumulator/prompt.md) · [extended](prompts/concepts/volcanic-ash-layer-accumulator/prompt.full.md)
 
@@ -2986,7 +2983,6 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 190s | — | — |
 
 ---

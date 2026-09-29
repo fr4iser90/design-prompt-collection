@@ -1,9 +1,0 @@
-model: "legacy"
-model_slug: legacy
-provider: "legacy"
-built_at: "2026-09-29"
-updated: "2026-09-29"
-demo: demo/index.html
-preview: preview.png
-status: built
-build_attempts: 0

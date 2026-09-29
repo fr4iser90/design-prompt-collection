@@ -10,13 +10,13 @@ tags:
   - texture
   - interactive
   - material
-status: polished
+status: draft
 summary: "An interactive material study of Tadelakt, Moroccan lime plaster. Users 'polish' rough stone with a river stone to reveal a smooth, water-resistant, glossy surface."
-preview: runs/legacy/preview.png
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
-default_run: legacy
+default_run: null
 source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
 source_provider: "custom"
 created: "2026-09-29"

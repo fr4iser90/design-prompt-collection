@@ -13,7 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { walkEntries } from "./lib/provider.mjs";
-import { listRuns, migrateLegacyRun } from "./lib/runs.mjs";
+import { listRuns } from "./lib/runs.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -72,7 +72,6 @@ function blockedSecretsStaged() {
 }
 
 function inspect(entry) {
-  migrateLegacyRun(entry.dir, "legacy");
   const runs = listRuns(entry.dir, entry.rel);
   const completeRuns = runs.filter((r) => r.has_demo && r.has_preview);
   const problems = [];

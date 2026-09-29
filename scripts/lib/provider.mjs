@@ -700,8 +700,8 @@ export function demoPathFor(entry) {
   if (entry.demo) return path.join(entry.dir, entry.demo);
   const preferred = path.join(entry.dir, "demo", "index.html");
   if (fs.existsSync(preferred)) return preferred;
-  const legacy = path.join(entry.dir, "demo.html");
-  if (fs.existsSync(legacy)) return legacy;
+  const flatDemo = path.join(entry.dir, "demo.html");
+  if (fs.existsSync(flatDemo)) return flatDemo;
   return null;
 }
 

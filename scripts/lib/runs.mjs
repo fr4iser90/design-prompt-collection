@@ -261,7 +261,7 @@ build_attempts: ${meta.build_attempts}
   if (meta.context_tokens != null) {
     text += `context_tokens: ${meta.context_tokens}\n`;
   }
-  // duration_ms = gen_ms (primary); keep legacy field + explicit breakdown
+  // duration_ms kept for older run metas; gen_ms is the explicit timing field
   const genMs = meta.gen_ms != null ? meta.gen_ms : meta.duration_ms;
   if (genMs != null) text += `duration_ms: ${genMs}\n`;
   if (meta.gen_ms != null) text += `gen_ms: ${meta.gen_ms}\n`;
@@ -310,20 +310,6 @@ export function readRunMeta(runPath) {
   const p = path.join(runPath, "meta.yaml");
   if (!fs.existsSync(p)) return null;
   return parseMeta(fs.readFileSync(p, "utf8"), p);
-}
-
-/** Migrated pre-runs/ snapshots — not a real model benchmark. */
-export function isLegacyRun(run) {
-  if (!run) return false;
-  const slug = String(run.slug || run.model_slug || "").toLowerCase();
-  const model = String(run.model || "").toLowerCase();
-  const provider = String(run.provider || "").toLowerCase();
-  return slug === "legacy" || model === "legacy" || provider === "legacy";
-}
-
-/** Runs shown in README / index (excludes legacy migration folders). */
-export function visibleRuns(runs) {
-  return (runs || []).filter((r) => !isLegacyRun(r));
 }
 
 /** Discover all model runs for an entry (filesystem is source of truth). */
@@ -477,18 +463,14 @@ export function repairStaleEntryPointers(entries, updateMetaFields) {
   return n;
 }
 
-/** Pick default run: meta.default_run, else newest with shot preview, else newest with demo.
- * Prefers non-legacy runs so migration snapshots never win the default badge. */
+/** Pick default run: meta.default_run, else newest with shot preview, else newest with demo. */
 export function pickDefaultRun(runs, defaultSlug) {
   if (!runs.length) return null;
-  const preferred = visibleRuns(runs);
-  const pool = preferred.length ? preferred : runs;
   if (defaultSlug) {
-    const hit = pool.find((r) => r.slug === defaultSlug);
+    const hit = runs.find((r) => r.slug === defaultSlug);
     if (hit) return hit;
-    // Explicit default_run pointing at legacy: fall through to a real run if any
   }
-  const withPreview = [...pool]
+  const withPreview = [...runs]
     .filter(
       (r) =>
         r.has_preview &&
@@ -497,37 +479,7 @@ export function pickDefaultRun(runs, defaultSlug) {
     )
     .reverse();
   if (withPreview.length) return withPreview[0];
-  const withDemo = [...pool].filter((r) => r.has_demo).reverse();
+  const withDemo = [...runs].filter((r) => r.has_demo).reverse();
   if (withDemo.length) return withDemo[0];
-  return pool[pool.length - 1];
-}
-
-/**
- * Migrate legacy demo/ + root preview.png into runs/<slug>/ once.
- */
-export function migrateLegacyRun(entryDir, slug = "legacy") {
-  const legacyDemo = path.join(entryDir, "demo", "index.html");
-  const targetDemo = path.join(runDir(entryDir, slug), "demo", "index.html");
-  if (fs.existsSync(legacyDemo) && !fs.existsSync(targetDemo)) {
-    fs.mkdirSync(path.dirname(targetDemo), { recursive: true });
-    fs.copyFileSync(legacyDemo, targetDemo);
-  }
-  const legacyPreview = path.join(entryDir, "preview.png");
-  const targetPreview = path.join(runDir(entryDir, slug), "preview.png");
-  if (fs.existsSync(legacyPreview) && !fs.existsSync(targetPreview)) {
-    fs.mkdirSync(path.dirname(targetPreview), { recursive: true });
-    fs.copyFileSync(legacyPreview, targetPreview);
-  }
-  const dest = runDir(entryDir, slug);
-  if (fs.existsSync(targetDemo) || fs.existsSync(targetPreview)) {
-    if (!fs.existsSync(path.join(dest, "meta.yaml"))) {
-      writeRunMeta(dest, {
-        model: slug,
-        model_slug: slug,
-        provider: "legacy",
-        demo: fs.existsSync(targetDemo) ? "demo/index.html" : null,
-        preview: fs.existsSync(targetPreview) ? "preview.png" : null,
-      });
-    }
-  }
+  return runs[runs.length - 1];
 }

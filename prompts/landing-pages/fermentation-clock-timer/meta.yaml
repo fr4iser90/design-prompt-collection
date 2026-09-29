@@ -9,13 +9,13 @@ tags:
   - patience
   - craft
   - amber
-status: polished
+status: draft
 summary: "A landing page for 'Yeast & Time', a home fermentation kit brand, using a real-time clock visualization where bubbles rise to indicate the progress of a batch."
-preview: runs/legacy/preview.png
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
-default_run: legacy
+default_run: null
 source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
 source_provider: "custom"
 created: "2026-09-29"

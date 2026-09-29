@@ -22,7 +22,6 @@ import {
   runDir,
   writeRunMeta,
   hasRunDemo,
-  migrateLegacyRun,
   recordBuildFailure,
   syncEntryPointers,
   isAbandonedRun,
@@ -214,7 +213,6 @@ async function main() {
   if (args.id) entries = entries.filter((e) => e.id === args.id);
   entries = entries.filter((e) => e.status !== "archived");
 
-  for (const e of entries) migrateLegacyRun(e.dir, "legacy");
 
   if (!args.force) {
     entries = entries.filter(

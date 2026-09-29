@@ -19,7 +19,6 @@ import {
   listRuns,
   readRunMeta,
   writeRunMeta,
-  migrateLegacyRun,
 } from "./lib/runs.mjs";
 import {
   resolveAiConfig,
@@ -209,7 +208,6 @@ function collectCandidates(args, onlySlug) {
   if (args.id) entries = entries.filter((e) => e.id === args.id);
   const jobs = [];
   for (const entry of entries) {
-    migrateLegacyRun(entry.dir, "legacy");
     let runs = listRuns(entry.dir, entry.rel).filter((r) => r.has_demo);
     if (onlySlug) runs = runs.filter((r) => r.slug === onlySlug);
     for (const run of runs) {

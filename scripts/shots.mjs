@@ -19,8 +19,7 @@ import { walkEntries, updateMetaFields } from "./lib/provider.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
 import {
   listRuns,
-  migrateLegacyRun,
-  writeRunMeta,
+    writeRunMeta,
   readRunMeta,
   modelSlug,
   pickDefaultRun,
@@ -344,7 +343,6 @@ function collectJobs(args) {
 
   const jobs = [];
   for (const entry of entries) {
-    migrateLegacyRun(entry.dir, "legacy");
     let runs = listRuns(entry.dir, entry.rel).filter((r) => r.has_demo);
     if (args.model) {
       const slug = modelSlug(args.model);

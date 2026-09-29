@@ -9,13 +9,13 @@ tags:
   - minimalist
   - archival
   - interaction
-status: polished
+status: draft
 summary: "Numerical classification codes orbit a central void in concentric rings, representing the hierarchical structure of knowledge. Hovering a ring expands its metadata in a clean, north-light interface."
-preview: runs/legacy/preview.png
+preview: null
 prompt: prompt.md
 extended: prompt.full.md
 demo: null
-default_run: legacy
+default_run: null
 source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
 source_provider: "custom"
 created: "2026-09-28"
