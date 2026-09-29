@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // review.mjs — vision SCORE of runs/<model>/preview.png vs brief → meta + README
-// Does NOT gate commits. Hard validate is build/shots (assertDemoHtmlOk / broken-page).
+// One-shot: never deletes demos or triggers rebuild based on score.
+// Broken-page rejects stay in shots.mjs only.
 //
 //   npm run review
 //   npm run review -- --id vector-harbor-magnetic-nav
@@ -19,15 +20,11 @@ import {
   readRunMeta,
   writeRunMeta,
   migrateLegacyRun,
-  rebuildBelowScore,
-  rejectRunForRebuild,
-  syncEntryPointers,
 } from "./lib/runs.mjs";
 import {
   resolveAiConfig,
   chatCompletions,
   walkEntries,
-  updateMetaFields,
   ONE_HOUR_MS,
 } from "./lib/provider.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
@@ -163,27 +160,8 @@ async function reviewRun(cfg, entry, run) {
     : [];
 
   const prev = readRunMeta(run.dir) || {};
-  const floor = rebuildBelowScore();
 
-  if (score < floor) {
-    const rej = rejectRunForRebuild(run.dir, {
-      reason: `score_${score}_below_${floor}`,
-      model: run.model,
-      model_slug: run.slug,
-      provider: run.provider || cfg.provider,
-      review_score: score,
-      review_summary: summary,
-      review_issues: issues,
-    });
-    syncEntryPointers(entry.dir, entry.rel, entry.metaPath, updateMetaFields);
-    console.log(
-      `  ✗ score=${score}/10 < ${floor} → ${rej.status} attempt ${rej.attempts}/${rej.max}` +
-        (summary ? ` — ${summary}` : "")
-    );
-    if (issues.length) console.log(`    issues: ${issues.join("; ")}`);
-    return { score, summary, issues, rebuilt: true, abandoned: rej.abandoned };
-  }
-
+  // One-shot: never delete/rebuild demos based on vision score.
   writeRunMeta(run.dir, {
     ...prev,
     model: run.model,
@@ -322,23 +300,21 @@ async function main() {
   }
 
   console.log(
-    `Scoring ${filtered.length} run(s) via api=${cfg.modelApi} (rebuild if score < ${rebuildBelowScore()})` +
+    `Scoring ${filtered.length} run(s) via api=${cfg.modelApi} (one-shot — no score rebuild)` +
       (args.force ? " [force]" : "")
   );
   let ok = 0;
-  let rebuilt = 0;
   let fail = 0;
   for (const { entry, run } of filtered) {
     try {
-      const r = await reviewRun(cfg, entry, run);
-      if (r.rebuilt) rebuilt += 1;
-      else ok += 1;
+      await reviewRun(cfg, entry, run);
+      ok += 1;
     } catch (err) {
       fail += 1;
       console.error(`  FAIL ${entry.rel}/${run.slug}: ${err.message}`);
     }
   }
-  console.log(`Score done: ok=${ok} rebuild=${rebuilt} fail=${fail}`);
+  console.log(`Score done: ok=${ok} fail=${fail}`);
   if (fail) process.exitCode = 1;
 }
 

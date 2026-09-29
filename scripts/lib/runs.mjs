@@ -48,10 +48,9 @@ function boolOrNull(v) {
   return null;
 }
 
-/** Score below this → drop demo and rebuild (default 5). */
+/** @deprecated Score rebuild removed (one-shot). Kept so old .env keys don't break imports. */
 export function rebuildBelowScore() {
-  const n = Number(process.env.REBUILD_BELOW_SCORE ?? 5);
-  return Number.isFinite(n) && n >= 1 ? n : 5;
+  return 0;
 }
 
 /** After this many rejects, stop rebuilding (default 3). */

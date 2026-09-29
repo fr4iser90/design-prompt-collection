@@ -6,9 +6,9 @@ Genau der Loop den du willst:
 
 1. Alle fehlenden Demos für `AI_MODEL` / Alias bauen (Slot-Gate, ≤2 parallel)
 2. Screenshots → hart validieren → bei Broken: Demo weg, Rebuild
-3. Vision-Score → README; Score `< REBUILD_BELOW_SCORE` (default 5) → Demo weg, Rebuild
-4. Nach `BUILD_MAX_ATTEMPTS` (default 3) Rejects → `status: abandoned` (kein Endlosloop)
-5. Commit/Push erst wenn Build/Shot/Score-Queue leer
+3. Vision-Score → README (one-shot — **kein** Demo-Löschen / Score-Rebuild)
+4. Nach `BUILD_MAX_ATTEMPTS` (default 3) Rejects wegen **broken shot** → `status: abandoned`
+5. Commit/Push nach jedem produktiven Cycle
 6. Wenn Queue leer: Katalog → neue Prompts → wieder bauen
 
 ```bash
@@ -77,8 +77,7 @@ npm run slots
 | `WORKER_IDLE_MS` | `20000` | Sleep wenn idle / keine Slots |
 | `THINKING_ENABLED` | `false` | `true` → `/think` + live dump; `false` → `/no_think` + `enable_thinking=false` |
 | Run meta timings | — | `ttft_ms` (first token), `gen_ms`/`duration_ms` (generate), `queue_wait_ms`, `wall_ms`; tokens: `context_tokens` (max), `prompt_tokens`, `completion_tokens` |
-| `REBUILD_BELOW_SCORE` | `5` | Score darunter → Demo löschen → Rebuild |
-| `BUILD_MAX_ATTEMPTS` | `3` | danach `abandoned` |
+| `BUILD_MAX_ATTEMPTS` | `3` | nach broken-shot Rejects → `abandoned` (kein Score-Rebuild) |
 
 Run-Meta: Benchmarks + `review_score` (nur wenn behalten), bei Reject `last_review_score` / `preview.rejected.png` / `build_attempts`.
 

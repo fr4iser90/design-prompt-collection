@@ -73,7 +73,7 @@ npm run pipeline                 # ai:build → shots → pages → build
 | `ai:new` | new high-quality prompt briefs (uses `catalog.json`) |
 | `ai:build` | LLM implements each prompt as `runs/<model>/demo/index.html` |
 | `shots` | Playwright screenshots → `preview.png` + regenerate README (auto-installs Chromium if missing) |
-| `review` | vision score → README; score too low or broken shot → rebuild (max attempts then abandoned) |
+| `review` | vision score → README (one-shot; **no** score-based rebuild). Broken shot → rebuild |
 | `pages` | static site → `site/dist` |
 | `pipeline` | build demos + shots + pages + index |
 | `ship` | pipeline + completeness gate (one-shot) |
