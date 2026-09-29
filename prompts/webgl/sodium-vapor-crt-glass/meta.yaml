@@ -1,0 +1,26 @@
+id: sodium-vapor-crt-glass
+title: "Sodium Vapor CRT"
+category: webgl
+tags:
+  - three-js
+  - pbr
+  - volumetric-lighting
+  - glass-shader
+  - thermal-simulation
+  - retro-tech
+  - material-study
+status: polished
+summary: "A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' timeline to accelerate gas phase-change, transitioning light from dull red to bright sodium yellow with thermal distortion."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

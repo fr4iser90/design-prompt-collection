@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 218 | 212 | 186 | 32 |
+| 223 | 218 | 191 | 32 |
 
 ## Quick start
 
@@ -3159,9 +3159,11 @@ Real-time recursive heightmap shader carving river deltas. Slider controls visco
 
 [prompt](prompts/webgl/fractal-deltaic-erosion-mesh/prompt.md) · [extended](prompts/webgl/fractal-deltaic-erosion-mesh/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/fractal-deltaic-erosion-mesh/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.3s | 243s | 1 | [open](prompts/webgl/fractal-deltaic-erosion-mesh/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3205,9 +3207,11 @@ Procedural city block where wireframes solidify into instanced buildings. Scrub 
 
 [prompt](prompts/webgl/lattice-city-block-generator/prompt.md) · [extended](prompts/webgl/lattice-city-block-generator/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/lattice-city-block-generator/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.3s | 245s | 2 | [open](prompts/webgl/lattice-city-block-generator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3243,6 +3247,20 @@ Interactive 3D velvet cushion where mouse drag physically deforms the mesh and r
 
 ---
 
+### Sodium Vapor CRT
+
+A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' timeline to accelerate gas phase-change, transitioning light from dull red to bright sodium yellow with thermal distortion.
+
+**Status:** polished · `three-js` `pbr` `volumetric-lighting` `glass-shader` `thermal-simulation` `retro-tech` `material-study` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/sodium-vapor-crt-glass/prompt.md) · [extended](prompts/webgl/sodium-vapor-crt-glass/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Hydraulic Voxel Erosion
 
 Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; compute shaders simulate water flow and sediment transport, carving deep channels into procedural terrain with visible wetness maps.
@@ -3260,6 +3278,20 @@ Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; comput
 ---
 
 ## Editorial
+
+### The Molting Cycle
+
+Carapace Press: A nocturnal entomological journal where scroll velocity physically shatters the dark chitinous top layer to reveal the pale, bioluminescent substrate beneath.
+
+**Status:** polished · `entomology` `molting` `layers` `organic` `reveal` `night` `bioluminescence` `editorial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/chitin-molting-exoskeleton/prompt.md) · [extended](prompts/editorial/chitin-molting-exoskeleton/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
 
 ### Foundry & Flaw
 
@@ -3285,9 +3317,11 @@ A culinary manual where scroll velocity acts as friction. Text columns split by 
 
 [prompt](prompts/editorial/knife-edge-registration/prompt.md) · [extended](prompts/editorial/knife-edge-registration/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/knife-edge-registration/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 6.9s | 322s | 2 | [open](prompts/editorial/knife-edge-registration/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3331,9 +3365,11 @@ High-fidelity editorial landing page for 'Saline Press' featuring industrial pre
 
 [prompt](prompts/editorial/salt-crystallization-growth/prompt.md) · [extended](prompts/editorial/salt-crystallization-growth/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/salt-crystallization-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.1s | 469s | 3 | [open](prompts/editorial/salt-crystallization-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3403,6 +3439,20 @@ A long-form essay on pasta engineering where text strands stretch, thin, and vib
 
 ## Interfaces
 
+### Studio Soundproofing Planner
+
+Direct manipulation of acoustic physics: drag foam panels onto a room diagram to visualize real-time sound wave reflection dampening and dead-zone creation.
+
+**Status:** polished · `audio` `acoustics` `diagram` `drag-drop` `simulation` `canvas2d` `engineering` `interactive` `precision` `tool-surface` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/acoustic-panel-attenuation/prompt.md) · [extended](prompts/interfaces/acoustic-panel-attenuation/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Verdigris OS: Oxidative Data Excavation
 
 Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, clearing green bloom to reveal crisp white data lines beneath.
@@ -3411,9 +3461,11 @@ Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, 
 
 [prompt](prompts/interfaces/ferrous-oxide-bloom-filter/prompt.md) · [extended](prompts/interfaces/ferrous-oxide-bloom-filter/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/ferrous-oxide-bloom-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.9s | 429s | 8 | [open](prompts/interfaces/ferrous-oxide-bloom-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3449,6 +3501,20 @@ A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 
 
 ---
 
+### Print Shop Ink Calculator
+
+Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split layout. Features CMYK sliders, real-time canvas simulation with ink bleed physics, and industrial styling.
+
+**Status:** polished · `print` `estimation` `canvas` `ink` `tool` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/lithography-ink-coverage/prompt.md) · [extended](prompts/interfaces/lithography-ink-coverage/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Mon no B Groceries
 
 A conceptual grocery interface using physical ledger metaphors: items hang as paper tags on a central wire. Cutting tags triggers snappy animations, while cart weight influences the wire's ambient sway.
@@ -3465,6 +3531,20 @@ A conceptual grocery interface using physical ledger metaphors: items hang as pa
 
 ---
 
+### Air Pressure Task Queue
+
+A physical task queue where priority is pressure. Drag bubbles to inflate; high-pressure tasks pulse, vibrate, and push adjacent tasks away, enforcing spatial hierarchy.
+
+**Status:** polished · `canvas` `physics` `task-management` `industrial-ui` `interactive` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/pneumatic-actuator-queue/prompt.md) · [extended](prompts/interfaces/pneumatic-actuator-queue/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Seismograph Ink Trace
 
 A physical seismograph UI for server health. A rotating drum renders latency as permanent ink traces. Users drag the pen arm to annotate incidents, creating irreversible ink blots.
@@ -3473,9 +3553,11 @@ A physical seismograph UI for server health. A rotating drum renders latency as 
 
 [prompt](prompts/interfaces/seismograph-ink-trace/prompt.md) · [extended](prompts/interfaces/seismograph-ink-trace/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/seismograph-ink-trace/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.3s | 257s | 8 | [open](prompts/interfaces/seismograph-ink-trace/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

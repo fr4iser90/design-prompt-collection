@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tremor Log — Seismograph Ink Trace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f2f0ec;
+    --ink:#1a1a1a;
+    --alert:#d9534f;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --sans:'Source Sans 3','Source Sans Pro', sans-serif;
+    --hair:rgba(26,26,26,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app{display:flex;height:100vh;width:100vw}
+
+  /* ---------- Drum Chamber ---------- */
+  .chamber{position:relative;flex:0 0 70%;height:100%;overflow:hidden;background:var(--paper)}
+  #drum{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:none}
+
+  /* Pen arm */
+  .pen-arm{position:absolute;left:50%;top:0;transform-origin:50% 0;will-change:transform;pointer-events:none;z-index:6}
+  .arm-rod{position:absolute;left:50%;top:0;width:3px;height:100%;transform:translateX(-50%);border-radius:2px;
+    background:linear-gradient(90deg,#0d0d0d 0%,#5c5c5c 42%,#333 55%,#0d0d0d 100%);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.35)}
+  .arm-tip{position:absolute;left:50%;bottom:-1px;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);
+    background:linear-gradient(135deg,#4a4a4a,#0d0d0d);border-radius:2px 0 2px 0}
+  .arm-pivot{position:absolute;left:50%;top:-2px;width:16px;height:16px;transform:translateX(-50%);border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#666,#141414);box-shadow:0 1px 2px rgba(0,0,0,.35)}
+
+  /* Paper grain + vignette */
+  .grain{position:absolute;inset:0;pointer-events:none;z-index:3;mix-blend-mode:multiply;opacity:.055;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .vignette{position:absolute;inset:0;pointer-events:none;z-index:4;
+    background:radial-gradient(125% 105% at 50% 42%,rgba(0,0,0,0) 58%,rgba(0,0,0,.055) 100%)}
+
+  .chamber-tag{position:absolute;left:24px;top:20px;z-index:5;font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:rgba(26,26,26,.42);user-select:none}
+
+  /* ---------- Control Panel ---------- */
+  .panel{flex:0 0 30%;height:100%;border-left:1px solid var(--ink);background:var(--paper);
+    padding:34px 30px;display:flex;flex-direction:column;gap:20px;overflow-y:auto}
+  .brand{font-family:var(--sans);font-weight:600;font-size:clamp(22px,2.3vw,30px);letter-spacing:-.012em;line-height:1}
+  .brand .sub{display:block;font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:rgba(26,26,26,.5);margin-top:9px}
+  .rule{height:1px;background:var(--hair)}
+  .k{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(26,26,26,.5);margin-bottom:7px}
+  .status{font-family:var(--mono);font-weight:700;font-size:clamp(28px,3.1vw,44px);line-height:1;letter-spacing:-.01em;transition:color .12s linear}
+  .status.is-critical{color:var(--alert)}
+  .status.is-annot{color:var(--ink)}
+  .status.is-annot::after,.status.is-critical::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;
+    margin-left:9px;vertical-align:middle;background:var(--alert);animation:blink 1s steps(1) infinite}
+  .status.is-annot::after{background:var(--ink)}
+  @keyframes blink{50%{opacity:.15}}
+  .lead{font-size:14px;line-height:1.55;color:rgba(26,26,26,.66);max-width:32ch}
+  .lead b{font-weight:600;color:var(--ink)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px}
+  .stat .v{font-family:var(--mono);font-weight:500;font-size:19px;line-height:1.1}
+  .stat .v .u{font-size:11px;color:rgba(26,26,26,.5);margin-left:2px}
+  .hist{list-style:none;display:flex;flex-direction:column;gap:9px;min-height:64px}
+  .hist .empty{font-family:var(--mono);font-size:11px;color:rgba(26,26,26,.32)}
+  .hist li{font-family:var(--mono);font-size:11.5px;color:rgba(26,26,26,.72);display:flex;gap:8px;align-items:baseline}
+  .hist li .dot{width:5px;height:5px;border-radius:50%;background:var(--ink);flex:0 0 auto;transform:translateY(-1px)}
+  .hist li.crit .dot{background:var(--alert)}
+  .hist li .tt{color:rgba(26,26,26,.45)}
+  .foot{margin-top:auto;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:rgba(26,26,26,.4);display:flex;gap:10px;align-items:center}
+  .foot .live{width:6px;height:6px;border-radius:50%;background:var(--ink);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+
+  /* ---------- Mobile ---------- */
+  @media (max-width:820px){
+    .app{flex-direction:column;height:100vh}
+    .chamber{flex:0 0 56%;border-bottom:1px solid var(--ink)}
+    .panel{flex:1 1 auto;border-left:none;overflow-y:auto;padding:20px 22px;gap:15px}
+    .brand{font-size:24px}
+    .status{font-size:32px}
+    .lead{font-size:13px}
+    .foot{margin-top:6px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .foot .live{animation:none;opacity:.6}
+    .status.is-critical::after,.status.is-annot::after{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="chamber" id="chamber">
+    <canvas id="drum"></canvas>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+    <div class="chamber-tag" id="tag">Drum Chamber · 00:00:00</div>
+    <div class="pen-arm" id="penArm">
+      <div class="arm-rod"></div>
+      <div class="arm-tip"></div>
+      <div class="arm-pivot"></div>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="brand">Tremor Log<span class="sub">Permanent Ink Trace</span></div>
+    <div class="rule"></div>
+
+    <div>
+      <div class="k">Current Status</div>
+      <div class="status" id="status" role="status" aria-live="polite">Stable</div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="lead">
+      <b>Click &amp; hold the pen arm</b> to press it onto the drum and lay down an ink blot.
+      <b>Drag</b> to smear the ink. Every mark is <b>permanent</b> — nothing here can be erased.
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Latency</div><div class="v" id="lat">—<span class="u">ms</span></div></div>
+      <div class="stat"><div class="k">Peak</div><div class="v" id="peak">—<span class="u">ms</span></div></div>
+      <div class="stat"><div class="k">Uptime</div><div class="v" id="uptime">00:00:00</div></div>
+      <div class="stat"><div class="k">Blots</div><div class="v" id="blots">0</div></div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div>
+      <div class="k">Annotation Log</div>
+      <ul class="hist" id="hist"><li class="empty">No annotations yet.</li></ul>
+    </div>
+
+    <div class="foot"><span class="live"></span> Recording · <span id="recTime">00:00:00</span></div>
+  </aside>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const chamber=document.getElementById('chamber');
+  const canvas=document.getElementById('drum');
+  const ctx=canvas.getContext('2d');
+  const penArm=document.getElementById('penArm');
+  const elStatus=document.getElementById('status');
+  const elLat=document.getElementById('lat');
+  const elPeak=document.getElementById('peak');
+  const elUptime=document.getElementById('uptime');
+  const elBlots=document.getElementById('blots');
+  const elHist=document.getElementById('hist');
+  const elTag=document.getElementById('tag');
+  const elRec=document.getElementById('recTime');
+
+  const INK='#1a1a1a', ALERT='#d9534f';
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+
+  // ---- Config ----
+  const SAMPLE_PX=2;
+  const BASE_SPEED=26;
+  const SPIKE_CHANCE=0.011;
+  const SPIKE_LEN=1.1;
+
+  // ---- State ----
+  let W=0,H=0,dpr=1,cap=0;
+  let samples=[], blots=[], blotCount=0;
+  let drumSpeed=0, drumDist=0, uptime=0;
+  let spike=null, spikeTimer=0, spikeCd=0;
+  let annotating=false, penLower=0, penLowerTarget=0;
+  let curX=0, curY=0, lastX=0, lastY=0, lastMove=0, curSpeed=0;
+  let peak=0, uiAcc=0, tagAcc=0, lastTs=0;
+
+  // ---- Layout ----
+  let centerY=0, penX=0, penLen=0, maxAmp=0, maxLineW=0, maxBlotR=0;
+  function layout(){
+    const r=chamber.getBoundingClientRect();
+    W=r.width; H=r.height;
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    cap=Math.max(1,Math.floor(W/SAMPLE_PX)+1);
+    centerY=H*0.5;
+    penX=W*0.5;
+    penLen=centerY;
+    maxAmp=Math.min(H*0.20,120);
+    maxLineW=Math.max(2.5,maxAmp*0.14);
+    maxBlotR=Math.max(16,maxAmp*0.5);
+    if(samples.length<cap){ for(let i=samples.length;i<cap;i++) samples.push({a:0,crit:false}); }
+  }
+
+  function inkColor(crit,alpha){
+    return crit
+      ? `rgba(217,83,79,${alpha})`
+      : `rgba(26,26,26,${alpha})`;
+  }
+
+  // ---- Blot drawing ----
+  function drawBlot(b){
+    const n=b.points.length; if(!n) return;
+    const spread=0.5;
+    for(let pass=0;pass<2;pass++){
+      const scale=pass===0?1.25:1;
+      ctx.fillStyle=inkColor(b.crit,pass===0?0.10:0.9);
+      ctx.beginPath();
+      for(let i=0;i<n;i++){
+        const p=b.points[i];
+        const rr=p.r*(pass===0?1.35:1)*scale;
+        for(let a=0;a<=Math.PI*2;a+=Math.PI/6){
+          const jr=rr*(1+(Math.sin(p.seed+a*3)*0.22+Math.cos(p.seed*1.7+a*5)*0.12));
+          const x=p.x+Math.cos(a)*jr, y=p.y+Math.sin(a)*jr;
+          if(i===0&&a===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+      }
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  // ---- Line drawing ----
+  function drawLine(){
+    const n=samples.length; if(n<2) return;
+    ctx.lineJoin='round'; ctx.lineCap='round';
+    for(let i=1;i<n;i++){
+      const s=samples[i], p=samples[i-1];
+      const x0=W-i*SAMPLE_PX, x1=W-(i-1)*SAMPLE_PX;
+      const y0=centerY-p.a, y1=centerY-s.a;
+      ctx.strokeStyle=inkColor(s.crit,0.9);
+      ctx.lineWidth=Math.max(0.6,Math.min(maxLineW,0.7+Math.abs(s.a)*0.05));
+      ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
+    }
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<blots.length;i++) drawBlot(blots[i]);
+    drawLine();
+  }
+
+  // ---- Pen arm DOM ----
+  function setPenArm(a,amp){
+    penArm.style.height=penLen+'px';
+    const dx=(a||0)+amp;
+    penArm.style.transform=`translateX(${dx}px) rotate(${(dx/penLen)*57.3}deg)`;
+  }
+
+  // ---- Data simulation ----
+  function genSample(){
+    let a = Math.sin(uptime*0.9)*4 + Math.sin(uptime*0.23+1.3)*2.2 + rnd(-1.4,1.4);
+    let crit=false;
+    if(spike){
+      const t=(uptime-spike.t0)/spike.dur;
+      if(t>=1){ spike=null; }
+      else{
+        const env=Math.sin(Math.PI*t);
+        const j=(Math.sin(uptime*46)+Math.sin(uptime*71+1.1)+Math.sin(uptime*103+2.2))/3;
+        a = j*env*maxAmp*0.92 + rnd(-3,3);
+        crit=true;
+      }
+    }
+    return {a:clamp(a,-maxAmp,maxAmp),crit:crit};
+  }
+
+  // ---- UI ----
+  function pad(n){return String(n).padStart(2,'0');}
+  function fmt(t){t=Math.floor(t);return pad(t/3600|0)+':'+pad((t/60|0)%60)+':'+pad(t%60);}
+  function setStatus(txt,crit,annot){
+    if(elStatus.textContent!==txt) elStatus.textContent=txt;
+    elStatus.classList.toggle('is-critical',!!crit);
+    elStatus.classList.toggle('is-annot',!!annot);
+  }
+  function addHist(crit){
+    const empty=elHist.querySelector('.empty'); if(empty) empty.remove();
+    const li=document.createElement('li');
+    if(crit) li.className='crit';
+    li.innerHTML='<span class="dot"></span><span class="tt">'+fmt(uptime)+'</span><span>ink blot</span>';
+    elHist.insertBefore(li,elHist.firstChild);
+    while(elHist.children.length>6) elHist.removeChild(elHist.lastChild);
+  }
+  function updateUI(){
+    let cur=0, crit=false;
+    for(let i=0;i<samples.length;i++){ if(!samples[i].crit){ cur=Math.max(cur,Math.abs(samples[i].a)); } }
+    const ms=Math.round(42+cur*0.55);
+    elLat.innerHTML=ms+'<span class="u">ms</span>';
+    elPeak.innerHTML=Math.round(42+peak*0.55)+'<span class="u">ms</span>';
+    elUptime.textContent=fmt(uptime);
+    elBlots.textContent=blotCount;
+    if(annotating) setStatus('Annotating',false,true);
+    else if(spike) setStatus('Critical',true,false);
+    else if(cur>maxAmp*0.5) setStatus('Spiking',false,false);
+    else setStatus('Stable',false,false);
+  }
+
+  // ---- Main loop ----
+  function loop(ts){
+    if(!lastTs) lastTs=ts;
+    let dt=(ts-lastTs)/1000; lastTs=ts;
+    if(dt>0.05) dt=0.05;
+
+    // drum acceleration
+    const target=reduce?BASE_SPEED*0.6:BASE_SPEED;
+    drumSpeed += (target-drumSpeed)*Math.min(1,dt*1.5);
+    drumDist += drumSpeed*dt;
+
+    // uptime + sampling
+    uptime += dt;
+    const newSamples=Math.floor(drumDist/SAMPLE_PX);
+    if(newSamples>0){
+      drumDist -= newSamples*SAMPLE_PX;
+      for(let i=0;i<newSamples;i++){
+        const s=genSample(); samples.push(s);
+        if(!s.crit) peak=Math.max(peak,Math.abs(s.a));
+      }
+      while(samples.length>cap) samples.shift();
+    }
+
+    // spike scheduling
+    if(!spike){
+      spikeCd-=dt;
+      if(spikeCd<=0 && Math.random()<SPIKE_CHANCE){
+        spike={t0:uptime,dur:SPIKE_LEN};
+        spikeCd=2.5+Math.random()*3;
+      }
+    }
+
+    // pen lower easing (ease-out-back)
+    penLower += (penLowerTarget-penLower)*Math.min(1,dt*14);
+    if(penLowerTarget===1 && penLower>0.999) penLower=1;
+    if(penLowerTarget===0 && penLower<0.001) penLower=0;
+
+    // vibration
+    const vib = reduce?0 : (spike?1:0.16);
+    const vibAmp = vib*(spike?maxAmp*0.09:1.4);
+    const jx = vibAmp*(Math.sin(ts*0.09)+Math.sin(ts*0.13+1.7)*0.6);
+    const jy = vibAmp*(Math.sin(ts*0.11+0.5)+Math.sin(ts*0.07+2.1)*0.6);
+
+    // annotation blot growth
+    if(annotating && curX!=null){
+      const now=performance.now();
+      const d=Math.hypot(curX-lastX,curY-lastY);
+      const dtm=Math.max(1,(now-lastMove))/1000;
+      curSpeed = d/dtm;
+      lastMove=now;
+      const r = Math.min(maxBlotR, 7 + curSpeed*0.02 + (now-startPress)/40);
+      const crit = !!spike;
+      const b=blots[blots.length-1];
+      b.crit = b.crit || crit;
+      b.points.push({x:curX,y:curY,r:r,seed:Math.random()*100});
+      if(b.points.length>500) b.points.shift();
+      lastX=curX; lastY=curY;
+    }
+
+    setPenArm(curX, jx);
+    render();
+
+    // throttled UI
+    uiAcc+=dt; if(uiAcc>0.12){ uiAcc=0; updateUI(); }
+    tagAcc+=dt; if(tagAcc>0.5){ tagAcc=0; elTag.textContent='Drum Chamber · '+fmt(uptime); elRec.textContent=fmt(uptime); }
+
+    requestAnimationFrame(loop);
+  }
+
+  // ---- Interaction ----
+  let startPress=0;
+  function local(ev){
+    const r=chamber.getBoundingClientRect();
+    return {x:ev.clientX-r.left, y:ev.clientY-r.top};
+  }
+  chamber.addEventListener('pointerdown',function(ev){
+    if(annotating) return;
+    const p=local(ev);
+    annotating=true;
+    startPress=performance.now();
+    penLowerTarget=1;
+    curX=p.x; curY=p.y; lastX=p.x; lastY=p.y; lastMove=performance.now(); curSpeed=0;
+    blots.push({points:[{x:p.x,y:p.y,r:7,seed:Math.random()*100}],crit:!!spike});
+    blotCount++;
+    chamber.setPointerCapture(ev.pointerId);
+    ev.preventDefault();
+  });
+  chamber.addEventListener('pointermove',function(ev){
+    if(!annotating) return;
+    const p=local(ev);
+    curX=p.x; curY=p.y;
+  });
+  function endAnnot(ev){
+    if(!annotating) return;
+    annotating=false;
+    penLowerTarget=0;
+    curX=null;
+    addHist(!!spike);
+    updateUI();
+  }
+  window.addEventListener('pointerup',endAnnot);
+  window.addEventListener('pointercancel',endAnnot);
+
+  // ---- Init ----
+  layout();
+  const ro=new ResizeObserver(()=>layout());
+  ro.observe(chamber);
+  window.addEventListener('resize',layout);
+
+  // Entrance: pen arm starts raised, then lowers with a mechanical clunk.
+  penLower=0; penLowerTarget=0;
+  setTimeout(()=>{ penLowerTarget=1; }, 420);
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

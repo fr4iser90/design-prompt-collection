@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Edge — A Manual for Steel &amp; Stone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0A0A0A;
+    --ink:#E6E6E6;
+    --steel:#8D99AE;
+    --mono:'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --disp:'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --ease-heavy:cubic-bezier(0.19,1,0.22,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  html,body{background:var(--void);color:var(--ink);}
+  body{
+    font-family:var(--mono);
+    font-size:15px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    cursor:default;
+  }
+
+  /* ---------- Fixed chrome ---------- */
+  .brand{
+    position:fixed;
+    top:22px; left:34px;
+    z-index:30;
+    font-family:var(--disp);
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--ink);
+    display:flex; align-items:center; gap:10px;
+    pointer-events:none;
+  }
+  .brand .dot{width:6px;height:6px;background:var(--steel);border-radius:50%;box-shadow:0 0 8px var(--steel);}
+
+  .hud{
+    position:fixed;
+    top:22px; right:34px;
+    z-index:30;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--steel);
+    display:flex; align-items:center; gap:10px;
+    pointer-events:none;
+  }
+  .hud .lamp{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--steel);
+    box-shadow:0 0 0 0 rgba(141,153,174,.6);
+    transition:background .3s, box-shadow .3s;
+  }
+  .hud.dull .lamp{background:#C86A5A;box-shadow:0 0 10px rgba(200,106,90,.7);}
+  .hud.dull{color:#C86A5A;}
+
+  /* ---------- Spine ---------- */
+  .spine{
+    position:fixed;
+    top:0; bottom:0; left:50%;
+    width:2px;
+    transform:translateX(-50%);
+    background:linear-gradient(180deg, transparent, rgba(141,153,174,.28) 8%, rgba(141,153,174,.55) 50%, rgba(141,153,174,.28) 92%, transparent);
+    z-index:12;
+    pointer-events:none;
+  }
+  .spine::before{
+    content:"";
+    position:absolute; left:0; top:0; width:100%; height:100%;
+    background:linear-gradient(180deg,
+      transparent 0%,
+      rgba(230,230,230,.0) 42%,
+      rgba(230,230,230,.95) 50%,
+      rgba(230,230,230,.0) 58%,
+      transparent 100%);
+    transform:translateY(-100%);
+    opacity:0;
+    will-change:transform,opacity;
+  }
+  .spine.sweep::before{ animation:sweep 2.4s linear forwards; }
+  @keyframes sweep{
+    0%{transform:translateY(-100%);opacity:0;}
+    12%{opacity:1;}
+    88%{opacity:1;}
+    100%{transform:translateY(100%);opacity:0;}
+  }
+
+  /* ---------- Canvas ---------- */
+  #sparks{
+    position:fixed; inset:0;
+    z-index:20;
+    pointer-events:none;
+  }
+
+  /* ---------- Scroll container ---------- */
+  .scroll{
+    height:100vh;
+    overflow-y:scroll;
+    scroll-snap-type:y mandatory;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+  }
+  .scroll::-webkit-scrollbar{display:none;}
+
+  .spread{
+    min-height:100vh;
+    scroll-snap-align:start;
+    position:relative;
+    display:flex;
+    align-items:center;
+    padding:120px 0 90px;
+    overflow:hidden;
+  }
+
+  /* ---------- Columns ---------- */
+  .col{
+    width:46%;
+    will-change:transform,filter;
+    transform:translateX(0);
+    transition:filter .4s ease;
+  }
+  .col-left{ padding-right:6%; text-align:right; }
+  .col-right{ padding-left:6%; text-align:left; }
+
+  /* ---------- Type ---------- */
+  .kicker{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--steel);
+    margin-bottom:14px;
+  }
+  h1{
+    font-family:var(--disp);
+    font-weight:900;
+    text-transform:uppercase;
+    line-height:.86;
+    letter-spacing:-.02em;
+  }
+  h2{
+    font-family:var(--disp);
+    font-weight:800;
+    text-transform:uppercase;
+    font-size:clamp(2rem,4.6vw,3.4rem);
+    line-height:.98;
+    letter-spacing:-.015em;
+    margin-bottom:26px;
+  }
+  p{
+    font-family:var(--mono);
+    font-size:clamp(.85rem,1.05vw,1rem);
+    line-height:1.75;
+    color:var(--ink);
+    max-width:46ch;
+  }
+  .col-left p{margin-left:auto;}
+  .note{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--steel);
+    margin-top:22px;
+    line-height:1.9;
+    border-top:1px solid rgba(141,153,174,.25);
+    padding-top:14px;
+    max-width:40ch;
+  }
+  .col-left .note{margin-left:auto;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    flex-direction:column;
+    text-align:center;
+    padding-top:14vh;
+  }
+  .hero .topline{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.5em;
+    text-transform:uppercase;
+    color:var(--steel);
+    margin-bottom:34px;
+    opacity:0;
+    animation:rise .9s var(--ease-heavy) .1s forwards;
+  }
+  .hero h1{
+    font-size:clamp(4.5rem,20vw,15rem);
+    opacity:0;
+    animation:rise 1s var(--ease-heavy) .25s forwards;
+  }
+  .hero .sub{
+    margin-top:34px;
+    font-family:var(--mono);
+    font-size:clamp(.8rem,1.4vw,1.05rem);
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0;
+    animation:rise 1s var(--ease-heavy) .45s forwards;
+  }
+  .hero .sub b{color:var(--steel);font-weight:700;}
+  .hero .cue{
+    position:absolute;
+    bottom:44px; left:50%;
+    transform:translateX(-50%);
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.4em;
+    text-transform:uppercase;
+    color:var(--steel);
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    opacity:0;
+    animation:rise 1s var(--ease-heavy) .8s forwards;
+  }
+  .hero .cue .line{width:1px;height:46px;background:linear-gradient(var(--steel),transparent);animation:cue 2.2s ease-in-out infinite;}
+  @keyframes cue{0%,100%{transform:scaleY(.4);opacity:.4;transform-origin:top;}50%{transform:scaleY(1);opacity:1;transform-origin:top;}}
+  @keyframes rise{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- Pull quote ---------- */
+  .pull{
+    position:absolute;
+    left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    width:88%;
+    text-align:center;
+    z-index:11;
+    pointer-events:none;
+  }
+  .pull .mark{
+    font-family:var(--disp);
+    font-weight:900;
+    font-size:clamp(1.9rem,5.2vw,4.2rem);
+    line-height:1;
+    text-transform:uppercase;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  .pull .mark em{color:var(--steel);font-style:normal;}
+  .pull .attr{
+    margin-top:22px;
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--steel);
+  }
+
+  /* ---------- Chapter number watermark ---------- */
+  .wm{
+    position:absolute;
+    font-family:var(--disp);
+    font-weight:900;
+    font-size:clamp(9rem,26vw,24rem);
+    line-height:.7;
+    color:rgba(141,153,174,.045);
+    z-index:1;
+    pointer-events:none;
+    user-select:none;
+  }
+  .spread:nth-child(odd) .wm{right:-2%;top:6%;}
+  .spread:nth-child(even) .wm{left:-2%;bottom:4%;}
+
+  /* ---------- Footer ---------- */
+  .end{
+    flex-direction:column;
+    text-align:center;
+    justify-content:center;
+    gap:26px;
+  }
+  .end .fin{
+    font-family:var(--disp);
+    font-weight:900;
+    text-transform:uppercase;
+    font-size:clamp(2.4rem,8vw,6rem);
+    line-height:.9;
+    letter-spacing:-.02em;
+  }
+  .end .fin em{color:var(--steel);font-style:normal;}
+  .end .meta{
+    font-family:var(--mono);
+    font-size:.72rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--steel);
+    display:flex;gap:26px;flex-wrap:wrap;justify-content:center;
+  }
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease-heavy),transform .8s var(--ease-heavy);}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:720px){
+    .brand{left:18px;top:16px;font-size:11px;letter-spacing:.2em;}
+    .hud{right:18px;top:16px;font-size:9px;}
+    .spread{padding:96px 0 70px;}
+    .col{width:100%;padding:0 22px !important;text-align:left !important;}
+    .col-left{order:1;}
+    .col-right{order:2;margin-top:34px;}
+    .col-left p,.col-left .note{margin-left:0;}
+    .spread{flex-direction:column;justify-content:center;}
+    .pull{position:relative;left:auto;top:auto;transform:none;width:100%;margin-top:34px;}
+    .pull .mark{font-size:clamp(1.6rem,7vw,2.4rem);}
+    .wm{font-size:40vw;opacity:.5;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+    .reveal{opacity:1;transform:none;}
+    .hero .topline,.hero h1,.hero .sub,.hero .cue{opacity:1;}
+    .col{transform:none !important;filter:none !important;}
+    #sparks{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="brand"><span class="dot"></span>Steel &amp; Stone</div>
+  <div class="hud" id="hud"><span class="lamp"></span><span id="hudText">State · Sharp</span></div>
+
+  <div class="spine" id="spine"></div>
+  <canvas id="sparks"></canvas>
+
+  <main class="scroll" id="scroll">
+
+    <!-- HERO -->
+    <section class="spread hero" data-spread>
+      <div class="topline">Precision · Steel · Geometry</div>
+      <h1>The Edge</h1>
+      <div class="sub">A Manual for <b>Steel &amp; Stone</b></div>
+      <div class="cue"><span>Scroll to hone</span><span class="line"></span></div>
+    </section>
+
+    <!-- 01 -->
+    <section class="spread" data-spread>
+      <span class="wm">01</span>
+      <div class="col col-left reveal">
+        <div class="kicker">Ch. 01 — The Geometry of Sharpness</div>
+        <h2>Sharpness is an angle, held.</h2>
+        <p>A knife does not cut because it is thin. It cuts because two planes converge on a single line, and that line is kept true. Every edge is a promise of geometry — a contract between the steel and the stone.</p>
+        <div class="note">Edge apex · 15–20° per side<br>Convergence tolerance · &lt; 0.5 µm</div>
+      </div>
+      <div class="col col-right reveal">
+        <div class="kicker">Specimen 01</div>
+        <p>Bluntness is not wear. It is misalignment — the apex rolled, the bevels wandering off their intended plane. To restore an edge is to return it to its original line, degree by degree, stroke by stroke.</p>
+        <div class="note">Roll resistance · high-carbon<br>Strop frequency · 12 passes / session</div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section class="spread" data-spread>
+      <span class="wm">02</span>
+      <div class="pull reveal">
+        <div class="mark">“A dull edge <em>demands.</em><br>A sharp edge <em>invites.”</em></div>
+        <div class="attr">— The First Law of the Blade</div>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="spread" data-spread>
+      <span class="wm">03</span>
+      <div class="col col-left reveal">
+        <div class="kicker">Ch. 02 — The Honing</div>
+        <h2>Motion is the only honest tool.</h2>
+        <p>The rod does not remove steel. It realigns it. Run the blade along the steel at a fixed angle, and the microscopic teeth — bent by use — return to their ranks. Speed is the enemy; patience is the abrasive.</p>
+        <div class="note">Rod angle · 15°<br>Direction · heel → tip, alternating</div>
+      </div>
+      <div class="col col-right reveal">
+        <div class="kicker">Field Note</div>
+        <p>Watch the sparks. They are not the blade cutting — they are friction declaring its presence. Too fast, and you heat the temper, dulling the very edge you seek to save. Slow the hand. Let the steel remember its shape.</p>
+        <div class="note">Friction heat limit · 150°C<br>Emitted light · 500–700 nm</div>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="spread" data-spread>
+      <span class="wm">04</span>
+      <div class="col col-left reveal">
+        <div class="kicker">Ch. 03 — The Stone</div>
+        <h2>Water, grit, and silence.</h2>
+        <p>The whetstone is a ledger. Each pass writes a line; each line is a degree. There is no shortcut through the grit — only the slow arithmetic of 1000, then 3000, then 8000, until the burr lifts like a whisper off the bevel.</p>
+        <div class="note">Grit progression · 1k → 3k → 8k<br>Slurry · fresh, never recycled</div>
+      </div>
+      <div class="col col-right reveal">
+        <div class="kicker">Specimen 04</div>
+        <p>Steel is memory. A carbon blade forgives nothing and forgets nothing. Stainless lies, holding an edge that is not there. Choose the steel that tells the truth, then keep it honest with the stone.</p>
+        <div class="note">Rockwell hardness · 60–64 HRC<br>Carbon content · 1.0–1.4%</div>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="spread" data-spread>
+      <span class="wm">05</span>
+      <div class="pull reveal">
+        <div class="mark">“Precision is <em>repetition</em><br>refused the luxury of haste.”</div>
+        <div class="attr">— Steel &amp; Stone, Vol. I</div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section class="spread" data-spread>
+      <span class="wm">06</span>
+      <div class="col col-left reveal">
+        <div class="kicker">Ch. 04 — The Test</div>
+        <h2>Read the paper.</h2>
+        <p>Hold a sheet at its corner. Bring the edge to it without pressure. If it parts cleanly, singing as it goes, the geometry holds. If it tears, the apex has rolled and the lesson begins again.</p>
+        <div class="note">Test medium · bond paper, 80 gsm<br>Failure mode · tearing at apex</div>
+      </div>
+      <div class="col col-right reveal">
+        <div class="kicker">Maintenance</div>
+        <p>An edge is never finished. It is only maintained. Hone before every session, strop after every cut, stone when the paper finally resists. The blade is a discipline, not a possession.</p>
+        <div class="note">Hone · daily · Strop · per use<br>Stone · when paper resists</div>
+      </div>
+    </section>
+
+    <!-- END -->
+    <section class="spread end" data-spread>
+      <div class="fin">Keep it <em>sharp.</em></div>
+      <div class="meta">
+        <span>Steel &amp; Stone</span>
+        <span>Manual · Vol. I</span>
+        <span>Rev. 001</span>
+      </div>
+    </section>
+
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var scroll   = document.getElementById('scroll');
+  var spine    = document.getElementById('spine');
+  var canvas   = document.getElementById('sparks');
+  var ctx      = canvas.getContext('2d');
+  var hud      = document.getElementById('hud');
+  var hudText  = document.getElementById('hudText');
+  var cols     = Array.prototype.slice.call(document.querySelectorAll('.col'));
+
+  var W=0, H=0, DPR=1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* ---- Entrance: slide in from edges with heavy inertia ---- */
+  if(!reduce){
+    cols.forEach(function(c){
+      var left = c.classList.contains('col-left');
+      c.style.transition = 'transform 1.15s cubic-bezier(0.19,1,0.22,1)';
+      c.style.transform = 'translateX(' + (left ? '-115%' : '115%') + ')';
+      c.style.filter = 'blur(2px)';
+    });
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      cols.forEach(function(c){
+        var left = c.classList.contains('col-left');
+        c.style.transform = 'translateX(' + (left ? '-34px' : '34px') + ')';
+        c.style.filter = 'blur(0px)';
+      });
+    });});
+    setTimeout(function(){ cols.forEach(function(c){ c.style.transition=''; }); }, 1300);
+  } else {
+    cols.forEach(function(c){ c.style.transform='translateX(0)'; c.style.filter='none'; });
+  }
+
+  /* ---- Velocity mechanic ---- */
+  var last = scroll.scrollTop;
+  var vel = 0, target = 0, off = 34;
+  var sharp = true, sharpTimer = 0;
+  var DULL = 34, THRESH = 2.4;
+
+  function tick(){
+    var cur = scroll.scrollTop;
+    vel = cur - last; last = cur;
+
+    if(!reduce){
+      var av = Math.abs(vel);
+      if(av > THRESH){
+        target = DULL;
+        sharp = false; sharpTimer = 0;
+        emit(Math.min(14, 2 + av*0.7));
+      } else {
+        target = 0;
+        sharpTimer += 1;
+        if(sharpTimer > 8) sharp = true;
+      }
+      off += (target - off) * 0.16;
+
+      var blur = (av > THRESH) ? Math.min(1.4, av*0.05) : 0;
+      cols.forEach(function(c){
+        var left = c.classList.contains('col-left');
+        c.style.transform = 'translateX(' + (left ? -off : off) + 'px)';
+        c.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+      });
+      updateHUD();
+      stepParticles();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function updateHUD(){
+    if(sharp){ hud.classList.remove('dull'); hudText.textContent = 'State · Sharp'; }
+    else { hud.classList.add('dull'); hudText.textContent = 'State · Dull'; }
+  }
+
+  /* ---- Particles ---- */
+  var particles = [];
+  var COLORS = ['#E6E6E6','#E6E6E6','#8D99AE','#8D99AE','#b9c2d1'];
+  function emit(n){
+    var cx = W/2;
+    for(var i=0;i<n;i++){
+      var dir = Math.random()<0.5 ? -1 : 1;
+      particles.push({
+        x: cx + (Math.random()*4-2),
+        y: H/2 + (Math.random()*40-20),
+        vx: dir*(Math.random()*2.2+0.4),
+        vy: Math.random()*1.4-0.5,
+        life: 1,
+        decay: Math.random()*0.02+0.016,
+        size: Math.random()*2+1,
+        c: COLORS[(Math.random()*COLORS.length)|0]
+      });
+    }
+    if(particles.length>320) particles.splice(0, particles.length-320);
+  }
+  function stepParticles(){
+    ctx.clearRect(0,0,W,H);
+    for(var i=particles.length-1;i>=0;i--){
+      var p = particles[i];
+      p.vy += 0.16;      /* gravity */
+      p.vx *= 0.985;     /* drag */
+      p.x += p.vx; p.y += p.vy;
+      p.life -= p.decay;
+      if(p.life<=0 || p.y>H+10){ particles.splice(i,1); continue; }
+      ctx.globalAlpha = Math.max(0,p.life);
+      ctx.fillStyle = p.c;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---- Ambient specular sweep every 10s ---- */
+  function sweep(){
+    if(reduce) return;
+    spine.classList.remove('sweep');
+    void spine.offsetWidth;
+    spine.classList.add('sweep');
+  }
+  if(!reduce){
+    setTimeout(sweep, 1200);
+    setInterval(sweep, 10000);
+  }
+
+  /* ---- Reveal on scroll ---- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); }
+    });
+  }, { root: scroll, threshold: 0.25 });
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ---- Touch assist: slow release = sharp ---- */
+  var touchTimer = null;
+  scroll.addEventListener('scroll', function(){
+    clearTimeout(touchTimer);
+    touchTimer = setTimeout(function(){
+      if(!reduce){ target = 0; sharp = true; sharpTimer = 9; updateHUD(); }
+    }, 260);
+  }, {passive:true});
+
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

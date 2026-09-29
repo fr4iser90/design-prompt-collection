@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CURE — Saline Press</title>
+<meta name="description" content="Saline Press — a culinary preservation zine on salt, time, and the physics of cure.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --linen:#F2F2F2;
+    --ink:#1C1C1C;
+    --silver:#9CA3AF;
+    --highlight:#D1D5DB;
+    --shadow:#4B5563;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --rail:15rem;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--linen);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:18px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none;}
+  ::selection{background:var(--ink);color:var(--linen);}
+
+  /* ---------- ambient grain ---------- */
+  .grain{
+    position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+    mix-blend-mode:multiply;
+  }
+
+  /* ---------- top masthead ---------- */
+  .masthead{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1rem 1.75rem;
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink);
+    mix-blend-mode:difference;color:#fff;
+    pointer-events:none;
+  }
+  .masthead .brand{font-weight:600;}
+  .masthead .brand b{font-weight:600;}
+  .masthead .meta{opacity:.85;}
+  .masthead .meta .sep{color:var(--silver);}
+  @media (max-width:768px){.masthead{font-size:.6rem;padding:.7rem 1rem;letter-spacing:.12em;}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;height:100vh;min-height:640px;
+    display:grid;place-items:center;overflow:hidden;
+    padding:0 1.5rem;
+  }
+  .hero-bg{
+    position:absolute;inset:-10%;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='4' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size:cover;
+    opacity:.16;
+    animation:drift 46s linear infinite alternate;
+  }
+  @keyframes drift{
+    from{transform:translate3d(-2%,-1%,0) scale(1.06);}
+    to{transform:translate3d(2%,2%,0) scale(1.14);}
+  }
+  .hero-frame{
+    position:absolute;inset:clamp(14px,3vw,34px);z-index:2;pointer-events:none;
+    border:1px solid var(--silver);opacity:.5;
+  }
+  .hero-frame::before,.hero-frame::after{
+    content:"";position:absolute;width:11px;height:11px;border:1px solid var(--ink);
+  }
+  .hero-frame::before{top:-6px;left:-6px;border-right:none;border-bottom:none;}
+  .hero-frame::after{bottom:-6px;right:-6px;border-left:none;border-top:none;}
+
+  .hero-center{position:relative;z-index:3;text-align:center;}
+  .hero-eyebrow{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--shadow);margin-bottom:1.4rem;
+  }
+  .hero-eyebrow .dot{color:var(--silver);}
+
+  .hero-title{
+    font-family:var(--serif);font-weight:500;
+    font-size:clamp(4.5rem,24vw,20rem);
+    line-height:.82;letter-spacing:-.02em;
+    display:flex;justify-content:center;align-items:baseline;
+    gap:0;
+  }
+  .hero-title .ch{
+    position:relative;display:inline-block;
+    will-change:transform,opacity;
+    opacity:0;
+    animation:assemble 1.15s cubic-bezier(.19,1,.22,1) forwards;
+  }
+  @keyframes assemble{
+    0%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.35);}
+    55%{opacity:1;}
+    100%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1);}
+  }
+  .hero-title .ch::before,.hero-title .ch::after{
+    content:attr(data-c);position:absolute;left:0;top:0;color:var(--ink);
+    clip-path:polygon(0 0,100% 0,100% 40%,0 70%);
+    opacity:0;pointer-events:none;
+  }
+  .hero-title .ch::after{clip-path:polygon(0 70%,100% 40%,100% 100%,0 100%);}
+  .hero-title .ch::before{animation:fragA 1.15s cubic-bezier(.19,1,.22,1) forwards;animation-delay:inherit;}
+  .hero-title .ch::after{animation:fragB 1.15s cubic-bezier(.19,1,.22,1) forwards;animation-delay:inherit;}
+  @keyframes fragA{
+    0%{opacity:1;transform:translate(-14px,-18px) rotate(-24deg);}
+    100%{opacity:0;transform:translate(0,0) rotate(0deg);}
+  }
+  @keyframes fragB{
+    0%{opacity:1;transform:translate(16px,20px) rotate(18deg);}
+    100%{opacity:0;transform:translate(0,0) rotate(0deg);}
+  }
+
+  .hero-sub{
+    margin-top:2rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--shadow);
+    display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap;
+  }
+  .hero-sub span{position:relative;padding-left:1.2rem;}
+  .hero-sub span::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:1px;background:var(--silver);}
+
+  .hero-cue{
+    position:absolute;bottom:clamp(18px,4vh,42px);left:50%;transform:translateX(-50%);
+    z-index:3;font-family:var(--mono);font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  }
+  .hero-cue .line{width:1px;height:34px;background:var(--silver);position:relative;overflow:hidden;}
+  .hero-cue .line::after{content:"";position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--ink);animation:cue 2.4s cubic-bezier(.7,0,.3,1) infinite;}
+  @keyframes cue{0%{top:-100%;}60%,100%{top:100%;}}
+
+  /* ---------- layout shell ---------- */
+  .shell{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);max-width:1240px;margin:0 auto;}
+
+  /* ---------- sticky rail ---------- */
+  .rail{
+    position:sticky;top:0;height:100vh;align-self:start;
+    padding:5.5rem 1.5rem 2rem 2rem;
+    display:flex;flex-direction:column;justify-content:center;
+    font-family:var(--mono);
+  }
+  .rail-title{
+    font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--silver);
+    margin-bottom:1.4rem;padding-left:.7rem;
+  }
+  .rail ol{list-style:none;display:flex;flex-direction:column;gap:.15rem;}
+  .rail a{
+    display:block;padding:.55rem .7rem;border-left:2px solid transparent;
+    font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--silver);transition:color .18s steps(3),border-color .18s steps(3);
+  }
+  .rail a .num{display:block;font-size:.6rem;color:var(--shadow);opacity:.7;margin-bottom:.15rem;}
+  .rail a:hover{color:var(--ink);}
+  .rail a.active{color:var(--ink);border-left-color:var(--ink);font-weight:600;}
+  .rail-foot{margin-top:2.5rem;padding-left:.7rem;font-size:.6rem;letter-spacing:.14em;color:var(--silver);line-height:1.9;}
+
+  /* ---------- article ---------- */
+  .article{
+    max-width:65ch;padding:5rem 2.5rem 6rem;
+    font-size:18px;
+  }
+  .kicker{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--shadow);margin-bottom:1.2rem;
+  }
+  .article h2{
+    font-family:var(--serif);font-weight:500;font-size:clamp(2rem,4.5vw,3rem);
+    line-height:1.02;letter-spacing:-.015em;margin-bottom:1.2rem;
+  }
+  .byline{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--silver);padding-bottom:2.5rem;margin-bottom:2.5rem;border-bottom:1px solid var(--silver);
+    display:flex;gap:1.4rem;flex-wrap:wrap;
+  }
+  .article p{margin-bottom:1.5rem;line-height:2;}
+  .article p.lead{font-size:1.22rem;line-height:1.75;color:var(--ink);}
+  .article p.lead::first-letter{
+    font-size:3.4rem;line-height:.7;float:left;padding:.1em .12em 0 0;font-weight:500;
+  }
+  .article p.lead::first-letter{color:var(--ink);}
+
+  .pull{
+    margin:3rem 0;padding-left:2rem;border-left:1px solid var(--silver);
+    font-family:var(--serif);font-size:1.5rem;line-height:1.35;font-style:italic;color:var(--ink);
+  }
+  .pull cite{display:block;margin-top:1rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;font-style:normal;color:var(--silver);}
+
+  /* figure / archival print */
+  figure{margin:3rem 0;}
+  .fig-frame{position:relative;overflow:hidden;background:var(--highlight);}
+  .fig-frame img{
+    display:block;width:100%;height:auto;
+    filter:grayscale(1) contrast(1.05);
+    transform:scale(1.02);
+    transition:transform .8s cubic-bezier(.19,1,.22,1);
+  }
+  figure:hover .fig-frame img{transform:scale(1.06);}
+  .fig-frame::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.28;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.4'/%3E%3C/svg%3E");
+    background-size:120px 120px;
+  }
+  .fig-label{
+    position:absolute;top:0;right:0;z-index:2;
+    font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+    background:var(--ink);color:var(--linen);padding:.4rem .6rem;
+  }
+
+  /* ---------- crystallization ---------- */
+  .crystalize{will-change:transform,opacity;}
+  .crystalize .w{display:inline-block;will-change:transform,opacity;}
+  .crystalize .w{opacity:0;transform:translateY(9px) scale(.86);}
+  .crystalize.go .w{opacity:1;transform:none;transition:opacity .05s steps(4,end),transform .55s cubic-bezier(.19,1,.22,1);transition-delay:var(--d);}
+
+  /* ---------- lexicon / flake ---------- */
+  .term{
+    position:relative;display:inline-block;cursor:help;
+    color:var(--ink);border-bottom:1px solid var(--silver);
+    transition:color .1s steps(2);
+  }
+  .term:focus{outline:none;}
+  .term:focus-visible{outline:1px solid var(--ink);outline-offset:2px;}
+  .term .word{display:inline-block;transition:opacity .1s steps(2),transform .1s steps(2);}
+  .term:hover .word,.term:focus .word,.term:focus-visible .word{opacity:0;transform:translateY(-5px);}
+  .term .tip{
+    position:absolute;z-index:60;left:0;top:calc(100% + 8px);
+    background:var(--ink);color:var(--linen);
+    font-family:var(--mono);font-size:.66rem;line-height:1.5;letter-spacing:.02em;
+    padding:.5rem .65rem;max-width:250px;width:max-content;
+    opacity:0;transform:translateY(-4px);pointer-events:none;
+    transition:opacity .1s steps(2),transform .1s steps(2);
+  }
+  .term .tip::before{
+    content:"";position:absolute;top:-4px;left:12px;width:8px;height:8px;background:var(--ink);
+    transform:rotate(45deg);
+  }
+  .term .tip.flip::before{left:auto;right:12px;}
+  .term .tip .t-h{color:var(--silver);text-transform:uppercase;letter-spacing:.14em;font-size:.58rem;display:block;margin-bottom:.25rem;}
+  .term:hover .tip,.term:focus .tip,.term:focus-visible .tip{opacity:1;transform:translateY(0);}
+
+  /* ---------- colophon ---------- */
+  .colophon{
+    border-top:1px solid var(--silver);margin-top:4rem;padding-top:2.5rem;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--shadow);line-height:2;
+  }
+  .colophon .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .colophon h4{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--silver);margin-bottom:.6rem;font-weight:600;}
+  .colophon a{color:var(--ink);border-bottom:1px solid var(--silver);}
+  .colophon a:hover{border-bottom-color:var(--ink);}
+  .end-mark{
+    margin-top:3rem;font-family:var(--serif);font-size:clamp(3rem,14vw,9rem);
+    line-height:.8;color:var(--silver);letter-spacing:-.03em;
+  }
+
+  /* ---------- mobile top bar ---------- */
+  .topbar{display:none;}
+
+  @media (max-width:768px){
+    body{font-size:17px;}
+    .shell{display:block;}
+    .rail{display:none;}
+    .topbar{
+      display:block;position:sticky;top:0;z-index:90;
+      background:var(--linen);border-bottom:1px solid var(--silver);
+    }
+    .topbar .scroll{
+      display:flex;gap:0;overflow-x:auto;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .topbar .scroll::-webkit-scrollbar{display:none;}
+    .topbar a{
+      flex:0 0 auto;padding:.85rem 1.1rem;white-space:nowrap;
+      font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--silver);border-right:1px solid var(--highlight);
+    }
+    .topbar a .num{color:var(--shadow);margin-right:.4rem;}
+    .topbar a.active{color:var(--ink);border-bottom:2px solid var(--ink);font-weight:600;}
+    .article{padding:3rem 1.25rem 4rem;}
+    .hero-title{font-size:15vw;}
+    .hero-sub{font-size:.6rem;gap:.8rem;}
+    .colophon .cols{grid-template-columns:1fr 1fr;}
+    .pull{font-size:1.3rem;}
+    .term .tip{max-width:min(250px,80vw);}
+  }
+  @media (max-width:420px){.colophon .cols{grid-template-columns:1fr;}}
+
+  @media (prefers-reduced-motion:reduce){
+    .hero-bg,.hero-cue .line::after{animation:none;}
+    .hero-title .ch{opacity:1;animation:none;transform:none;}
+    .hero-title .ch::before,.hero-title .ch::after{display:none;}
+    .crystalize .w{opacity:1!important;transform:none!important;transition:none!important;}
+    .fig-frame img{transition:none;}
+    *{scroll-behavior:auto!important;}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="masthead" aria-label="Saline Press masthead">
+  <div class="brand"><b>SALINE PRESS</b></div>
+  <div class="meta">VOL.03 <span class="sep">/</span> THE CURE ISSUE <span class="sep">/</span> MMXXV</div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-frame" aria-hidden="true"></div>
+  <div class="hero-center">
+    <p class="hero-eyebrow">A CULINARY PRESERVATION ZINE <span class="dot">·</span> ISSUE Nº03</p>
+    <h1 class="hero-title" id="heroTitle" aria-label="Cure">
+      <span class="ch" data-c="C" style="--dx:-60px;--dy:80px;--r:-34deg;animation-delay:.05s">C</span>
+      <span class="ch" data-c="U" style="--dx:40px;--dy:-70px;--r:26deg;animation-delay:.10s">U</span>
+      <span class="ch" data-c="R" style="--dx:-90px;--dy:-40px;--r:-18deg;animation-delay:.15s">R</span>
+      <span class="ch" data-c="E" style="--dx:70px;--dy:60px;--r:30deg;animation-delay:.20s">E</span>
+    </h1>
+    <p class="hero-sub">
+      <span>SALT</span><span>TIME</span><span>MOISTURE</span><span>STILLNESS</span>
+    </p>
+  </div>
+  <div class="hero-cue" aria-hidden="true">
+    <span>SCROLL</span>
+    <span class="line"></span>
+  </div>
+</section>
+
+<!-- ===================== MOBILE TOP BAR ===================== -->
+<nav class="topbar" id="topbar" aria-label="Chapters (mobile)">
+  <div class="scroll">
+    <a href="#s01" data-target="s01"><span class="num">01</span>Introduction</a>
+    <a href="#s02" data-target="s02"><span class="num">02</span>Brine</a>
+    <a href="#s03" data-target="s03"><span class="num">03</span>Equilibrium</a>
+    <a href="#s04" data-target="s04"><span class="num">04</span>Terroir</a>
+    <a href="#s05" data-target="s05"><span class="num">05</span>Patience</a>
+    <a href="#s06" data-target="s06"><span class="num">06</span>Colophon</a>
+  </div>
+</nav>
+
+<!-- ===================== SHELL ===================== -->
+<div class="shell">
+  <!-- sticky rail -->
+  <aside class="rail" aria-label="Chapter navigation">
+    <p class="rail-title">Contents</p>
+    <ol>
+      <li><a href="#s01" data-target="s01"><span class="num">01</span>Introduction</a></li>
+      <li><a href="#s02" data-target="s02"><span class="num">02</span>Brine</a></li>
+      <li><a href="#s03" data-target="s03"><span class="num">03</span>Equilibrium</a></li>
+      <li><a href="#s04" data-target="s04"><span class="num">04</span>Terroir</a></li>
+      <li><a href="#s05" data-target="s05"><span class="num">05</span>Patience</a></li>
+      <li><a href="#s06" data-target="s06"><span class="num">06</span>Colophon</a></li>
+    </ol>
+    <div class="rail-foot">
+      240 PAGES<br>
+      OFFSET / 128GSM<br>
+      ED. OF 1,500
+    </div>
+  </aside>
+
+  <!-- article -->
+  <article class="article">
+    <p class="kicker">01 / INTRODUCTION — THE PHYSICS OF SALT</p>
+    <h2>On the Slow Architecture of the Cure</h2>
+    <div class="byline">
+      <span>BY H. VANDERMEER</span>
+      <span>READING TIME 12 MIN</span>
+      <span>FILED UNDER: CHEMISTRY</span>
+    </div>
+
+    <p class="lead crystalize">To cure is to negotiate with decay. A raw fillet of fish is, in the span of days, a field of competing microorganisms — a war fought at the cellular scale for the moisture trapped inside. Salt does not stop this war. It simply changes the terms of surrender, drawing water out of tissue and into the open, where nothing can feed. What remains is not preservation in the sentimental sense; it is a controlled collapse, engineered by hand and measured in percentages.</p>
+
+    <p class="crystalize">We tend to speak of curing as craft, and it is — but craft here is a discipline of thresholds. Too little <span class="term" tabindex="0"><span class="word">brine</span><span class="tip" role="tooltip"><span class="t-h">Brine</span>A saturated solution of water and salt. At roughly 20% concentration it becomes hostile to most spoilage organisms.</span></span> and the flesh rots from within; too much and the cure is a pickle, a thing of acid and shock, stripped of the slow sweetness that defines a proper charcuterie. Between those two failures lies a narrow band, and every tradition of the world has learned to walk it by feel, by nose, by the resistance of a thumb pressed to cured belly.</p>
+
+    <figure>
+      <div class="fig-frame">
+        <span class="fig-label">PLATE 01 — CRYSTAL HABIT</span>
+        <img src="https://picsum.photos/seed/salt-crystal-lattice-macro/1200/720" alt="Macro photograph of salt crystals forming a cubic lattice on a dark surface" loading="lazy">
+      </div>
+    </figure>
+
+    <p class="crystalize">The crystal itself is a study in order imposed on chaos. Sodium and chloride ions, drawn from the same solution, lock into a cubic lattice — each ion surrounded by six of its opposite, a geometry so regular that a single grain of table salt holds a billion of these junctions. When we grind our own, we are not making salt; we are merely choosing the size of its faces, and the size of the faces determines how fast it will dissolve, how sharply it will bite, how quickly it will begin its work on the surface of the meat.</p>
+
+    <div class="pull">
+      Preservation is not the absence of change. It is change held at a temperature the human palate can tolerate.
+      <cite>— Field notes, Larder 7, winter</cite>
+    </div>
+
+    <p class="kicker" id="s02">02 / BRINE — THE SOLVENT OF TIME</p>
+    <h2>The Wet Cure and the Long Draw</h2>
+
+    <p class="crystalize">A wet cure — a bath of water, salt, and often sugar and spice — is the more forgiving of the two great methods, and the more patient. Where a dry cure pulls moisture outward, a brine pushes it inward, then lets osmosis reverse the flow, dragging salt deep into muscle that no surface rub could reach. The meat floats in the liquid like a specimen in a jar, and over days the two fluids reach a truce. You can feel the moment it happens: the flesh firms, the color deepens from raw pink to the muted rose of a thing already half-transformed.</p>
+
+    <p class="crystalize">The critical variable is not salt but <span class="term" tabindex="0"><span class="word">osmosis</span><span class="tip" role="tooltip"><span class="t-h">Osmosis</span>The movement of water across a membrane toward a higher concentration of solute. It is the engine of every cure.</span></span> — the tendency of water to move toward salt, always toward salt, until the two sides are equal. Every cell in the meat becomes a tiny pump working against itself. The result is a loss of perhaps a tenth of the original weight, and a gain in density, in shelf-life, in the concentrated, almost savory depth that raw protein never possesses. The cure is, in the end, a story about water leaving a place it can no longer stay.</p>
+
+    <figure>
+      <div class="fig-frame">
+        <span class="fig-label">PLATE 02 — LACTIC FERMENT</span>
+        <img src="https://picsum.photos/seed/fermentation-jars-linen/1200/600" alt="Rows of sealed fermentation jars under flat studio light" loading="lazy">
+      </div>
+    </figure>
+
+    <p class="crystalize">In the vegetable world the same logic produces something stranger and more alive. A <span class="term" tabindex="0"><span class="word">lactic</span><span class="tip" role="tooltip"><span class="t-h">Lactic</span>Of or relating to the bacteria that convert sugars into lactic acid, the sour backbone of fermentation.</span></span> ferment is a cure that works through acid rather than salt alone: submerged in brine, cabbage and cucumbers become a laboratory for <span class="term" tabindex="0"><span class="word">fermentation</span><span class="tip" role="tooltip"><span class="t-h">Fermentation</span>An anaerobic process in which microorganisms convert sugars into acids, gases, or alcohol.</span></span>, converting sugars into lactic acid until the environment is too sour for anything but the desired culture to survive. Here preservation and flavor are the same event. The sourness you taste is not an addition — it is the sound of the cure succeeding.</p>
+
+    <p class="kicker" id="s03">03 / EQUILIBRIUM — THE DRY METHOD</p>
+    <h2>When the Surface Becomes the Cure</h2>
+
+    <p class="crystalize">The dry cure is older, harsher, more honest. Salt is rubbed directly into the surface of the meat and left there, drawing out a slurry of moisture and dissolved protein that pools in the folds of the flesh. This <span class="term" tabindex="0"><span class="word">pellicle</span><span class="tip" role="tooltip"><span class="t-h">Pellicle</span>A thin, tacky film on the surface of meat; it must be dry before the cure can penetrate.</span></span> must be wiped away and the meat re-salted, again and again, until the surface is dry to the touch and the salt has finished migrating inward. Nothing is added; nothing is masked. The meat is left to <span class="term" tabindex="0"><span class="word">desiccation</span><span class="tip" role="tooltip"><span class="t-h">Desiccation</span>The removal of moisture from a substance, halting microbial activity.</span></span> in a cold, still room, losing weight and gaining character in equal measure.</p>
+
+    <div class="pull">
+      The best cured things taste of patience — of weeks spent in the dark, doing nothing, which is to say, doing everything.
+      <cite>— The Salt Almanac, entry 114</cite>
+    </div>
+
+    <p class="crystalize">What the dry cure rewards is attention to stillness. Air must move, but not too fast; temperature must hold, but not fluctuate; the room must be cold enough to slow the bacteria yet warm enough to let the enzymes in the muscle continue their quiet work, breaking down protein into the amino acids that read to the tongue as savory, as deep, as <span class="term" tabindex="0"><span class="word">umami</span><span class="tip" role="tooltip"><span class="t-h">Umami</span>One of the five basic tastes, produced by glutamates released as protein breaks down.</span></span>. A cured leg of ham is not cooked. It is aged — a slow enzymatic digestion that continues long after the salt has done its job, until the flesh turns translucent and the fat, once white, takes on the amber of old honey.</p>
+
+    <p class="kicker" id="s04">04 / TERROIR — THE GEOGRAPHY OF THE SALT</p>
+    <h2>Where the Cure Comes From</h2>
+
+    <p class="crystalize">Salt has a place of origin, and that place writes itself into the cure. Sea salt, evaporated from the ocean in shallow pans, carries a faint mineral sweetness and a moisture that makes it cling to wet surfaces. Rock salt, mined from ancient seabeds now buried under miles of stone, is drier, bluer, more aggressive — the salt of cold-climate charcuterie. The <span class="term" tabindex="0"><span class="word">cure</span><span class="tip" role="tooltip"><span class="t-h">Cure</span>Both the process and the preserved product; the transformation of raw flesh through salt, time, and dryness.</span></span> of a prosciutto in Parma and a <span class="term" tabindex="0"><span class="word">charcuterie</span><span class="tip" role="tooltip"><span class="t-h">Charcuterie</span>The French craft of preparing and preserving pork products.</span></span> in Lyon differ less in technique than in the particular grain of the salt each region chose, centuries ago, and never questioned again.</p>
+
+    <figure>
+      <div class="fig-frame">
+        <span class="fig-label">PLATE 03 — EVAPORATION PANS</span>
+        <img src="https://picsum.photos/seed/salt-flats-geometric/1200/640" alt="Geometric salt evaporation ponds photographed from above" loading="lazy">
+      </div>
+    </figure>
+
+    <p class="crystalize">Even the water used to make a brine belongs to a place. The calcium and magnesium dissolved in it affect the firmness of the cure, the speed of the ferment, the final pH of the jar. A preservation tradition is, in this light, an argument about local chemistry — a community's accumulated answer to the question of what its particular salt and water can do to its particular flesh. To cure elsewhere is to cure differently. The map of the world's preserved foods is a map of its geology.</p>
+
+    <p class="kicker" id="s05">05 / PATIENCE — THE FINAL VARIABLE</p>
+    <h2>Time as the Only Ingredient You Cannot Buy</h2>
+
+    <p class="crystalize">Every other variable in the cure can be measured, standardized, bought. Salt, temperature, humidity, time — the first three are commodities. The last is not. You cannot purchase an aged thing; you can only wait for one, or inherit it. This is why the great cured products resist industrialization: a process that depends on months of stillness cannot be compressed without losing the very quality it was built to produce. The clock is the ingredient, and the clock does not negotiate.</p>
+
+    <p class="crystalize">And so the cure remains, against all efficiency, a human-scale act — a negotiation between the maker and the slow arithmetic of decay, conducted in cold rooms and over long winters. It is, in the end, the most honest form of cooking there is: it adds nothing but salt and time, and asks everything of patience. What it produces is not merely food that lasts, but food that has been changed, transformed from the raw and the fleeting into something that carries, in its dense and savory depth, the memory of the season that made it.</p>
+
+    <div class="colophon" id="s06">
+      <div class="cols">
+        <div>
+          <h4>Colophon</h4>
+          Set in Newsreader & IBM Plex Mono. Printed offset on 128gsm linen stock. Bound in matte board.
+        </div>
+        <div>
+          <h4>Issue</h4>
+          Saline Press Nº03 — The Cure. Edition of 1,500. Distributed by hand and post.
+        </div>
+        <div>
+          <h4>Index</h4>
+          Brine · Osmosis · Lactic · Fermentation · Pellicle · Desiccation · Umami · Cure · Charcuterie
+        </div>
+      </div>
+      <div class="end-mark" aria-hidden="true">CURE</div>
+    </div>
+  </article>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+  /* ---------- crystallization: wrap words, seed-based growth ---------- */
+  var paragraphs = Array.prototype.slice.call(document.querySelectorAll('.crystalize'));
+
+  paragraphs.forEach(function(p){
+    // Build word sequence, preserving keyword spans as single units
+    var frag = document.createDocumentFragment();
+    var childNodes = Array.prototype.slice.call(p.childNodes);
+
+    childNodes.forEach(function(node){
+      if(node.nodeType === 3){ // text
+        var parts = node.textContent.split(/(\s+)/);
+        parts.forEach(function(part){
+          if(part === '') return;
+          if(/^\s+$/.test(part)){
+            frag.appendChild(document.createTextNode(part));
+          } else {
+            var w = document.createElement('span');
+            w.className = 'w';
+            w.textContent = part;
+            frag.appendChild(w);
+          }
+        });
+      } else if(node.nodeType === 1){ // element (term / lead marker)
+        if(node.classList.contains('term')){
+          var w = document.createElement('span');
+          w.className = 'w';
+          w.appendChild(node);
+          frag.appendChild(w);
+        } else {
+          frag.appendChild(node);
+        }
+      }
+    });
+
+    p.textContent = '';
+    p.appendChild(frag);
+
+    // Assign staggered delays — seeded, jagged, geological
+    var words = p.querySelectorAll('.w');
+    var seed = Math.random() * 1000;
+    for(var i=0;i<words.length;i++){
+      var d = (isMobile ? 0.018 : 0.03) * i + (Math.random() * (isMobile ? 0.04 : 0.12));
+      // add a small seeded jitter so growth looks crystalline, not linear
+      var jitter = ((Math.sin(seed + i * 12.9898) * 43758.5453) % 1);
+      jitter = Math.abs(jitter) * 0.1;
+      words[i].style.setProperty('--d', (d + jitter).toFixed(3) + 's');
+    }
+  });
+
+  /* ---------- reveal paragraphs on scroll ---------- */
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('go');
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.15, rootMargin: '0px 0px -8% 0px'});
+    paragraphs.forEach(function(p){ io.observe(p); });
+  } else {
+    paragraphs.forEach(function(p){ p.classList.add('go'); });
+  }
+
+  /* ---------- active chapter (rail + topbar) ---------- */
+  var sections = Array.prototype.slice.call(document.querySelectorAll('#s01,#s02,#s03,#s04,#s05,#s06'));
+  var links = Array.prototype.slice.call(document.querySelectorAll('[data-target]'));
+  function setActive(id){
+    links.forEach(function(a){
+      a.classList.toggle('active', a.getAttribute('data-target') === id);
+    });
+  }
+  if('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ setActive(e.target.id); }
+      });
+    }, {rootMargin: '-45% 0px -45% 0px', threshold: 0});
+    sections.forEach(function(s){ spy.observe(s); });
+  }
+  setActive('s01');
+
+  /* ---------- lexicon: viewport-aware tooltip positioning ---------- */
+  function positionTip(term){
+    var tip = term.querySelector('.tip');
+    if(!tip) return;
+    // reset
+    tip.style.left = '';
+    tip.style.right = '';
+    tip.classList.remove('flip');
+
+    var tr = term.getBoundingClientRect();
+    var tw = tip.offsetWidth;
+    var pad = 12;
+    var spaceRight = window.innerWidth - tr.left - pad;
+
+    if(tw > spaceRight){
+      // flip to right-aligned, arrow on right
+      tip.classList.add('flip');
+      tip.style.right = '0';
+      tip.style.left = 'auto';
+    } else {
+      tip.style.left = '0';
+      tip.style.right = 'auto';
+    }
+    // clamp vertical overflow handled by CSS top offset; ensure within viewport horizontally
+    var rr = tip.getBoundingClientRect();
+    if(rr.left < pad){
+      tip.style.left = Math.max(pad, tr.left) + 'px';
+      tip.style.right = 'auto';
+    }
+  }
+
+  document.querySelectorAll('.term').forEach(function(term){
+    ['mouseenter','focus'].forEach(function(ev){
+      term.addEventListener(ev, function(){ positionTip(term); });
+    });
+    term.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){ term.blur(); }
+    });
+  });
+  window.addEventListener('resize', function(){
+    isMobile = window.matchMedia('(max-width: 768px)').matches;
+    var active = document.querySelector('.term:hover, .term:focus');
+    if(active) positionTip(active);
+  });
+
+  /* ---------- smooth anchor for rail/topbar (respect reduced motion) ---------- */
+  links.forEach(function(a){
+    a.addEventListener('click', function(e){
+      var id = a.getAttribute('data-target');
+      var el = document.getElementById(id);
+      if(el){
+        e.preventDefault();
+        el.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+        setActive(id);
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

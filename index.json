@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T14:23:28.126Z",
+  "generated_at": "2026-09-29T15:21:34.773Z",
   "schema": "schema/entry.schema.json",
-  "count": 218,
+  "count": 223,
   "categories": [
     "landing-pages",
     "animations",
@@ -12124,11 +12124,11 @@
       "status": "polished",
       "summary": "Real-time recursive heightmap shader carving river deltas. Slider controls viscosity, altering channel depth and flow dynamics in a navigable 3D landscape.",
       "path": "prompts/webgl/fractal-deltaic-erosion-mesh",
-      "preview": null,
+      "preview": "prompts/webgl/fractal-deltaic-erosion-mesh/preview.png",
       "prompt": "prompts/webgl/fractal-deltaic-erosion-mesh/prompt.md",
       "extended": "prompts/webgl/fractal-deltaic-erosion-mesh/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/webgl/fractal-deltaic-erosion-mesh/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12138,7 +12138,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 243287,
+          "gen_ms": 243287,
+          "ttft_ms": 4313,
+          "queue_wait_ms": 384,
+          "wall_ms": 248108,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/webgl/fractal-deltaic-erosion-mesh/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/webgl/fractal-deltaic-erosion-mesh/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "The screenshot shows a blank screen with a 'WEBGL / THREE.JS UNAVAILABLE' error message, indicating the scene failed to render."
+        }
+      ]
     },
     {
       "id": "holographic-interference-plate",
@@ -12281,11 +12311,11 @@
       "status": "polished",
       "summary": "Procedural city block where wireframes solidify into instanced buildings. Scrub density to extrude or collapse masses, revealing raw urban geometry.",
       "path": "prompts/webgl/lattice-city-block-generator",
-      "preview": null,
+      "preview": "prompts/webgl/lattice-city-block-generator/preview.png",
       "prompt": "prompts/webgl/lattice-city-block-generator/prompt.md",
       "extended": "prompts/webgl/lattice-city-block-generator/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/webgl/lattice-city-block-generator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12295,7 +12325,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 244782,
+          "gen_ms": 244782,
+          "ttft_ms": 3257,
+          "queue_wait_ms": 133,
+          "wall_ms": 248238,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/webgl/lattice-city-block-generator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/webgl/lattice-city-block-generator/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 2,
+          "review_summary": "The scene is effectively blank: no city geometry, no title, and no slider are visible, failing the core deliverable."
+        }
+      ]
     },
     {
       "id": "liquid-metal-morphing-vertex",
@@ -12422,6 +12482,38 @@
       ]
     },
     {
+      "id": "sodium-vapor-crt-glass",
+      "title": "Sodium Vapor CRT",
+      "category": "webgl",
+      "tags": [
+        "three-js",
+        "pbr",
+        "volumetric-lighting",
+        "glass-shader",
+        "thermal-simulation",
+        "retro-tech",
+        "material-study"
+      ],
+      "status": "polished",
+      "summary": "A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' timeline to accelerate gas phase-change, transitioning light from dull red to bright sodium yellow with thermal distortion.",
+      "path": "prompts/webgl/sodium-vapor-crt-glass",
+      "preview": null,
+      "prompt": "prompts/webgl/sodium-vapor-crt-glass/prompt.md",
+      "extended": "prompts/webgl/sodium-vapor-crt-glass/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "voxel-erosion-hydraulic-map",
       "title": "Hydraulic Voxel Erosion",
       "category": "webgl",
@@ -12482,6 +12574,39 @@
           "review_summary": "The WebGL canvas is completely missing or failed to render, leaving only typography on a flat dark background."
         }
       ]
+    },
+    {
+      "id": "chitin-molting-exoskeleton",
+      "title": "The Molting Cycle",
+      "category": "editorial",
+      "tags": [
+        "entomology",
+        "molting",
+        "layers",
+        "organic",
+        "reveal",
+        "night",
+        "bioluminescence",
+        "editorial"
+      ],
+      "status": "polished",
+      "summary": "Carapace Press: A nocturnal entomological journal where scroll velocity physically shatters the dark chitinous top layer to reveal the pale, bioluminescent substrate beneath.",
+      "path": "prompts/editorial/chitin-molting-exoskeleton",
+      "preview": null,
+      "prompt": "prompts/editorial/chitin-molting-exoskeleton/prompt.md",
+      "extended": "prompts/editorial/chitin-molting-exoskeleton/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "hammered-lead-type",
@@ -12560,11 +12685,11 @@
       "status": "polished",
       "summary": "A culinary manual where scroll velocity acts as friction. Text columns split by a central steel spine, snapping into perfect alignment only when scrolled slowly, simulating the honing of a keen edge.",
       "path": "prompts/editorial/knife-edge-registration",
-      "preview": null,
+      "preview": "prompts/editorial/knife-edge-registration/preview.png",
       "prompt": "prompts/editorial/knife-edge-registration/prompt.md",
       "extended": "prompts/editorial/knife-edge-registration/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/editorial/knife-edge-registration/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12574,7 +12699,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 322043,
+          "gen_ms": 322043,
+          "ttft_ms": 6864,
+          "queue_wait_ms": 139,
+          "wall_ms": 329139,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/knife-edge-registration/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/knife-edge-registration/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 2,
+          "review_summary": "The hero section is essentially empty, showing only the brand name and spine but missing the required 'THE EDGE' title and subtitle."
+        }
+      ]
     },
     {
       "id": "linen-fold-accordion",
@@ -12712,11 +12867,11 @@
       "status": "polished",
       "summary": "High-fidelity editorial landing page for 'Saline Press' featuring industrial precision, monochrome palette, and crystallization-based text animations.",
       "path": "prompts/editorial/salt-crystallization-growth",
-      "preview": null,
+      "preview": "prompts/editorial/salt-crystallization-growth/preview.png",
       "prompt": "prompts/editorial/salt-crystallization-growth/prompt.md",
       "extended": "prompts/editorial/salt-crystallization-growth/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/editorial/salt-crystallization-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12726,7 +12881,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 469093,
+          "gen_ms": 469093,
+          "ttft_ms": 5107,
+          "queue_wait_ms": 163,
+          "wall_ms": 474440,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/salt-crystallization-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/salt-crystallization-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 3,
+          "review_summary": "The hero title 'CURE' is completely missing from the first viewport, leaving a blank center."
+        }
+      ]
     },
     {
       "id": "sous-vide-bubble-alignment",
@@ -12969,6 +13154,41 @@
       ]
     },
     {
+      "id": "acoustic-panel-attenuation",
+      "title": "Studio Soundproofing Planner",
+      "category": "interfaces",
+      "tags": [
+        "audio",
+        "acoustics",
+        "diagram",
+        "drag-drop",
+        "simulation",
+        "canvas2d",
+        "engineering",
+        "interactive",
+        "precision",
+        "tool-surface"
+      ],
+      "status": "polished",
+      "summary": "Direct manipulation of acoustic physics: drag foam panels onto a room diagram to visualize real-time sound wave reflection dampening and dead-zone creation.",
+      "path": "prompts/interfaces/acoustic-panel-attenuation",
+      "preview": null,
+      "prompt": "prompts/interfaces/acoustic-panel-attenuation/prompt.md",
+      "extended": "prompts/interfaces/acoustic-panel-attenuation/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "ferrous-oxide-bloom-filter",
       "title": "Verdigris OS: Oxidative Data Excavation",
       "category": "interfaces",
@@ -12983,11 +13203,11 @@
       "status": "polished",
       "summary": "Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, clearing green bloom to reveal crisp white data lines beneath.",
       "path": "prompts/interfaces/ferrous-oxide-bloom-filter",
-      "preview": null,
+      "preview": "prompts/interfaces/ferrous-oxide-bloom-filter/preview.png",
       "prompt": "prompts/interfaces/ferrous-oxide-bloom-filter/prompt.md",
       "extended": "prompts/interfaces/ferrous-oxide-bloom-filter/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/ferrous-oxide-bloom-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12997,7 +13217,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 429437,
+          "gen_ms": 429437,
+          "ttft_ms": 3948,
+          "queue_wait_ms": 150,
+          "wall_ms": 433614,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/ferrous-oxide-bloom-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/ferrous-oxide-bloom-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Excellent adherence to the 'oxidized copper' aesthetic and layout constraints, successfully avoiding standard dashboard patterns in favor of a cohesive, atmospheric interface."
+        }
+      ]
     },
     {
       "id": "furoshiki-wrapping-protocol",
@@ -13126,6 +13376,36 @@
       ]
     },
     {
+      "id": "lithography-ink-coverage",
+      "title": "Print Shop Ink Calculator",
+      "category": "interfaces",
+      "tags": [
+        "print",
+        "estimation",
+        "canvas",
+        "ink",
+        "tool"
+      ],
+      "status": "polished",
+      "summary": "Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split layout. Features CMYK sliders, real-time canvas simulation with ink bleed physics, and industrial styling.",
+      "path": "prompts/interfaces/lithography-ink-coverage",
+      "preview": null,
+      "prompt": "prompts/interfaces/lithography-ink-coverage/prompt.md",
+      "extended": "prompts/interfaces/lithography-ink-coverage/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "mon-nob-grocery-ledger",
       "title": "Mon no B Groceries",
       "category": "interfaces",
@@ -13185,6 +13465,36 @@
       ]
     },
     {
+      "id": "pneumatic-actuator-queue",
+      "title": "Air Pressure Task Queue",
+      "category": "interfaces",
+      "tags": [
+        "canvas",
+        "physics",
+        "task-management",
+        "industrial-ui",
+        "interactive"
+      ],
+      "status": "polished",
+      "summary": "A physical task queue where priority is pressure. Drag bubbles to inflate; high-pressure tasks pulse, vibrate, and push adjacent tasks away, enforcing spatial hierarchy.",
+      "path": "prompts/interfaces/pneumatic-actuator-queue",
+      "preview": null,
+      "prompt": "prompts/interfaces/pneumatic-actuator-queue/prompt.md",
+      "extended": "prompts/interfaces/pneumatic-actuator-queue/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "seismograph-ink-trace",
       "title": "Seismograph Ink Trace",
       "category": "interfaces",
@@ -13205,11 +13515,11 @@
       "status": "polished",
       "summary": "A physical seismograph UI for server health. A rotating drum renders latency as permanent ink traces. Users drag the pen arm to annotate incidents, creating irreversible ink blots.",
       "path": "prompts/interfaces/seismograph-ink-trace",
-      "preview": null,
+      "preview": "prompts/interfaces/seismograph-ink-trace/preview.png",
       "prompt": "prompts/interfaces/seismograph-ink-trace/prompt.md",
       "extended": "prompts/interfaces/seismograph-ink-trace/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/seismograph-ink-trace/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -13219,7 +13529,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 257177,
+          "gen_ms": 257177,
+          "ttft_ms": 4290,
+          "queue_wait_ms": 131,
+          "wall_ms": 261698,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/seismograph-ink-trace/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/seismograph-ink-trace/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Faithful, calm hardware aesthetic with correct layout, palette, and typography; ink line is faint but the concept reads clearly."
+        }
+      ]
     },
     {
       "id": "shoji-screen-privacy",

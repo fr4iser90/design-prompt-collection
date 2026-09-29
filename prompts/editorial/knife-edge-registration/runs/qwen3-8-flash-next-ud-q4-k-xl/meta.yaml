@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 322043
+gen_ms: 322043
+ttft_ms: 6864
+queue_wait_ms: 139
+wall_ms: 329139
+review_score: 2
+review_summary: "The hero section is essentially empty, showing only the brand name and spine but missing the required 'THE EDGE' title and subtitle."
+reviewed_at: "2026-09-29T14:36:53.022Z"
+review_issues:
+  - "Missing hero content ('THE EDGE' title and subtitle)"
+  - "Excessive negative space making the viewport look broken or incomplete"
+  - "No visible typography hierarchy or editorial content in the first fold"

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deltaic Fractal Erosion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:#1A1B1E}
+  canvas{display:block}
+  #scene{position:fixed;inset:0;z-index:1}
+  .ui{position:fixed;z-index:10;pointer-events:none}
+  #title{top:26px;left:28px;max-width:min(64vw,520px)}
+  #title h1{font-family:'Cormorant Garamond',serif;font-weight:400;color:#F2F4F7;font-size:clamp(26px,3.6vw,46px);line-height:1.02;letter-spacing:.01em;text-shadow:0 2px 24px rgba(0,0,0,.65)}
+  #title .sub{margin-top:9px;font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#7C8694}
+  #title .rule{width:46px;height:1px;background:#D69E2E;margin-top:12px;opacity:.75}
+  #hud{top:26px;right:28px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:11px;line-height:1.9;color:#6C7583;letter-spacing:.08em}
+  #hud b{color:#A0AEC0;font-weight:400}
+  #hud .v{color:#D69E2E}
+  #hud .rec{display:inline-block;width:6px;height:6px;border-radius:50%;background:#D69E2E;margin-right:6px;vertical-align:middle;animation:blink 1.8s steps(1) infinite}
+  @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.12}}
+  #controls{left:50%;bottom:30px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:auto}
+  #controls .lab{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:#A0AEC0}
+  #controls .row{display:flex;align-items:center;gap:16px}
+  #controls .val{font-family:'IBM Plex Mono',monospace;font-weight:300;font-size:12px;color:#D69E2E;width:42px;text-align:right}
+  #slider{-webkit-appearance:none;appearance:none;width:min(46vw,300px);height:2px;background:linear-gradient(90deg,#D69E2E var(--p,40%),#3A3F47 var(--p,40%));outline:none;cursor:pointer;border-radius:2px}
+  #slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#F2F4F7;border:2px solid #1A1B1E;box-shadow:0 0 0 1px rgba(214,158,46,.55);transition:transform .15s}
+  #slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
+  #slider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#F2F4F7;border:2px solid #1A1B1E;box-shadow:0 0 0 1px rgba(214,158,46,.55)}
+  #slider::-moz-range-track{height:2px;background:transparent}
+  #vignette{position:fixed;inset:0;z-index:5;pointer-events:none;background:radial-gradient(125% 95% at 50% 42%,transparent 52%,rgba(0,0,0,.6) 100%)}
+  #loader{position:fixed;inset:0;z-index:50;background:#1A1B1E;display:flex;align-items:center;justify-content:center;transition:opacity .9s ease}
+  #loader .lt{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#5A626E}
+  #loader .lt b{color:#D69E2E;font-weight:400}
+  @media (max-width:640px){#title{top:16px;left:16px}#hud{display:none}#controls{bottom:22px}#slider{width:58vw}}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="vignette"></div>
+
+<div id="title" class="ui">
+  <h1>Deltaic Fractal Erosion</h1>
+  <div class="sub">Geological Survey &middot; Procedural Delta Model</div>
+  <div class="rule"></div>
+</div>
+
+<div id="hud" class="ui">
+  <div><span class="rec"></span>LIVE RENDER</div>
+  <div>MESH <b id="hudMesh">2048&times;2048</b></div>
+  <div>FLOW &middot; <span class="v" id="hudVisc">0.40</span></div>
+  <div>WATERLINE <b>0.000</b></div>
+</div>
+
+<div id="controls" class="ui">
+  <div class="lab">Viscosity</div>
+  <div class="row">
+    <input id="slider" type="range" min="0" max="1" step="0.001" value="0.40">
+    <div class="val" id="val">0.40</div>
+  </div>
+</div>
+
+<div id="loader"><div class="lt"><b>&#9678;</b> Generating delta mesh</div></div>
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+  if(typeof THREE==='undefined'){document.getElementById('loader').innerHTML='<div class="lt">WebGL / three.js unavailable</div>';return;}
+
+  var container=document.getElementById('container')||document.getElementById('scene');
+  var slider=document.getElementById('slider');
+  var valEl=document.getElementById('val');
+  var hudVisc=document.getElementById('hudVisc');
+  var hudMesh=document.getElementById('hudMesh');
+  var loader=document.getElementById('loader');
+
+  var SEG=2048, SIZE=100, WATER=0.0;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){SEG=1024;hudMesh.textContent='1024\u00D71024';}
+
+  var renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  renderer.setClearColor(0x1A1B1E,1);
+  container.appendChild(renderer.domElement);
+
+  var scene=new THREE.Scene();
+  var camera=new THREE.PerspectiveCamera(46,window.innerWidth/window.innerHeight,0.1,2000);
+  camera.position.set(0,240,500);
+  camera.lookAt(0,0,0);
+
+  var controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;controls.dampingFactor=0.06;
+  controls.minDistance=12;controls.maxDistance=700;
+  controls.maxPolarAngle=Math.PI*0.495;controls.minPolarAngle=0.06;
+  controls.target.set(0,0,0);controls.enabled=false;
+
+  var uTime={value:0}, uVisc={value:parseFloat(slider.value)};
+  var uSunDir={value:new THREE.Vector3(0.5,0.9,0.3).normalize()};
+  var uFogColor={value:new THREE.Color(0x1A1B1E)};
+  var uFogDensity={value:0.0055};
+  var uWaterLevel={value:WATER};
+
+  var terrainVert=[
+  'uniform float uTime;uniform float uVisc;',
+  'varying vec3 vWorldPos;varying vec3 vViewPos;varying float vDisp;varying float vFlow;',
+  'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
+  'float vnoise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}',
+  'float fbm(vec2 p){float v=0.0;float a=0.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<6;i++){v+=a*vnoise(p);p=m*p;a*=0.5;}return v;}',
+  'float mask(vec2 p){float r=length(p);return smoothstep(1.0,0.72,r);}',
+  'void main(){',
+  '  vec2 p=uv*2.0-1.0;',
+  '  float v=clamp(uVisc,0.0,1.0);',
+  '  float base=fbm(p*1.5+vec2(3.1,7.7))*2.0-1.0;',
+  '  float broad=smoothstep(-0.15,0.62,base);',
+  '  float ch=fbm(p*3.0+vec2(11.3,2.4))*2.0-1.0;',
+  '  float chan=smoothstep(0.02,0.28,abs(ch));',
+  '  float flow=pow(1.0-chan,1.0+2.2*v);',
+  '  float carve=flow*mix(0.12,0.55,v);',
+  '  float deposit=flow*mix(0.06,0.20,1.0-v);',
+  '  float disp=broad*1.15+deposit-carve+0.10;disp*=mask(p);',
+  '  vDisp=disp;vFlow=flow;',
+  '  vec3 pos=position;pos.y+=disp;',
+  '  vec4 wp=modelMatrix*vec4(pos,1.0);vWorldPos=wp.xyz;',
+  '  vec4 mv=viewMatrix*wp;vViewPos=mv.xyz;gl_Position=projectionMatrix*mv;',
+  '}'].join('\n');
+
+  var terrainFrag=[
+  'uniform vec3 uSunDir;uniform vec3 uFogColor;uniform float uFogDensity;uniform float uWaterLevel;',
+  'varying vec3 vWorldPos;varying vec3 vViewPos;varying float vDisp;varying float vFlow;',
+  'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
+  'float vnoise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}',
+  'float fbm(vec2 p){float v=0.0;float a=0.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<4;i++){v+=a*vnoise(p);p=m*p;a*=0.5;}return v;}',
+  'void main(){',
+  '  vec3 dFdxv=dFdx(vWorldPos);vec3 dFdyv=dFdy(vWorldPos);',
+  '  vec3 n=normalize(cross(dFdxv,dFdyv));',
+  '  float diff=max(dot(n,uSunDir),0.0);',
+  '  float ao=clamp(vDisp*1.6+0.5,0.0,1.0);',
+  '  vec3 bedrock=vec3(0.290,0.333,0.408);',
+  '  vec3 silt=vec3(0.839,0.620,0.180);',
+  '  float siltMix=clamp(vFlow*1.25+(1.0-smoothstep(-0.10,0.15,vDisp))*0.35,0.0,1.0);',
+  '  vec3 albedo=mix(bedrock,silt,siltMix);',
+  '  albedo*=0.85+0.30*fbm(vWorldPos.xz*0.35);',
+  '  float band=smoothstep(0.46,0.50,fract(vDisp*2.2));',
+  '  albedo=mix(albedo,albedo*0.80,band*0.35);',
+  '  vec3 col=albedo*(0.28+0.95*diff)*ao;',
+  '  col+=albedo*0.10*smoothstep(0.0,1.0,n.y);',
+  '  float dist=length(vViewPos);',
+  '  float fog=1.0-exp(-uFogDensity*uFogDensity*dist*dist);',
+  '  col=mix(col,uFogColor,clamp(fog,0.0,1.0));',
+  '  gl_FragColor=vec4(col,1.0);',
+  '}'].join('\n');
+
+  var waterVert=[
+  'varying vec3 vWorldPos;varying vec3 vViewPos;varying vec2 vUv;',
+  'void main(){vUv=uv;vec4 wp=modelMatrix*vec4(position,1.0);vWorldPos=wp.xyz;',
+  'vec4 mv=viewMatrix*wp;vViewPos=mv.xyz;gl_Position=projectionMatrix*mv;}'].join('\n');
+
+  var waterFrag=[
+  'uniform float uTime;uniform float uWaterLevel;uniform vec3 uFogColor;uniform float uFogDensity;uniform vec3 uSunDir;',
+  'varying vec3 vWorldPos;varying vec3 vViewPos;varying vec2 vUv;',
+  'float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
+  'float vnoise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);float a=hash(i);float b=hash(i+vec2(1.0,0.0));float c=hash(i+vec2(0.0,1.0));float d=hash(i+vec2(1.0,1.0));return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);}',
+  'void main(){',
+  '  vec2 p=vWorldPos.xz*0.12;',
+  '  float n1=vnoise(p+vec2(uTime*0.05,uTime*0.03));',
+  '  float n2=vnoise(p*2.3-vec2(uTime*0.04,uTime*0.06));',
+  '  float h=n1*0.6+n2*0.4;',
+  '  vec3 n=normalize(vec3(dFdx(h)*1.5,1.0,dFdy(h)*1.5));',
+  '  vec3 V=normalize(-vViewPos);',
+  '  float fres=pow(1.0-max(dot(n,V),0.0),3.0);',
+  '  vec3 R=reflect(-V,n);',
+  '  vec3 sky=mix(vec3(0.10,0.12,0.16),vec3(0.22,0.26,0.34),clamp(R.y*0.5+0.5,0.0,1.0));',
+  '  float spec=pow(max(dot(R,normalize(uSunDir)),0.0),40.0);',
+  '  vec3 col=vec3(0.10,0.15,0.24);',
+  '  col=mix(col,sky,clamp(fres,0.0,1.0));',
+  '  col+=vec3(0.9,0.85,0.7)*spec*0.6;',
+  '  float dist=length(vViewPos);',
+  '  float fog=1.0-exp(-uFogDensity*uFogDensity*dist*dist);',
+  '  col=mix(col,uFogColor,clamp(fog,0.0,1.0));',
+  '  float alpha=clamp(0.30+fres*0.5+spec*0.4,0.0,0.85);',
+  '  gl_FragColor=vec4(col,alpha);',
+  '}'].join('\n');
+
+  var terrainMat=new THREE.ShaderMaterial({
+    uniforms:{uTime:uTime,uVisc:uVisc,uSunDir:uSunDir,uFogColor:uFogColor,uFogDensity:uFogDensity,uWaterLevel:uWaterLevel},
+    vertexShader:terrainVert,fragmentShader:terrainFrag,side:THREE.DoubleSide
+  });
+  var waterMat=new THREE.ShaderMaterial({
+    uniforms:{uTime:uTime,uWaterLevel:uWaterLevel,uFogColor:uFogColor,uFogDensity:uFogDensity,uSunDir:uSunDir},
+    vertexShader:waterVert,fragmentShader:waterFrag,transparent:true,depthWrite:false,side:THREE.DoubleSide
+  });
+
+  var terrainGeo=new THREE.PlaneGeometry(SIZE,SIZE,SEG,SEG);
+  terrainGeo.rotateX(-Math.PI/2);
+  var terrain=new THREE.Mesh(terrainGeo,terrainMat);
+  terrain.renderOrder=0;scene.add(terrain);
+
+  var waterGeo=new THREE.PlaneGeometry(SIZE*1.3,SIZE*1.3,1,1);
+  waterGeo.rotateX(-Math.PI/2);
+  var water=new THREE.Mesh(waterGeo,waterMat);
+  water.position.y=WATER;water.renderOrder=1;scene.add(water);
+
+  slider.addEventListener('input',function(){
+    var v=parseFloat(slider.value);uVisc.value=v;
+    var s=v.toFixed(2);valEl.textContent=s;hudVisc.textContent=s;
+    slider.style.setProperty('--p',(v*100)+'%');
+  });
+  slider.style.setProperty('--p',(uVisc.value*100)+'%');
+
+  var startTime=performance.now();
+  var introDur=reduce?0:3000;
+  var introActive=introDur>0;
+  var camStart=new THREE.Vector3(0,240,500);
+  var camEnd=new THREE.Vector3(34,24,50);
+  var tgtStart=new THREE.Vector3(0,0,0);
+  var tgtEnd=new THREE.Vector3(0,0,0);
+
+  function easeInOutCubic(x){return x<0.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;}
+
+  function finishIntro(){
+    introActive=false;
+    camera.position.copy(camEnd);controls.target.copy(tgtEnd);
+    controls.enabled=true;controls.update();
+  }
+
+  var clock=new THREE.Clock();
+  var sunAngle=0.6;
+
+  function animate(){
+    requestAnimationFrame(animate);
+    var dt=clock.getDelta();
+    var elapsed=clock.getElapsedTime();
+    uTime.value=elapsed;
+
+    if(introActive){
+      var t=Math.min((performance.now()-startTime)/introDur,1);
+      var e=easeInOutCubic(t);
+      camera.position.lerpVectors(camStart,camEnd,e);
+      controls.target.lerpVectors(tgtStart,tgtEnd,e);
+      camera.lookAt(controls.target);
+      if(t>=1)finishIntro();
+    } else {
+      controls.update();
+    }
+
+    if(!reduce)sunAngle+=dt*0.05;
+    uSunDir.value.set(Math.cos(sunAngle),0.92,Math.sin(sunAngle)).normalize();
+
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  window.addEventListener('resize',function(){
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth,window.innerHeight);
+  });
+
+  setTimeout(function(){loader.style.opacity='0';loader.style.pointerEvents='none';},reduce?100:650);
+})();
+</script>
+</body>
+</html>

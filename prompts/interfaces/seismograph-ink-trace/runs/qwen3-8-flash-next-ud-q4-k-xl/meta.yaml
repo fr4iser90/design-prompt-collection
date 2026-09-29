@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 257177
+gen_ms: 257177
+ttft_ms: 4290
+queue_wait_ms: 131
+wall_ms: 261698
+review_score: 8
+review_summary: "Faithful, calm hardware aesthetic with correct layout, palette, and typography; ink line is faint but the concept reads clearly."
+reviewed_at: "2026-09-29T14:37:17.424Z"
+review_issues:
+  - "Ink trace barely visible in screenshot (line too thin/faint)"
+  - "Paper noise texture not apparent"
+  - "Drum cylinder curvature not conveyed (reads flat)"
+  - "Brand wordmark is panel-level, not a hero signal"

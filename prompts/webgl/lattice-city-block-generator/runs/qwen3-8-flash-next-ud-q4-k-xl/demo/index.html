@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lattice City Fabric</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F172A;
+    --slate:#334155;
+    --accent:#38BDF8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{
+    height:100%;width:100%;overflow:hidden;background:var(--bg);
+    font-family:'Space Grotesk',monospace;color:var(--accent);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  #app{position:fixed;inset:0;z-index:1}
+  #app canvas{display:block;touch-action:none;cursor:grab}
+  #app canvas:active{cursor:grabbing}
+
+  /* Title — top-left, fixed, hero signal */
+  .title{
+    position:fixed;top:2rem;left:2rem;z-index:10;pointer-events:none;
+    font-family:'Syne',sans-serif;font-weight:800;text-transform:uppercase;
+    line-height:.9;letter-spacing:-.02em;color:var(--accent);
+    font-size:clamp(1.35rem,3.4vw,2.35rem);
+    text-shadow:0 0 22px rgba(56,189,248,.28);
+    animation:rise .9s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .title .sub{
+    display:block;margin-top:.55rem;
+    font-family:'Space Grotesk',monospace;font-weight:500;
+    font-size:.62rem;letter-spacing:.42em;color:var(--slate);
+    text-shadow:none;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* Slider — bottom-center, minimal */
+  .control{
+    position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+    z-index:10;width:min(300px,80vw);
+    animation:rise .9s .15s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .control .row{
+    display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.65rem;
+  }
+  .control label{
+    font-family:'Space Grotesk',monospace;font-weight:700;font-size:.7rem;
+    letter-spacing:.42em;color:var(--accent);text-transform:uppercase;
+  }
+  .control .val{
+    font-family:'Space Grotesk',monospace;font-weight:500;font-size:.72rem;
+    letter-spacing:.14em;color:var(--slate);
+    font-variant-numeric:tabular-nums;
+  }
+  .track{position:relative;height:2px;background:var(--slate);border-radius:2px}
+  .fill{
+    position:absolute;left:0;top:0;height:100%;width:50%;border-radius:2px;
+    background:var(--accent);box-shadow:0 0 10px rgba(56,189,248,.55);
+    pointer-events:none;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;position:relative;width:100%;height:2px;
+    background:transparent;margin:0;cursor:pointer;z-index:2;
+  }
+  input[type=range]:focus{outline:none}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent);border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(56,189,248,.16),0 0 14px rgba(56,189,248,.6);
+    transition:transform .15s ease;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+  input[type=range]::-moz-range-thumb{
+    width:15px;height:15px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(56,189,248,.16),0 0 14px rgba(56,189,248,.6);
+  }
+  input[type=range]::-moz-range-track{background:transparent;height:2px}
+
+  .hint{
+    position:fixed;bottom:2rem;right:2rem;z-index:10;pointer-events:none;
+    font-family:'Space Grotesk',monospace;font-size:.6rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--slate);
+  }
+  @media (max-width:640px){
+    .title{top:1.25rem;left:1.25rem}
+    .control{bottom:1.5rem;width:min(280px,84vw)}
+    .hint{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .title,.control{animation:none}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="title">
+  Lattice City Fabric
+  <span class="sub">Procedural Block Generator</span>
+</div>
+
+<div class="control">
+  <div class="row">
+    <label for="density">Density</label>
+    <span class="val" id="densityVal">50%</span>
+  </div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <input type="range" id="density" min="0" max="1" step="0.001" value="0.5" aria-label="City density">
+</div>
+
+<div class="hint">Drag&nbsp;·&nbsp;Scroll&nbsp;Zoom&nbsp;·&nbsp;Drag&nbsp;Slider</div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+/* ------------------------------------------------------------------ *
+ *  CityGenerator — deterministic procedural layout of the block grid
+ * ------------------------------------------------------------------ */
+class CityGenerator {
+  constructor({ grid = 20, cell = 10, maxBuildings = 16, maxH = 22, minH = 3 } = {}) {
+    this.grid = grid;
+    this.cell = cell;
+    this.maxBuildings = maxBuildings;
+    this.maxH = maxH;
+    this.minH = minH;
+    this.buildings = [];
+    this.seed = 1337;
+  }
+  rand() { this.seed = (this.seed * 16807) % 2147483647; return this.seed / 2147483647; }
+  generate() {
+    const { grid, cell, maxBuildings, minH, maxH } = this;
+    const half = grid * cell / 2;
+    const list = [];
+    for (let gx = 0; gx < grid; gx++) {
+      for (let gz = 0; gz < grid; gz++) {
+        const cx = (gx + 0.5) * cell - half;
+        const cz = (gz + 0.5) * cell - half;
+        const n = Math.floor(minH + this.rand() * (maxBuildings - minH + 1));
+        for (let i = 0; i < n; i++) {
+          const w = 1.4 + this.rand() * 2.8;
+          const d = 1.4 + this.rand() * 2.8;
+          const fx = this.rand() * 2 - 1;
+          const fz = this.rand() * 2 - 1;
+          const px = cx + fx * (cell * 0.32);
+          const pz = cz + fz * (cell * 0.32);
+          const r = this.rand();
+          const h = minH + Math.pow(r, 1.7) * (maxH - minH);
+          list.push({ x: px, z: pz, w, d, h, seed: this.rand() * 100 });
+        }
+      }
+    }
+    this.buildings = list;
+    return list;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  SceneManager — renderer, orthographic camera, lights, instancing,
+ *  wireframe + window-light layers, and the per-frame state machine
+ * ------------------------------------------------------------------ */
+class SceneManager {
+  constructor(container) {
+    this.container = container;
+    this.clock = new THREE.Clock();
+    this.targetDensity = 0.5;
+    this.currentDensity = 0.5;
+    this._dummy = new THREE.Object3D();
+    this._col = new THREE.Color();
+    this._tmp = new THREE.Color();
+    this._base = new THREE.Color(0x334155);
+    this._lit = new THREE.Color(0x38BDF8);
+    this._init();
+    this._resize();
+    window.addEventListener('resize', () => this._resize());
+  }
+
+  _init() {
+    const { clientWidth: w, clientHeight: h } = this.container;
+
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.renderer.setSize(w, h);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
+    this.container.appendChild(this.renderer.domElement);
+
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0x0F172A);
+    this.scene.fog = new THREE.Fog(0x0F172A, 130, 300);
+
+    // Orthographic camera — clean technical scale
+    this.aspect = w / h;
+    this.frustum = 110;
+    this.camera = new THREE.OrthographicCamera(
+      -this.frustum * this.aspect, this.frustum * this.aspect, this.frustum, -this.frustum, 0.1, 2000
+    );
+    this.camera.position.set(50, 50, 50);
+    this.camera.lookAt(0, 0, 0);
+
+    // Lights
+    const hemi = new THREE.HemisphereLight(0x38BDF8, 0x0F172A, 0.5);
+    this.scene.add(hemi);
+
+    const dir = new THREE.DirectionalLight(0xFFFFFF, 1.5);
+    dir.position.set(50, 100, 50);
+    dir.castShadow = true;
+    dir.shadow.mapSize.set(2048, 2048);
+    dir.shadow.camera.near = 1;
+    dir.shadow.camera.far = 400;
+    dir.shadow.camera.left = -120;
+    dir.shadow.camera.right = 120;
+    dir.shadow.camera.top = 120;
+    dir.shadow.camera.bottom = -120;
+    dir.shadow.bias = -0.0004;
+    dir.shadow.normalBias = 0.02;
+    this.scene.add(dir);
+    this.scene.add(dir.target);
+
+    // Ground — dark matte + subtle grid
+    const size = 200;
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(size, size),
+      new THREE.MeshStandardMaterial({ color: 0x0F172A, roughness: 1, metalness: 0 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    this.scene.add(ground);
+
+    const grid = new THREE.GridHelper(size, 20, 0x334155, 0x334155);
+    grid.position.y = 0.02;
+    grid.material.transparent = true;
+    grid.material.opacity = 0.55;
+    grid.material.depthWrite = false;
+    this.scene.add(grid);
+
+    // Controls
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.06;
+    this.controls.enablePan = false;
+    this.controls.minZoom = 0.6;
+    this.controls.maxZoom = 3.2;
+    this.controls.maxPolarAngle = Math.PI / 2.15;
+    this.controls.target.set(0, 0, 0);
+
+    this._buildCity();
+  }
+
+  _buildCity() {
+    const gen = new CityGenerator();
+    const list = gen.generate();
+    this.count = list.length;
+
+    // Shared unit box (footprint baked into per-instance scale)
+    const geo = new THREE.BoxGeometry(1, 1, 1);
+    geo.translate(0, 0.5, 0);
+
+    // Solid instanced buildings
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x334155, roughness: 0.4, metalness: 0.1, flatShading: false
+    });
+    this.mesh = new THREE.InstancedMesh(geo, mat, this.count);
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
+    this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.mesh.frustumCulled = false;
+    this.scene.add(this.mesh);
+
+    // Wireframe edges (per-instance)
+    const edgesGeo = new THREE.EdgesGeometry(geo);
+    const wireMat = new THREE.LineBasicMaterial({
+      color: 0x38BDF8, transparent: true, opacity: 0.5, depthWrite: false
+    });
+    this.wire = new THREE.LineSegments(edgesGeo, wireMat);
+    this.wire.frustumCulled = false;
+    this.scene.add(this.wire);
+
+    // Window-light layer — tiny emissive planes, custom flicker shader
+    const winGeo = new THREE.PlaneGeometry(1, 1);
+    const winMat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      uniforms: { uTime: { value: 0 } },
+      vertexShader: `
+        attribute float aSeed;
+        attribute float aOn;
+        uniform float uTime;
+        varying float vI;
+        void main(){
+          vec4 wp = instanceMatrix * vec4(position, 1.0);
+          vec4 mv = modelViewMatrix * wp;
+          float flick = sin(uTime * (0.4 + aSeed * 0.9) + aSeed * 6.2831);
+          float gate  = step(0.0, flick);
+          vI = aOn * (0.18 + 0.34 * gate);
+          gl_Position = projectionMatrix * mv;
+        }
+      `,
+      fragmentShader: `
+        varying float vI;
+        void main(){
+          if(vI < 0.001) discard;
+          gl_FragColor = vec4(0.22, 0.74, 0.97, vI);
+        }
+      `
+    });
+    this.winMat = winMat;
+    this.win = new THREE.InstancedMesh(winGeo, winMat, this.count * 2);
+    this.win.frustumCulled = false;
+    this.scene.add(this.win);
+
+    // Per-instance data
+    this.seeds = new Float32Array(this.count);
+    this.onMask = new Float32Array(this.count);
+    this.winSeeds = new Float32Array(this.count * 2);
+    this.winOn = new Float32Array(this.count * 2);
+    this.base = list.map(b => ({
+      x: b.x, z: b.z, w: b.w, d: b.d, h: b.h,
+      fx: b.x - b.w / 2, fz: b.z - b.d / 2
+    }));
+
+    // Assign seeds + random on/off mask for windows
+    for (let i = 0; i < this.count; i++) {
+      const s = list[i].seed;
+      this.seeds[i] = s;
+      this.onMask[i] = 0.5 + 0.5 * Math.sin(s * 12.9898);
+      this.winSeeds[i * 2] = s;
+      this.winSeeds[i * 2 + 1] = s + 0.37;
+      this.winOn[i * 2] = this.onMask[i] > 0.5 ? 1 : 0;
+      this.winOn[i * 2 + 1] = this.onMask[i] > 0.5 ? 0 : 1;
+    }
+
+    this._applyDensity(this.currentDensity);
+    this._applyWindows();
+  }
+
+  // Update solid + wireframe matrices for a given normalized density
+  _applyDensity(d) {
+    const base = this.base;
+    for (let i = 0; i < this.count; i++) {
+      const b = base[i];
+      const h = Math.max(0.1, b.h * d);
+      const s = this._dummy;
+      s.position.set(b.x, 0, b.z);
+      s.scale.set(b.w, h, b.d);
+      s.updateMatrix();
+      this.mesh.setMatrixAt(i, s.matrix);
+      this.wire.setMatrixAt(i, s.matrix);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.wire.instanceMatrix.needsUpdate = true;
+  }
+
+  // Update window-light instances (positioned on +X / +Z faces)
+  _applyWindows() {
+    const base = this.base;
+    const d = this.currentDensity;
+    const s = this._dummy;
+    let idx = 0;
+    for (let i = 0; i < this.count; i++) {
+      const b = base[i];
+      const h = Math.max(0.1, b.h * d);
+      const cy = h * 0.62;
+      const w = Math.min(1.2, b.w * 0.5);
+      const dh = Math.min(0.85, h * 0.4);
+      // +X face
+      s.position.set(b.fx + b.w + 0.02, cy, b.z);
+      s.rotation.set(0, Math.PI / 2, 0);
+      s.scale.set(w, dh, 1);
+      s.updateMatrix();
+      this.win.setMatrixAt(idx++, s.matrix);
+      // +Z face
+      s.position.set(b.x, cy, b.fz + b.d + 0.02);
+      s.rotation.set(0, 0, 0);
+      s.scale.set(w, dh, 1);
+      s.updateMatrix();
+      this.win.setMatrixAt(idx++, s.matrix);
+    }
+    this.win.instanceMatrix.needsUpdate = true;
+  }
+
+  setDensity(d) {
+    this.targetDensity = THREE.MathUtils.clamp(d, 0, 1);
+  }
+
+  _resize() {
+    const { clientWidth: w, clientHeight: h } = this.container;
+    this.aspect = w / h;
+    this.camera.left = -this.frustum * this.aspect;
+    this.camera.right = this.frustum * this.aspect;
+    this.camera.top = this.frustum;
+    this.camera.bottom = -this.frustum;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
+  }
+
+  update() {
+    const dt = Math.min(this.clock.getDelta(), 0.05);
+    const t = this.clock.elapsedTime;
+
+    // Entrance animation (0 -> 2s)
+    if (!REDUCED) {
+      if (!this._entranceStart) this._entranceStart = t;
+      const p = Math.min((t - this._entranceStart) / 2, 1);
+      this.currentDensity = 0.1 + (this.targetDensity - 0.1) * easeOutCubic(p);
+      if (p >= 1) this._entranceDone = true;
+    }
+
+    // Smooth lerp toward target (after entrance)
+    if (this._entranceDone || REDUCED) {
+      this.currentDensity += (this.targetDensity - this.currentDensity) * (REDUCED ? 1 : 0.12);
+    }
+
+    this._applyDensity(this.currentDensity);
+
+    // Wireframe opacity inversely correlates with height
+    this.wire.material.opacity = THREE.MathUtils.clamp(1 - this.currentDensity, 0, 1);
+
+    // Window flicker
+    this.winMat.uniforms.uTime.value = t;
+
+    this.controls.update();
+    this.renderer.render(this.scene, this.camera);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  UIController — binds the density slider to the scene
+ * ------------------------------------------------------------------ */
+class UIController {
+  constructor(scene) {
+    this.scene = scene;
+    this.input = document.getElementById('density');
+    this.fill = document.getElementById('fill');
+    this.val = document.getElementById('densityVal');
+    this._bind();
+    this._sync();
+  }
+  _bind() {
+    this.input.addEventListener('input', () => {
+      const v = parseFloat(this.input.value);
+      this.scene.setDensity(v);
+      this._sync();
+    });
+  }
+  _sync() {
+    const v = parseFloat(this.input.value);
+    this.fill.style.width = (v * 100) + '%';
+    this.val.textContent = Math.round(v * 100) + '%';
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ *  Bootstrap
+ * ------------------------------------------------------------------ */
+(function main() {
+  const container = document.getElementById('app');
+  const scene = new SceneManager(container);
+  new UIController(scene);
+  scene.renderer.setAnimationLoop(() => scene.update());
+})();
+</script>
+</body>
+</html>

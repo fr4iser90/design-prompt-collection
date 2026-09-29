@@ -1,0 +1,24 @@
+id: pneumatic-actuator-queue
+title: "Air Pressure Task Queue"
+category: interfaces
+tags:
+  - canvas
+  - physics
+  - task-management
+  - industrial-ui
+  - interactive
+status: polished
+summary: "A physical task queue where priority is pressure. Drag bubbles to inflate; high-pressure tasks pulse, vibrate, and push adjacent tasks away, enforcing spatial hierarchy."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
