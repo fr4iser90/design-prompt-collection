@@ -1,0 +1,25 @@
+id: turbine-blade-cutoff
+title: "Turbine Blade Cutoff"
+category: games
+tags:
+  - aviation
+  - rhythm-timing
+  - canvas2d
+  - state-stack
+  - game
+  - precision
+status: polished
+summary: "High-precision rhythm game: trim spinning turbine blades with a laser at exact alignment. Single-file HTML5 Canvas, industrial aesthetic, progressive difficulty."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

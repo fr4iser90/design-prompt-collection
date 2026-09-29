@@ -1,0 +1,26 @@
+id: bismuth-crystal-dendrite-growth
+title: "Bismuth Dendrite Growth"
+category: webgl
+tags:
+  - three-js
+  - instanced-mesh
+  - vertex-displacement
+  - iridescence
+  - crystal-growth
+  - parametric
+  - webgl
+status: polished
+summary: "Interactive WebGL bismuth dendrite growth simulation with iridescent shaders and cooling rate controls."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 232 | 232 | 200 | 32 |
+| 237 | 232 | 205 | 32 |
 
 ## Quick start
 
@@ -3101,6 +3101,34 @@ Defibrillate the arrhythmia. Click precisely on the QRS spike to stabilize the E
 
 ---
 
+### Hydraulic Clutch Torque Sync
+
+Hold space to build hydraulic pressure against a spinning flywheel. Release at peak to shift gears. Shear teeth if timing is off. Reach 5000 RPM.
+
+**Status:** polished · `industrial` `rhythm-timing` `canvas2d` `state-stack` `game` `fluid-dynamics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/hydraulic-clutch-torque-sync/prompt.md) · [extended](prompts/games/hydraulic-clutch-torque-sync/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Laser Alignment Pulse Lock
+
+A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal.
+
+**Status:** polished · `optics` `rhythm-timing` `canvas2d` `state-stack` `game` `sci-fi` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/laser-alignment-pulse-lock/prompt.md) · [extended](prompts/games/laser-alignment-pulse-lock/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Harmonic Chorus
 
 Adjust pendulum length to match resonant frequency of glass targets. Release to swing; correct timing shatters glass. Fail on mismatch or timeout.
@@ -3145,7 +3173,7 @@ A precision timing game where players filter seismic noise to isolate earthquake
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.3s | 551s | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/seismograph-pulse-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.8s | 233s | 8 | [open](prompts/games/seismograph-pulse-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3181,6 +3209,20 @@ Build truss bridges with rigid-body physics. Place nodes, connect beams, test ag
 
 ---
 
+### Turbine Blade Cutoff
+
+High-precision rhythm game: trim spinning turbine blades with a laser at exact alignment. Single-file HTML5 Canvas, industrial aesthetic, progressive difficulty.
+
+**Status:** polished · `aviation` `rhythm-timing` `canvas2d` `state-stack` `game` `precision` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/turbine-blade-cutoff/prompt.md) · [extended](prompts/games/turbine-blade-cutoff/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ## Webgl
 
 ### Polar Veil
@@ -3196,6 +3238,20 @@ Interactive 3D aurora curtain built with vertex-displaced planes and additive bl
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.8s | 308s | 2 | [open](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Bismuth Dendrite Growth
+
+Interactive WebGL bismuth dendrite growth simulation with iridescent shaders and cooling rate controls.
+
+**Status:** polished · `three-js` `instanced-mesh` `vertex-displacement` `iridescence` `crystal-growth` `parametric` `webgl` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/bismuth-crystal-dendrite-growth/prompt.md) · [extended](prompts/webgl/bismuth-crystal-dendrite-growth/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3324,6 +3380,20 @@ Interactive WebGL silver tarnish scrubber using Three.js PBR shaders and dynamic
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/oxidized-silver-tarnish-scrub/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 20s | 304s | 2 | [open](prompts/webgl/oxidized-silver-tarnish-scrub/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Phononic Crystal Deflection
+
+Raw WebGL simulation of acoustic wave deflection through a phononic crystal lattice. A custom fragment shader renders pressure fields as dynamic color gradients, while a frequency slider manipulates Bragg scattering…
+
+**Status:** polished · `raw-webgl` `fragment-shader` `wave-propagation` `metamaterials` `acoustics` `scientific-viz` `webgl` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.md) · [extended](prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

@@ -1,0 +1,25 @@
+id: laser-alignment-pulse-lock
+title: "Laser Alignment Pulse Lock"
+category: games
+tags:
+  - optics
+  - rhythm-timing
+  - canvas2d
+  - state-stack
+  - game
+  - sci-fi
+status: polished
+summary: "A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

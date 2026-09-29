@@ -1,0 +1,26 @@
+id: phononic-crystal-sound-wave-deflection
+title: "Phononic Crystal Deflection"
+category: webgl
+tags:
+  - raw-webgl
+  - fragment-shader
+  - wave-propagation
+  - metamaterials
+  - acoustics
+  - scientific-viz
+  - webgl
+status: polished
+summary: "Raw WebGL simulation of acoustic wave deflection through a phononic crystal lattice. A custom fragment shader renders pressure fields as dynamic color gradients, while a frequency slider manipulates Bragg scattering…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

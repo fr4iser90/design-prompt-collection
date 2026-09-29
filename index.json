@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T17:16:50.854Z",
+  "generated_at": "2026-09-29T19:07:12.207Z",
   "schema": "schema/entry.schema.json",
-  "count": 232,
+  "count": 237,
   "categories": [
     "landing-pages",
     "animations",
@@ -11917,6 +11917,68 @@
       ]
     },
     {
+      "id": "hydraulic-clutch-torque-sync",
+      "title": "Hydraulic Clutch Torque Sync",
+      "category": "games",
+      "tags": [
+        "industrial",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game",
+        "fluid-dynamics"
+      ],
+      "status": "polished",
+      "summary": "Hold space to build hydraulic pressure against a spinning flywheel. Release at peak to shift gears. Shear teeth if timing is off. Reach 5000 RPM.",
+      "path": "prompts/games/hydraulic-clutch-torque-sync",
+      "preview": null,
+      "prompt": "prompts/games/hydraulic-clutch-torque-sync/prompt.md",
+      "extended": "prompts/games/hydraulic-clutch-torque-sync/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "laser-alignment-pulse-lock",
+      "title": "Laser Alignment Pulse Lock",
+      "category": "games",
+      "tags": [
+        "optics",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game",
+        "sci-fi"
+      ],
+      "status": "polished",
+      "summary": "A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal.",
+      "path": "prompts/games/laser-alignment-pulse-lock",
+      "preview": null,
+      "prompt": "prompts/games/laser-alignment-pulse-lock/prompt.md",
+      "extended": "prompts/games/laser-alignment-pulse-lock/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "pendulum-wave-sync",
       "title": "Harmonic Chorus",
       "category": "games",
@@ -12053,10 +12115,10 @@
       "status": "polished",
       "summary": "A precision timing game where players filter seismic noise to isolate earthquake pulses using a single-click mechanic on a dark oscilloscope interface.",
       "path": "prompts/games/seismograph-pulse-filter",
-      "preview": null,
+      "preview": "prompts/games/seismograph-pulse-filter/preview.png",
       "prompt": "prompts/games/seismograph-pulse-filter/prompt.md",
       "extended": "prompts/games/seismograph-pulse-filter/prompt.full.md",
-      "demo": null,
+      "demo": "prompts/games/seismograph-pulse-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
       "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
@@ -12082,20 +12144,20 @@
           "stream": true,
           "temperature": 0.65,
           "context_tokens": null,
-          "duration_ms": 551209,
-          "gen_ms": 551209,
-          "ttft_ms": 4322,
-          "queue_wait_ms": 171,
-          "wall_ms": 555774,
+          "duration_ms": 232504,
+          "gen_ms": 232504,
+          "ttft_ms": 2804,
+          "queue_wait_ms": 119,
+          "wall_ms": 235481,
           "prompt_tokens": null,
           "completion_tokens": null,
           "total_tokens": null,
           "demo": "prompts/games/seismograph-pulse-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
-          "preview": null,
-          "has_demo": false,
-          "has_preview": false,
-          "review_score": null,
-          "review_summary": null
+          "preview": "prompts/games/seismograph-pulse-filter/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong oscilloscope aesthetic with excellent typography and atmospheric background, though the start screen layout is slightly cluttered."
         }
       ]
     },
@@ -12223,6 +12285,37 @@
       ]
     },
     {
+      "id": "turbine-blade-cutoff",
+      "title": "Turbine Blade Cutoff",
+      "category": "games",
+      "tags": [
+        "aviation",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game",
+        "precision"
+      ],
+      "status": "polished",
+      "summary": "High-precision rhythm game: trim spinning turbine blades with a laser at exact alignment. Single-file HTML5 Canvas, industrial aesthetic, progressive difficulty.",
+      "path": "prompts/games/turbine-blade-cutoff",
+      "preview": null,
+      "prompt": "prompts/games/turbine-blade-cutoff/prompt.md",
+      "extended": "prompts/games/turbine-blade-cutoff/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "aurora-borealis-shader-veil",
       "title": "Polar Veil",
       "category": "webgl",
@@ -12283,6 +12376,38 @@
           "review_summary": "The page displays a WebGL initialization error, failing to render the required aurora borealis scene."
         }
       ]
+    },
+    {
+      "id": "bismuth-crystal-dendrite-growth",
+      "title": "Bismuth Dendrite Growth",
+      "category": "webgl",
+      "tags": [
+        "three-js",
+        "instanced-mesh",
+        "vertex-displacement",
+        "iridescence",
+        "crystal-growth",
+        "parametric",
+        "webgl"
+      ],
+      "status": "polished",
+      "summary": "Interactive WebGL bismuth dendrite growth simulation with iridescent shaders and cooling rate controls.",
+      "path": "prompts/webgl/bismuth-crystal-dendrite-growth",
+      "preview": null,
+      "prompt": "prompts/webgl/bismuth-crystal-dendrite-growth/prompt.md",
+      "extended": "prompts/webgl/bismuth-crystal-dendrite-growth/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "borosilicate-bubble-trap-study",
@@ -12782,6 +12907,38 @@
           "review_summary": "The UI text is present, but the core WebGL scene (the silver coin) is completely missing from the viewport, resulting in a blank screen."
         }
       ]
+    },
+    {
+      "id": "phononic-crystal-sound-wave-deflection",
+      "title": "Phononic Crystal Deflection",
+      "category": "webgl",
+      "tags": [
+        "raw-webgl",
+        "fragment-shader",
+        "wave-propagation",
+        "metamaterials",
+        "acoustics",
+        "scientific-viz",
+        "webgl"
+      ],
+      "status": "polished",
+      "summary": "Raw WebGL simulation of acoustic wave deflection through a phononic crystal lattice. A custom fragment shader renders pressure fields as dynamic color gradients, while a frequency slider manipulates Bragg scattering…",
+      "path": "prompts/webgl/phononic-crystal-sound-wave-deflection",
+      "preview": null,
+      "prompt": "prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.md",
+      "extended": "prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "satin-velvet-brush-deform",
