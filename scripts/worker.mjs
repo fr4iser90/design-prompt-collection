@@ -2,16 +2,17 @@
 // worker.mjs — multi-day autonomous loop
 //
 // Flow per cycle:
-//   1. Build all missing demos for AI_MODEL (alias) — slot-gated, ≤max-parallel
+//   1. Build backlog — slot-gated top-up pool (≤max-parallel; start next when a slot frees)
 //   2. Shots → pages → build (index/catalog/README)
 //   3. When build queue empty: catalog-aware fill of N new prompts → back to 1
-//   4. Optional git commit / push after a productive cycle (separate flags)
+//   4. Optional git commit / push after EVERY productive cycle (WIP ok; don't wait for empty queues)
 //
 //   npm run worker -- --fill --fill-n 10 --max-parallel 2 --commit --push --stop-after-push
 //   Stop: Ctrl+C  OR  touch STOP  OR  --stop-after-push (after first successful push)
 //
 // Env: WORKER_MAX_PARALLEL WORKER_FILL WORKER_FILL_N WORKER_FILL_WHEN_BELOW
-//      WORKER_COMMIT WORKER_PUSH WORKER_GH_PAGES WORKER_STOP_AFTER_PUSH WORKER_IDLE_MS WAIT_FOR_SLOT
+//      WORKER_COMMIT WORKER_PUSH WORKER_GH_PAGES WORKER_STOP_AFTER_PUSH WORKER_IDLE_MS
+//      WORKER_TOPUP_MS (default SLOT_POLL_MS / 10s) WAIT_FOR_SLOT
 import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
@@ -41,6 +42,9 @@ function parseCli(argv) {
     statusOnly: false,
     category: null,
     sleepMs: Number(process.env.WORKER_IDLE_MS || 20000),
+    topUpMs: Number(
+      process.env.WORKER_TOPUP_MS || process.env.SLOT_POLL_MS || 10000
+    ),
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -60,6 +64,7 @@ function parseCli(argv) {
   if (!Number.isFinite(out.fillWhenBelow) || out.fillWhenBelow < 0) {
     out.fillWhenBelow = 1;
   }
+  if (!Number.isFinite(out.topUpMs) || out.topUpMs < 1000) out.topUpMs = 10000;
   return out;
 }
 
@@ -396,6 +401,7 @@ function tryCommit(state, opts, summary) {
       "automation",
       "scripts",
       ".github",
+      "shell.nix",
       "AGENTS.md",
       "package.json",
       ".env.example",
@@ -404,13 +410,15 @@ function tryCommit(state, opts, summary) {
     { cwd: ROOT, stdio: "inherit" }
   );
 
+  // Worker continuously ships WIP (fill before build). Ship-ready gate would
+  // block every commit while --fill is on — skip completeness for worker only.
   const commit = spawnSync(
     "git",
     ["commit", "-m", `worker: cycle ${state.cycles} — ${summary}`],
     {
       cwd: ROOT,
       stdio: "inherit",
-      env: process.env,
+      env: { ...process.env, SKIP_COMPLETE_CHECK: "1" },
     }
   );
   if (commit.status !== 0) {
@@ -492,11 +500,118 @@ function tryGhPages(state, opts, { pushed }) {
   if (code.status === 0) {
     state.gh_pages = (state.gh_pages || 0) + 1;
     saveState(state);
-    console.log("  ✓ gh-pages triggered");
+    console.log("  ✓ gh-pages workflow triggered");
     return true;
   }
-  console.warn("  gh-pages deploy failed (workflow / Pages settings?)");
+  console.error(
+    "  ✗ gh-pages failed — workflow was not triggered (see deploy-pages output)"
+  );
   return false;
+}
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/**
+ * Keep up to maxParallel builds in flight. Poll gateway slots and top-up
+ * whenever idle≥1 and room under maxParallel — do not wait for the whole
+ * batch to finish before starting the next job.
+ */
+async function drainBuildsWithTopUp(cfg, opts, state) {
+  const inFlight = new Map(); // id -> { promise, result }
+  let didWork = false;
+  let lastSlotLog = "";
+
+  const reap = () => {
+    for (const [id, job] of [...inFlight]) {
+      if (!job.result) continue;
+      inFlight.delete(id);
+      const { e, code } = job.result;
+      if (code === 0) {
+        state.built.push(e.id);
+        didWork = true;
+        console.log(`  ✓ build done ${e.id} (in-flight ${inFlight.size})`);
+      } else {
+        recordFailure(state, {
+          type: "build",
+          id: e.id,
+          at: new Date().toISOString(),
+        });
+        console.warn(`  ✗ build fail ${e.id} (in-flight ${inFlight.size})`);
+      }
+    }
+    saveState(state);
+  };
+
+  const launch = (e) => {
+    const job = { result: null, promise: null };
+    job.promise = runNpm("ai:build", ["--id", e.id]).then((code) => {
+      job.result = { e, code };
+      return job.result;
+    });
+    inFlight.set(e.id, job);
+    console.log(
+      `  launch build ${e.id}  (in-flight ${inFlight.size}/${opts.maxParallel})`
+    );
+  };
+
+  while (!shouldStop()) {
+    reap();
+
+    const queue = pendingBuilds(cfg, opts).filter((e) => !inFlight.has(e.id));
+    if (!queue.length && inFlight.size === 0) break;
+
+    let idle = 0;
+    let slotsKnown = false;
+    try {
+      const info = await fetchModelSlots({
+        baseUrl: cfg.baseUrl,
+        apiKey: cfg.apiKey,
+        modelApi: cfg.modelApi,
+      });
+      if (info.found && info.slots_idle != null) {
+        idle = Math.max(0, Number(info.slots_idle) || 0);
+        slotsKnown = true;
+      } else {
+        // Gateway without slot metrics → allow filling up to maxParallel
+        idle = opts.maxParallel;
+      }
+      const line = `idle=${info.slots_idle} busy=${info.slots_busy} total=${info.slots_total} in-flight=${inFlight.size}`;
+      if (line !== lastSlotLog) {
+        console.log(`  slots ${line}`);
+        lastSlotLog = line;
+      }
+    } catch (err) {
+      console.warn(`  slot poll: ${err.message}`);
+      idle = Math.max(0, opts.maxParallel - inFlight.size);
+    }
+
+    const room = opts.maxParallel - inFlight.size;
+    const canStart = Math.min(room, idle, queue.length);
+    if (canStart > 0) {
+      for (let i = 0; i < canStart; i++) launch(queue[i]);
+    } else if (inFlight.size === 0 && queue.length > 0) {
+      console.log(
+        slotsKnown
+          ? "  no idle slots — waiting to top-up"
+          : "  waiting to start builds…"
+      );
+      await sleep(opts.topUpMs);
+      continue;
+    }
+
+    if (inFlight.size === 0) break;
+
+    // Wait until one build finishes OR top-up poll fires (slot may free mid-flight)
+    await Promise.race([
+      Promise.race([...inFlight.values()].map((j) => j.promise)),
+      sleep(opts.topUpMs),
+    ]);
+  }
+
+  reap();
+  return didWork;
 }
 
 async function main() {
@@ -518,7 +633,7 @@ async function main() {
   console.log("🤖 worker — multi-day loop");
   console.log(`   model=${cfg.model} api=${cfg.modelApi} slug=${slug}`);
   console.log(
-    `   parallel≤${opts.maxParallel} fill=${opts.fill} fill-n=${opts.fillN} ` +
+    `   parallel≤${opts.maxParallel} top-up=${opts.topUpMs}ms fill=${opts.fill} fill-n=${opts.fillN} ` +
       `when-below=${opts.fillWhenBelow} commit=${opts.commit} push=${opts.push}` +
       ` gh-pages=${opts.ghPages} stop-after-push=${opts.stopAfterPush}`
   );
@@ -582,50 +697,12 @@ async function main() {
       `\n── cycle ${state.cycles}  build_queue=${builds.length} shot_queue=${shots.length} ──`
     );
 
-    // 1) Drain build backlog for this model/alias first
+    // 1) Drain build backlog — top-up pool (slot poll + start next when free)
     if (builds.length && !shouldStop()) {
-      let idle = 1;
-      try {
-        const info = await fetchModelSlots({
-          baseUrl: cfg.baseUrl,
-          apiKey: cfg.apiKey,
-          modelApi: cfg.modelApi,
-        });
-        if (info.found && info.slots_idle != null) idle = Math.max(0, info.slots_idle);
-        console.log(
-          `  slots idle=${info.slots_idle} busy=${info.slots_busy} total=${info.slots_total}`
-        );
-      } catch (err) {
-        console.warn(`  slot poll: ${err.message}`);
-      }
-
-      const batch = Math.min(opts.maxParallel, idle || 1, builds.length);
-      if (batch < 1) {
-        console.log("  no idle slots — sleeping");
-        await new Promise((r) => setTimeout(r, opts.sleepMs));
-        continue;
-      }
-
-      const slice = builds.slice(0, batch);
-      console.log(`  launching ${slice.length} build(s) in parallel…`);
-      const results = await Promise.all(
-        slice.map((e) =>
-          runNpm("ai:build", ["--id", e.id]).then((code) => ({ e, code }))
-        )
+      console.log(
+        `  build pool maxParallel=${opts.maxParallel} topUp=${opts.topUpMs}ms`
       );
-      for (const { e, code } of results) {
-        if (code === 0) {
-          state.built.push(e.id);
-          didWork = true;
-        } else {
-          recordFailure(state, {
-            type: "build",
-            id: e.id,
-            at: new Date().toISOString(),
-          });
-        }
-      }
-      saveState(state);
+      if (await drainBuildsWithTopUp(cfg, opts, state)) didWork = true;
     }
 
     // 2) Screenshots + regenerate site/index (no GPU slot)
@@ -684,34 +761,33 @@ async function main() {
       builds = pendingBuilds(cfg, opts);
     }
 
-    // 4) Commit when completed work is stable (shots+scores done).
-    // Remaining builds may continue; abandoned are not in the build queue.
+    // 4) Commit + push every productive cycle (do NOT wait for empty shot/score queues).
+    // WIP from --fill is fine — tryCommit sets SKIP_COMPLETE_CHECK=1 for the hook.
     if (didWork && !shouldStop()) {
       builds = pendingBuilds(cfg, opts);
       shots = pendingShots(opts);
       const stillUnscored = pendingReviews(cfg, opts);
-      if (shots.length || stillUnscored.length || reviewFailed) {
-        console.warn(
-          `  commit/push skipped — shots=${shots.length} unscored=${stillUnscored.length}` +
-            (builds.length ? ` build=${builds.length}` : "") +
-            (reviewFailed ? " (review errors)" : "")
-        );
-      } else {
-        const summary = [
-          filledThis ? `+${filledThis} prompts` : null,
-          state.built.length ? `builds ok` : null,
-          builds.length ? `${builds.length} builds left` : "queue clear",
-          `model ${cfg.model}`,
-        ]
-          .filter(Boolean)
-          .join(", ");
-        tryCommit(state, opts, summary || "progress");
-        const pushed = tryPush(state, opts);
-        tryGhPages(state, opts, { pushed });
-        if (opts.stopAfterPush && pushed) {
-          fs.writeFileSync(STOP_FILE, "stop-after-push\n");
-          console.log("  stop-after-push: STOP written — exiting after this cycle");
-        }
+      const summary = [
+        filledThis ? `+${filledThis} prompts` : null,
+        state.built.length ? `builds ok` : null,
+        builds.length ? `${builds.length} builds left` : null,
+        shots.length ? `${shots.length} shots left` : null,
+        stillUnscored.length ? `${stillUnscored.length} unscored` : null,
+        reviewFailed ? "review partial" : null,
+        `model ${cfg.model}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      console.log(`  commit/push (cycle work done) — ${summary || "progress"}`);
+      tryCommit(state, opts, summary || "progress");
+      const pushed = opts.push ? tryPush(state, opts) : false;
+      if (pushed) tryGhPages(state, opts, { pushed: true });
+      else if (opts.ghPages && opts.push) {
+        console.warn("  gh-pages skipped — push did not succeed this cycle");
+      }
+      if (opts.stopAfterPush && pushed) {
+        fs.writeFileSync(STOP_FILE, "stop-after-push\n");
+        console.log("  stop-after-push: STOP written — exiting after this cycle");
       }
     }
 
@@ -728,6 +804,13 @@ async function main() {
 
   clearInterval(stopWatch);
   killAllChildren("SIGTERM");
+  // Flush any local progress before exit (STOP mid-review used to leave hours unpushed)
+  if (opts.commit || opts.push) {
+    console.log("\n  flush commit/push before exit…");
+    tryCommit(state, opts, `shutdown flush model ${cfg.model}`);
+    const pushed = tryPush(state, opts);
+    if (pushed) tryGhPages(state, opts, { pushed: true });
+  }
   console.log("\n🛑 STOP detected — worker exiting cleanly.");
   if (fs.existsSync(STOP_FILE)) {
     try {

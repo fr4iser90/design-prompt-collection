@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conveyor Gate Scan Sync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#333333;
+    --bg-deep:#262626;
+    --green:#00FF41;
+    --green-dim:#0a5f1e;
+    --box:#998877;
+    --label:#F0F0F0;
+    --red:#FF3333;
+    --ink:#e9e9e9;
+    --mono:'Space Mono','Courier New',monospace;
+    --disp:'Space Grotesk',system-ui,sans-serif;
+    --belt:2.2s;
+    --scan-dur:0.40s;
+    --scan-start:0.60s;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- ATMOSPHERIC BACKGROUND ---------- */
+  .bg{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #3d3d3d 0%, #333333 45%, #242424 100%);
+  }
+  .bg::before{ /* conveyor belt texture */
+    content:"";position:absolute;inset:0;opacity:.55;
+    background-image:repeating-linear-gradient(90deg,
+      rgba(255,255,255,.035) 0 2px,
+      transparent 2px 13px,
+      rgba(0,0,0,.16) 13px 15px,
+      transparent 15px 26px);
+    background-size:100% 100%;
+    animation:beltMove .7s linear infinite;
+  }
+  .bg::after{ /* fine industrial noise */
+    content:"";position:absolute;inset:-50%;opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.2s steps(4) infinite;
+  }
+  @keyframes beltMove{to{background-position:-26px 0}}
+  @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-2%)}75%{transform:translate(-2%,-3%)}100%{transform:translate(0,0)}}
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:relative;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(18px,4vw,44px);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    background:linear-gradient(180deg, rgba(0,0,0,.25), transparent);
+  }
+  .brand{display:flex;align-items:center;gap:14px}
+  .brand .mark{
+    width:38px;height:38px;flex:none;display:grid;place-items:center;
+    border:1px solid var(--green);color:var(--green);
+    box-shadow:0 0 12px rgba(0,255,65,.35), inset 0 0 8px rgba(0,255,65,.15);
+    position:relative;
+  }
+  .brand .mark::before{content:"";width:16px;height:1px;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .brand .mark::after{content:"";position:absolute;inset:6px;border-left:2px solid var(--green);border-right:2px solid var(--green);opacity:.4}
+  .brand .name{font-family:var(--disp);font-weight:700;font-size:clamp(20px,3.4vw,30px);letter-spacing:.02em;line-height:1}
+  .brand .name b{color:var(--green);text-shadow:0 0 14px rgba(0,255,65,.4)}
+  .brand .sub{font-size:10px;letter-spacing:.34em;color:#8a8a8a;margin-top:3px;text-transform:uppercase}
+  .status{display:flex;align-items:center;gap:18px;font-size:11px;letter-spacing:.18em;color:#9a9a9a;text-transform:uppercase}
+  .status .live{display:flex;align-items:center;gap:8px;color:var(--green)}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blip 2.2s infinite}
+  .status .clock{color:#cfcfcf}
+  @keyframes blip{0%,12%{opacity:1}16%,100%{opacity:.25}}
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;z-index:2;flex:1;
+    display:grid;grid-template-columns:1.5fr 1fr;gap:0;
+    align-items:stretch;
+    max-width:1440px;width:100%;margin:0 auto;
+  }
+
+  /* ---------- LEFT: SCENE ---------- */
+  .scene{
+    position:relative;
+    min-height:min(64vh,520px);
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .scene .corner{position:absolute;width:26px;height:26px;border:2px solid rgba(0,255,65,.55);z-index:4}
+  .scene .corner.tl{top:20px;left:20px;border-right:0;border-bottom:0}
+  .scene .corner.tr{top:20px;right:20px;border-left:0;border-bottom:0}
+  .scene .corner.bl{bottom:20px;left:20px;border-right:0;border-top:0}
+  .scene .corner.br{bottom:20px;right:20px;border-left:0;border-top:0}
+  .gate-tag{position:absolute;top:26px;left:56px;z-index:4;font-size:10px;letter-spacing:.28em;color:#7d7d7d}
+  .gate-tag b{color:var(--green)}
+  .gate-tag.right{left:auto;right:56px;text-align:right}
+
+  /* the moving box (constant velocity, linear) */
+  .box{
+    position:relative;
+    width:220px;height:168px;
+    transform:translateX(-360px);
+    animation:boxTravel var(--belt) linear infinite;
+    will-change:transform;
+    z-index:3;
+  }
+  @keyframes boxTravel{
+    0%   {transform:translateX(-360px)}
+    22.7%{transform:translateX(0px)}
+    63.6%{transform:translateX(0px)}
+    86.3%{transform:translateX(360px)}
+    100% {transform:translateX(360px)}
+  }
+
+  /* isometric-ish box built from faces */
+  .iso{position:relative;width:100%;height:100%;transform:rotateX(6deg) rotateZ(-2deg);transform-style:preserve-3d}
+  .face{position:absolute;background:linear-gradient(135deg,#a99a89,#8f7f6e);border:1px solid rgba(0,0,0,.25)}
+  .f-front{inset:0;box-shadow:inset 0 0 40px rgba(0,0,0,.25)}
+  .f-top{
+    left:0;right:0;top:-30px;height:32px;
+    background:linear-gradient(180deg,#c3b4a2,#a99a89);
+    transform:skewX(-42deg);transform-origin:bottom left;
+    border-bottom:1px solid rgba(0,0,0,.2);
+  }
+  .f-side{
+    top:0;bottom:0;right:-26px;width:28px;
+    background:linear-gradient(90deg,#7d6f5f,#6c5f50);
+    transform:skewY(-42deg);transform-origin:top right;
+  }
+  .tape{position:absolute;left:0;right:0;top:44%;height:14px;background:rgba(255,255,255,.14);border-top:1px solid rgba(0,0,0,.12);border-bottom:1px solid rgba(0,0,0,.12)}
+  .handle{position:absolute;left:14px;top:14px;width:34px;height:10px;border:2px solid rgba(0,0,0,.35);border-radius:3px;background:rgba(0,0,0,.12)}
+
+  /* label */
+  .label{
+    position:absolute;left:16px;top:66px;width:150px;
+    background:var(--label);border-radius:2px;padding:8px 9px 7px;
+    box-shadow:0 3px 8px rgba(0,0,0,.35);
+    transform:rotate(-1deg);
+  }
+  .label .meta{display:flex;justify-content:space-between;font-size:8px;letter-spacing:.12em;color:#333;margin-bottom:5px}
+  .label .meta .id{font-weight:700;color:#111}
+  .barcode{display:flex;align-items:flex-end;gap:1px;height:34px}
+  .barcode .b{background:#111;height:100%;transition:background .08s linear, box-shadow .08s linear}
+  .barcode .b.on{background:var(--green);box-shadow:0 0 5px var(--green)}
+  .label .code{margin-top:4px;font-size:8px;letter-spacing:.14em;color:#222;text-align:center}
+
+  /* laser */
+  .laser{
+    position:absolute;left:-8px;right:-8px;top:0;height:2px;
+    background:var(--green);
+    box-shadow:0 0 10px var(--green),0 0 20px var(--green);
+    opacity:0;z-index:5;pointer-events:none;
+    animation:laserSweep var(--belt) linear infinite;
+    animation-delay:var(--scan-start);
+  }
+  .laser::before{content:"";position:absolute;left:0;right:0;top:-10px;height:22px;background:linear-gradient(180deg,transparent,rgba(0,255,65,.28),transparent)}
+  @keyframes laserSweep{
+    0%   {opacity:0;transform:translateY(0)}
+    0.5% {opacity:1;transform:translateY(40px)}
+    18.2%{opacity:1;transform:translateY(150px)}
+    19%  {opacity:0;transform:translateY(150px)}
+    100% {opacity:0;transform:translateY(150px)}
+  }
+
+  /* white shutter flash */
+  .flash{
+    position:absolute;inset:-14px;background:#fff;opacity:0;z-index:6;pointer-events:none;
+    animation:flash var(--belt) linear infinite;
+    animation-delay:var(--scan-start);
+  }
+  @keyframes flash{
+    0%,17.6%{opacity:0}
+    18.2%{opacity:.85}
+    19.6%{opacity:0}
+    100%{opacity:0}
+  }
+
+  /* ---------- RIGHT: DATA READOUT ---------- */
+  .panel{
+    position:relative;
+    border-left:1px solid rgba(255,255,255,.07);
+    background:linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.12));
+    padding:clamp(22px,3vw,40px);
+    display:flex;flex-direction:column;gap:20px;
+  }
+  .panel .ph{display:flex;justify-content:space-between;align-items:center;border-bottom:1px dashed rgba(255,255,255,.14);padding-bottom:14px}
+  .panel .ph .t{font-size:11px;letter-spacing:.3em;color:#8f8f8f}
+  .panel .ph .t b{color:var(--green)}
+  .panel .ph .idx{font-size:11px;color:#6f6f6f;letter-spacing:.1em}
+
+  .readout{
+    position:relative;min-height:118px;
+    border:1px solid rgba(255,255,255,.1);
+    background:#1c1c1c;
+    box-shadow:inset 0 0 30px rgba(0,0,0,.6);
+    overflow:hidden;
+  }
+  .readout .scanline{position:absolute;left:0;right:0;top:0;height:34%;background:linear-gradient(180deg,rgba(0,255,65,.08),transparent);animation:panelScan 2.2s linear infinite}
+  @keyframes panelScan{0%{transform:translateY(-100%)}100%{transform:translateY(400%)}}
+  .line{position:absolute;left:16px;right:16px;font-size:clamp(13px,1.5vw,16px);letter-spacing:.06em}
+  .line .k{color:#6f6f6f;font-size:10px;letter-spacing:.2em;display:block;margin-bottom:6px}
+  .line.scanning{top:20px;color:var(--green);animation:scanBlink var(--belt) linear infinite}
+  .line.scanning .dots::after{content:"";animation:dots var(--belt) steps(1) infinite}
+  @keyframes scanBlink{0%,27%{opacity:1}28%,100%{opacity:0}}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}100%{content:""}}
+  .line.confirmed{top:20px;color:var(--green);opacity:0;animation:confirm var(--belt) linear infinite}
+  @keyframes confirm{
+    0%,27%{opacity:0;transform:translateX(30px)}
+    28%{opacity:1;transform:translateX(0)}
+    86%{opacity:1;transform:translateX(0)}
+    88%,100%{opacity:0;transform:translateX(0)}
+  }
+  .line.confirmed .v{font-family:var(--disp);font-weight:700;font-size:clamp(20px,2.6vw,30px);letter-spacing:.02em;text-shadow:0 0 16px rgba(0,255,65,.5);display:block}
+  .line.confirmed .tag{display:inline-block;margin-top:8px;border:1px solid var(--green);color:var(--green);font-size:10px;letter-spacing:.24em;padding:3px 8px;box-shadow:0 0 10px rgba(0,255,65,.3)}
+
+  /* waveform */
+  .wave-wrap{display:flex;align-items:center;gap:14px}
+  .wave-wrap .lbl{font-size:10px;letter-spacing:.24em;color:#7d7d7d;width:52px;flex:none}
+  .wave{display:flex;align-items:flex-end;gap:3px;height:44px;flex:1}
+  .wave span{
+    flex:1;background:linear-gradient(180deg,var(--green),#0a7a24);
+    transform:scaleY(.12);transform-origin:bottom;
+    box-shadow:0 0 6px rgba(0,255,65,.4);
+    animation:wv var(--belt) linear infinite;
+  }
+  @keyframes wv{
+    0%{transform:scaleY(.12)}
+    27%{transform:scaleY(.12)}
+    29%{transform:scaleY(.85)}
+    33%{transform:scaleY(.4)}
+    37%{transform:scaleY(1)}
+    41%{transform:scaleY(.5)}
+    45%{transform:scaleY(.75)}
+    49%{transform:scaleY(.3)}
+    54%{transform:scaleY(.12)}
+    100%{transform:scaleY(.12)}
+  }
+
+  /* telemetry */
+  .telem{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08)}
+  .telem div{background:#222;padding:12px 12px 14px}
+  .telem .n{font-family:var(--disp);font-weight:700;font-size:clamp(18px,2.4vw,26px);color:var(--ink);line-height:1}
+  .telem .n.g{color:var(--green);text-shadow:0 0 12px rgba(0,255,65,.4)}
+  .telem .l{font-size:9px;letter-spacing:.18em;color:#7d7d7d;margin-top:7px}
+
+  /* footer strip */
+  .foot{
+    position:relative;z-index:5;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px clamp(18px,4vw,44px);
+    border-top:1px solid rgba(255,255,255,.06);
+    font-size:10px;letter-spacing:.2em;color:#6f6f6f;text-transform:uppercase;
+  }
+  .foot .legend{display:flex;gap:20px;flex-wrap:wrap}
+  .foot .legend i{display:inline-block;width:9px;height:9px;margin-right:7px;vertical-align:middle}
+  .foot .legend .g{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .foot .legend .r{background:var(--red)}
+  .foot .legend .w{background:var(--label)}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:860px){
+    .stage{grid-template-columns:1fr}
+    .panel{border-left:0;border-top:1px solid rgba(255,255,255,.07)}
+    .scene{min-height:min(46vh,360px)}
+    .status .clock{display:none}
+    .brand .sub{display:none}
+  }
+  @media (max-width:520px){
+    .box{transform-origin:center;scale:.82}
+    .gate-tag{font-size:8px;left:44px}
+    .gate-tag.right{right:44px}
+    .foot .legend{gap:12px}
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important}
+    .box{transform:translateX(0)}
+    .laser{opacity:1;transform:translateY(96px)}
+    .line.scanning{opacity:0}
+    .line.confirmed{opacity:1;transform:none}
+    .wave span{transform:scaleY(.5)}
+    .bg::before,.bg::after{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <div class="name">CONVEYOR <b>SCAN SYNC</b></div>
+        <div class="sub">Gate&nbsp;04 · Automated Verification Line</div>
+      </div>
+    </div>
+    <div class="status">
+      <span class="live"><span class="dot"></span>LIVE FEED</span>
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- LEFT: SCENE -->
+    <section class="scene" aria-label="Conveyor scan animation">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="gate-tag">BELT&nbsp;SPEED&nbsp;<b>1.4 m/s</b></div>
+      <div class="gate-tag right">SCAN&nbsp;<b>ACTIVE</b></div>
+
+      <div class="box">
+        <div class="iso">
+          <div class="face f-top"></div>
+          <div class="face f-side"></div>
+          <div class="face f-front">
+            <div class="tape"></div>
+            <div class="handle"></div>
+            <div class="label">
+              <div class="meta"><span class="id">PKG</span><span>SNAPSHOT</span></div>
+              <div class="barcode" id="barcode"></div>
+              <div class="code">8842-X · 0401</div>
+            </div>
+            <div class="laser" aria-hidden="true"></div>
+            <div class="flash" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: DATA READOUT -->
+    <aside class="panel" aria-label="Scan data readout">
+      <div class="ph">
+        <span class="t">SCAN&nbsp;<b>OUTPUT</b></span>
+        <span class="idx">CH·01 / SYNC</span>
+      </div>
+
+      <div class="readout">
+        <div class="scanline" aria-hidden="true"></div>
+        <div class="line scanning"><span class="k">STATUS</span>SCANNING<span class="dots"></span></div>
+        <div class="line confirmed">
+          <span class="k">MATCH</span>
+          <span class="v">ID: 8842-X</span>
+          <span class="tag">CONFIRMED</span>
+        </div>
+      </div>
+
+      <div class="wave-wrap">
+        <span class="lbl">AUDIO</span>
+        <div class="wave" id="wave" aria-hidden="true"></div>
+      </div>
+
+      <div class="telem">
+        <div><div class="n g" id="throughput">0</div><div class="l">PKG / MIN</div></div>
+        <div><div class="n" id="count">0000</div><div class="l">SCANS TODAY</div></div>
+        <div><div class="n" id="latency">0</div><div class="l">SCAN&nbsp;ms</div></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="foot">
+    <div class="legend">
+      <span><i class="g"></i>PHOSPHOR&nbsp;GREEN</span>
+      <span><i class="r"></i>FAULT&nbsp;LINE</span>
+      <span><i class="w"></i>LABEL&nbsp;WHITE</span>
+    </div>
+    <div>2.20s LOOP · LINEAR TIMING</div>
+  </footer>
+
+<script>
+(function(){
+  /* ---- build barcode bars ---- */
+  var bc = document.getElementById('barcode');
+  var bars = [];
+  // deterministic-ish pattern of widths for a believable barcode
+  var widths = [2,1,1,3,1,2,1,1,2,3,1,1,1,2,2,1,3,1,1,2,1,1,3,2,1,1,2,1,3,1,1,2,1,1,2,3,1,1];
+  widths.forEach(function(w){
+    var b = document.createElement('span');
+    b.className = 'b';
+    b.style.width = w + 'px';
+    bc.appendChild(b);
+    bars.push(b);
+  });
+
+  /* ---- build waveform bars ---- */
+  var wave = document.getElementById('wave');
+  for(var i=0;i<28;i++){
+    var s = document.createElement('span');
+    // vary the pulse so the waveform looks organic
+    s.style.animationDelay = (-i*0.045).toFixed(3) + 's';
+    s.style.animationDuration = '0.42s';
+    wave.appendChild(s);
+  }
+  // give waveform its own fast pulse loop, gated visually by the master cycle
+  // (handled purely in CSS keyframes 'wv' above for sync)
+
+  /* ---- live clock ---- */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var p = function(n){return (n<10?'0':'')+n;};
+    clock.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---- telemetry counters ---- */
+  var throughput = document.getElementById('throughput');
+  var count = document.getElementById('count');
+  var latency = document.getElementById('latency');
+  var total = 12847;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setLatency(){
+    latency.textContent = (Math.floor(Math.random()*40)+118);
+  }
+  setLatency();
+
+  if(!reduced){
+    setInterval(function(){
+      total += 1;
+      count.textContent = String(total).padStart(4,'0');
+      throughput.textContent = Math.floor(160 + Math.random()*22);
+      setLatency();
+    }, 2200);
+  } else {
+    throughput.textContent = '172';
+    count.textContent = String(total).padStart(4,'0');
+  }
+
+  /* ---- barcode "light up" synced to laser via JS ---- */
+  // laser sweeps the label region; we toggle bar highlight classes in a short
+  // window that matches the CSS laser animation for crisp synchronization.
+  if(!reduced){
+    var loopMs = 2200, scanStartMs = 600, scanDurMs = 400;
+    function highlight(){
+      var on = bars.length;
+      var step = 0;
+      var iv = setInterval(function(){
+        bars.forEach(function(b,idx){
+          // light bars progressively as the line passes top->bottom
+          b.classList.toggle('on', idx <= step);
+        });
+        step += Math.ceil(bars.length/6);
+      }, scanDurMs/7);
+      setTimeout(function(){
+        clearInterval(iv);
+        bars.forEach(function(b){ b.classList.remove('on'); });
+      }, scanDurMs + 60);
+    }
+    // align first highlight with CSS delay, then loop
+    setTimeout(function(){
+      highlight();
+      setInterval(highlight, loopMs);
+    }, scanStartMs);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 481410
+gen_ms: 481410
+ttft_ms: 1411
+queue_wait_ms: 92
+wall_ms: 482969
+review_score: 8
+review_summary: "Strong execution of the 'scientific' and 'geometric' brief with excellent typography and atmospheric depth."
+reviewed_at: "2026-09-28T23:10:10.797Z"
+review_issues:
+  - "Hero visual is abstract line-art rather than the requested macro photography of ice"
+  - "Typography leans towards a generic bold sans-serif rather than the specific 'Barlow' or 'Oswald' condensed styles requested"

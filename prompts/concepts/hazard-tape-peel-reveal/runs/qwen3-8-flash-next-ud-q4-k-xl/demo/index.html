@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site 07 — Hazard Tape Peel Reveal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hazard:#FFD700;
+    --black:#0a0a0a;
+    --concrete:#4A4A4A;
+    --concrete-2:#3a3a3a;
+    --glue:#F0E68C;
+    --paper:#f5f4f0;
+    --ink:#111;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+    --sans:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:#2b2b2b;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    padding:14px clamp(16px,3vw,34px);
+    background:#141414;color:#e9e9e9;
+    border-bottom:3px solid var(--hazard);
+    position:relative;z-index:20;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    font-family:var(--mono);font-weight:700;letter-spacing:.14em;
+    font-size:clamp(15px,2.4vw,20px);text-transform:uppercase;
+  }
+  .brand .mark{
+    display:grid;place-items:center;
+    width:34px;height:34px;color:var(--hazard);
+    border:2px solid var(--hazard);
+    transform:rotate(0deg);
+    animation:blink 2.4s steps(1,end) infinite;
+  }
+  @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.25}}
+  .brand .mark svg{width:20px;height:20px}
+  .brand small{display:block;font-size:10px;letter-spacing:.32em;color:#8f8f8f;font-weight:500;margin-top:2px}
+  .status{
+    display:flex;align-items:center;gap:14px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:#b9b9b9;
+  }
+  .status .live{display:flex;align-items:center;gap:7px;color:#ff5a5a}
+  .status .live i{width:9px;height:9px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 0 0 rgba(255,90,90,.6);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,90,90,.6)}70%{box-shadow:0 0 0 8px rgba(255,90,90,0)}100%{box-shadow:0 0 0 0 rgba(255,90,90,0)}}
+  .status .clock{color:var(--hazard)}
+  .status .sep{color:#4a4a4a}
+
+  /* ============ HERO ============ */
+  .hero{
+    position:relative;flex:1;min-height:560px;
+    display:grid;place-items:center;
+    background:#2b2b2b;
+    overflow:hidden;
+    padding:clamp(20px,4vw,48px);
+  }
+
+  /* ---- REVEALED CONTENT (concrete beneath) ---- */
+  .content{
+    position:relative;z-index:2;
+    width:min(1120px,100%);
+    color:#fff;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.28)),
+      var(--concrete);
+    padding:clamp(26px,4.4vw,58px);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.3), 0 24px 60px rgba(0,0,0,.4);
+    /* concrete speckle */
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 1px, transparent 1px),
+      radial-gradient(circle at 70% 60%, rgba(0,0,0,.14) 0 1px, transparent 1px),
+      radial-gradient(circle at 45% 80%, rgba(255,255,255,.04) 0 1px, transparent 1px),
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.28)),
+      var(--concrete);
+    background-size:14px 14px, 18px 18px, 22px 22px, 100% 100%, 100% 100%;
+  }
+  .content .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.3em;
+    text-transform:uppercase;color:var(--hazard);
+    display:flex;align-items:center;gap:12px;margin-bottom:22px;
+  }
+  .content .eyebrow::before{content:"";width:34px;height:2px;background:var(--hazard)}
+  .content h1{
+    font-family:var(--sans);font-weight:700;
+    font-size:clamp(38px,7.4vw,96px);line-height:.96;
+    letter-spacing:-.02em;max-width:14ch;
+  }
+  .content h1 .thin{font-weight:400;color:#cfcfcf}
+  .content .lead{
+    margin-top:22px;max-width:52ch;color:#dcdcdc;
+    font-size:clamp(15px,1.6vw,18px);line-height:1.6;
+  }
+  .specs{
+    margin-top:34px;display:grid;gap:1px;
+    grid-template-columns:repeat(4,1fr);
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);
+  }
+  .spec{background:var(--concrete-2);padding:16px 18px}
+  .spec .k{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:#9c9c9c;text-transform:uppercase}
+  .spec .v{font-family:var(--mono);font-size:clamp(16px,2vw,24px);font-weight:600;margin-top:8px;color:#fff}
+  .spec .v small{font-size:.55em;color:#b9b9b9;font-weight:400}
+  .foot{
+    margin-top:30px;display:flex;flex-wrap:wrap;gap:10px 26px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:#9a9a9a;align-items:center;
+  }
+  .foot .ok{color:#7bd88f;display:flex;align-items:center;gap:8px}
+  .foot .ok::before{content:"";width:8px;height:8px;border-radius:50%;background:#7bd88f;box-shadow:0 0 10px #7bd88f}
+
+  /* ---- TAPE OVERLAY ---- */
+  .tape-layer{position:absolute;inset:0;z-index:6;pointer-events:none}
+  .tape-layer.active{pointer-events:auto;cursor:grab}
+  .tape-layer.grabbing{cursor:grabbing}
+  .tape-layer.done{pointer-events:none}
+
+  .tape{
+    position:absolute;
+    transform-origin:var(--ox,0%) var(--oy,0%);
+    transform:perspective(1400px) rotate3d(var(--ax,0),var(--ay,1),0,var(--ang,0deg)) translateZ(0);
+    will-change:transform;
+    transition:transform .5s cubic-bezier(.34,1.5,.5,1);
+    user-select:none;-webkit-user-select:none;
+    touch-action:none;
+  }
+  .tape.dragging{transition:none}
+  .tape.releasing{transition:transform .55s cubic-bezier(.2,1.6,.4,1)}
+  .tape.off{
+    transition:transform .75s cubic-bezier(.4,0,.2,1), opacity .3s ease .45s;
+    opacity:0;
+  }
+  .tape-inner{
+    position:relative;
+    background:repeating-linear-gradient(45deg,var(--hazard) 0 22px,var(--black) 22px 44px);
+    box-shadow:inset 0 0 0 2px rgba(0,0,0,.55), 0 2px 3px rgba(0,0,0,.4);
+    /* vinyl grain */
+    background-blend-mode:normal;
+  }
+  .tape-inner::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;opacity:.5;
+  }
+  /* subtle vinyl sheen */
+  .tape-inner::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(0,0,0,.18) 100%);
+  }
+  .tape-label{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-weight:700;text-transform:uppercase;
+    letter-spacing:.18em;color:#0a0a0a;
+    white-space:nowrap;pointer-events:none;
+    text-shadow:0 1px 0 rgba(255,255,255,.25);
+  }
+  .tape-label span{
+    background:var(--hazard);padding:3px 12px;
+    border:2px solid #0a0a0a;
+    transform:rotate(-1.2deg);
+    box-shadow:2px 2px 0 rgba(0,0,0,.35);
+  }
+  .tape-label .alt{transform:rotate(1.4deg)}
+
+  /* breathing idle tension */
+  @keyframes breathe{0%,100%{transform:perspective(1400px) scale(1)}50%{transform:perspective(1400px) scale(1.0012)}}
+  .tape.idle{animation:breathe 4.2s ease-in-out infinite}
+
+  /* glue residue */
+  .glue{
+    position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;
+    background:
+      repeating-linear-gradient(45deg, rgba(240,230,140,.20) 0 22px, rgba(240,230,140,.05) 22px 44px);
+    -webkit-mask-image:linear-gradient(180deg,#000,#000);
+    mask-image:linear-gradient(180deg,#000,#000);
+  }
+  .glue.show{animation:glueFade 2.4s ease forwards}
+  @keyframes glueFade{0%{opacity:0}12%{opacity:1}55%{opacity:.7}100%{opacity:0}}
+
+  /* dust particles */
+  .dust{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+  .dust i{
+    position:absolute;width:4px;height:4px;border-radius:50%;
+    background:rgba(255,255,255,.55);opacity:0;
+  }
+  @keyframes fall{
+    0%{transform:translate(0,0) scale(1);opacity:.9}
+    100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}
+  }
+
+  /* corner hint */
+  .hint{
+    position:absolute;z-index:9;pointer-events:none;
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:#fff;
+    display:flex;align-items:center;gap:8px;
+    background:rgba(0,0,0,.72);padding:7px 11px;border:1px solid var(--hazard);
+    transition:opacity .4s;
+  }
+  .hint::before{content:"";width:10px;height:10px;border:2px solid var(--hazard);border-top:0;border-right:0;transform:rotate(45deg)}
+  .hint.gone{opacity:0}
+
+  /* ============ CONTROL DOCK ============ */
+  .dock{
+    position:relative;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;
+    padding:16px clamp(16px,3vw,34px);
+    background:#141414;color:#dcdcdc;
+    border-top:3px solid var(--hazard);
+  }
+  .dock .left{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .progress-wrap{display:flex;align-items:center;gap:12px;min-width:220px;flex:1;max-width:420px}
+  .progress-wrap .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;white-space:nowrap}
+  .bar{flex:1;height:8px;background:#2a2a2a;border:1px solid #3a3a3a;position:relative;overflow:hidden}
+  .bar .fill{position:absolute;inset:0;width:0%;background:linear-gradient(90deg,var(--hazard),#ffae00);transition:width .12s linear}
+  .bar .fill::after{content:"";position:absolute;right:0;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 8px #fff}
+  .pct{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--hazard);min-width:44px;text-align:right}
+  .btns{display:flex;gap:10px;flex-wrap:wrap}
+  button{
+    font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    background:#1f1f1f;color:#e9e9e9;border:1px solid #3a3a3a;
+    padding:10px 16px;cursor:pointer;transition:.15s;
+  }
+  button:hover{border-color:var(--hazard);color:var(--hazard)}
+  button:active{transform:translateY(1px)}
+  button.primary{background:var(--hazard);color:#0a0a0a;border-color:var(--hazard);font-weight:700}
+  button.primary:hover{background:#ffe14d;color:#0a0a0a}
+  .note{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:#7a7a7a;text-transform:uppercase}
+
+  @media (max-width:760px){
+    .specs{grid-template-columns:repeat(2,1fr)}
+    .status .sep{display:none}
+    .hero{min-height:520px}
+  }
+  @media (max-width:460px){
+    .specs{grid-template-columns:1fr}
+    .brand small{display:none}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .tape.idle{animation:none}
+    .tape,.tape.releasing,.tape.off{transition-duration:.001ms}
+    .brand .mark,.status .live i{animation:none}
+    .glue.show{animation:none;opacity:0}
+    .dust{display:none}
+  }
+</style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22L12 2zm0 6 6.5 11h-13L12 8zm-1 3v4h2v-4h-2zm0 5v2h2v-2h-2z"/></svg>
+      </span>
+      <span>SITE&nbsp;07<small>SECTOR&nbsp;B · RESTRICTED</small></span>
+    </div>
+    <div class="status">
+      <span class="live"><i></i> LIVE FEED</span>
+      <span class="sep">|</span>
+      <span>SECTOR&nbsp;B-04</span>
+      <span class="sep">|</span>
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main class="hero" id="hero">
+    <!-- revealed content -->
+    <div class="content">
+      <div class="eyebrow">Structural Survey · Cleared</div>
+      <h1>Site is <span class="thin">clear.</span><br>Proceed with caution.</h1>
+      <p class="lead">The perimeter barrier has been removed. Below is the verified condition report for the decommissioned transformer bay. All readings nominal — no residual voltage detected on the grid.</p>
+      <div class="specs">
+        <div class="spec"><div class="k">Grid Load</div><div class="v">0.0 <small>kV</small></div></div>
+        <div class="spec"><div class="k">Integrity</div><div class="v">100 <small>%</small></div></div>
+        <div class="spec"><div class="k">Access</div><div class="v">GRANTED</div></div>
+        <div class="spec"><div class="k">Last Scan</div><div class="v" id="scan">--:--</div></div>
+      </div>
+      <div class="foot">
+        <span class="ok">Barrier removed</span>
+        <span>Surveyor: R. VOSS</span>
+        <span>Ref: #07-B-0442</span>
+      </div>
+    </div>
+
+    <!-- glue residue layer -->
+    <div class="glue" id="glue"></div>
+
+    <!-- tape overlay -->
+    <div class="tape-layer active" id="tapeLayer"></div>
+
+    <!-- dust -->
+    <div class="dust" id="dust"></div>
+
+    <!-- corner hint -->
+    <div class="hint" id="hint">Drag a corner to peel</div>
+  </main>
+
+  <!-- CONTROL DOCK -->
+  <footer class="dock">
+    <div class="left">
+      <div class="progress-wrap">
+        <span class="lbl">Cleared</span>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+        <span class="pct" id="pct">0%</span>
+      </div>
+      <span class="note" id="note">Tension: holding</span>
+    </div>
+    <div class="btns">
+      <button id="btnPeel" class="primary">Peel all</button>
+      <button id="btnReset">Re-tape</button>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var hero = document.getElementById('hero');
+  var layer = document.getElementById('tapeLayer');
+  var glue = document.getElementById('glue');
+  var dust = document.getElementById('dust');
+  var hint = document.getElementById('hint');
+  var fill = document.getElementById('fill');
+  var pctEl = document.getElementById('pct');
+  var note = document.getElementById('note');
+
+  var LABELS = ['DANGER','HIGH VOLTAGE','DO NOT ENTER','ELECTRIC','RESTRICTED'];
+  var tapes = [];
+  var clearedCount = 0;
+  var total = 0;
+
+  // ---- clock ----
+  function tick(){
+    var d = new Date();
+    var p = function(n){return (n<10?'0':'')+n;};
+    var t = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+    document.getElementById('clock').textContent = t;
+    document.getElementById('scan').textContent = p(d.getHours())+':'+p(d.getMinutes());
+  }
+  tick(); setInterval(tick,1000);
+
+  // ---- build tapes ----
+  function buildTapes(){
+    layer.innerHTML = '';
+    tapes = []; clearedCount = 0;
+    var W = hero.clientWidth, H = hero.clientHeight;
+    var isMobile = W < 760;
+    var configs = [];
+    if(isMobile){
+      configs = [
+        {w:W+80, h:H*0.26, x:-40, y:H*0.10, rot:-4,  ox:'0%',  oy:'0%',  ax:'1',ay:'0', dir:'down'},
+        {w:W+80, h:H*0.26, x:-40, y:H*0.38, rot:3,   ox:'100%',oy:'0%',  ax:'1',ay:'0', dir:'down'},
+        {w:W+80, h:H*0.26, x:-40, y:H*0.66, rot:-2,  ox:'0%',  oy:'100%',ax:'1',ay:'0', dir:'up'}
+      ];
+    } else {
+      configs = [
+        {w:W+120, h:H*0.30, x:-60, y:-H*0.02, rot:-3, ox:'0%',  oy:'0%',  ax:'1',ay:'0', dir:'down'},
+        {w:W+120, h:H*0.30, x:-60, y:H*0.34,  rot:2,  ox:'100%',oy:'0%',  ax:'1',ay:'0', dir:'down'},
+        {w:W+120, h:H*0.30, x:-60, y:H*0.68,  rot:-2, ox:'0%',  oy:'100%',ax:'1',ay:'0', dir:'up'}
+      ];
+    }
+    total = configs.length;
+
+    configs.forEach(function(c,i){
+      var el = document.createElement('div');
+      el.className = 'tape idle';
+      el.style.width = c.w+'px';
+      el.style.height = c.h+'px';
+      el.style.left = c.x+'px';
+      el.style.top = c.y+'px';
+      el.style.setProperty('--ox', c.ox);
+      el.style.setProperty('--oy', c.oy);
+      el.style.setProperty('--ax', c.ax);
+      el.style.setProperty('--ay', c.ay);
+      el.style.transform = 'perspective(1400px) rotate3d('+c.ax+','+c.ay+',0,'+c.rot+'deg) translateZ(0)';
+      el.style.setProperty('--base', c.rot+'deg');
+      el.style.setProperty('--dir', c.dir);
+      el.style.setProperty('--max', '165');
+
+      var inner = document.createElement('div');
+      inner.className = 'tape-inner';
+      inner.style.width='100%'; inner.style.height='100%';
+      el.appendChild(inner);
+
+      var lab = document.createElement('div');
+      lab.className = 'tape-label';
+      var s1 = document.createElement('span');
+      s1.textContent = LABELS[i % LABELS.length];
+      var s2 = document.createElement('span');
+      s2.className='alt';
+      s2.textContent = LABELS[(i+2) % LABELS.length];
+      s2.style.position='absolute';
+      s2.style.left='14%'; s2.style.top='16%';
+      var s3 = document.createElement('span');
+      s3.textContent = LABELS[(i+4) % LABELS.length];
+      s3.style.position='absolute';
+      s3.style.right='12%'; s3.style.bottom='18%';
+      lab.appendChild(s1); lab.appendChild(s2); lab.appendChild(s3);
+      el.appendChild(lab);
+
+      var t = {
+        el:el, base:c.rot, dir:c.dir, max:165,
+        angle:c.rot, dragging:false, cleared:false
+      };
+      attach(el, t);
+      tapes.push(t);
+      layer.appendChild(el);
+    });
+
+    updateProgress();
+  }
+
+  function angleFromDrag(t, dy){
+    // dy = drag distance from origin in peel direction (positive = peeling)
+    var mag = Math.abs(dy);
+    var sign = (t.dir==='down') ? 1 : -1;
+    // resistance curve: fast at start, eases near max
+    var frac = mag / (hero.clientHeight * 0.5);
+    var eased = Math.min(1, frac);
+    var a = sign * (t.base + eased * (t.max - Math.abs(t.base)));
+    return a;
+  }
+
+  function setAngle(t, a, cls){
+    t.el.style.setProperty('--ang', a+'deg');
+    // shadow intensity by lift
+    var lift = Math.min(1, Math.abs(a)/t.max);
+    t.el.style.filter = 'drop-shadow(0 '+(6+lift*26)+'px '+(8+lift*30)+'px rgba(0,0,0,'+(0.3+lift*0.4)+'))';
+  }
+
+  function attach(el, t){
+    var startY=0, curY=0;
+
+    function down(e){
+      if(t.cleared) return;
+      var pt = e.touches ? e.touches[0] : e;
+      startY = pt.clientY;
+      t.dragging = true;
+      el.classList.remove('idle','releasing');
+      el.classList.add('dragging');
+      layer.classList.add('grabbing');
+      hint.classList.add('gone');
+      note.textContent = 'Tension: peeling…';
+      if(e.cancelable) e.preventDefault();
+    }
+    function move(e){
+      if(!t.dragging) return;
+      var pt = e.touches ? e.touches[0] : e;
+      curY = pt.clientY;
+      var dy = curY - startY;
+      if(t.dir==='up') dy = -dy; // normalize so positive = peeling
+      if(dy < 0) dy = 0;
+      var a = angleFromDrag(t, dy);
+      t.angle = a;
+      setAngle(t, a);
+      updateProgress();
+      if(e.cancelable) e.preventDefault();
+    }
+    function up(){
+      if(!t.dragging) return;
+      t.dragging = false;
+      el.classList.remove('dragging');
+      layer.classList.remove('grabbing');
+      var frac = Math.abs(t.angle - t.base) / (t.max - Math.abs(t.base));
+      if(frac > 0.5){
+        peelOff(t);
+      } else {
+        // snap back with wobble
+        el.classList.add('releasing');
+        t.angle = t.base;
+        setAngle(t, t.base);
+        note.textContent = 'Tension: holding';
+        setTimeout(function(){ el.classList.remove('releasing'); }, 600);
+      }
+      updateProgress();
+    }
+
+    el.addEventListener('mousedown', down);
+    el.addEventListener('touchstart', down, {passive:false});
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, {passive:false});
+    window.addEventListener('mouseup', up);
+    window.addEventListener('touchend', up);
+
+    // click to peel fully (if not dragged much)
+    el.addEventListener('click', function(e){
+      if(!t.dragging && Math.abs(curY-startY) < 6 && !t.cleared){
+        peelOff(t);
+      }
+    });
+  }
+
+  function peelOff(t){
+    t.cleared = true;
+    clearedCount++;
+    t.el.classList.remove('idle','releasing');
+    t.el.classList.add('off');
+    t.el.style.setProperty('--ang', t.dir==='down' ? '178deg' : '-178deg');
+    spawnDust(t);
+    showGlue();
+    note.textContent = 'Tension: released';
+    updateProgress();
+    checkDone();
+  }
+
+  function spawnDust(t){
+    if(reduce) return;
+    var r = t.el.getBoundingClientRect();
+    var hr = hero.getBoundingClientRect();
+    for(var i=0;i<14;i++){
+      var d = document.createElement('i');
+      var sx = r.left - hr.left + Math.random()*r.width;
+      var sy = r.top - hr.top + Math.random()*r.height*0.4;
+      d.style.left = sx+'px';
+      d.style.top = sy+'px';
+      d.style.setProperty('--dx', (Math.random()*60-30)+'px');
+      d.style.setProperty('--dy', (40+Math.random()*120)+'px');
+      d.style.animation = 'fall '+(0.7+Math.random()*0.8)+'s ease-in forwards';
+      d.style.background = Math.random()>0.5 ? 'rgba(255,255,255,.6)' : 'rgba(255,215,0,.5)';
+      dust.appendChild(d);
+      (function(node){ setTimeout(function(){ node.remove(); }, 1600); })(d);
+    }
+  }
+
+  function showGlue(){
+    glue.classList.remove('show');
+    // force reflow
+    void glue.offsetWidth;
+    glue.classList.add('show');
+  }
+
+  function updateProgress(){
+    var cleared = 0;
+    tapes.forEach(function(t){
+      if(t.cleared){ cleared += 1; }
+      else {
+        var frac = Math.abs(t.angle - t.base) / (t.max - Math.abs(t.base));
+        cleared += Math.max(0, Math.min(1, frac));
+      }
+    });
+    var p = total ? Math.round((cleared/total)*100) : 0;
+    fill.style.width = p+'%';
+    pctEl.textContent = p+'%';
+  }
+
+  function checkDone(){
+    if(clearedCount >= total){
+      note.textContent = 'Site cleared';
+      hint.classList.add('gone');
+    }
+  }
+
+  // ---- buttons ----
+  document.getElementById('btnPeel').addEventListener('click', function(){
+    tapes.forEach(function(t,i){
+      if(!t.cleared){
+        setTimeout(function(){ peelOff(t); }, i*160);
+      }
+    });
+  });
+  document.getElementById('btnReset').addEventListener('click', function(){
+    buildTapes();
+    glue.classList.remove('show');
+    hint.classList.remove('gone');
+    note.textContent = 'Tension: holding';
+  });
+
+  // ---- init + rebuild on resize (debounced) ----
+  var rt;
+  window.addEventListener('resize', function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){
+      if(clearedCount === 0) buildTapes();
+    }, 220);
+  });
+
+  buildTapes();
+})();
+</script>
+</body>
+</html>

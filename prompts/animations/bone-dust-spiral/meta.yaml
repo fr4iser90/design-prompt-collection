@@ -11,7 +11,7 @@ tags:
   - desert
 status: draft
 summary: "Microscopic bone-white dust particles caught in a thermal updraft, spiraling upward in a dense, tactile column against a blurred dune background."
-preview: null
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
 demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html

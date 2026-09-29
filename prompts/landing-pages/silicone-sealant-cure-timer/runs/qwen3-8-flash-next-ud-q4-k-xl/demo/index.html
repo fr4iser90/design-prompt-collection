@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seal & Set — Silicone Sealant Cure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Palette — Soft-Machine */
+    --white:#F2F2F2;
+    --slate:#8C9EAB;
+    --slate-deep:#6B7C88;
+    --grey:#D1D5DB;
+    --highlight:#E5E7EB;
+    --ink:#1F2937;
+    --ink-soft:#4B5563;
+    --bg-1:#FBFBFC;
+    --bg-2:#EDEFF1;
+
+    /* Easing — viscous, no bounce */
+    --ease-cure:cubic-bezier(.16,.84,.44,1);
+    --ease-viscous:cubic-bezier(.22,.61,.36,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+
+    /* Type */
+    --display:'Archivo',system-ui,sans-serif;
+    --mono:'Space Mono','IBM Plex Mono',monospace;
+
+    --maxw:1200px;
+    --pad:clamp(20px,5vw,64px);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--display);
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 100%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+
+  /* Ambient texture — fine machine grain */
+  body::before{
+    content:"";
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity:.05;mix-blend-mode:multiply;
+  }
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--pad);position:relative;z-index:1}
+
+  .mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px var(--pad);
+    transition:background .6s var(--ease-cure),box-shadow .6s var(--ease-cure),padding .6s var(--ease-cure);
+  }
+  nav.scrolled{
+    background:rgba(242,242,242,.72);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    box-shadow:0 1px 0 rgba(140,158,171,.18);
+    padding-block:12px;
+  }
+  .wordmark{display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:19px;letter-spacing:-.02em}
+  .wordmark .amp{color:var(--slate);font-weight:300}
+  .wordmark .dot{width:7px;height:7px;border-radius:50%;background:var(--slate);display:inline-block;transform:translateY(-1px)}
+  .nav-links{display:flex;gap:30px;align-items:center}
+  .nav-links a{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink-soft);text-decoration:none;position:relative;padding:4px 0;
+    transition:color .4s var(--ease-cure);
+  }
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--ink);transition:width .5s var(--ease-cure)}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink);text-decoration:none;border:1px solid var(--grey);
+    padding:9px 16px;border-radius:2px;transition:all .5s var(--ease-cure);
+  }
+  .nav-cta:hover{border-color:var(--slate);background:#fff}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:120px var(--pad) 60px;position:relative;
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;
+    color:var(--slate-deep);margin-bottom:26px;
+  }
+  .hero h1{
+    font-weight:300;font-size:clamp(2.6rem,8.5vw,6.4rem);line-height:.98;letter-spacing:-.035em;
+    color:var(--ink);
+  }
+  .hero h1 em{font-style:normal;font-weight:500}
+  .hero .sub{
+    margin-top:24px;font-weight:300;font-size:clamp(1rem,2.4vw,1.25rem);
+    color:var(--ink-soft);max-width:34ch;
+  }
+
+  /* Bead stage */
+  .stage{
+    margin:clamp(30px,6vh,60px) auto 0;width:100%;max-width:820px;
+    position:relative;
+  }
+  .bead-wrap{
+    position:relative;width:100%;aspect-ratio:16/7;min-height:220px;
+    border-radius:14px;overflow:hidden;
+    background:linear-gradient(150deg,#F6F7F8,#E7EAEC 60%,#DDE1E4);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -14px 30px rgba(140,158,171,.12),0 30px 60px -30px rgba(31,41,55,.25);
+    cursor:ew-resize;touch-action:pan-y;
+  }
+  .bead-wrap svg{width:100%;height:100%;display:block}
+
+  /* bead states driven by --cure (0 wet → 1 cured) */
+  .bead-body{
+    fill:url(#beadGrad);
+    transition:fill .3s linear;
+  }
+  .bead-shadow{
+    fill:var(--slate);
+    opacity:calc(.10 + var(--cure)*.16);
+    transition:opacity .3s linear;
+  }
+  .bead-sheen{
+    opacity:calc(.9 - var(--cure)*.82);
+    transition:opacity .3s linear;
+  }
+  .bead-sheen2{
+    opacity:calc(.55 - var(--cure)*.5);
+    transition:opacity .3s linear;
+  }
+  .bead-grain{
+    opacity:calc(var(--cure)*.5);
+    transition:opacity .3s linear;
+  }
+
+  /* state readout */
+  .readout{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    margin-top:18px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink-soft);
+  }
+  .readout .state{color:var(--ink);font-weight:700}
+  .readout .pct{color:var(--slate-deep)}
+  .track{
+    position:relative;height:3px;background:var(--grey);border-radius:2px;margin-top:14px;overflow:hidden;
+  }
+  .track-fill{
+    position:absolute;left:0;top:0;bottom:0;width:calc(var(--cure)*100%);
+    background:linear-gradient(90deg,var(--slate),var(--slate-deep));border-radius:2px;
+  }
+  .hint{
+    margin-top:16px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--slate-deep);opacity:.75;
+  }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding-block:clamp(70px,11vh,130px);position:relative}
+  .kicker{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:var(--slate-deep);
+    display:flex;align-items:center;gap:14px;margin-bottom:22px;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:var(--slate)}
+  .sec-title{font-weight:300;font-size:clamp(1.9rem,4.6vw,3.1rem);line-height:1.05;letter-spacing:-.025em;max-width:20ch}
+  .sec-title b{font-weight:500}
+  .lead{margin-top:18px;font-weight:300;font-size:1.05rem;color:var(--ink-soft);max-width:52ch}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- MATERIAL / STATE SPLIT ---------- */
+  .split{
+    display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,56px);align-items:center;margin-top:50px;
+  }
+  .state-card{
+    border-radius:14px;padding:34px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,#fff,#EEF0F2);
+    box-shadow:0 24px 50px -30px rgba(31,41,55,.22),inset 0 1px 0 rgba(255,255,255,.8);
+    transition:transform .7s var(--ease-viscous),box-shadow .7s var(--ease-viscous);
+  }
+  .state-card:hover{transform:translateY(-6px);box-shadow:0 40px 70px -34px rgba(31,41,55,.3)}
+  .state-card .big{font-weight:500;font-size:1.5rem;letter-spacing:-.02em}
+  .state-card .tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-deep);margin-bottom:12px}
+  .state-card p{margin-top:12px;font-weight:300;color:var(--ink-soft);font-size:.95rem}
+  .swatch{width:100%;height:120px;border-radius:10px;margin-top:20px}
+  .swatch.wet{background:linear-gradient(120deg,#cdd6dc,#eef1f3 40%,#b9c5cd);position:relative;overflow:hidden}
+  .swatch.wet::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.85) 46%,transparent 62%);background-size:250% 100%;animation:sheen 4.5s var(--ease-viscous) infinite}
+  .swatch.cured{background:linear-gradient(160deg,#9fadb6,#8C9EAB);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.25'/%3E%3C/svg%3E");mix-blend-mode:multiply}
+  @keyframes sheen{0%{background-position:180% 0}55%,100%{background-position:-120% 0}}
+  @media(max-width:760px){.split{grid-template-columns:1fr}}
+
+  /* ---------- PRODUCT GRID ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(18px,2.4vw,28px);margin-top:50px}
+  .card{
+    background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 16px 34px -26px rgba(31,41,55,.28);
+    transition:transform .7s var(--ease-viscous),box-shadow .7s var(--ease-viscous);
+    display:flex;flex-direction:column;
+  }
+  .card:hover{transform:translateY(-8px);box-shadow:0 46px 70px -34px rgba(31,41,55,.34)}
+  .card .img{aspect-ratio:4/3;overflow:hidden;position:relative}
+  .card .img svg{width:100%;height:100%;display:block;transition:transform .8s var(--ease-viscous)}
+  .card:hover .img svg{transform:scale(1.05)}
+  .card .body{padding:24px 24px 28px;display:flex;flex-direction:column;gap:12px;flex:1}
+  .card .code{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--slate-deep);text-transform:uppercase}
+  .card h3{font-weight:500;font-size:1.28rem;letter-spacing:-.02em}
+  .card .desc{font-weight:300;font-size:.92rem;color:var(--ink-soft)}
+  .card .specs{margin-top:auto;display:flex;gap:20px;padding-top:16px;border-top:1px solid var(--highlight)}
+  .card .specs div{display:flex;flex-direction:column;gap:3px}
+  .card .specs .k{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-deep)}
+  .card .specs .v{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+
+  /* ---------- CURE TIMELINE ---------- */
+  .timeline{margin-top:56px;position:relative;padding-left:8px}
+  .tl-track{position:absolute;left:6px;top:8px;bottom:8px;width:2px;background:var(--grey)}
+  .tl-fill{position:absolute;left:0;top:0;width:100%;height:0;background:linear-gradient(180deg,var(--slate),var(--slate-deep));transition:height 1.4s var(--ease-cure)}
+  .tl-item{position:relative;padding:0 0 40px 40px}
+  .tl-item:last-child{padding-bottom:0}
+  .tl-dot{position:absolute;left:0;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--slate);transition:background .6s var(--ease-cure),border-color .6s var(--ease-cure)}
+  .tl-item.active .tl-dot{background:var(--slate)}
+  .tl-time{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-deep)}
+  .tl-title{font-weight:500;font-size:1.15rem;margin-top:4px}
+  .tl-desc{font-weight:300;color:var(--ink-soft);font-size:.95rem;margin-top:6px;max-width:46ch}
+
+  /* ---------- DATA SHEET ---------- */
+  .datasheet{
+    margin-top:50px;background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 24px 50px -32px rgba(31,41,55,.25);
+  }
+  .ds-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:22px 28px;background:var(--highlight);border-bottom:1px solid var(--grey)}
+  .ds-head .t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+  .ds-head .s{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-deep)}
+  .ds-row{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;padding:16px 28px;border-bottom:1px solid var(--highlight);align-items:baseline}
+  .ds-row:last-child{border-bottom:none}
+  .ds-row .prop{font-weight:300;color:var(--ink-soft);font-size:.95rem}
+  .ds-row .val{font-family:var(--mono);font-weight:700;font-size:.95rem;color:var(--ink);text-align:right}
+  .ds-row .val small{font-weight:400;color:var(--slate-deep)}
+  @media(max-width:560px){.ds-row{grid-template-columns:1fr;gap:4px}.ds-row .val{text-align:left}}
+
+  /* ---------- CTA ---------- */
+  .cta{text-align:center;padding-block:clamp(80px,14vh,150px)}
+  .cta h2{font-weight:300;font-size:clamp(2rem,5.5vw,3.6rem);letter-spacing:-.03em;line-height:1.02}
+  .cta h2 b{font-weight:500}
+  .btn{
+    display:inline-block;margin-top:34px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+    color:#fff;background:var(--ink);border:none;padding:16px 34px;border-radius:3px;cursor:pointer;
+    transition:transform .45s var(--ease-viscous),background .45s var(--ease-cure),box-shadow .45s var(--ease-cure);
+    box-shadow:0 14px 30px -16px rgba(31,41,55,.5);
+  }
+  .btn:hover{background:var(--slate-deep);box-shadow:0 22px 40px -18px rgba(107,124,136,.6)}
+  .btn:active{transform:scale(.97)}
+  .cta .note{margin-top:18px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-deep)}
+
+  /* ---------- FOOTER ---------- */
+  footer{border-top:1px solid var(--grey);padding:44px var(--pad);position:relative;z-index:1}
+  .foot{max-width:var(--maxw);margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;align-items:flex-start}
+  .foot .wordmark{font-size:17px}
+  .foot .cols{display:flex;gap:56px;flex-wrap:wrap}
+  .foot .col h4{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-deep);margin-bottom:12px;font-weight:400}
+  .foot .col a{display:block;text-decoration:none;color:var(--ink-soft);font-weight:300;font-size:.9rem;padding:3px 0;transition:color .4s var(--ease-cure)}
+  .foot .col a:hover{color:var(--ink)}
+  .foot .legal{width:100%;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate-deep);padding-top:26px;border-top:1px solid var(--highlight);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+    .swatch.wet::after{animation:none;background-position:50% 0}
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="wordmark"><span>Seal<span class="amp">&amp;</span>Set</span><span class="dot"></span></div>
+  <div class="nav-links">
+    <a href="#material">Material</a>
+    <a href="#range">Range</a>
+    <a href="#cure">Cure Profile</a>
+    <a href="#data">Data Sheet</a>
+  </div>
+  <a class="nav-cta" href="#cta">Request Sample</a>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <p class="eyebrow reveal">Industrial Silicone · One-Component · Neutral Cure</p>
+  <h1 class="reveal">The <em>Perfect</em> Seal.</h1>
+  <p class="sub reveal">Precision adhesives engineered for complex assemblies — from liquid application to a permanent, flexible bond.</p>
+
+  <div class="stage reveal">
+    <div class="bead-wrap" id="beadWrap">
+      <svg viewBox="0 0 820 360" preserveAspectRatio="xMidYMid meet" aria-label="A bead of silicone sealant curing from glossy liquid to matte rubber">
+        <defs>
+          <linearGradient id="beadGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stop-color="#E9EDF0"/>
+            <stop offset="45%" stop-color="#C4CFD6"/>
+            <stop offset="100%" stop-color="#9FADB6"/>
+          </linearGradient>
+          <linearGradient id="sheenGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%"  stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset="50%" stop-color="#ffffff" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter>
+          <clipPath id="beadClip">
+            <path d="M40,215 C180,175 300,150 410,150 C520,150 640,175 780,215 C640,255 520,282 410,282 C300,282 180,255 40,215 Z"/>
+          </clipPath>
+        </defs>
+
+        <!-- cast shadow -->
+        <ellipse class="bead-shadow" cx="410" cy="300" rx="330" ry="26"/>
+        <!-- bead body -->
+        <path class="bead-body" d="M40,215 C180,175 300,150 410,150 C520,150 640,175 780,215 C640,255 520,282 410,282 C300,282 180,255 40,215 Z"/>
+        <!-- matte grain (cured) -->
+        <g clip-path="url(#beadClip)">
+          <rect class="bead-grain" x="40" y="150" width="740" height="132" filter="url(#grain)" style="mix-blend-mode:multiply"/>
+        </g>
+        <!-- glossy sheen (wet) -->
+        <g clip-path="url(#beadClip)">
+          <ellipse class="bead-sheen" cx="330" cy="185" rx="150" ry="20" fill="url(#sheenGrad)"/>
+          <ellipse class="bead-sheen2" cx="560" cy="200" rx="90" ry="12" fill="url(#sheenGrad)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="readout">
+      <span class="state" id="stateLabel">Wet · Liquid</span>
+      <span class="pct"><span id="curePct">0</span>% Cured</span>
+    </div>
+    <div class="track"><div class="track-fill" id="trackFill"></div></div>
+    <p class="hint">Drag across the bead · or scroll to cure</p>
+  </div>
+</header>
+
+<!-- MATERIAL -->
+<section id="material">
+  <div class="wrap">
+    <p class="kicker reveal">Material Behaviour</p>
+    <h2 class="sec-title reveal">Two states. <b>One continuous bond.</b></h2>
+    <p class="lead reveal">Silicone &amp; Set begins as a thixotropic paste — glossy, self-levelling, forgiving. Over hours it cross-links into a matte elastomer that flexes with the substrate instead of against it.</p>
+
+    <div class="split">
+      <div class="state-card reveal">
+        <p class="tag">T+0 · Application</p>
+        <p class="big">Wet &amp; Glossy</p>
+        <p>High surface tension keeps the bead proud. Reflective, transparent at the edges, toolable for a clean joint line.</p>
+        <div class="swatch wet"></div>
+      </div>
+      <div class="state-card reveal">
+        <p class="tag">T+24 · Fully Cured</p>
+        <p class="big">Matte &amp; Flexible</p>
+        <p>Opaque, soft-touch, non-porous. Elongates to 500% and recovers — absorbing movement, vibration and thermal drift.</p>
+        <div class="swatch cured"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RANGE -->
+<section id="range">
+  <div class="wrap">
+    <p class="kicker reveal">The Range</p>
+    <h2 class="sec-title reveal">Three formulations. <b>Engineered for the joint.</b></h2>
+
+    <div class="grid">
+      <article class="card reveal">
+        <div class="img">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="300" fill="#E7EAEC"/>
+            <path d="M-20,180 C120,140 280,150 420,175 L420,320 L-20,320 Z" fill="#9FADB6"/>
+            <path d="M-20,180 C120,140 280,150 420,175" fill="none" stroke="#cdd6dc" stroke-width="6"/>
+            <rect x="150" y="90" width="100" height="100" rx="6" fill="#D1D5DB"/>
+          </svg>
+        </div>
+        <div class="body">
+          <p class="code">SS-100 · Neutral</p>
+          <h3>Structural Joint</h3>
+          <p class="desc">High-modulus neutral cure for glass, metal and curtain-wall assemblies.</p>
+          <div class="specs">
+            <div><span class="k">Tack-Free</span><span class="v">20 min</span></div>
+            <div><span class="k">Elongation</span><span class="v">500%</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="img">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="300" fill="#EDEFF1"/>
+            <path d="M-20,200 C100,160 300,160 420,195 L420,320 L-20,320 Z" fill="#8C9EAB"/>
+            <path d="M-20,200 C100,160 300,160 420,195" fill="none" stroke="#b9c5cd" stroke-width="7"/>
+            <circle cx="200" cy="120" r="46" fill="#D1D5DB"/>
+          </svg>
+        </div>
+        <div class="body">
+          <p class="code">SS-240 · Acetoxy</p>
+          <h3>Fast Seal</h3>
+          <p class="desc">Rapid-cure acetoxy for sanitary, glazing and high-throughput production lines.</p>
+          <div class="specs">
+            <div><span class="k">Tack-Free</span><span class="v">12 min</span></div>
+            <div><span class="k">Elongation</span><span class="v">600%</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="card reveal">
+        <div class="img">
+          <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+            <rect width="400" height="300" fill="#E5E7EB"/>
+            <path d="M-20,170 C140,200 260,150 420,185 L420,320 L-20,320 Z" fill="#6B7C88"/>
+            <path d="M-20,170 C140,200 260,150 420,185" fill="none" stroke="#9fadb6" stroke-width="8"/>
+            <rect x="60" y="70" width="280" height="60" rx="30" fill="#D1D5DB"/>
+          </svg>
+        </div>
+        <div class="body">
+          <p class="code">SS-500 · High-Temp</p>
+          <h3>Thermal Flex</h3>
+          <p class="desc">High-temperature elastomer for HVAC, exhaust and thermal-expansion joints.</p>
+          <div class="specs">
+            <div><span class="k">Service</span><span class="v">230°C</span></div>
+            <div><span class="k">Elongation</span><span class="v">450%</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- CURE PROFILE -->
+<section id="cure">
+  <div class="wrap">
+    <p class="kicker reveal">Cure Profile · 23°C / 50% RH</p>
+    <h2 class="sec-title reveal">A bond that <b>sets on schedule.</b></h2>
+    <p class="lead reveal">Skin forms fast, depth cures steady. The timeline below tracks modulus build-up through to full service load.</p>
+
+    <div class="timeline" id="timeline">
+      <div class="tl-track"><div class="tl-fill" id="tlFill"></div></div>
+      <div class="tl-item reveal"><div class="tl-dot"></div><p class="tl-time">T + 12–20 min</p><p class="tl-title">Skin Over</p><p class="tl-desc">Surface loses tack. Bead holds profile; tooling window closes.</p></div>
+      <div class="tl-item reveal"><div class="tl-dot"></div><p class="tl-time">T + 4 hours</p><p class="tl-title">Handling Strength</p><p class="tl-desc">~2 mm skin depth. Assembly may be moved without slumping.</p></div>
+      <div class="tl-item reveal"><div class="tl-dot"></div><p class="tl-time">T + 24 hours</p><p class="tl-title">Full Cure</p><p class="tl-desc">Complete cross-link. Matte, opaque, fully elastic across the joint.</p></div>
+      <div class="tl-item reveal"><div class="tl-dot"></div><p class="tl-time">T + 7 days</p><p class="tl-title">Service Load</p><p class="tl-desc">Peak adhesion and weathering resistance achieved. Ready for duty.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA SHEET -->
+<section id="data">
+  <div class="wrap">
+    <p class="kicker reveal">Technical Data</p>
+    <h2 class="sec-title reveal">Numbers you can <b>build on.</b></h2>
+
+    <div class="datasheet reveal">
+      <div class="ds-head">
+        <span class="t">Seal &amp; Set · SS-100 Structural</span>
+        <span class="s">Rev. 4.2 · ISO 11600 · F&amp;CM</span>
+      </div>
+      <div class="ds-row"><span class="prop">Chemistry</span><span class="val">Neutral-cure RTV-1</span></div>
+      <div class="ds-row"><span class="prop">Viscosity (extrusion)</span><span class="val">35 <small>Pa·s @ 10 s⁻¹</small></span></div>
+      <div class="ds-row"><span class="prop">Density</span><span class="val">1.02 <small>g/cm³</small></span></div>
+      <div class="ds-row"><span class="prop">Tack-free time</span><span class="val">20 <small>min</small></span></div>
+      <div class="ds-row"><span class="prop">Skin depth @ 24 h</span><span class="val">4 <small>mm</small></span></div>
+      <div class="ds-row"><span class="prop">Tensile strength</span><span class="val">1.6 <small>MPa</small></span></div>
+      <div class="ds-row"><span class="prop">Elongation at break</span><span class="val">500 <small>%</small></span></div>
+      <div class="ds-row"><span class="prop">Shore A hardness</span><span class="val">30 <small>±5</small></span></div>
+      <div class="ds-row"><span class="prop">Service temperature</span><span class="val">−50 to +180 <small>°C</small></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta" id="cta">
+  <div class="wrap">
+    <h2 class="reveal">Set it once. <b>Seal it for good.</b></h2>
+    <button class="btn reveal" id="sampleBtn">Request a sample</button>
+    <p class="note reveal">Technical data sheets · colour matching · bulk supply</p>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div>
+      <div class="wordmark"><span>Seal<span class="amp">&amp;</span>Set</span><span class="dot"></span></div>
+      <p class="mono" style="font-size:10px;margin-top:10px;color:var(--slate-deep)">Soft-machine adhesives.</p>
+    </div>
+    <div class="cols">
+      <div class="col"><h4>Products</h4><a href="#range">Structural Joint</a><a href="#range">Fast Seal</a><a href="#range">Thermal Flex</a></div>
+      <div class="col"><h4>Support</h4><a href="#data">Data Sheets</a><a href="#cure">Cure Guide</a><a href="#cta">Contact</a></div>
+      <div class="col"><h4>Company</h4><a href="#material">Material</a><a href="#">Manufacturing</a><a href="#">Compliance</a></div>
+    </div>
+    <div class="legal">
+      <span>© 2024 Seal &amp; Set Industries</span>
+      <span>ISO 9001 · ISO 11600 F&amp;CM</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScrollNav = () => nav.classList.toggle('scrolled', window.scrollY > 40);
+  onScrollNav();
+  window.addEventListener('scroll', onScrollNav, {passive:true});
+
+  /* ---- Reveal on scroll ---- */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:0.16, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay = (reduce?0:(i%4)*70)+'ms';
+    io.observe(el);
+  });
+
+  /* ---- Timeline fill + active dots ---- */
+  const tl = document.getElementById('timeline');
+  const tlFill = document.getElementById('tlFill');
+  const tlItems = document.querySelectorAll('.tl-item');
+  const tlIO = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ tlFill.style.height='100%'; tlItems.forEach(it=>it.classList.add('active')); } });
+  },{threshold:0.3});
+  if(tl) tlIO.observe(tl);
+
+  /* ---- Bead cure: scroll-driven + drag ---- */
+  const wrap = document.getElementById('beadWrap');
+  const stateLabel = document.getElementById('stateLabel');
+  const curePct = document.getElementById('curePct');
+  const trackFill = document.getElementById('trackFill');
+  let manual = false;          // user took control
+  let manualTimer = null;
+
+  function applyCure(v){
+    v = Math.max(0, Math.min(1, v));
+    wrap.style.setProperty('--cure', v.toFixed(3));
+    const pct = Math.round(v*100);
+    curePct.textContent = pct;
+    trackFill.style.setProperty('--cure', v.toFixed(3));
+    let label;
+    if(v < 0.18) label = 'Wet · Liquid';
+    else if(v < 0.5) label = 'Skinning · Gel';
+    else if(v < 0.85) label = 'Curing · Cross-link';
+    else label = 'Cured · Elastomer';
+    stateLabel.textContent = label;
+  }
+
+  // ambient loop (viscous, no bounce) unless reduced motion or user interacting
+  let t0 = null;
+  function loop(ts){
+    if(t0===null) t0 = ts;
+    if(!manual && !reduce){
+      const phase = ((ts - t0) % 9000) / 9000;
+      // ease the loop so it lingers at wet then cures
+      const eased = (1 - Math.cos(phase * Math.PI)) / 2;
+      applyCure(eased);
+    }
+    requestAnimationFrame(loop);
+  }
+  if(!reduce) requestAnimationFrame(loop);
+
+  // scroll drives cure once bead leaves hero (feels like time passing)
+  let heroDone = false;
+  function scrollDrive(){
+    if(manual || reduce) return;
+    const rect = wrap.getBoundingClientRect();
+    const vh = window.innerHeight;
+    // progress from when bead is mid-viewport to when it's near top
+    const start = vh * 0.9, end = vh * 0.1;
+    const p = (start - rect.top) / (start - end);
+    const v = Math.max(0, Math.min(1, p));
+    if(v > 0.02){ heroDone = true; applyCure(v); }
+  }
+  window.addEventListener('scroll', scrollDrive, {passive:true});
+
+  // drag interaction
+  function setFromPointer(clientX){
+    const r = wrap.getBoundingClientRect();
+    const v = (clientX - r.left) / r.width;
+    manual = true;
+    applyCure(v);
+    clearTimeout(manualTimer);
+    manualTimer = setTimeout(()=>{ manual = false; t0 = null; }, 4000);
+  }
+  let dragging = false;
+  wrap.addEventListener('pointerdown', (e)=>{ dragging = true; setFromPointer(e.clientX); });
+  window.addEventListener('pointermove', (e)=>{ if(dragging) setFromPointer(e.clientX); });
+  window.addEventListener('pointerup', ()=>{ dragging = false; });
+
+  // init
+  applyCure(reduce ? 0.6 : 0);
+
+  /* ---- Button squish feedback ---- */
+  const btn = document.getElementById('sampleBtn');
+  btn.addEventListener('click', ()=>{
+    btn.textContent = 'Sample requested ✓';
+    btn.style.background = 'var(--slate-deep)';
+    setTimeout(()=>{ btn.textContent = 'Request a sample'; btn.style.background=''; }, 2200);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PortLogistics — Cargo Manifest Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f5f0;
+    --ink:#2b2b2b;
+    --red:#d62828;
+    --desk-hi:#3a3027;
+    --desk-lo:#14100c;
+    --mono:'Courier Prime', 'Courier New', ui-monospace, monospace;
+    --disp:'Oswald', 'Arial Narrow', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--mono);
+    color:#e9e2d6;
+    background:var(--desk-lo);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+
+  /* ---------- DESK BACKGROUND ---------- */
+  .desk{
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(255,210,150,.10), rgba(0,0,0,0) 55%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.22) 0 1px, rgba(255,255,255,.015) 1px 2px, rgba(0,0,0,0) 2px 26px),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.18) 0 2px, rgba(0,0,0,0) 2px 61px),
+      linear-gradient(160deg, var(--desk-hi), var(--desk-lo));
+  }
+  .desk::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(130% 100% at 50% 40%, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%);
+  }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:20;
+    display:flex; align-items:center; gap:14px;
+    padding:16px clamp(14px,3vw,34px);
+  }
+  .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .brand .mark{
+    font-family:var(--disp); font-weight:700; letter-spacing:.14em;
+    font-size:clamp(20px,3.4vw,30px); text-transform:uppercase; color:#f3ece0;
+    text-shadow:0 1px 0 rgba(0,0,0,.5);
+  }
+  .brand .mark b{color:var(--red);}
+  .brand .tag{
+    font-size:10px; letter-spacing:.42em; text-transform:uppercase;
+    color:#b9ad98; padding-left:2px;
+  }
+  .sys{margin-left:auto; display:flex; gap:22px; align-items:center;}
+  .sys .cell{text-align:right;}
+  .sys .k{font-size:9px; letter-spacing:.3em; color:#8f8676; text-transform:uppercase;}
+  .sys .v{font-size:12px; color:#e9e2d6; letter-spacing:.06em;}
+  .sys .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5fbf7a;box-shadow:0 0 8px #5fbf7a;animation:blip 2.4s infinite;}
+  @keyframes blip{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative; z-index:5;
+    min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:clamp(78px,11vh,120px) 16px 150px;
+    overflow-y:auto;
+  }
+
+  /* ---------- DOCUMENT ---------- */
+  .doc{
+    position:relative;
+    width:min(760px, 94vw);
+    background:var(--paper);
+    color:var(--ink);
+    padding:clamp(22px,4vw,46px);
+    box-shadow:
+      0 2px 0 rgba(0,0,0,.35),
+      0 18px 40px rgba(0,0,0,.5),
+      0 40px 90px rgba(0,0,0,.45);
+    border-radius:1px;
+  }
+  .doc::before{ /* fiber grain */
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.55'/%3E%3C/svg%3E");
+    opacity:.11; mix-blend-mode:multiply;
+  }
+  .doc::after{ /* soft edge shading */
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+    box-shadow:inset 0 0 60px rgba(60,40,20,.10), inset 0 0 3px rgba(0,0,0,.15);
+  }
+  .doc-inner{position:relative; z-index:1;}
+
+  .doc-head{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:2px solid var(--ink); padding-bottom:14px;}
+  .doc-head h1{font-family:var(--disp); font-weight:700; text-transform:uppercase; letter-spacing:.06em; font-size:clamp(20px,3.6vw,30px); line-height:1;}
+  .doc-head .sub{font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:#6a6152; margin-top:8px;}
+  .doc-no{text-align:right; font-size:11px; line-height:1.7; letter-spacing:.05em;}
+  .doc-no .big{font-size:15px; font-weight:700; letter-spacing:.1em;}
+  .doc-no .conf{color:var(--red); font-weight:700;}
+
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:0 28px; margin-top:22px;}
+  .grid .f{padding:7px 0; border-bottom:1px dotted #b7b1a2; display:flex; justify-content:space-between; gap:10px; font-size:12.5px;}
+  .grid .f .lbl{color:#6a6152; letter-spacing:.08em; text-transform:uppercase; font-size:10.5px; padding-top:2px;}
+  .grid .f .val{font-weight:700; text-align:right;}
+  .grid .f .val .dim{font-weight:400; color:#7c7464;}
+
+  .cargo{margin-top:24px;}
+  .cargo h2{font-family:var(--disp); font-weight:500; text-transform:uppercase; letter-spacing:.14em; font-size:13px; color:#3a352c; border-bottom:1px solid var(--ink); padding-bottom:6px; margin-bottom:8px;}
+  table{width:100%; border-collapse:collapse; font-size:12px;}
+  thead th{text-align:left; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#6a6152; padding:6px 8px; border-bottom:1px solid #9a9384;}
+  thead th.num, tbody td.num{text-align:right;}
+  tbody td{padding:6px 8px; border-bottom:1px dotted #c3bdae; vertical-align:top;}
+  tbody tr:last-child td{border-bottom:1px solid var(--ink);}
+  tbody td .desc{color:#4a453b;}
+  tfoot td{padding:7px 8px; font-weight:700; font-size:12px; border-top:2px solid var(--ink);}
+  tfoot td.lbl{text-align:right; letter-spacing:.1em; text-transform:uppercase; color:#3a352c;}
+  tfoot td.num{text-align:right;}
+
+  .foot{margin-top:22px; display:flex; justify-content:space-between; gap:16px; font-size:10px; color:#6a6152; letter-spacing:.06em; line-height:1.6;}
+  .foot .bar{width:170px; height:34px; background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 5px,transparent 5px 9px,var(--ink) 9px 12px,transparent 12px 14px); opacity:.85; margin-top:6px;}
+
+  /* ---------- TARGET ---------- */
+  .target{
+    position:absolute; right:clamp(20px,4vw,46px); bottom:clamp(24px,5vw,54px);
+    width:clamp(170px,32vw,236px); height:clamp(150px,28vw,206px);
+    border:2px dashed #9a9384; border-radius:4px;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(214,40,40,.03);
+    transition:border-color .25s, background .25s;
+  }
+  .target.hot{border-color:var(--red); background:rgba(214,40,40,.10);}
+  .target.done{border-style:solid; border-color:transparent; background:transparent;}
+  .target .hint{text-align:center; color:#8a8272; font-size:10px; letter-spacing:.24em; text-transform:uppercase; line-height:2;}
+  .target .hint .arrow{font-size:20px; color:#b0a893;}
+
+  /* ---------- IMPRINT ---------- */
+  .imprint{
+    position:absolute; left:50%; top:50%; width:82%;
+    transform:translate(-50%,-50%) rotate(var(--rot,-4deg)) scale(.9);
+    opacity:0; pointer-events:none;
+    mix-blend-mode:multiply;
+    filter:url(#inkBleed);
+  }
+  .imprint.set{animation:imprintIn .34s cubic-bezier(.2,.9,.3,1) forwards;}
+  @keyframes imprintIn{
+    0%{opacity:0; transform:translate(-50%,-50%) rotate(var(--rot,-4deg)) scale(1.06);}
+    40%{opacity:calc(var(--dens,.9) * 1.12);}
+    100%{opacity:var(--dens,.9); transform:translate(-50%,-50%) rotate(var(--rot,-4deg)) scale(1);}
+  }
+  .imprint svg{display:block; width:100%; height:auto;}
+  .imprint .ring{fill:none; stroke:var(--red); stroke-width:5;}
+  .imprint .ring2{fill:none; stroke:var(--red); stroke-width:2;}
+  .imprint .txt{font-family:var(--disp); font-weight:700; fill:var(--red); letter-spacing:.06em;}
+  .imprint .star{fill:var(--red);}
+  .imprint .arc{fill:var(--red); font-family:var(--disp); font-weight:500; letter-spacing:.14em;}
+
+  /* ---------- STAMP TRAY ---------- */
+  .tray{
+    position:fixed; right:clamp(14px,3vw,30px); bottom:clamp(14px,3vw,26px); z-index:30;
+    width:clamp(120px,20vw,150px);
+    background:linear-gradient(160deg,#241d17,#120e0a);
+    border:1px solid #3a3027; border-radius:8px;
+    padding:12px; box-shadow:0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .tray .tlabel{font-size:8.5px; letter-spacing:.28em; text-transform:uppercase; color:#8f8676; margin-bottom:8px; text-align:center;}
+  .stamp{
+    position:relative; width:100%; aspect-ratio:1/1; cursor:grab; touch-action:none; user-select:none;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .18s ease, filter .18s ease;
+  }
+  .stamp:hover{transform:translateY(-3px);}
+  .stamp:active{cursor:grabbing;}
+  .stamp svg{width:100%; height:100%; filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)); transition:filter .18s;}
+  .stamp.pressed svg{filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));}
+
+  /* ---------- FLOATING STAMP (drag ghost) ---------- */
+  .float-stamp{
+    position:fixed; z-index:60; width:132px; height:132px;
+    pointer-events:none; will-change:transform; opacity:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .float-stamp svg{width:100%; height:100%; filter:drop-shadow(0 18px 22px rgba(0,0,0,.55));}
+  .float-stamp.pressed svg{filter:drop-shadow(0 4px 5px rgba(0,0,0,.6));}
+  .float-stamp.show{opacity:1;}
+
+  /* ---------- STATUS ---------- */
+  .status{
+    position:fixed; left:clamp(14px,3vw,30px); bottom:clamp(14px,3vw,26px); z-index:30;
+    display:flex; align-items:center; gap:12px;
+    background:rgba(18,14,10,.82); border:1px solid #3a3027; border-radius:8px;
+    padding:11px 16px; backdrop-filter:blur(4px);
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#c9c0af;
+  }
+  .status .led{width:9px;height:9px;border-radius:50%;background:#c98a2b;box-shadow:0 0 8px #c98a2b;animation:blip 1.6s infinite;}
+  .status.ok{color:#8fd6a2;}
+  .status.ok .led{background:#5fbf7a;box-shadow:0 0 10px #5fbf7a;animation:none;}
+  .status .scode{color:#8f8676;}
+
+  .hintline{position:fixed; left:50%; bottom:clamp(14px,3vw,26px); transform:translateX(-50%); z-index:25; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:#7a7263; text-align:center; pointer-events:none;}
+  .hintline b{color:#c9c0af;}
+
+  @media (max-width:720px){
+    .sys .cell:nth-child(2){display:none;}
+    .grid{grid-template-columns:1fr;}
+    .hintline{display:none;}
+    .status{font-size:9px; padding:9px 12px;}
+    .foot .bar{display:none;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important;}
+    .imprint.set{opacity:var(--dens,.9); transform:translate(-50%,-50%) rotate(var(--rot,-4deg));}
+  }
+</style>
+</head>
+<body>
+
+<!-- shared ink filter -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="inkBleed" x="-15%" y="-15%" width="130%" height="130%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="9" result="warp"/>
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="3.2" result="disp"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="3" result="grain"/>
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0.9 0.9 0.9 0 -0.22" result="grainA"/>
+    <feComposite in="disp" in2="grainA" operator="out" result="speck"/>
+    <feGaussianBlur in="speck" stdDeviation="0.4" result="soft"/>
+    <feMerge><feMergeNode in="soft"/><feMergeNode in="disp"/></feMerge>
+  </filter>
+</svg>
+
+<div class="desk"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">Port<b>Logistics</b></span>
+    <span class="tag">Manifest Verification Console</span>
+  </div>
+  <div class="sys">
+    <div class="cell"><div class="k">Terminal</div><div class="v">PIER 07 · BERTH 14</div></div>
+    <div class="cell"><div class="k">Session</div><div class="v" id="clock">--:--:--</div></div>
+    <div class="cell"><div class="k">Status</div><div class="v"><span class="dot"></span> ONLINE</div></div>
+  </div>
+</header>
+
+<main class="stage">
+  <article class="doc" id="doc">
+    <div class="doc-inner">
+      <div class="doc-head">
+        <div>
+          <h1>Cargo Manifest</h1>
+          <div class="sub">Bill of Lading · Import Consignment</div>
+        </div>
+        <div class="doc-no">
+          <div class="big">MANIFEST No. <span class="conf">PL-4471-09</span></div>
+          <div>ISSUED 2024-11-08</div>
+          <div>ORIGIN · SHANGHAI (CNSHA)</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="f"><span class="lbl">Vessel</span><span class="val">MV NORDIC DAWN <span class="dim">/ 088E</span></span></div>
+        <div class="f"><span class="lbl">Container</span><span class="val">MSKU 774 213-6</span></div>
+        <div class="f"><span class="lbl">Consignee</span><span class="val">HARBOR GOODS CO.</span></div>
+        <div class="f"><span class="lbl">Seal No.</span><span class="val">SL-8829-441</span></div>
+        <div class="f"><span class="lbl">Port of Discharge</span><span class="val">ROTTERDAM (NLRTM)</span></div>
+        <div class="f"><span class="lbl">Gross Weight</span><span class="val">21,480 <span class="dim">KG</span></span></div>
+        <div class="f"><span class="lbl">ETA</span><span class="val">2024-11-06 · 04:20</span></div>
+        <div class="f"><span class="lbl">Volume</span><span class="val">33.2 <span class="dim">CBM</span></span></div>
+      </div>
+
+      <section class="cargo">
+        <h2>Declared Cargo</h2>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Net (kg)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>01</td><td class="desc">Steel fasteners, hex · class 8.8</td><td class="num">12,000</td><td class="num">PCS</td><td class="num">4,320</td></tr>
+            <tr><td>02</td><td class="desc">Copper coil, 0.8mm · electrolytic</td><td class="num">36</td><td class="num">COIL</td><td class="num">9,180</td></tr>
+            <tr><td>03</td><td class="desc">Textile bolts, cotton twill</td><td class="num">240</td><td class="num">ROLL</td><td class="num">5,600</td></tr>
+            <tr><td>04</td><td class="desc">Ceramic tiles, glazed 60×60</td><td class="num">180</td><td class="num">BOX</td><td class="num">2,380</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><td class="lbl" colspan="4">Total declared net</td><td class="num">21,480 KG</td></tr>
+          </tfoot>
+        </table>
+      </section>
+
+      <div class="foot">
+        <div>
+          This manifest is a legal declaration of goods.<br>
+          Verification requires authorized stamp.<br>
+          Ref: PL / CARGO / 2024 / Q4
+          <div class="bar"></div>
+        </div>
+        <div style="text-align:right">
+          Prepared by: K. ANDERSEN<br>
+          Customs Broker Lic. #44-221<br>
+          Page 1 of 1
+        </div>
+      </div>
+
+      <div class="target" id="target">
+        <div class="hint"><span class="arrow">↓</span><br>Verification<br>Stamp Area</div>
+        <div class="imprint" id="imprint">
+          <svg viewBox="0 0 240 240" aria-label="Approved">
+            <circle class="ring" cx="120" cy="120" r="108"/>
+            <circle class="ring2" cx="120" cy="120" r="96"/>
+            <path id="arcTop" d="M 40 120 A 80 80 0 0 1 200 120" fill="none"/>
+            <text class="arc" font-size="15"><textPath href="#arcTop" startOffset="50%" text-anchor="middle">PORTLOGISTICS · CUSTOMS</textPath></text>
+            <path id="arcBot" d="M 44 128 A 76 76 0 0 0 196 128" fill="none"/>
+            <text class="arc" font-size="12"><textPath href="#arcBot" startOffset="50%" text-anchor="middle">VERIFIED · 2024-11-08</textPath></text>
+            <text class="txt" x="120" y="108" text-anchor="middle" font-size="46">APPROVED</text>
+            <text class="txt" x="120" y="140" text-anchor="middle" font-size="17">PL-4471-09</text>
+            <polygon class="star" points="120,150 123,158 132,158 125,163 128,172 120,167 112,172 115,163 108,158 117,158"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </article>
+</main>
+
+<div class="tray" id="tray">
+  <div class="tlabel">Approval Stamp</div>
+  <div class="stamp" id="stamp" role="button" tabindex="0" aria-label="Drag stamp to verify document">
+    <svg viewBox="0 0 120 120">
+      <defs>
+        <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#6b4a2f"/><stop offset="1" stop-color="#3d2817"/>
+        </linearGradient>
+        <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#c9c2b6"/><stop offset="1" stop-color="#7c766b"/>
+        </linearGradient>
+      </defs>
+      <rect x="46" y="10" width="28" height="20" rx="6" fill="url(#wood)"/>
+      <rect x="50" y="26" width="20" height="16" fill="url(#metal)"/>
+      <rect x="30" y="40" width="60" height="22" rx="5" fill="url(#wood)"/>
+      <rect x="24" y="60" width="72" height="16" rx="4" fill="url(#metal)"/>
+      <rect x="30" y="76" width="60" height="12" rx="3" fill="#1c1c1c"/>
+      <rect x="34" y="86" width="52" height="6" rx="2" fill="#d62828" opacity=".9"/>
+    </svg>
+  </div>
+</div>
+
+<div class="status" id="status"><span class="led"></span> Awaiting Stamp <span class="scode">· REQ: VERIFIED</span></div>
+<div class="hintline"><b>Drag</b> the stamp from the tray onto the dashed verification box</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stamp = document.getElementById('stamp');
+  var floatS = document.createElement('div');
+  floatS.className = 'float-stamp';
+  floatS.innerHTML = stamp.querySelector('svg').outerHTML;
+  document.body.appendChild(floatS);
+
+  var target = document.getElementById('target');
+  var imprint = document.getElementById('imprint');
+  var status = document.getElementById('status');
+
+  var dragging=false, done=false;
+  var tx=0, ty=0, cx=0, cy=0, vx=0, vy=0;
+  var lastX=0, lastY=0, lastT=0, pressT=0;
+  var raf=null;
+
+  function clock(){
+    var d=new Date();
+    var p=function(n){return (n<10?'0':'')+n;};
+    document.getElementById('clock').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  clock(); setInterval(clock,1000);
+
+  function centerOf(el){
+    var r=el.getBoundingClientRect();
+    return {x:r.left+r.width/2, y:r.top+r.height/2};
+  }
+
+  function start(e){
+    if(done) return;
+    dragging=true;
+    var p=point(e);
+    tx=cx=p.x; ty=cy=p.y;
+    lastX=p.x; lastY=p.y; lastT=performance.now(); pressT=lastT;
+    floatS.classList.add('show');
+    stamp.classList.add('pressed');
+    target.classList.add('hot');
+    if(!reduce) loop();
+    else { floatS.style.transform='translate('+cx+'px,'+cy+'px) translate(-50%,-50%)'; }
+    e.preventDefault();
+  }
+
+  function move(e){
+    if(!dragging) return;
+    var p=point(e);
+    tx=p.x; ty=p.y;
+    var now=performance.now();
+    var dt=Math.max(now-lastT,1);
+    vx=(p.x-lastX)/dt; vy=(p.y-lastY)/dt;
+    lastX=p.x; lastY=p.y; lastT=now;
+    if(reduce){ floatS.style.transform='translate('+tx+'px,'+ty+'px) translate(-50%,-50%)'; }
+    e.preventDefault();
+  }
+
+  function point(e){
+    if(e.touches && e.touches.length){return {x:e.touches[0].clientX, y:e.touches[0].clientY};}
+    if(e.changedTouches && e.changedTouches.length){return {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY};}
+    return {x:e.clientX, y:e.clientY};
+  }
+
+  function loop(){
+    if(!dragging){ return; }
+    // spring follow
+    var k=0.22, damp=0.72;
+    cx += (tx-cx)*k; cy += (ty-cy)*k;
+    var rot = Math.max(-14, Math.min(14, vx*40));
+    floatS.style.transform='translate('+cx+'px,'+cy+'px) translate(-50%,-50%) rotate('+rot+'deg)';
+    raf=requestAnimationFrame(loop);
+  }
+
+  function end(e){
+    if(!dragging) return;
+    dragging=false;
+    if(raf) cancelAnimationFrame(raf);
+    floatS.classList.remove('pressed');
+    stamp.classList.remove('pressed');
+    target.classList.remove('hot');
+
+    var t=centerOf(target);
+    var dist=Math.hypot(cx-t.x, cy-t.y);
+    var threshold=Math.max(target.offsetWidth, target.offsetHeight)*0.95;
+
+    if(dist<threshold){
+      floatS.classList.add('pressed');
+      // press down
+      floatS.style.transform='translate('+t.x+'px,'+t.y+'px) translate(-50%,-50%) scale(.9)';
+      setTimeout(function(){
+        floatS.classList.remove('pressed');
+        floatS.style.transform='translate('+t.x+'px,'+t.y+'px) translate(-50%,-50%) scale(1)';
+        applyImprint();
+      }, reduce?0:150);
+      setTimeout(function(){ floatS.classList.remove('show'); }, reduce?0:520);
+    } else {
+      // return to tray
+      var s=centerOf(stamp);
+      floatS.style.transition='transform .35s cubic-bezier(.34,1.56,.64,1)';
+      floatS.style.transform='translate('+s.x+'px,'+s.y+'px) translate(-50%,-50%)';
+      setTimeout(function(){ floatS.classList.remove('show'); floatS.style.transition=''; },360);
+    }
+  }
+
+  function applyImprint(){
+    done=true;
+    target.classList.add('done');
+    target.querySelector('.hint').style.display='none';
+    var speed=Math.min(Math.hypot(vx,vy),0.6);
+    var dur=Math.max(performance.now()-pressT,1)/1000;
+    var dens=Math.max(0.62, Math.min(0.97, 0.92 - speed*0.35 + Math.min(dur,3)*0.03));
+    var rot=(Math.random()*10-5);
+    imprint.style.setProperty('--dens', dens.toFixed(2));
+    imprint.style.setProperty('--rot', rot.toFixed(1)+'deg');
+    imprint.classList.add('set');
+    status.classList.add('ok');
+    status.innerHTML='<span class="led"></span> Verified · Stamped <span class="scode">· DENS '+Math.round(dens*100)+'%</span>';
+  }
+
+  stamp.addEventListener('pointerdown', start);
+  window.addEventListener('pointermove', move, {passive:false});
+  window.addEventListener('pointerup', end);
+  window.addEventListener('pointercancel', end);
+  // keyboard fallback
+  stamp.addEventListener('keydown', function(e){
+    if((e.key==='Enter'||e.key===' ') && !done){ e.preventDefault(); applyImprint(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+id: cast-iron-seasoning-gloss
+title: "Cast Iron Seasoning Gloss"
+category: landing-pages
+tags:
+  - cast-iron
+  - seasoning
+  - gloss
+  - kitchen
+  - heat
+  - black
+  - tactile
+status: polished
+summary: "Landing page for 'Iron & Fire' cookware. Deep black backgrounds with subtle, oily specular highlights that react to cursor movement, simulating a seasoned pan surface."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

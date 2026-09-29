@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 550283
+gen_ms: 550283
+ttft_ms: 1656
+queue_wait_ms: 129
+wall_ms: 552124
+review_score: 6
+review_summary: "Captures the correct industrial mood and typography style but fails to render the requested macro cross-section visual, resulting in a mostly empty dark screen."
+reviewed_at: "2026-09-28T23:10:37.760Z"
+review_issues:
+  - "Missing central visual: The brief requests a macro cross-section of cast iron, but the screen is almost entirely black/empty."
+  - "No layer visualization: The polymerized oil layers (amber/brown) are not visible."
+  - "Low visual interest: The composition is too sparse and lacks the 'atmospheric' depth requested."
+  - "Broken layout: The top right text '25°F' overlaps with the navigation text."

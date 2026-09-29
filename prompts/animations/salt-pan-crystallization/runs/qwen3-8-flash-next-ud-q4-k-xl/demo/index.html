@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salt Pan Crystallization</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#f4f1ea;
+    --sand:#d8d2c5;
+    --slate:#bcaaa4;
+    --umber:#8d6e63;
+    --ink:#333;
+    --sky:#cdd3d5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bone);
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    overflow:hidden;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 80% at 50% -18%, #ffffff 0%, #fbf9f4 32%, var(--bone) 60%, #ece7dd 100%);
+    cursor:crosshair;
+  }
+
+  /* ---------- SCENE (pans for infinite drift) ---------- */
+  .scene{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    transform:translateX(0);
+    animation:drift 44s linear infinite;
+    will-change:transform;
+  }
+  @keyframes drift{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+
+  /* ---------- BRINE / WATER ---------- */
+  .brine{
+    position:absolute;
+    left:0;top:0;
+    width:200%;height:100%;
+    background:
+      radial-gradient(150% 130% at 28% 118%, #c9c1b6 0%, #d6d0c4 34%, #ece7dd 66%, #f4f1ea 100%),
+      linear-gradient(180deg, #eef0f1 0%, #f4f1ea 46%);
+  }
+
+  /* ---------- SHADOW LAYER (sharp, hard light) ---------- */
+  .shadow{
+    position:absolute;
+    left:0;top:0;
+    width:200%;height:100%;
+    pointer-events:none;
+    filter:blur(1.4px);
+    opacity:.55;
+    mix-blend-mode:multiply;
+  }
+  .shadow .crystal{filter:none;}
+
+  /* ---------- CRYSTALS ---------- */
+  .crystals{
+    position:absolute;
+    left:0;top:0;
+    width:200%;height:100%;
+    will-change:transform;
+  }
+  .crystal{
+    position:absolute;
+    transform-origin:50% 100%;
+    transform:scale(0) rotate(var(--r0));
+    opacity:0;
+    animation-name:grow;
+    animation-duration:var(--dur);
+    animation-timing-function:cubic-bezier(.16,.9,.24,1.16);
+    animation-fill-mode:forwards;
+    animation-delay:var(--delay);
+    will-change:transform,opacity;
+  }
+  @keyframes grow{
+    0%   {transform:scale(0)   rotate(var(--r0)); opacity:0;}
+    12%  {opacity:1;}
+    70%  {transform:scale(1.06) rotate(var(--r1));}
+    100% {transform:scale(1)   rotate(var(--r1)); opacity:1;}
+  }
+
+  /* ---------- HEAT HAZE ---------- */
+  .haze{
+    position:absolute;
+    left:-6%;top:0;
+    width:112%;height:100%;
+    pointer-events:none;
+    z-index:3;
+    backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);
+    filter:url(#heat);
+    -webkit-filter:url(#heat);
+    opacity:calc(.34 + var(--heat,0)*.62);
+    transition:opacity .5s ease;
+    animation:heatShift 7s ease-in-out infinite;
+    will-change:opacity,filter;
+  }
+  @keyframes heatShift{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-6px);}
+  }
+
+  /* ---------- SKY REFLECTION ---------- */
+  .skyref{
+    position:absolute;
+    left:0;top:0;
+    width:200%;height:100%;
+    pointer-events:none;
+    z-index:4;
+    mix-blend-mode:screen;
+    background:
+      linear-gradient(180deg, rgba(205,211,213,.42) 0%, rgba(205,211,213,.12) 15%, transparent 24%),
+      radial-gradient(120% 40% at 50% 0%, rgba(255,255,255,.35), transparent 60%);
+    opacity:.85;
+    animation:shimmer 9s ease-in-out infinite;
+  }
+  @keyframes shimmer{
+    0%,100%{opacity:.68;}
+    50%{opacity:.92;}
+  }
+
+  /* ---------- RIPPLE ---------- */
+  .ripple{
+    position:absolute;
+    border-radius:50%;
+    border:1.5px solid rgba(188,170,164,.55);
+    transform:scale(.2);
+    opacity:0;
+    pointer-events:none;
+    z-index:5;
+    animation:ripple 2.6s ease-out forwards;
+  }
+  @keyframes ripple{
+    0%{transform:scale(.2);opacity:.7;}
+    100%{transform:scale(3.4);opacity:0;}
+  }
+
+  /* ---------- GRAIN ---------- */
+  .grain{
+    position:absolute;
+    inset:0;
+    z-index:6;
+    pointer-events:none;
+    opacity:.05;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- OVERLAYS ---------- */
+  .overlay{
+    position:absolute;
+    inset:0;
+    z-index:7;
+    pointer-events:none;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:6vw;
+  }
+  .eyebrow{
+    font-size:clamp(.62rem,1.1vw,.78rem);
+    letter-spacing:.42em;
+    text-transform:uppercase;
+    color:var(--umber);
+    font-weight:500;
+    margin-bottom:1.4rem;
+    opacity:.85;
+    animation:rise 1.2s .2s both;
+  }
+  .title{
+    font-family:'Playfair Display',serif;
+    font-weight:500;
+    font-size:clamp(3.2rem,11vw,8.6rem);
+    line-height:.94;
+    letter-spacing:-.015em;
+    color:#ffffff;
+    text-shadow:0 1px 0 rgba(255,255,255,.55), 0 2px 16px rgba(141,110,99,.28);
+    animation:rise 1.3s .35s both;
+  }
+  .title em{
+    font-style:italic;
+    font-weight:400;
+    color:rgba(141,110,99,.72);
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  .subtitle{
+    margin-top:1.6rem;
+    max-width:34ch;
+    font-size:clamp(.82rem,1.5vw,1rem);
+    line-height:1.65;
+    font-weight:300;
+    color:var(--ink);
+    opacity:.82;
+    animation:rise 1.3s .55s both;
+  }
+  @keyframes rise{
+    from{opacity:0;transform:translateY(18px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+
+  .credit{
+    position:absolute;
+    bottom:clamp(1rem,3vw,2rem);
+    right:clamp(1rem,3vw,2rem);
+    z-index:8;
+    font-size:.66rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--umber);
+    opacity:.7;
+    pointer-events:none;
+  }
+  .meta{
+    position:absolute;
+    bottom:clamp(1rem,3vw,2rem);
+    left:clamp(1rem,3vw,2rem);
+    z-index:8;
+    font-size:.66rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--umber);
+    opacity:.7;
+    pointer-events:none;
+  }
+  .meta b{font-weight:500;}
+
+  .sr-defs{position:absolute;width:0;height:0;overflow:hidden;}
+
+  @media (max-width:640px){
+    .overlay{justify-content:flex-start;padding-top:14vh;}
+    .subtitle{max-width:26ch;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scene,.haze,.skyref,.crystal,.eyebrow,.title,.subtitle{animation:none !important;}
+    .crystal{transform:scale(1) rotate(var(--r1)) !important;opacity:1 !important;}
+    .eyebrow,.title,.subtitle{opacity:1 !important;transform:none !important;}
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="scene" id="scene">
+      <div class="brine"></div>
+      <div class="shadow" id="shadow"></div>
+      <div class="crystals" id="crystals"></div>
+    </div>
+
+    <div class="haze" id="haze"></div>
+    <div class="skyref"></div>
+    <div class="grain"></div>
+
+    <div class="overlay">
+      <div class="eyebrow">Evaporation Study · 01</div>
+      <h1 class="title">Salt&nbsp;Pan<br><em>Crystallization</em></h1>
+      <p class="subtitle">The quiet violence of a desert drying — liquid surrendering, one rigid lattice at a time.</p>
+    </div>
+
+    <div class="meta"><b>Arid Basin</b> · 41°C</div>
+    <div class="credit">Salt Pan Crystallization</div>
+  </div>
+
+  <svg class="sr-defs" aria-hidden="true">
+    <filter id="heat" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="noise">
+        <animate attributeName="baseFrequency" dur="13s" values="0.012 0.02;0.016 0.028;0.012 0.02" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+
+<script>
+(function(){
+  var scene    = document.getElementById('scene');
+  var crystalLayer = document.getElementById('crystals');
+  var shadowLayer  = document.getElementById('shadow');
+  var stage    = document.getElementById('stage');
+  var haze     = document.getElementById('haze');
+  var reduce   = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- deterministic PRNG so left/right halves tile perfectly ----
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+  var rand = mulberry32(20240711);
+  function rr(a,b){return a + (b-a)*rand();}
+
+  // ---- crystal geometry: spiky cubic-like structure ----
+  function poly(points){
+    var s='';
+    for(var i=0;i<points.length;i++){s+=points[i][0]+','+points[i][1]+' ';}
+    return s.trim();
+  }
+  function clusterSVG(){
+    var faces=[
+      {pts:[[0,-30],[13,-9],[0,14],[-13,-9]], fill:'#ffffff', op:0.96},
+      {pts:[[0,-30],[13,-9],[25,3],[11,17]],  fill:'#efe9df', op:0.9},
+      {pts:[[0,-30],[-13,-9],[-25,3],[-11,17]],fill:'#e2dbcd', op:0.88},
+      {pts:[[0,14],[13,-9],[25,3],[11,17]],   fill:'#d6d0c4', op:0.85},
+      {pts:[[0,14],[-13,-9],[-25,3],[-11,17]],fill:'#cfc8bb', op:0.82},
+      {pts:[[0,-30],[5,-46],[-3,-40]],        fill:'#ffffff', op:0.95},
+      {pts:[[0,-30],[-6,-44],[2,-38]],        fill:'#f6f2ea', op:0.9}
+    ];
+    var out='';
+    for(var i=0;i<faces.length;i++){
+      var f=faces[i];
+      out+='<polygon points="'+poly(f.pts)+'" fill="'+f.fill+'" fill-opacity="'+f.op+'"/>';
+    }
+    // sharp edge highlight
+    out+='<polyline points="0,-30 13,-9 0,14" fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="1"/>';
+    out+='<polyline points="0,-30 -13,-9 0,14" fill="none" stroke="#ffffff" stroke-opacity="0.7" stroke-width="1"/>';
+    return out;
+  }
+  var CLUSTER = clusterSVG();
+
+  function buildCrystal(x,y,size,delay,dur,r0,r1,shadow){
+    var d=document.createElement('div');
+    d.className='crystal';
+    d.style.left=x+'%';
+    d.style.top=y+'%';
+    d.style.width=(size*0.9)+'px';
+    d.style.height=(size*1.25)+'px';
+    d.style.setProperty('--delay',delay.toFixed(2)+'s');
+    d.style.setProperty('--dur',dur.toFixed(2)+'s');
+    d.style.setProperty('--r0',r0.toFixed(1)+'deg');
+    d.style.setProperty('--r1',r1.toFixed(1)+'deg');
+    if(shadow){
+      d.style.background='#8d6e63';
+      d.style.filter='blur(2px)';
+    }else{
+      d.innerHTML='<svg viewBox="-32 -50 64 72" width="100%" height="100%" preserveAspectRatio="xMidYMax meet">'+CLUSTER+'</svg>';
+    }
+    return d;
+  }
+
+  // ---- generate one 100% field, mirrored into second 100% (seamless tiling) ----
+  function buildField(){
+    var html='';
+    var count = window.innerWidth < 640 ? 46 : 84;
+    for(var i=0;i<count;i++){
+      var x=rr(0,100);
+      var y=rr(30,99);
+      var depth=(y-30)/69;                 // 0 far .. 1 near
+      var size=rr(26,72)*(0.55+depth*0.9);
+      var delay=rr(0.15,3.6);
+      var dur=rr(0.5,0.95);
+      var r0=rr(-14,14);
+      var r1=r0+rr(-9,9);
+      // shadow offset grows with depth (harsh overhead sun, slightly angled)
+      var sx=rr(6,16)*(0.5+depth);
+      var sy=rr(3,8)*(0.5+depth);
+
+      crystalLayer.appendChild(buildCrystal(x,y,size,delay,dur,r0,r1,false));
+      // second half: identical geometry, +100% x
+      crystalLayer.appendChild(buildCrystal(x+100,y,size,delay,dur,r0,r1,false));
+
+      var s1=buildCrystal(x+sx,y+sy,size,delay,dur,r0,r1,true);
+      s1.style.opacity='0.5';
+      shadowLayer.appendChild(s1);
+      var s2=buildCrystal(x+100+sx,y+sy,size,delay,dur,r0,r1,true);
+      s2.style.opacity='0.5';
+      shadowLayer.appendChild(s2);
+    }
+  }
+  buildField();
+
+  // ---- entrance ripple ----
+  function ripple(x,y){
+    var r=document.createElement('div');
+    r.className='ripple';
+    var s=rr(60,140);
+    r.style.width=s+'px';r.style.height=s+'px';
+    r.style.left=(x-s/2)+'px';r.style.top=(y-s/2)+'px';
+    scene.appendChild(r);
+    setTimeout(function(){r.remove();},2600);
+  }
+  if(!reduce){
+    setTimeout(function(){ripple(window.innerWidth*0.42,window.innerHeight*0.62);},700);
+  }
+
+  // ---- hover: intensify heat haze ----
+  if(!reduce){
+    stage.addEventListener('pointermove',function(e){
+      var h=(1-e.clientY/window.innerHeight)*0.9+0.1;
+      haze.style.setProperty('--heat',h.toFixed(3));
+    });
+    stage.addEventListener('pointerleave',function(){
+      haze.style.setProperty('--heat','0');
+    });
+  }
+})();
+</script>
+</body>
+</html>

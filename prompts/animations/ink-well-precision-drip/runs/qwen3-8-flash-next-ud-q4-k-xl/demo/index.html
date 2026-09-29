@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ink Well — Precision Drip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAFA;
+    --ink:#050505;
+    --gloss:#1A1A1A;
+    --muted:rgba(5,5,5,.55);
+    --line:rgba(5,5,5,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'EB Garamond',Georgia,serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{position:fixed;inset:0;overflow:hidden}
+
+  /* ---- atmosphere: north-light wash + grain + vignette ---- */
+  .wash{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 78% -10%, rgba(255,255,255,.9), rgba(255,255,255,0) 55%),
+      linear-gradient(160deg, #ffffff 0%, #f4f4f2 46%, #e9e9e6 100%);
+    animation:breathe 16s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{opacity:.92}50%{opacity:1}}
+  .grain{
+    position:absolute;inset:-50%;z-index:3;pointer-events:none;opacity:.05;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:absolute;inset:0;z-index:4;pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 45%, rgba(5,5,5,0) 55%, rgba(5,5,5,.10) 100%);
+  }
+  canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;display:block}
+
+  /* ---- chrome ---- */
+  .chrome{position:absolute;inset:0;z-index:6;pointer-events:none}
+  .chrome > *{pointer-events:auto}
+
+  .brand{
+    position:absolute;top:clamp(18px,3vw,40px);left:clamp(18px,3vw,44px);
+    display:flex;align-items:center;gap:14px;
+  }
+  .brand .mark{
+    width:34px;height:34px;border-radius:50%;
+    background:radial-gradient(circle at 34% 28%, #4a4a4a, #050505 62%);
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.25), 0 2px 8px rgba(5,5,5,.28);
+    position:relative;flex:none;
+  }
+  .brand .mark::after{
+    content:"";position:absolute;top:7px;left:9px;width:9px;height:5px;border-radius:50%;
+    background:rgba(255,255,255,.55);filter:blur(.6px);
+  }
+  .brand .wm{font-family:'Space Mono',monospace;font-weight:700;
+    letter-spacing:.42em;font-size:clamp(13px,1.5vw,17px);text-transform:uppercase}
+  .brand .wm small{display:block;font-weight:400;letter-spacing:.28em;font-size:9px;
+    color:var(--muted);margin-top:4px}
+
+  .meta{
+    position:absolute;top:clamp(18px,3vw,40px);right:clamp(18px,3vw,44px);
+    text-align:right;font-family:'Space Mono',monospace;font-size:10.5px;
+    letter-spacing:.22em;color:var(--muted);line-height:1.9;text-transform:uppercase;
+  }
+  .meta b{color:var(--ink);font-weight:700}
+
+  .caption{
+    position:absolute;left:clamp(18px,3vw,44px);bottom:clamp(20px,3.4vw,46px);
+    max-width:min(46ch,60vw);
+  }
+  .caption h1{
+    font-weight:500;font-size:clamp(21px,2.5vw,31px);line-height:1.08;
+    letter-spacing:.005em;
+  }
+  .caption p{
+    margin-top:12px;font-family:'Space Mono',monospace;font-size:10.5px;
+    letter-spacing:.16em;color:var(--muted);line-height:1.85;text-transform:uppercase;
+  }
+
+  .controls{
+    position:absolute;right:clamp(18px,3vw,44px);bottom:clamp(20px,3.4vw,46px);
+    display:flex;align-items:center;gap:14px;font-family:'Space Mono',monospace;
+  }
+  .controls .stat{
+    font-size:9.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;
+    min-width:118px;text-align:right;
+  }
+  .controls .stat b{color:var(--ink);font-weight:700}
+  .btn{
+    font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink);background:transparent;
+    border:1px solid var(--line);padding:11px 18px;border-radius:2px;cursor:pointer;
+    transition:background .35s ease,color .35s ease,border-color .35s ease,transform .2s ease;
+  }
+  .btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+  /* reveal-on-load for chrome */
+  .chrome .brand,.chrome .meta,.chrome .caption,.chrome .controls{
+    opacity:0;transform:translateY(10px);
+    transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.2,.7,.2,1);
+  }
+  .chrome.ready .brand{opacity:1;transform:none;transition-delay:.15s}
+  .chrome.ready .meta{opacity:1;transform:none;transition-delay:.35s}
+  .chrome.ready .caption{opacity:1;transform:none;transition-delay:.55s}
+  .chrome.ready .controls{opacity:1;transform:none;transition-delay:.75s}
+
+  @media (max-width:720px){
+    .meta{font-size:9px}
+    .caption{max-width:78vw}
+    .controls{flex-direction:column;align-items:flex-end;gap:10px}
+    .controls .stat{min-width:0}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .wash{animation:none}
+    .chrome .brand,.chrome .meta,.chrome .caption,.chrome .controls{transition:none;opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="wash"></div>
+    <canvas id="c"></canvas>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+
+    <div class="chrome" id="chrome">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="wm">Ink Well<small>Precision Drip</small></span>
+      </div>
+
+      <div class="meta">
+        <div>North Light <b>· 5500K</b></div>
+        <div>Viscosity <b>10×</b> slow-mo</div>
+        <div>Archival <b>№ 001</b></div>
+      </div>
+
+      <div class="caption">
+        <h1>The moment of creation — before the record, only the potential of the drop.</h1>
+        <p>Deep black fluid · surface tension · a ripple resolving into order</p>
+      </div>
+
+      <div class="controls">
+        <div class="stat" id="stat">Phase <b>—</b></div>
+        <button class="btn" id="replay">Replay Drop</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const chrome = document.getElementById('chrome');
+  const statEl = document.getElementById('stat');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,DPR=1;
+  let wellCX=0, wellCY=0, wellRX=0, wellRY=0, wellDepth=0, rimThick=0;
+  let penX=0, penTipY=0, penLen=0, penAngle=0, tipRadius=0;
+  let textFont='', textBaselineY=0;
+  let off, offCtx, textCanvas, textCtx, tW, tH;
+
+  // ---- phase timeline (ms) ----
+  const PHASE = {
+    formation: 3000, swell: 1400, break: 950, fall: 1250,
+    impact: 900, settle: 3200, rest: 1600
+  };
+  const T = {
+    swell: PHASE.formation,
+    dropStart: PHASE.formation + PHASE.swell,
+    impact: PHASE.formation + PHASE.swell + PHASE.break + PHASE.fall,
+    settle: PHASE.impact + PHASE.impact,
+    rest: PHASE.settle + PHASE.settle,
+    loop: PHASE.settle + PHASE.settle + PHASE.rest
+  };
+
+  // ---- helpers ----
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeInOut=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  const easeIn=t=>t*t;
+  const smoothstep=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+
+  // ---- ripple state ----
+  let ripples = [];
+  function addRipple(){
+    ripples.push({t:0, amp:1, speed:0.00028, freq:0.030, damp:0.00042});
+  }
+  // vertical displacement of the ink surface at radial distance r (px)
+  function surfaceOffset(r){
+    let o=0;
+    for(const rp of ripples){
+      const front = rp.t*rp.speed*1000;
+      if(r>front) continue;
+      const x = r*rp.freq;
+      const env = Math.exp(-r*0.0016)*Math.exp(-rp.t*rp.damp*1000);
+      o += Math.cos(x)*rp.amp*env;
+    }
+    return o;
+  }
+  // radial ripple factor for the revealed text
+  function rippleText(r){
+    let o=0;
+    for(const rp of ripples){
+      const front = rp.t*rp.speed*1000;
+      if(r>front) continue;
+      const x = r*rp.freq;
+      const env = Math.exp(-r*0.0016)*Math.exp(-rp.t*rp.damp*1000);
+      o += Math.cos(x)*rp.amp*env;
+    }
+    return o;
+  }
+
+  // ---- sizing ----
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.floor(W*DPR); canvas.height = Math.floor(H*DPR);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    const mobile = W<720;
+    wellRX = Math.min(W*0.40, H*0.46, 360);
+    wellRY = wellRX*0.30;
+    wellCX = W*0.5;
+    wellCY = H*0.63;
+    wellDepth = wellRY*1.5;
+    rimThick = Math.max(6, wellRX*0.03);
+
+    // pen geometry (top-right, angled toward well)
+    penX = W*0.74; penTipY = H*0.17;
+    penLen = Math.max(210, H*0.42);
+    penAngle = -0.62; // radians, pointing down-left toward well
+    tipRadius = Math.max(4.5, wellRX*0.02);
+
+    // offscreen buffer for ink surface + text reveal
+    off = document.createElement('canvas');
+    off.width = Math.floor(W*DPR); off.height = Math.floor(H*DPR);
+    offCtx = off.getContext('2d');
+
+    // text canvas
+    const fs = Math.max(40, Math.min(W*0.26, H*0.24));
+    textFont = `500 ${fs}px 'EB Garamond', Georgia, serif`;
+    tW = Math.floor(W*DPR); tH = Math.floor(H*DPR);
+    textCanvas = document.createElement('canvas');
+    textCanvas.width=tW; textCanvas.height=tH;
+    textCtx = textCanvas.getContext('2d');
+    textCtx.setTransform(DPR,0,0,DPR,0,0);
+    textCtx.font = textFont;
+    textCtx.textAlign='center'; textCtx.textBaseline='middle';
+    textCtx.fillStyle='#000';
+    textCtx.fillText('INDEX', wellCX, wellCY);
+    textBaselineY = wellCY;
+  }
+
+  // ---- pen drawing ----
+  function drawPen(){
+    ctx.save();
+    ctx.translate(penX, penTipY);
+    ctx.rotate(penAngle);
+    const len = penLen;
+    const wTip = tipRadius*1.5;
+    const wBody = tipRadius*4.2;
+
+    // body shadow (soft)
+    ctx.shadowColor='rgba(5,5,5,.28)'; ctx.shadowBlur=18; ctx.shadowOffsetX=-6; ctx.shadowOffsetY=10;
+
+    // glass body — vertical gradient across width (x-axis local)
+    const g = ctx.createLinearGradient(0,-wBody,0,wBody);
+    g.addColorStop(0,'rgba(255,255,255,.95)');
+    g.addColorStop(0.35,'rgba(210,212,214,.85)');
+    g.addColorStop(0.55,'rgba(150,154,158,.9)');
+    g.addColorStop(0.8,'rgba(96,100,104,.95)');
+    g.addColorStop(1,'rgba(58,62,66,1)');
+
+    // taper from nib (local y=0 at tip) up to body top (local y=-len)
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(-wTip, -len*0.10);
+    ctx.lineTo(-wBody, -len);
+    ctx.lineTo(wBody, -len);
+    ctx.lineTo(wTip, -len*0.10);
+    ctx.closePath();
+    ctx.fillStyle=g; ctx.fill();
+    ctx.shadowColor='transparent';
+
+    // glass specular streak
+    ctx.beginPath();
+    ctx.moveTo(-wTip*0.4,-len*0.12);
+    ctx.lineTo(-wBody*0.35,-len*0.98);
+    ctx.lineTo(-wBody*0.05,-len*0.98);
+    ctx.lineTo(-wTip*0.05,-len*0.12);
+    ctx.closePath();
+    ctx.fillStyle='rgba(255,255,255,.6)'; ctx.fill();
+
+    // nib slit + ink residue on the tip
+    ctx.beginPath();
+    ctx.moveTo(0,-len*0.11); ctx.lineTo(0,-len*0.02);
+    ctx.strokeStyle='rgba(5,5,5,.55)'; ctx.lineWidth=1.4; ctx.stroke();
+
+    // ink bead clinging to the very tip
+    const bead = tipRadius*1.15;
+    const bg = ctx.createRadialGradient(-bead*0.3,-bead*0.3,bead*0.1, 0,0,bead);
+    bg.addColorStop(0,'#3a3a3a'); bg.addColorStop(0.5,'#0a0a0a'); bg.addColorStop(1,'#050505');
+    ctx.beginPath(); ctx.arc(0,0,bead,0,Math.PI*2); ctx.fillStyle=bg; ctx.fill();
+    ctx.restore();
+  }
+
+  // ---- drop drawing (world coords) ----
+  function drawDrop(cx,cy,rx,ry){
+    // neck connection to pen tip while attached
+    // (handled by caller)
+    const g = ctx.createRadialGradient(cx-rx*0.35, cy-ry*0.45, rx*0.1, cx, cy, rx*1.15);
+    g.addColorStop(0,'#4a4a4a');
+    g.addColorStop(0.35,'#1A1A1A');
+    g.addColorStop(0.75,'#080808');
+    g.addColorStop(1,'#050505');
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+    ctx.fillStyle=g; ctx.fill();
+
+    // glossy highlight
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    const hg = ctx.createRadialGradient(cx-rx*0.4,cy-ry*0.5,1, cx-rx*0.4,cy-ry*0.5, rx*0.55);
+    hg.addColorStop(0,'rgba(255,255,255,.55)');
+    hg.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.ellipse(cx-rx*0.4,cy-ry*0.5,rx*0.42,ry*0.30,-0.4,0,Math.PI*2);
+    ctx.fillStyle=hg; ctx.fill();
+    ctx.restore();
+
+    // rim darkening
+    ctx.beginPath();
+    ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2);
+    ctx.strokeStyle='rgba(5,5,5,.5)'; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // ---- well drawing ----
+  function drawWell(){
+    // cast shadow
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(wellCX+10, wellCY+wellRY*0.55, wellRX*1.02, wellRY*0.55,0,0,Math.PI*2);
+    const sh=ctx.createRadialGradient(wellCX,wellCY+wellRY*0.55,wellRX*0.2,wellCX,wellCY+wellRY*0.55,wellRX*1.1);
+    sh.addColorStop(0,'rgba(5,5,5,.22)'); sh.addColorStop(1,'rgba(5,5,5,0)');
+    ctx.fillStyle=sh; ctx.fill();
+    ctx.restore();
+
+    // outer glass rim
+    ctx.beginPath();
+    ctx.ellipse(wellCX, wellCY, wellRX+rimThick, wellRY+rimThick,0,0,Math.PI*2);
+    const rg=ctx.createLinearGradient(wellCX-wellRX,wellCY-wellRY,wellCX+wellRX,wellCY+wellRY);
+    rg.addColorStop(0,'#e9eaec'); rg.addColorStop(0.5,'#cfd2d5'); rg.addColorStop(1,'#9a9ea2');
+    ctx.fillStyle=rg; ctx.fill();
+
+    // inner mouth (dark)
+    ctx.beginPath();
+    ctx.ellipse(wellCX, wellCY, wellRX, wellRY,0,0,Math.PI*2);
+    ctx.fillStyle='#040404'; ctx.fill();
+  }
+
+  // ---- ink surface (clipped to well mouth) ----
+  function drawInkSurface(t){
+    offCtx.setTransform(DPR,0,0,DPR,0,0);
+    offCtx.clearRect(0,0,W,H);
+    offCtx.save();
+    offCtx.beginPath();
+    offCtx.ellipse(wellCX, wellCY, wellRX, wellRY,0,0,Math.PI*2);
+    offCtx.clip();
+
+    // base ink fill
+    offCtx.fillStyle='#050505';
+    offCtx.fillRect(wellCX-wellRX, wellCY-wellRY, wellRX*2, wellRY*2);
+
+    // concentric ripple rings (radial displacement of vector points)
+    const rings = 16;
+    for(let i=0;i<rings;i++){
+      const rr = wellRX*(0.06 + i/rings*0.98);
+      const offv = surfaceOffset(rr);
+      const y = wellCY + offv*0.9;
+      offCtx.beginPath();
+      offCtx.ellipse(wellCX, y, rr, rr*(wellRY/wellRX),0,0,Math.PI*2);
+      const a = clamp(0.16 - i*0.008, 0, 0.16) * (offv>0?1:0.55);
+      offCtx.strokeStyle=`rgba(255,255,255,${a})`;
+      offCtx.lineWidth=1.1; offCtx.stroke();
+    }
+
+    // north-light sheen across the surface
+    const sheen = offCtx.createLinearGradient(wellCX-wellRX, wellCY-wellRY, wellCX+wellRX, wellCY+wellRY);
+    sheen.addColorStop(0,'rgba(255,255,255,.10)');
+    sheen.addColorStop(0.4,'rgba(255,255,255,.02)');
+    sheen.addColorStop(1,'rgba(255,255,255,0)');
+    offCtx.fillStyle=sheen;
+    offCtx.fillRect(wellCX-wellRX, wellCY-wellRY, wellRX*2, wellRY*2);
+
+    // ---- reveal INDEX via radial ripple distortion ----
+    const impactP = clamp((t - T.impact)/PHASE.impact, 0, 1);
+    const reveal = smoothstep(T.impact+PHASE.impact*0.15, T.settle+PHASE.settle*0.5, t);
+    if(reveal>0.001){
+      const alpha = reveal;
+      const strip = 3;
+      const step = Math.max(2, Math.round(4/DPR));
+      const x0 = wellCX-wellRX, x1 = wellCX+wellRX;
+      offCtx.save();
+      offCtx.globalCompositeOperation='source-over';
+      for(let sy=0; sy<wellRY*2; sy+=step){
+        const worldY = wellCY-wellRY + sy;
+        const dy = worldY - wellCY;
+        const dxHalf = wellRX*Math.sqrt(Math.max(0,1-(dy/wellRY)*(dy/wellRY)));
+        if(dxHalf<2) continue;
+        const r = Math.abs(dy);
+        const disp = rippleText(r)*8;
+        const srcY = (worldY - disp)*DPR;
+        // draw this strip of the text canvas, shifted by disp
+        offCtx.drawImage(textCanvas,
+          x0*DPR, srcY, (x1-x0)*DPR, step*DPR,
+          x0, worldY + disp*0.6, x1-x0, step);
+      }
+      offCtx.restore();
+
+      // crisp pass once fully settled
+      const crisp = smoothstep(T.settle+PHASE.settle*0.55, T.settle+PHASE.settle*0.95, t);
+      if(crisp>0){
+        offCtx.save();
+        offCtx.globalAlpha = crisp;
+        offCtx.drawImage(textCanvas, 0,0,tW,tH, 0,0,W,H);
+        offCtx.restore();
+      }
+    }
+
+    offCtx.restore();
+
+    // composite offscreen onto main
+    ctx.save();
+    ctx.drawImage(off, 0,0,off.width,off.height, 0,0,W,H);
+    ctx.restore();
+
+    // rim inner highlight (glass edge over ink)
+    ctx.beginPath();
+    ctx.ellipse(wellCX, wellCY, wellRX, wellRY,0,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.lineWidth=1.4; ctx.stroke();
+  }
+
+  // ---- main loop ----
+  let startTime=null, lastT=0, frame=0;
+
+  function phaseLabel(t){
+    if(t<T.swell) return 'Formation';
+    if(t<T.dropStart) return 'Swell';
+    if(t<T.impact) return t<T.dropStart+PHASE.break ? 'Break' : 'Fall';
+    if(t<T.settle) return 'Impact';
+    if(t<T.rest) return 'Settle';
+    return 'Rest';
+  }
+
+  function draw(now){
+    if(startTime===null) startTime=now;
+    let t = now-startTime;
+    if(t>=T.loop){ startTime=now; t=0; ripples=[]; }
+
+    // update ripples
+    const dt = now-lastT; lastT=now;
+    for(const rp of ripples){ rp.t += dt; }
+    ripples = ripples.filter(rp=>rp.t < 9000);
+
+    // trigger ripple at impact
+    if(t>=T.impact && !draw._fired){ addRipple(); draw._fired=true; }
+    if(t<T.impact) draw._fired=false;
+
+    ctx.clearRect(0,0,W,H);
+
+    // well + ink
+    drawWell();
+    drawInkSurface(t);
+
+    // pen
+    drawPen();
+
+    // drop state machine
+    const tipWorldX = penX + Math.cos(penAngle+Math.PI/2)*0; // tip approx at penX,penTipY
+    const anchorX = penX + Math.sin(penAngle)*0;
+    // recompute tip world position: tip is at local (0,0) after rotate
+    const twx = penX; const twy = penTipY;
+
+    if(t < T.swell){
+      // formation: bead grows on tip
+      const p = t/T.swell;
+      const r = lerp(tipRadius*1.1, tipRadius*2.6, easeInOut(p));
+      drawDrop(twx, twy + r*0.3, r*0.9, r*1.05);
+    } else if(t < T.dropStart){
+      // swell: bead elongates downward, neck thinning
+      const p = (t-T.swell)/PHASE.swell;
+      const e = easeIn(p);
+      const r = lerp(tipRadius*2.6, tipRadius*3.1, p);
+      const dropY = twy + r*0.4 + e*r*1.6;
+      // neck
+      ctx.save();
+      ctx.fillStyle='#070707';
+      ctx.beginPath();
+      const neckTop = twy + r*0.2;
+      const neckBot = dropY - r*0.6;
+      const neckW = lerp(r*0.7, r*0.18, e);
+      ctx.moveTo(twx-neckW, neckTop);
+      ctx.quadraticCurveTo(twx, (neckTop+neckBot)/2, twx-neckW*0.5, neckBot);
+      ctx.lineTo(twx+neckW*0.5, neckBot);
+      ctx.quadraticCurveTo(twx, (neckTop+neckBot)/2, twx+neckW, neckTop);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      drawDrop(twx, dropY, r*0.92, r*1.12);
+    } else if(t < T.impact){
+      // fall
+      const p = (t-T.dropStart)/PHASE.fall;
+      const e = easeIn(p);
+      const startY = twy + tipRadius*3.1*2;
+      const endY = wellCY - wellRY*0.15;
+      const y = lerp(startY, endY, e);
+      const stretch = 1 + 0.55*Math.sin(Math.min(1,p*1.1)*Math.PI*0.5);
+      const rx = tipRadius*2.7/stretch;
+      const ry = tipRadius*3.1*stretch;
+      drawDrop(twx, y, rx, ry);
+      // recoil bead on pen
+      const recoil = lerp(tipRadius*1.0, tipRadius*1.6, smoothstep(0,0.3,p));
+      drawDrop(twx, twy+recoil*0.3, recoil*0.85, recoil);
+    } else if(t < T.settle){
+      // impact splash: small rebounding bead + expanding crown handled by ripples
+      const p=(t-T.impact)/PHASE.impact;
+      const r = tipRadius*1.4*(1-p);
+      if(r>0.3) drawDrop(twx, wellCY-wellRY*0.2 - Math.sin(p*Math.PI)*tipRadius*2, r*0.9, r*1.1);
+    }
+
+    // HUD
+    if((frame++ % 6)===0){
+      statEl.innerHTML = 'Phase <b>'+phaseLabel(t)+'</b>';
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  // ---- static fallback for reduced motion ----
+  function renderStatic(){
+    ctx.clearRect(0,0,W,H);
+    drawWell();
+    drawInkSurface(T.settle + PHASE.settle*0.96);
+    drawPen();
+    drawDrop(penX, penTipY+tipRadius*1.4, tipRadius*1.1, tipRadius*1.2);
+    statEl.innerHTML='Phase <b>Settled</b>';
+  }
+
+  function boot(){
+    resize();
+    chrome.classList.add('ready');
+    if(reduce){ renderStatic(); }
+    else { requestAnimationFrame(draw); }
+  }
+
+  // fonts may load after first paint -> re-render
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(()=>{ resize(); if(reduce) renderStatic(); });
+  }
+
+  window.addEventListener('resize', ()=>{ resize(); if(reduce) renderStatic(); });
+
+  document.getElementById('replay').addEventListener('click', ()=>{
+    if(reduce){ renderStatic(); return; }
+    startTime=null; ripples=[]; draw._fired=false;
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

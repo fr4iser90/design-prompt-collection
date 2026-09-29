@@ -1,0 +1,30 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 314400
+gen_ms: 314400
+ttft_ms: 396
+queue_wait_ms: 118
+wall_ms: 314971
+rejected_at: "2026-09-28T23:53:45.619Z"
+last_review_score: 3
+last_review_summary: "The design fails to implement the core 'paper document' concept, presenting a dark industrial background instead of the required aged paper manifest."
+last_reject_reason: "score_3_below_5"
+review_score: 8
+review_summary: "Strong adherence to the 'industrial document' aesthetic with excellent typography and texture simulation."
+reviewed_at: "2026-09-29T00:00:22.022Z"
+review_issues:
+  - "The 'APPROVED' stamp text is not visible in the static state (likely hidden until interaction), which makes the target area look slightly empty."
+  - "The footer text overlaps with the dashed verification box, creating a minor visual collision."

@@ -1,0 +1,32 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 2
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 89244
+gen_ms: 89244
+ttft_ms: 336
+queue_wait_ms: 103
+wall_ms: 89749
+rejected_at: "2026-09-29T00:48:40.511Z"
+last_review_score: 2
+last_review_summary: "The screenshot captures the very beginning of the animation sequence, showing an empty asphalt background with only a tiny paint marker, failing to display the core 'text reveal' or 'lane marking' content."
+last_reject_reason: "score_2_below_5"
+review_score: 6
+review_summary: "Captures the core concept of the reveal animation but lacks the specific 'asphalt' texture and 'paint' details requested."
+reviewed_at: "2026-09-29T00:50:36.399Z"
+review_issues:
+  - "Background is a smooth gray gradient rather than the requested high-resolution asphalt texture with grit/noise."
+  - "The yellow line is missing from the visible area (only a spray dot is visible), failing to show the 'thick line' constraint."
+  - "The text reveal is cut off mid-word ('TRA'), making the composition feel incomplete."
+  - "Typography is generic sans-serif (Inter/Helvetica) rather than a distinct display face, though acceptable for the brief."

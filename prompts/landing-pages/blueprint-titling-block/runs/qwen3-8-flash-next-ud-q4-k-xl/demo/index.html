@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft & Scale — Structural Engineering Consultancy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Roboto+Condensed:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#003366;
+  --white:#FFFFFF;
+  --highlight:#0055AA;
+  --fade:#CCCCCC;
+  --line:rgba(255,255,255,.30);
+  --line-soft:rgba(255,255,255,.14);
+  --line-faint:rgba(255,255,255,.07);
+  --grid:10px;
+  --pad:clamp(14px,2.2vw,26px);
+  --font-h:'Roboto Condensed',Arial,Helvetica,sans-serif;
+  --font-d:'Architects Daughter',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--blue);
+  color:var(--white);
+  font-family:var(--font-h);
+  font-weight:400;
+  line-height:1.4;
+  overflow-x:hidden;
+  position:relative;
+  min-height:100vh;
+}
+::selection{background:var(--white);color:var(--blue)}
+a{color:inherit;text-decoration:none}
+
+/* ---------- Blueprint sheet background ---------- */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--line-faint) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line-faint) 1px,transparent 1px);
+  background-size:var(--grid) var(--grid);
+}
+.bg-grid.major{
+  background-image:
+    linear-gradient(rgba(255,255,255,.11) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.11) 1px,transparent 1px);
+  background-size:100px 100px;
+}
+.bg-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 70% 20%,rgba(0,60,120,.55),transparent 60%),
+             radial-gradient(120% 120% at 0% 100%,rgba(0,0,0,.35),transparent 55%);
+}
+.bg-draft{position:absolute;inset:0;width:100%;height:100%}
+.dl{fill:none;stroke:rgba(255,255,255,.20);stroke-width:1;vector-effect:non-scaling-stroke}
+.dl.thin{stroke:rgba(255,255,255,.10)}
+.dl.accent{stroke:rgba(255,255,255,.42)}
+.dl.dash{stroke-dasharray:6 8}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.4s cubic-bezier(.6,.05,.2,1)}
+.drawn .draw{stroke-dashoffset:0}
+.drawn .draw:nth-child(2n){transition-delay:.12s}
+.drawn .draw:nth-child(3n){transition-delay:.24s}
+.drawn .draw:nth-child(5n){transition-delay:.36s}
+
+/* ---------- Shared type helpers ---------- */
+.lbl{font-family:var(--font-d);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fade);line-height:1}
+.val{font-family:var(--font-h);font-weight:400;color:var(--white)}
+.mono{font-family:var(--font-h);font-weight:300;letter-spacing:.08em}
+.tick{font-family:var(--font-h);font-weight:300;font-size:10px;letter-spacing:.18em;color:var(--fade)}
+
+/* ---------- Registration marks ---------- */
+.reg{position:fixed;z-index:6;width:26px;height:26px;pointer-events:none;opacity:.55}
+.reg::before,.reg::after{content:"";position:absolute;background:var(--white)}
+.reg::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-.5px)}
+.reg::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-.5px)}
+.reg i{position:absolute;left:50%;top:50%;width:9px;height:9px;border:1px solid var(--white);border-radius:50%;transform:translate(-50%,-50%)}
+.reg.tl{top:10px;left:10px}.reg.tr{top:10px;right:10px}.reg.bl{bottom:10px;left:10px}.reg.br{bottom:10px;right:10px}
+
+/* ---------- Sheet frame + revision stamp ---------- */
+.frame{position:fixed;inset:26px;z-index:5;pointer-events:none;border:1px solid var(--line)}
+.frame::before,.frame::after{content:"";position:absolute;background:var(--line)}
+.frame::before{top:50%;left:-6px;width:12px;height:1px;transform:translateY(-.5px)}
+.frame::after{left:50%;top:-6px;height:12px;width:1px;transform:translateX(-.5px)}
+.rev{
+  position:fixed;top:26px;right:26px;z-index:7;
+  border:2px solid var(--white);padding:6px 12px 7px;text-align:center;
+  transform:rotate(-6deg);background:rgba(0,51,102,.55);
+}
+.rev b{display:block;font-family:var(--font-h);font-weight:700;font-size:15px;letter-spacing:.12em;line-height:1}
+.rev span{display:block;font-family:var(--font-d);font-size:9px;letter-spacing:.14em;color:var(--fade);margin-top:2px}
+
+/* ---------- Global crosshair ---------- */
+.xh{position:fixed;top:0;left:0;width:100%;height:100%;z-index:4;pointer-events:none;opacity:0;transition:opacity .18s}
+.xh span{position:absolute;background:rgba(255,255,255,.55)}
+.xh .vx{top:0;width:1px;height:100%;transform:translateX(-.5px)}
+.xh .hz{left:0;height:1px;width:100%;transform:translateY(-.5px)}
+.xh .ring{position:absolute;width:16px;height:16px;border:1px solid var(--white);border-radius:50%;transform:translate(-50%,-50%)}
+
+/* ---------- Layout ---------- */
+main{position:relative;z-index:2;max-width:1360px;margin:0 auto;padding:clamp(56px,7vw,96px) var(--pad) 0}
+section{margin-bottom:clamp(48px,7vw,96px)}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px;flex-wrap:wrap}
+.sec-head .no{font-family:var(--font-h);font-weight:700;font-size:13px;letter-spacing:.2em;color:var(--white);border:1px solid var(--line);padding:3px 8px}
+.sec-head h2{font-family:var(--font-h);font-weight:700;font-size:clamp(16px,2.4vw,22px);letter-spacing:.14em;text-transform:uppercase}
+.sec-head .rule{flex:1;min-width:40px;border-top:1px dashed var(--line-soft)}
+.sec-head .ref{font-family:var(--font-d);font-size:11px;color:var(--fade);letter-spacing:.1em}
+
+/* ---------- Masthead ---------- */
+.masthead{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:clamp(26px,4vw,44px)}
+.wordmark{font-family:var(--font-h);font-weight:700;font-size:clamp(22px,3.4vw,34px);letter-spacing:.06em;text-transform:uppercase;line-height:.95}
+.wordmark .amp{color:var(--fade);font-weight:300}
+.wordmark small{display:block;font-family:var(--font-d);font-weight:400;font-size:11px;letter-spacing:.28em;color:var(--fade);margin-top:7px;text-transform:uppercase}
+.mast-meta{display:flex;gap:26px;flex-wrap:wrap}
+.mast-meta div{text-align:right}
+.mast-meta .lbl{margin-bottom:5px}
+.mast-meta .val{font-weight:300;font-size:13px;letter-spacing:.1em}
+
+/* ---------- Hero sheet ---------- */
+.hero-sheet{position:relative;border:1px solid var(--line);min-height:clamp(520px,66vh,660px);display:flex;flex-direction:column}
+.hero-top{display:flex;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.hero-top .lbl{margin-bottom:4px}
+.hero-top .val{font-weight:300;font-size:13px;letter-spacing:.1em}
+.hero-stage{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:20px}
+.hero-stage .wire{position:absolute;inset:0;width:100%;height:100%}
+.hero-title{position:relative;z-index:2;text-align:center;max-width:760px}
+.hero-title .lbl{margin-bottom:14px}
+.hero-title h1{font-family:var(--font-h);font-weight:700;text-transform:uppercase;line-height:.9;letter-spacing:.01em;font-size:clamp(34px,7.4vw,86px)}
+.hero-title h1 .l2{display:block;color:var(--white);-webkit-text-stroke:1.5px var(--white);color:transparent}
+.hero-title p{font-weight:300;font-size:clamp(13px,1.6vw,16px);letter-spacing:.06em;color:var(--fade);max-width:520px;margin:20px auto 0;line-height:1.55}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;border:1px solid var(--white);
+  padding:12px 22px;font-family:var(--font-h);font-weight:700;font-size:13px;letter-spacing:.16em;
+  text-transform:uppercase;background:transparent;color:var(--white);cursor:pointer;transition:background .18s,color .18s,box-shadow .18s;
+}
+.btn.solid{background:var(--white);color:var(--blue)}
+.btn:hover{background:var(--highlight);color:var(--white);border-color:var(--highlight);box-shadow:inset 0 0 0 1px var(--white)}
+.btn.solid:hover{background:var(--white);color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.hero-foot{display:flex;justify-content:space-between;gap:16px;padding:12px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.hero-foot span{font-family:var(--font-h);font-weight:300;font-size:11px;letter-spacing:.14em;color:var(--fade)}
+
+/* ---------- Fields grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line)}
+.field{
+  position:relative;background:var(--blue);padding:16px 16px 18px;min-height:112px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:10px;overflow:hidden;
+  transition:background .2s;
+}
+.field .lbl{display:block}
+.field .num{position:absolute;top:8px;right:10px;font-family:var(--font-h);font-weight:300;font-size:10px;color:rgba(255,255,255,.28);letter-spacing:.1em}
+.field .big{font-family:var(--font-h);font-weight:700;font-size:clamp(20px,2.6vw,30px);letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.field .sub{font-weight:300;font-size:12.5px;color:var(--fade);letter-spacing:.04em;line-height:1.5}
+.field:hover{background:var(--highlight)}
+.field:hover .cross{opacity:1}
+.field .cross{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .18s}
+.field .cross::before{content:"";position:absolute;top:50%;left:0;width:100%;height:1px;background:rgba(255,255,255,.6);transform:translateY(-.5px)}
+.field .cross::after{content:"";position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(255,255,255,.6);transform:translateX(-.5px)}
+.field .icon{position:absolute;bottom:12px;right:12px;width:44px;height:44px;opacity:.18;transition:opacity .2s}
+.field:hover .icon{opacity:.85}
+.field .icon path,.field .icon line,.field .icon polyline,.field .icon rect,.field .icon circle{fill:none;stroke:var(--white);stroke-width:1.4;stroke-linecap:square;stroke-linejoin:miter}
+
+/* span utilities */
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c6{grid-column:span 6}.c12{grid-column:span 12}
+
+/* ---------- Team ---------- */
+.team .field{min-height:150px;align-items:flex-start}
+.team .ini{font-family:var(--font-h);font-weight:700;font-size:clamp(30px,4.4vw,52px);letter-spacing:.02em;line-height:1}
+.team .nm{font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.team .role{font-family:var(--font-d);font-size:11px;letter-spacing:.08em;color:var(--fade);text-transform:uppercase}
+.team .code{font-family:var(--font-h);font-weight:300;font-size:10px;letter-spacing:.14em;color:rgba(255,255,255,.4)}
+
+/* ---------- Contact ---------- */
+.contact-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line)}
+.contact-grid .field{min-height:0}
+.contact-grid .info{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.contact-grid .info .val{font-weight:300;font-size:14px;letter-spacing:.06em}
+.form{grid-column:span 7;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line-soft)}
+.form .cell{background:var(--blue);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.form .cell.full{grid-column:1 / -1}
+.form label{font-family:var(--font-d);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fade)}
+.form input,.form textarea{
+  background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--white);
+  font-family:var(--font-h);font-weight:300;font-size:15px;letter-spacing:.04em;padding:6px 0;outline:none;
+}
+.form textarea{resize:vertical;min-height:60px}
+.form input:focus,.form textarea:focus{border-bottom-color:var(--white);background:rgba(0,85,170,.35)}
+.form .submit{grid-column:1 / -1;background:var(--blue);padding:16px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.form .submit .hint{font-family:var(--font-d);font-size:11px;color:var(--fade);letter-spacing:.08em}
+.form .submit .btn{width:100%;max-width:260px;justify-content:center}
+.form .submit .btn:hover{background:var(--white);color:var(--blue);border-color:var(--white);box-shadow:inset 0 0 0 1px var(--blue)}
+.form .submit .btn.solid{background:var(--white);color:var(--blue)}
+
+/* ---------- Footer ---------- */
+footer{position:relative;z-index:2;border-top:1px solid var(--line);margin-top:clamp(40px,6vw,72px)}
+.foot{max-width:1360px;margin:0 auto;padding:22px var(--pad);display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
+.foot .lbl{margin-bottom:4px}
+.foot .val{font-weight:300;font-size:12px;letter-spacing:.1em;color:var(--fade)}
+.foot .brand{font-family:var(--font-h);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ---------- Entrance reveal ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- Responsive ---------- */
+@media(max-width:900px){
+  .c3{grid-column:span 6}.c4{grid-column:span 6}
+  .contact-grid .info{grid-column:span 12}
+  .form{grid-column:span 12}
+}
+@media(max-width:560px){
+  .c3,.c4{grid-column:span 12}
+  .form{grid-template-columns:1fr}
+  .rev{top:14px;right:14px;transform:rotate(-4deg) scale(.9)}
+  .frame{inset:16px}
+  .reg{width:20px;height:20px}
+  .mast-meta{gap:16px}
+  .mast-meta div{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  .reveal{opacity:1;transform:none}
+  .draw{stroke-dashoffset:0!important}
+  .xh{display:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- Background layers -->
+<div class="bg" aria-hidden="true">
+  <div class="bg-grid"></div>
+  <div class="bg-grid major"></div>
+  <svg class="bg-draft" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+    <!-- structural wireframe -->
+    <line class="dl draw" x1="120" y1="760" x2="120" y2="120"/>
+    <line class="dl draw" x1="360" y1="760" x2="360" y2="120"/>
+    <line class="dl draw" x1="600" y1="760" x2="600" y2="90"/>
+    <line class="dl draw" x1="840" y1="760" x2="840" y2="120"/>
+    <line class="dl draw" x1="1080" y1="760" x2="1080" y2="120"/>
+    <line class="dl thin draw" x1="60" y1="640" x2="1140" y2="640"/>
+    <line class="dl thin draw" x1="60" y1="520" x2="1140" y2="520"/>
+    <line class="dl thin draw" x1="60" y1="400" x2="1140" y2="400"/>
+    <line class="dl thin draw" x1="60" y1="280" x2="1140" y2="280"/>
+    <line class="dl thin draw" x1="60" y1="160" x2="1140" y2="160"/>
+    <!-- roof / truss -->
+    <polyline class="dl accent draw" points="120,120 600,40 1080,120"/>
+    <line class="dl thin draw" x1="360" y1="120" x2="600" y2="40"/>
+    <line class="dl thin draw" x1="840" y1="120" x2="600" y2="40"/>
+    <!-- diagonal bracing -->
+    <line class="dl draw" x1="120" y1="640" x2="360" y2="520"/>
+    <line class="dl draw" x1="360" y1="640" x2="120" y2="520"/>
+    <line class="dl draw" x1="840" y1="640" x2="1080" y2="520"/>
+    <line class="dl draw" x1="1080" y1="640" x2="840" y2="520"/>
+    <line class="dl dash draw" x1="360" y1="400" x2="600" y2="280"/>
+    <line class="dl dash draw" x1="600" y1="400" x2="360" y2="280"/>
+    <!-- dimension lines -->
+    <line class="dl accent draw" x1="120" y1="790" x2="600" y2="790"/>
+    <line class="dl accent draw" x1="600" y1="790" x2="1080" y2="790"/>
+    <line class="dl thin draw" x1="120" y1="782" x2="120" y2="798"/>
+    <line class="dl thin draw" x1="600" y1="782" x2="600" y2="798"/>
+    <line class="dl thin draw" x1="1080" y1="782" x2="1080" y2="798"/>
+  </svg>
+  <div class="bg-vignette"></div>
+</div>
+
+<!-- Registration marks -->
+<div class="reg tl" aria-hidden="true"><i></i></div>
+<div class="reg tr" aria-hidden="true"><i></i></div>
+<div class="reg bl" aria-hidden="true"><i></i></div>
+<div class="reg br" aria-hidden="true"><i></i></div>
+
+<!-- Sheet frame + revision stamp -->
+<div class="frame" aria-hidden="true"></div>
+<div class="rev" aria-hidden="true"><b>REV 03</b><span>ISSUED FOR CONSTRUCTION</span></div>
+
+<!-- Global crosshair -->
+<div class="xh" id="xh" aria-hidden="true"><span class="vx"></span><span class="hz"></span><span class="ring"></span></div>
+
+<main>
+  <!-- Masthead -->
+  <header class="masthead reveal">
+    <div class="wordmark">DRAFT <span class="amp">&amp;</span> SCALE
+      <small>Structural Engineering Consultancy</small>
+    </div>
+    <div class="mast-meta">
+      <div><div class="lbl">Sheet</div><div class="val">S-101</div></div>
+      <div><div class="lbl">Project No.</div><div class="val">DS-2024-118</div></div>
+      <div><div class="lbl">Scale</div><div class="val">1 : 100</div></div>
+      <div><div class="lbl">Date</div><div class="val">2024-06-14</div></div>
+    </div>
+  </header>
+
+  <!-- Hero sheet -->
+  <section class="hero-sheet reveal" aria-label="Project sheet">
+    <div class="hero-top">
+      <div><div class="lbl">Discipline</div><div class="val">STRUCTURAL / CIVIL</div></div>
+      <div><div class="lbl">Drawing Set</div><div class="val">01 — CONCEPT</div></div>
+      <div><div class="lbl">Zone</div><div class="val">SEISMIC CLASS D</div></div>
+      <div><div class="lbl">Units</div><div class="val">METRIC (SI)</div></div>
+    </div>
+
+    <div class="hero-stage">
+      <svg class="wire" viewBox="0 0 760 420" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <line class="dl draw" x1="90" y1="400" x2="90" y2="90"/>
+        <line class="dl draw" x1="240" y1="400" x2="240" y2="90"/>
+        <line class="dl draw" x1="390" y1="400" x2="390" y2="70"/>
+        <line class="dl draw" x1="540" y1="400" x2="540" y2="90"/>
+        <line class="dl draw" x1="690" y1="400" x2="690" y2="90"/>
+        <line class="dl thin draw" x1="40" y1="330" x2="740" y2="330"/>
+        <line class="dl thin draw" x1="40" y1="250" x2="740" y2="250"/>
+        <line class="dl thin draw" x1="40" y1="170" x2="740" y2="170"/>
+        <polyline class="dl accent draw" points="90,90 390,40 690,90"/>
+        <line class="dl draw" x1="90" y1="330" x2="240" y2="250"/>
+        <line class="dl draw" x1="240" y1="330" x2="90" y2="250"/>
+        <line class="dl draw" x1="540" y1="330" x2="690" y2="250"/>
+        <line class="dl draw" x1="690" y1="330" x2="540" y2="250"/>
+        <line class="dl accent draw" x1="90" y1="414" x2="390" y2="414"/>
+        <line class="dl accent draw" x1="390" y1="414" x2="690" y2="414"/>
+      </svg>
+      <div class="hero-title">
+        <div class="lbl">Project — Structural Design &amp; Verification</div>
+        <h1>We Draw It.<br><span class="l2">Then We Scale It.</span></h1>
+        <p>Precision structural engineering delivered as documented, code-compliant, build-ready data — from first sketch to final sign-off.</p>
+        <div class="hero-actions">
+          <a class="btn solid" href="#contact">Request a Quote</a>
+          <a class="btn" href="#services">View Capabilities</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-foot">
+      <span>SCALE 1:100</span>
+      <span>ZONE SEISMIC D</span>
+      <span>UNITS METRIC</span>
+      <span>ISSUED FOR CONSTRUCTION</span>
+      <span>SHEET 1 / 1</span>
+    </div>
+  </section>
+
+  <!-- Services as fields -->
+  <section id="services" aria-label="Capabilities">
+    <div class="sec-head reveal">
+      <span class="no">01</span>
+      <h2>Capabilities</h2>
+      <span class="rule"></span>
+      <span class="ref">SHEET S-102 / FIELDS 1–6</span>
+    </div>
+    <div class="grid reveal">
+      <div class="field c4"><span class="num">01</span><span class="lbl">Service</span>
+        <span class="big">Seismic Analysis</span>
+        <span class="sub">Dynamic response modelling, base shear &amp; drift checks per ASCE 7 / Eurocode 8.</span>
+        <svg class="icon" viewBox="0 0 44 44"><polyline points="2,26 8,26 12,12 16,38 20,8 24,32 28,20 32,26 42,26"/></svg>
+        <span class="cross"></span>
+      </div>
+      <div class="field c4"><span class="num">02</span><span class="lbl">Service</span>
+        <span class="big">Structural Framing</span>
+        <span class="sub">Steel &amp; concrete member sizing, connection design and load path verification.</span>
+        <svg class="icon" viewBox="0 0 44 44"><rect x="6" y="6" width="32" height="32"/><line x1="6" y1="16" x2="38" y2="16"/><line x1="6" y1="28" x2="38" y2="28"/><line x1="16" y1="6" x2="16" y2="38"/><line x1="28" y1="6" x2="28" y2="38"/></svg>
+        <span class="cross"></span>
+      </div>
+      <div class="field c4"><span class="num">03</span><span class="lbl">Service</span>
+        <span class="big">Wind Load</span>
+        <span class="sub">Envelope &amp; CFD-assisted pressure analysis for high-rise and long-span structures.</span>
+        <svg class="icon" viewBox="0 0 44 44"><path d="M4 16 H30 a6 6 0 1 0 -6 -6"/><path d="M4 24 H36 a6 6 0 1 1 -6 6"/><path d="M4 32 H22"/></svg>
+        <span class="cross"></span>
+      </div>
+      <div class="field c4"><span class="num">04</span><span class="lbl">Service</span>
+        <span class="big">Foundation</span>
+        <span class="sub">Shallow &amp; deep foundation design, settlement and bearing capacity assessment.</span>
+        <svg class="icon" viewBox="0 0 44 44"><line x1="4" y1="10" x2="40" y2="10"/><line x1="14" y1="10" x2="14" y2="38"/><line x1="30" y1="10" x2="30" y2="38"/><path d="M10 38 H18 M26 38 H34"/><line x1="4" y1="24" x2="40" y2="24" stroke-dasharray="3 3"/></svg>
+        <span class="cross"></span>
+      </div>
+      <div class="field c4"><span class="num">05</span><span class="lbl">Service</span>
+        <span class="big">FEA Modelling</span>
+        <span class="sub">Finite-element simulation, non-linear behaviour and progressive-collapse review.</span>
+        <svg class="icon" viewBox="0 0 44 44"><path d="M6 34 L22 8 L38 34 Z"/><line x1="14" y1="21" x2="30" y2="21"/><line x1="22" y1="8" x2="22" y2="34"/></svg>
+        <span class="cross"></span>
+      </div>
+      <div class="field c4"><span class="num">06</span><span class="lbl">Service</span>
+        <span class="big">Code Compliance</span>
+        <span class="sub">Independent peer review, permit documentation and authority liaison.</span>
+        <svg class="icon" viewBox="0 0 44 44"><rect x="8" y="4" width="28" height="36"/><line x1="14" y1="14" x2="30" y2="14"/><line x1="14" y1="22" x2="30" y2="22"/><polyline points="16,32 21,37 30,26"/></svg>
+        <span class="cross"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team as fields -->
+  <section class="team" aria-label="Team">
+    <div class="sec-head reveal">
+      <span class="no">02</span>
+      <h2>Engineers of Record</h2>
+      <span class="rule"></span>
+      <span class="ref">SHEET S-103 / PERSONNEL</span>
+    </div>
+    <div class="grid reveal">
+      <div class="field c3"><span class="num">EOR</span><span class="ini">M.O.</span>
+        <div><div class="nm">M. Okafor</div><div class="role">Principal Engineer</div><div class="code">PE #44821</div></div>
+        <span class="cross"></span>
+      </div>
+      <div class="field c3"><span class="num">EOR</span><span class="ini">R.K.</span>
+        <div><div class="nm">R. Kessler</div><div class="role">Seismic Lead</div><div class="code">SE #20977</div></div>
+        <span class="cross"></span>
+      </div>
+      <div class="field c3"><span class="num">EOR</span><span class="ini">T.N.</span>
+        <div><div class="nm">T. Nakamura</div><div class="role">FEA Specialist</div><div class="code">PE #51140</div></div>
+        <span class="cross"></span>
+      </div>
+      <div class="field c3"><span class="num">EOR</span><span class="ini">A.V.</span>
+        <div><div class="nm">A. Voss</div><div class="role">Foundation Lead</div><div class="code">PE #38602</div></div>
+        <span class="cross"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact as titling block -->
+  <section id="contact" aria-label="Contact">
+    <div class="sec-head reveal">
+      <span class="no">03</span>
+      <h2>Open a Drawing Set</h2>
+      <span class="rule"></span>
+      <span class="ref">SHEET S-104 / RFQ FORM</span>
+    </div>
+    <div class="contact-grid reveal">
+      <div class="field info c5">
+        <span class="lbl">Office</span>
+        <span class="val">14 Drafting Row, Suite 300<br>Meridian City, 40021</span>
+        <span class="lbl" style="margin-top:8px">Direct</span>
+        <span class="val">+1 (555) 018-4400<br>studio@draftandscale.co</span>
+      </div>
+      <form class="form c7" id="rfq">
+        <div class="cell"><label for="f-name">Name</label><input id="f-name" name="name" type="text" placeholder="Full name" required></div>
+        <div class="cell"><label for="f-org">Organization</label><input id="f-org" name="org" type="text" placeholder="Firm / client"></div>
+        <div class="cell"><label for="f-email">Email</label><input id="f-email" name="email" type="email" placeholder="you@domain.com" required></div>
+        <div class="cell"><label for="f-type">Project Type</label><input id="f-type" name="type" type="text" placeholder="e.g. Bridge / High-rise"></div>
+        <div class="cell full"><label for="f-msg">Scope Notes</label><textarea id="f-msg" name="msg" placeholder="Describe structure, span, loads, target code..."></textarea></div>
+        <div class="submit">
+          <span class="hint">Fields marked * are required. Response within 2 business days.</span>
+          <button class="btn solid" type="submit" id="sendBtn">Submit for Review</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot">
+    <div><div class="brand">DRAFT &amp; SCALE</div><div class="val">Structural Engineering Consultancy</div></div>
+    <div><div class="lbl">Sheet Set</div><div class="val">S-101 / S-102 / S-103 / S-104</div></div>
+    <div><div class="lbl">Revision</div><div class="val">REV 03 · 2024-06-14</div></div>
+    <div><div class="lbl">Status</div><div class="val">© 2024 — All Drawings Reserved</div></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Draw-in the blueprint lines on load */
+  window.addEventListener('load', function(){
+    if(reduce){ document.body.classList.add('drawn'); return; }
+    setTimeout(function(){ document.body.classList.add('drawn'); }, 120);
+  });
+
+  /* Reveal on scroll */
+  var els = document.querySelectorAll('.reveal');
+  if(reduce || !('IntersectionObserver' in window)){
+    els.forEach(function(e){ e.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, {threshold:.14});
+    els.forEach(function(e){ io.observe(e); });
+  }
+
+  /* Global drafting crosshair */
+  var xh = document.getElementById('xh');
+  var vx = xh.querySelector('.vx'), hz = xh.querySelector('.hz'), ring = xh.querySelector('.ring');
+  if(!reduce){
+    window.addEventListener('pointermove', function(e){
+      xh.style.opacity = '1';
+      vx.style.left = e.clientX + 'px';
+      hz.style.top = e.clientY + 'px';
+      ring.style.left = e.clientX + 'px';
+      ring.style.top = e.clientY + 'px';
+    });
+    window.addEventListener('pointerleave', function(){ xh.style.opacity = '0'; });
+    document.addEventListener('mouseleave', function(){ xh.style.opacity = '0'; });
+  }
+
+  /* Form feedback as a stamp */
+  var form = document.getElementById('rfq');
+  var btn = document.getElementById('sendBtn');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    btn.textContent = 'RECEIVED ✓';
+    btn.classList.remove('solid');
+    setTimeout(function(){
+      btn.textContent = 'Submit for Review';
+      btn.classList.add('solid');
+      form.reset();
+    }, 2600);
+  });
+})();
+</script>
+</body>
+</html>

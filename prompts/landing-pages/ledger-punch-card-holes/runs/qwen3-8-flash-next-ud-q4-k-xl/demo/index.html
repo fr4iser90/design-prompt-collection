@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUNCH LOGIC — High-Throughput Data Processing Engine</title>
+<meta name="description" content="PUNCH LOGIC reads, interprets, and acts on your data at machine speed. Batch throughput, streaming, and edge compute — selected, punched, and verified.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F5DC;
+    --ink:#333333;
+    --red:#D32F2F;
+    --shadow:#E0E0C0;
+    --line:#333333;
+    --hole:#333333;
+    --hole-solid:#E0E0C0;
+    --hole-border:#9a9a72;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--mono);
+    background-color:var(--paper);
+    color:var(--ink);
+    line-height:1.55;
+    font-size:15px;
+    overflow-x:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* paper noise texture */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    z-index:9998;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* faint ledger grid */
+  body::after{
+    content:"";
+    position:fixed;inset:0;
+    z-index:0;pointer-events:none;opacity:.35;
+    background-image:
+      linear-gradient(to right, rgba(51,51,51,.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(51,51,51,.04) 1px, transparent 1px);
+    background-size:26px 26px;
+  }
+  ::selection{background:var(--red);color:var(--paper)}
+
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer;color:inherit;background:none;border:none}
+  .wrap{width:min(1200px,92vw);margin-inline:auto;position:relative;z-index:1}
+
+  /* ---------- shared bits ---------- */
+  .kicker{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#6b6b4a}
+  .kicker b{color:var(--red);font-weight:700}
+  .mono-tag{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#6b6b4a}
+  .rule{border:none;border-top:1px solid var(--line);opacity:.55}
+  .perf{border:none;border-top:2px dotted var(--line);opacity:.75}
+
+  /* ---------- header ---------- */
+  header.top{
+    position:sticky;top:0;z-index:60;
+    background:rgba(245,245,220,.92);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(120%);
+  }
+  .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.16em;font-size:14px}
+  .brand .glyph{display:flex;gap:3px}
+  .brand .glyph i{width:6px;height:6px;border-radius:50%;background:var(--ink);display:block}
+  .brand .glyph i:nth-child(2){background:var(--red)}
+  nav.main{display:flex;gap:22px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  nav.main a{position:relative;padding:4px 0;color:#4a4a33}
+  nav.main a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--red);transition:width .25s ease}
+  nav.main a:hover{color:var(--ink)}
+  nav.main a:hover::after{width:100%}
+  .status{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;color:#5a5a3d}
+  .led{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(211,47,47,.6);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(211,47,47,.55)}70%{box-shadow:0 0 0 7px rgba(211,47,47,0)}100%{box-shadow:0 0 0 0 rgba(211,47,47,0)}}
+  .top .right{display:flex;align-items:center;gap:20px}
+
+  /* ---------- hero ---------- */
+  .hero{padding:34px 0 8px}
+  .hero-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6b4a;padding-bottom:14px}
+  .hero-meta span{white-space:nowrap}
+
+  .card{
+    position:relative;
+    background:var(--paper);
+    border:1px solid var(--line);
+    box-shadow:6px 6px 0 var(--shadow), 12px 12px 0 rgba(224,224,192,.45);
+    padding:22px clamp(14px,3vw,34px) 26px;
+    overflow:hidden;
+  }
+  .card::before{ /* corner clip */
+    content:"";position:absolute;top:0;right:0;width:0;height:0;
+    border-top:26px solid var(--shadow);border-left:26px solid transparent;
+  }
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+  .wordmark{font-weight:700;letter-spacing:.02em;line-height:.9;font-size:clamp(38px,7.2vw,86px);text-transform:uppercase}
+  .wordmark .l2{color:var(--red)}
+  .wordmark .caret{display:inline-block;width:.5em;height:.82em;background:var(--ink);margin-left:.06em;vertical-align:-.06em;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .card-sub{max-width:340px;font-size:12px;letter-spacing:.05em;color:#4a4a33}
+  .card-sub b{color:var(--ink)}
+
+  /* reader beam */
+  .beam{
+    position:absolute;left:0;right:0;top:0;height:44px;
+    background:linear-gradient(to bottom, transparent, rgba(211,47,47,.10) 45%, rgba(211,47,47,.55) 50%, rgba(211,47,47,.10) 55%, transparent);
+    border-bottom:1px solid rgba(211,47,47,.85);
+    z-index:5;pointer-events:none;
+    animation:scan 6.5s linear infinite;
+  }
+  .beam::after{content:"READ";position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;letter-spacing:.3em;color:var(--red)}
+  @keyframes scan{0%{top:-44px}100%{top:100%}}
+
+  /* punch grid */
+  .punch-grid{
+    margin-top:22px;
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    gap:clamp(6px,1.4vw,16px);
+    position:relative;
+  }
+  .pcol{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vw,14px)}
+  .pcol .num{font-size:9px;letter-spacing:.1em;color:#8a8a63}
+  .pcol .word{
+    font-size:clamp(9px,1.1vw,12px);font-weight:700;letter-spacing:.08em;
+    color:var(--red);text-transform:uppercase;
+    opacity:0;transform:translateY(6px);transition:opacity .18s ease,transform .18s ease;
+    white-space:nowrap;
+  }
+  .pcol.lit .word{opacity:1;transform:translateY(0)}
+  .hole{
+    width:clamp(12px,2.1vw,20px);height:clamp(12px,2.1vw,20px);
+    border-radius:50%;
+    background:var(--hole-solid);
+    border:1px solid var(--hole-border);
+    box-shadow:inset 1px 1px 2px rgba(0,0,0,.14);
+    transition:background .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .hole.on{background:var(--ink);box-shadow:inset 1px 1px 3px rgba(0,0,0,.5)}
+  .hole.prio{background:var(--red);box-shadow:inset 1px 1px 3px rgba(0,0,0,.4)}
+  .pcol.lit .hole{transform:scale(1.12)}
+  .pcol.lit .hole.on{background:var(--red)}
+
+  /* hero stats strip */
+  .hero-strip{
+    display:flex;flex-wrap:wrap;gap:0;margin-top:24px;
+    border:1px solid var(--line);
+  }
+  .hero-strip .cell{flex:1 1 180px;padding:16px 18px;border-right:1px solid var(--line)}
+  .hero-strip .cell:last-child{border-right:none}
+  .hero-strip .num{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:.02em}
+  .hero-strip .num .u{font-size:.42em;color:var(--red);letter-spacing:.1em;margin-left:4px}
+  .hero-strip .lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6b6b4a;margin-top:4px}
+
+  /* ---------- section shell ---------- */
+  section{padding:60px 0;position:relative;z-index:1}
+  .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:34px}
+  .sec-head h2{font-size:clamp(26px,4.4vw,46px);font-weight:700;letter-spacing:.01em;text-transform:uppercase;line-height:1}
+  .sec-head h2 .dot{color:var(--red)}
+  .sec-head .idx{font-size:12px;letter-spacing:.2em;color:#6b6b4a}
+
+  /* ---------- services ---------- */
+  .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .svc{
+    background:var(--paper);
+    border:1px solid var(--line);
+    box-shadow:4px 4px 0 var(--shadow);
+    padding:18px;
+    transition:transform .22s ease, box-shadow .22s ease;
+  }
+  .svc:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--shadow)}
+  .svc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .svc h3{font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .svc .code{font-size:10px;letter-spacing:.14em;color:#8a8a63}
+  .svc p{font-size:12px;color:#4a4a33;margin:8px 0 14px;min-height:52px}
+  .holes{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .ph{
+    width:15px;height:15px;border-radius:50%;
+    background:var(--hole-solid);border:1px solid var(--hole-border);
+    box-shadow:inset 1px 1px 2px rgba(0,0,0,.14);
+    transition:transform .15s ease, background .15s ease, box-shadow .15s ease;
+  }
+  .ph:hover{transform:scale(1.18);background:var(--red);box-shadow:inset 1px 1px 3px rgba(0,0,0,.4)}
+  .ph.on{background:var(--ink);box-shadow:inset 1px 1px 3px rgba(0,0,0,.5)}
+  .svc-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:12px}
+  .svc-foot .tp{font-size:11px;letter-spacing:.1em;color:#6b6b4a}
+  .svc-foot .tp b{color:var(--ink)}
+  .svc-foot .cost{font-size:13px;font-weight:700}
+  .svc-foot .cost .u{font-size:10px;color:var(--red);letter-spacing:.08em}
+
+  /* console */
+  .console{
+    margin-top:26px;border:1px solid var(--line);
+    box-shadow:5px 5px 0 var(--shadow);
+    display:grid;grid-template-columns:1fr auto;gap:0;
+  }
+  .console .fields{display:flex;flex-wrap:wrap;gap:0}
+  .console .f{flex:1 1 160px;padding:16px 20px;border-right:1px solid var(--line)}
+  .console .f:last-child{border-right:none}
+  .console .f .k{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#6b6b4a}
+  .console .f .v{font-size:clamp(22px,3vw,34px);font-weight:700;margin-top:4px}
+  .console .f .v .u{font-size:.4em;color:var(--red);letter-spacing:.08em}
+  .console .cta{
+    background:var(--ink);color:var(--paper);
+    padding:16px 26px;display:flex;flex-direction:column;justify-content:center;gap:6px;
+    border-left:1px solid var(--line);
+  }
+  .console .cta .lbl{font-size:10px;letter-spacing:.2em;color:#bdbd9a}
+  .console .cta .big{font-size:20px;font-weight:700;letter-spacing:.06em}
+  .console .cta .big .u{color:var(--red)}
+  .console .cta .sub{font-size:10px;color:#bdbd9a}
+
+  /* ---------- stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);box-shadow:5px 5px 0 var(--shadow)}
+  .stat{background:var(--paper);padding:26px 22px}
+  .stat .n{font-size:clamp(30px,4.6vw,58px);font-weight:700;letter-spacing:.01em;line-height:1}
+  .stat .n .lead{color:#b3b389}
+  .stat .n .u{font-size:.34em;color:var(--red);letter-spacing:.1em;margin-left:5px}
+  .stat .d{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6b4a;margin-top:10px}
+
+  /* ---------- process (sticky two-col) ---------- */
+  .proc{display:grid;grid-template-columns:0.9fr 1.1fr;gap:44px;align-items:start}
+  .proc-sticky{position:sticky;top:96px}
+  .proc-sticky h2{font-size:clamp(26px,4vw,44px);font-weight:700;text-transform:uppercase;line-height:1.02}
+  .proc-sticky p{font-size:13px;color:#4a4a33;margin-top:16px;max-width:360px}
+  .proc-sticky .stamp{
+    display:inline-block;margin-top:22px;padding:8px 14px;border:2px solid var(--red);color:var(--red);
+    font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;transform:rotate(-4deg);
+  }
+  .steps{display:flex;flex-direction:column}
+  .step{border-bottom:2px dotted var(--line);padding:26px 0;position:relative}
+  .step:first-child{padding-top:0}
+  .step .sn{font-size:12px;letter-spacing:.2em;color:var(--red);font-weight:700}
+  .step h3{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin:6px 0 8px}
+  .step p{font-size:13px;color:#4a4a33;max-width:460px}
+  .step .mini{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+  .step .mini i{width:11px;height:11px;border-radius:50%;background:var(--hole-solid);border:1px solid var(--hole-border)}
+  .step .mini i.on{background:var(--ink)}
+  .step .mini i.p{background:var(--red)}
+
+  /* ---------- specs ---------- */
+  .spec{border:1px solid var(--line);box-shadow:5px 5px 0 var(--shadow)}
+  .spec .row{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line)}
+  .spec .row:last-child{border-bottom:none}
+  .spec .row .c{padding:14px 20px;border-right:1px solid var(--line)}
+  .spec .row .c:last-child{border-right:none}
+  .spec .row .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#6b6b4a}
+  .spec .row .v{font-size:15px;font-weight:600;margin-top:3px}
+  .spec .row .v .u{color:var(--red);font-size:12px}
+
+  /* ---------- log ---------- */
+  .log{
+    border:1px solid var(--line);box-shadow:5px 5px 0 var(--shadow);
+    background:var(--paper);padding:20px 22px;
+    font-size:12px;letter-spacing:.02em;
+    max-height:240px;overflow:hidden;position:relative;
+  }
+  .log .ln{display:flex;gap:12px;padding:3px 0;white-space:nowrap;opacity:.55}
+  .log .ln .t{color:#8a8a63}
+  .log .ln .m{color:#4a4a33}
+  .log .ln .m .ok{color:#2e7d32;font-weight:700}
+  .log .ln .m .warn{color:var(--red);font-weight:700}
+  .log .ln.new{opacity:1}
+  .log .ln.new .m{animation:typein .4s steps(30) both}
+  @keyframes typein{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+  .log::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(transparent,var(--paper))}
+
+  /* ---------- faq ---------- */
+  .faq{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .qa{background:var(--paper);padding:22px 24px}
+  .qa .q{font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;gap:10px}
+  .qa .q .mk{color:var(--red)}
+  .qa .a{font-size:13px;color:#4a4a33;margin-top:10px}
+
+  /* ---------- cta band ---------- */
+  .band{border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:46px clamp(20px,5vw,60px);box-shadow:7px 7px 0 var(--shadow);position:relative;overflow:hidden}
+  .band::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle, rgba(245,245,220,.08) 1px, transparent 1px);background-size:20px 20px;opacity:.5}
+  .band .in{position:relative;display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap}
+  .band h2{font-size:clamp(26px,4.4vw,48px);font-weight:700;text-transform:uppercase;line-height:1.02}
+  .band h2 .r{color:var(--red)}
+  .band p{font-size:13px;color:#c9c9a6;margin-top:12px;max-width:420px}
+  .punchbtn{
+    display:inline-flex;align-items:center;gap:12px;
+    background:var(--red);color:var(--paper);
+    padding:16px 28px;font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    border:1px solid var(--red);
+    box-shadow:4px 4px 0 rgba(0,0,0,.35);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .punchbtn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,.45)}
+  .punchbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.4)}
+  .punchbtn .p{width:12px;height:12px;border-radius:50%;background:var(--paper)}
+
+  /* ---------- footer ---------- */
+  footer{padding:46px 0 60px}
+  .foot-top{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;padding-bottom:26px}
+  .foot-brand .wm{font-size:30px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .foot-brand .wm .r{color:var(--red)}
+  .foot-brand p{font-size:12px;color:#6b6b4a;margin-top:8px;max-width:300px}
+  .foot-cols{display:flex;gap:50px;flex-wrap:wrap}
+  .foot-col h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#6b6b4a;margin-bottom:12px}
+  .foot-col a{display:block;font-size:13px;color:#4a4a33;padding:3px 0}
+  .foot-col a:hover{color:var(--red)}
+  .foot-bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding-top:20px;font-size:11px;letter-spacing:.12em;color:#6b6b4a;text-transform:uppercase}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  /* line-mask heading */
+  .mask{overflow:hidden;display:inline-block}
+  .mask span{display:inline-block;transform:translateY(110%);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .mask.in span{transform:translateY(0)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    nav.main{display:none}
+    .svc-grid{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .proc{grid-template-columns:1fr;gap:24px}
+    .proc-sticky{position:static}
+    .console{grid-template-columns:1fr}
+    .console .cta{border-left:none;border-top:1px solid var(--line)}
+  }
+  @media (max-width:640px){
+    .punch-grid{grid-template-columns:repeat(6,1fr)}
+    .svc-grid{grid-template-columns:1fr}
+    .faq{grid-template-columns:1fr}
+    .spec .row{grid-template-columns:1fr}
+    .spec .row .c{border-right:none;border-bottom:1px solid var(--line)}
+    .spec .row .c:last-child{border-bottom:none}
+    .hero-strip .cell{flex-basis:50%;border-bottom:1px solid var(--line)}
+    .card-sub{max-width:none}
+  }
+  @media (max-width:420px){
+    .punch-grid{grid-template-columns:repeat(4,1fr)}
+    .stats{grid-template-columns:1fr}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important;transition:none !important;scroll-behavior:auto}
+    .beam{display:none}
+    .reveal{opacity:1;transform:none}
+    .mask span{transform:none}
+    .pcol .word{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <span class="glyph" aria-hidden="true"><i></i><i></i><i></i></span>
+      PUNCH&nbsp;LOGIC
+    </div>
+    <nav class="main">
+      <a href="#services">Services</a>
+      <a href="#stats">Throughput</a>
+      <a href="#process">Process</a>
+      <a href="#specs">Specs</a>
+      <a href="#log">Log</a>
+    </nav>
+    <div class="right">
+      <span class="status"><span class="led" aria-hidden="true"></span> READER ONLINE</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-meta">
+      <span>IBM 80-COL · MODEL PL-7</span>
+      <span>READ SPEED 1200 CARDS/MIN</span>
+      <span>SEQ NO. 000000001</span>
+    </div>
+
+    <div class="card">
+      <div class="beam" aria-hidden="true"></div>
+
+      <div class="card-head">
+        <h1 class="wordmark">PUNCH<br><span class="l2">LOGIC</span><span class="caret" aria-hidden="true"></span></h1>
+        <p class="card-sub">A high-throughput data processing engine. We <b>read</b> your data, <b>interpret</b> the holes, and <b>act</b> at machine speed — with the reliability of a 1960s card reader.</p>
+      </div>
+
+      <div class="punch-grid" id="punchGrid" role="img" aria-label="Interactive punch card grid"></div>
+
+      <div class="hero-strip">
+        <div class="cell">
+          <div class="num" data-count="1200" data-pad="4"><span class="v">0000</span><span class="u">CPM</span></div>
+          <div class="lbl">Cards Read / Minute</div>
+        </div>
+        <div class="cell">
+          <div class="num" data-count="99.99" data-dec="2"><span class="v">0.00</span><span class="u">%</span></div>
+          <div class="lbl">Read Accuracy</div>
+        </div>
+        <div class="cell">
+          <div class="num" data-count="80"><span class="v">0</span><span class="u">COL</span></div>
+          <div class="lbl">Columns / Card</div>
+        </div>
+        <div class="cell">
+          <div class="num" data-count="0"><span class="v">0</span><span class="u">ERR</span></div>
+          <div class="lbl">Errors Today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ SERVICES ============ -->
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="mask"><span>Select Your Service<span class="dot">.</span></span></h2>
+      <span class="idx">SEC 02 // PUNCH TO CONFIGURE</span>
+    </div>
+
+    <div class="svc-grid">
+      <!-- cards injected by JS -->
+    </div>
+
+    <div class="console">
+      <div class="fields">
+        <div class="f"><div class="k">Modules Selected</div><div class="v"><span id="cMods">000</span><span class="u"> / 048</span></div></div>
+        <div class="f"><div class="k">Throughput</div><div class="v"><span id="cTps">000,000</span><span class="u"> TPS</span></div></div>
+        <div class="f"><div class="k">Total Cost</div><div class="v"><span id="cCost">$00,000</span><span class="u"> /MO</span></div></div>
+      </div>
+      <button class="cta" id="submitBtn">
+        <span class="lbl">COMMIT CARDS</span>
+        <span class="big">PUNCH &amp; RUN <span class="u">▸</span></span>
+        <span class="sub">est. batch time 00:00:04</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ STATS ============ -->
+<section id="stats">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="mask"><span>Field Report<span class="dot">.</span></span></h2>
+      <span class="idx">SEC 03 // VERIFIED COUNTERS</span>
+    </div>
+    <div class="stats">
+      <div class="stat reveal"><div class="n"><span class="lead">00</span><span class="lead" data-count="4500" data-pad="3" data-comma="1"><span class="v">000</span></span><span class="u">TPS</span></div><div class="d">Peak Throughput</div></div>
+      <div class="stat reveal d1"><div class="n"><span class="lead" data-count="800000000" data-pad="9" data-comma="1"><span class="v">000,000,000</span></span><span class="u">CARDS</span></div><div class="d">Processed This Year</div></div>
+      <div class="stat reveal d2"><div class="n"><span class="lead" data-count="9999" data-pad="4" data-dec="2" data-div="100"><span class="v">0.00</span></span><span class="u">% UPTIME</span></div><div class="d">Rolling 90-Day</div></div>
+      <div class="stat reveal d3"><div class="n"><span class="lead" data-count="14"><span class="v">0</span></span><span class="u">MS</span></div><div class="d">Median Read Latency</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ PROCESS (sticky two-col) ============ -->
+<section id="process">
+  <div class="wrap">
+    <div class="proc">
+      <div class="proc-sticky">
+        <span class="kicker">SEC 04 // <b>PIPELINE</b></span>
+        <h2 class="mask"><span>How the<br>Reader Works</span></h2>
+        <p>Every record is a card. Every card is a decision. PUNCH LOGIC moves data through four deterministic stages — no black boxes, no guesswork, just clean holes in clean order.</p>
+        <span class="stamp">VERIFIED · 1964</span>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="sn">STEP 01</div>
+          <h3>Ingest</h3>
+          <p>Cards enter the reader at 1200 per minute. Each 80-column record is validated against the schema before it touches the deck.</p>
+          <div class="mini"><i class="on"></i><i class="on"></i><i class="p"></i><i></i><i class="on"></i><i></i></div>
+        </div>
+        <div class="step reveal">
+          <div class="sn">STEP 02</div>
+          <h3>Decode</h3>
+          <p>The beam scans each column. Punched holes resolve to values; solid holes resolve to nulls. Ambiguity is rejected, never guessed.</p>
+          <div class="mini"><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="p"></i><i></i></div>
+        </div>
+        <div class="step reveal">
+          <div class="sn">STEP 03</div>
+          <h3>Process</h3>
+          <p>Batch or streaming — your call. Operators run across the deck in parallel, each hole a unit of work on the throughput engine.</p>
+          <div class="mini"><i class="p"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i></div>
+        </div>
+        <div class="step reveal">
+          <div class="sn">STEP 04</div>
+          <h3>Verify</h3>
+          <p>Output cards are re-read and checksummed. A single mismatched hole triggers a red stamp and a full re-run of the batch.</p>
+          <div class="mini"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="p"></i><i class="on"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ SPECS ============ -->
+<section id="specs">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="mask"><span>Card Specification<span class="dot">.</span></span></h2>
+      <span class="idx">SEC 05 // PL-7 DATASHEET</span>
+    </div>
+    <div class="spec reveal">
+      <div class="row"><div class="c"><div class="k">Card Format</div><div class="v">80 columns × 12 rows <span class="u">/ 963 holes</span></div></div><div class="c"><div class="k">Read Speed</div><div class="v">1200 cards / min <span class="u">peak</span></div></div></div>
+      <div class="row"><div class="c"><div class="k">Decode Method</div><div class="v">Photoelectric column scan</div></div><div class="c"><div class="k">Error Handling</div><div class="v">Red-stamp reject + re-run</div></div></div>
+      <div class="row"><div class="c"><div class="k">Deck Capacity</div><div class="v">1000 cards <span class="u">/ hopper</span></div></div><div class="c"><div class="k">Encoding</div><div class="v">EBCDIC · ASCII · Binary</div></div></div>
+      <div class="row"><div class="c"><div class="k">Interface</div><div class="v">REST · gRPC · Card-in-hand</div></div><div class="c"><div class="k">Certification</div><div class="v">SOC-2 · ISO 27001 <span class="u">punched</span></div></div></div>
+      <div class="row"><div class="c"><div class="k">Paper Stock</div><div class="v">.007" card stock · #1 grade</div></div><div class="c"><div class="k">Warranty</div><div class="v">99.99% read accuracy</div></div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ LOG ============ -->
+<section id="log">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="mask"><span>Live Reader Log<span class="dot">.</span></span></h2>
+      <span class="idx">SEC 06 // STDOUT</span>
+    </div>
+    <div class="log reveal" id="log" aria-live="polite"></div>
+  </div>
+</section>
+
+<hr class="perf">
+
+<!-- ============ FAQ ============ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="mask"><span>Operator Notes<span class="dot">.</span></span></h2>
+      <span class="idx">SEC 07 // FAQ</span>
+    </div>
+    <div class="faq reveal">
+      <div class="qa"><div class="q"><span class="mk">▸</span> Do I need real cards?</div><div class="a">No. The card is a metaphor and a control surface. Configure your deck on screen; we handle the bytes behind it.</div></div>
+      <div class="qa"><div class="q"><span class="mk">▸</span> What happens on an error?</div><div class="a">A red stamp marks the batch, the offending hole is logged, and the deck is re-run automatically. No silent failures.</div></div>
+      <div class="qa"><div class="q"><span class="mk">▸</span> Can I mix batch and streaming?</div><div class="a">Yes. Select the modules you need in the console above; the engine routes each record to the right pipeline.</div></div>
+      <div class="qa"><div class="q"><span class="mk">▸</span> How is pricing calculated?</div><div class="a">Per punched module, per month. The console totals your selection live before you commit the cards.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA BAND ============ -->
+<section>
+  <div class="wrap">
+    <div class="band reveal">
+      <div class="in">
+        <div>
+          <h2>Ready to<br><span class="r">Punch It?</span></h2>
+          <p>Load the deck, select your modules, and commit. PUNCH LOGIC reads your data before you finish the sentence.</p>
+        </div>
+        <button class="punchbtn"><span class="p" aria-hidden="true"></span> Punch &amp; Run</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <hr class="perf" style="margin-bottom:30px">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="wm">PUNCH<span class="r">LOGIC</span></div>
+        <p>High-throughput data processing. Built on the origin story of computing, tuned for the present tense.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>Engine</h4>
+          <a href="#services">Services</a>
+          <a href="#process">Process</a>
+          <a href="#specs">Specs</a>
+          <a href="#stats">Throughput</a>
+        </div>
+        <div class="foot-col">
+          <h4>Company</h4>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+          <a href="#log">Status</a>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Security</a>
+        </div>
+      </div>
+    </div>
+    <hr class="rule">
+    <div class="foot-bottom">
+      <span>© 1964–2024 PUNCH LOGIC CORP · ALL HOLES RESERVED</span>
+      <span>IBM 80-COL · PL-7 · READER ONLINE</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- build hero punch grid ---------- */
+  var ROWS = 5, COLS = 12;
+  var words = ['FAST','RELIABLE','SCALABLE','VERIFIED','PARALLEL','SECURE','LOW-LAT','BATCH','STREAM','EDGE','PROVEN','24/7'];
+  var grid = document.getElementById('punchGrid');
+  var cols = [];
+  for(var c=0;c<COLS;c++){
+    var col = document.createElement('div');
+    col.className = 'pcol';
+    var num = document.createElement('div');
+    num.className='num'; num.textContent = (c+1<10?'0':'')+(c+1);
+    col.appendChild(num);
+    var holes=[];
+    for(var r=0;r<ROWS;r++){
+      var h=document.createElement('div');
+      h.className='hole';
+      // deterministic pseudo-random pattern
+      var seed=(c*7+r*13+((c*r)%5))%10;
+      if(seed<4){ h.classList.add('on'); }
+      if(seed===0 && (c%3===0)){ h.classList.add('prio'); }
+      col.appendChild(h);
+      holes.push(h);
+    }
+    var w=document.createElement('div');
+    w.className='word'; w.textContent=words[c];
+    col.appendChild(w);
+    grid.appendChild(col);
+    cols.push({el:col, holes:holes});
+  }
+
+  /* ---------- scanner beam reveal ---------- */
+  if(!reduce){
+    var card = grid.closest('.card');
+    var beam = card.querySelector('.beam');
+    var cardRect = card.getBoundingClientRect();
+    var gridRect = grid.getBoundingClientRect();
+    var beamTop = cardRect.top - gridRect.top;
+    function scan(){
+      var by = beam.getBoundingClientRect();
+      var byTop = by.top - gridRect.top;
+      var byBot = by.bottom - gridRect.top;
+      for(var i=0;i<cols.length;i++){
+        var hr = cols[i].holes;
+        var anyOn=false;
+        for(var j=0;j<hr.length;j++){
+          var h=hr[j].getBoundingClientRect();
+          var ht=h.top-gridRect.top, hb=h.bottom-gridRect.top;
+          if(hb>=byTop && ht<=byBot && hr[j].classList.contains('on')) anyOn=true;
+        }
+        cols[i].el.classList.toggle('lit', anyOn);
+      }
+      requestAnimationFrame(scan);
+    }
+    requestAnimationFrame(scan);
+  } else {
+    for(var k=0;k<cols.length;k++){ cols[k].el.classList.add('lit'); }
+  }
+
+  /* ---------- services ---------- */
+  var services = [
+    {name:'Batch Processing', code:'MOD-BCH', desc:'Process millions of records in scheduled passes. The classic deck, run to completion.', tps:12000, cost:1200, holes:8, on:[0,2,3,5]},
+    {name:'Stream Compute', code:'MOD-STR', desc:'Read holes as they arrive. Sub-second decode on continuous card flow.', tps:48000, cost:2600, holes:8, on:[1,4,6]},
+    {name:'Edge Reader', code:'MOD-EDG', desc:'Decode at the source. Local punch verification before the deck ships.', tps:9000, cost:900, holes:8, on:[0,3,7]},
+    {name:'Archive Vault', code:'MOD-ARC', desc:'Cold storage for the deck. Every card checksummed, every hole indexed.', tps:3000, cost:600, holes:8, on:[2,5]},
+    {name:'Schema Forge', code:'MOD-SCH', desc:'Define the 80 columns. Validate every record against the punch map.', tps:6000, cost:800, holes:8, on:[0,1,4,6]},
+    {name:'Priority Lane', code:'MOD-PRI', desc:'Critical data gets the red hole. Fastest path through the reader.', tps:80000, cost:4200, holes:8, on:[3,7]}
+  ];
+  var svcGrid = document.querySelector('.svc-grid');
+  var els = {mods:document.getElementById('cMods'), tps:document.getElementById('cTps'), cost:document.getElementById('cCost')};
+  var totalTps=0, totalCost=0, totalOn=0;
+
+  function fmt(n){ return n.toLocaleString('en-US'); }
+  function pad3(n){ return ('00'+n).slice(-3); }
+  function money(n){ var s=fmt(n); return '$'+(s.length<5?('00'+s).slice(-5):s); }
+
+  function recompute(){
+    totalTps=0; totalCost=0; totalOn=0;
+    document.querySelectorAll('.svc').forEach(function(card){
+      var tps=+card.dataset.tps, cost=+card.dataset.cost;
+      var on=card.querySelectorAll('.ph.on').length;
+      totalOn+=on; totalTps+=tps*on; totalCost+=cost*on;
+    });
+    els.mods.textContent=pad3(totalOn);
+    els.tps.textContent=fmt(totalTps);
+    els.cost.textContent=money(totalCost);
+  }
+
+  services.forEach(function(s,idx){
+    var card=document.createElement('div');
+    card.className='svc reveal d'+(idx%4+1);
+    card.dataset.tps=s.tps; card.dataset.cost=s.cost;
+    var holesHtml='';
+    for(var i=0;i<s.holes;i++){ holesHtml+='<button class="ph'+(s.on.indexOf(i)>-1?' on':'')+'" aria-label="'+s.name+' module '+(i+1)+'"></button>'; }
+    card.innerHTML=
+      '<div class="svc-top"><h3>'+s.name+'</h3><span class="code">'+s.code+'</span></div>'+
+      '<p>'+s.desc+'</p>'+
+      '<div class="holes">'+holesHtml+'</div>'+
+      '<div class="svc-foot"><span class="tp">RATE <b>'+fmt(s.tps)+'</b> TPS/HOLE</span><span class="cost">$'+fmt(s.cost)+'<span class="u"> /HOLE</span></span></div>';
+    svcGrid.appendChild(card);
+  });
+
+  svcGrid.addEventListener('click', function(e){
+    var h=e.target.closest('.ph');
+    if(!h) return;
+    h.classList.toggle('on');
+    recompute();
+  });
+  recompute();
+
+  document.getElementById('submitBtn').addEventListener('click', function(){
+    var b=this; var orig=b.querySelector('.big').innerHTML;
+    b.querySelector('.big').innerHTML='RUNNING <span class="u">▮</span>';
+    setTimeout(function(){ b.querySelector('.big').innerHTML='DECK COMMITTED ✓'; }, 700);
+    setTimeout(function(){ b.querySelector('.big').innerHTML=orig; }, 2200);
+  });
+
+  /* ---------- counters ---------- */
+  function easeOut(t){ return 1-Math.pow(1-t,3); }
+  function runCount(el){
+    var target=+el.dataset.count;
+    var dec=+(el.dataset.dec||0);
+    var div=+(el.dataset.div||1);
+    var comma=el.dataset.comma==='1';
+    var pad=+(el.dataset.pad||0);
+    var vEl=el.querySelector('.v');
+    if(!vEl) vEl=el;
+    if(reduce){ vEl.textContent=format(target,dec,div,comma,pad); return; }
+    var dur=1400, start=null;
+    function step(ts){
+      if(!start) start=ts;
+      var p=Math.min((ts-start)/dur,1);
+      var val=target*easeOut(p);
+      vEl.textContent=format(val,dec,div,comma,pad);
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function format(val,dec,div,comma,pad){
+    var n=val/div;
+    if(dec>0) n=n.toFixed(dec);
+    else n=Math.round(n);
+    var s=comma? Number(n).toLocaleString('en-US') : String(n);
+    if(pad && !comma){ s=s.padStart(pad,'0'); }
+    return s;
+  }
+  // hero strip counters (they have .v inside)
+  document.querySelectorAll('.hero-strip .num').forEach(function(el){
+    if(el.dataset.count!==undefined) runCount(el);
+  });
+  // stat counters: the [data-count] element holds the .v
+  document.querySelectorAll('.stat [data-count]').forEach(function(el){ runCount(el); });
+
+  /* ---------- live log ---------- */
+  var logBox=document.getElementById('log');
+  var msgs=[
+    ['READ','card 00000421 decoded','ok'],
+    ['CHECK','checksum 0x9F matched','ok'],
+    ['WARN','column 12 ambiguous — re-punch','warn'],
+    ['READ','card 00000422 decoded','ok'],
+    ['BATCH','deck 7 committed · 1000 cards','ok'],
+    ['SCAN','beam sweep complete','ok'],
+    ['READ','card 00000423 decoded','ok'],
+    ['INDEX','hole map updated','ok'],
+    ['VERIFY','deck 7 re-read · 0 errors','ok'],
+    ['READ','card 00000424 decoded','ok'],
+    ['PUNCH','priority lane engaged','warn'],
+    ['STREAM','1200 cpm sustained','ok']
+  ];
+  var li=0;
+  function stamp(){ var d=new Date(); function p(n){return (n<10?'0':'')+n;} return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+  function pushLine(){
+    var m=msgs[li%msgs.length]; li++;
+    var ln=document.createElement('div'); ln.className='ln new';
+    ln.innerHTML='<span class="t">'+stamp()+'</span><span class="m"><span class="'+m[2]+'">['+m[0]+']</span> '+m[1]+'</span>';
+    logBox.insertBefore(ln, logBox.firstChild);
+    while(logBox.children.length>7) logBox.removeChild(logBox.lastChild);
+  }
+  for(var q=0;q<6;q++) pushLine();
+  if(!reduce){ setInterval(pushLine, 1600); }
+
+  /* ---------- reveal + mask on scroll ---------- */
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        en.target.classList.add('in');
+        if(en.target.classList.contains('mask')) en.target.classList.add('in');
+        io.unobserve(en.target);
+      }
+    });
+  },{threshold:0.18});
+  document.querySelectorAll('.reveal, .mask').forEach(function(el){ io.observe(el); });
+
+})();
+</script>
+</body>
+</html>

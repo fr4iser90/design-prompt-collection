@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 288852
+gen_ms: 288852
+ttft_ms: 334
+queue_wait_ms: 117
+wall_ms: 289364
+rejected_at: "2026-09-29T05:37:56.909Z"
+last_review_score: 3
+last_review_summary: "The screenshot is almost entirely empty, failing to display the core kinetic typography and scanline reveal mechanism described in the brief."
+last_reject_reason: "score_3_below_5"
+review_score: 9
+review_summary: "Excellent execution of the CRT scanline concept with perfect atmospheric lighting, noise texture, and typographic hierarchy."
+reviewed_at: "2026-09-29T05:44:55.052Z"
+review_issues:
+  - "The 'unresolved' text below the scanline is visible rather than obscured by static/noise as per the brief's strict definition (though it effectively conveys the 'decoding' state)."

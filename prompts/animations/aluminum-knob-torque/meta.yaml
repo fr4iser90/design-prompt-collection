@@ -1,0 +1,26 @@
+id: aluminum-knob-torque
+title: "Aluminum Knob Torque"
+category: animations
+tags:
+  - soft-machine
+  - anodized-aluminum
+  - interaction
+  - spring-damping
+  - ui-control
+  - industrial-design
+  - minimal
+status: polished
+summary: "A brushed anodized aluminum knob rotates with weighted inertia and magnetic detents, providing visual feedback of torque and resistance."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-28"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

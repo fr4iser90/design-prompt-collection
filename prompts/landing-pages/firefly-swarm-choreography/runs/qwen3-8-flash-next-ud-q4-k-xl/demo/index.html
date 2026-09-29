@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Lumina Nights — Outdoor Event Curators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#0f172a;
+    --sky-bottom:#1e293b;
+    --glow:#fef08a;
+    --core:#d9f99d;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --serif:'Cormorant Garamond','Baskerville','Garamond',Georgia,serif;
+    --sans:'Montserrat',system-ui,-apple-system,sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(140% 120% at 50% 0%,#16233d 0%,#0f172a 46%,#0a1120 100%);
+    color:var(--text);
+    font-family:var(--sans);
+    overflow:hidden;
+    position:relative;
+    min-height:100dvh;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* faint drifting nebulae — atmosphere only, no bright daytime colour */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(38% 30% at 18% 24%,rgba(120,140,190,.10),transparent 70%),
+      radial-gradient(42% 34% at 84% 16%,rgba(90,110,160,.09),transparent 72%);
+    animation:drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    from{transform:translate3d(0,0,0) scale(1);}
+    to{transform:translate3d(-3%,2%,0) scale(1.08);}
+  }
+
+  canvas{position:fixed;inset:0;z-index:1;display:block;}
+
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 42%,transparent 52%,rgba(4,8,16,.6) 100%);
+  }
+
+  .scrim{
+    position:fixed;left:0;right:0;bottom:0;height:36vh;z-index:3;pointer-events:none;
+    background:linear-gradient(to top,rgba(9,15,28,.82),rgba(9,15,28,.35) 42%,transparent);
+  }
+
+  .trees{position:fixed;left:0;right:0;bottom:-2px;z-index:4;pointer-events:none;display:block;width:100%;}
+  .trees.back{opacity:.55;}
+  .trees.front{opacity:1;}
+
+  /* ---- UI ---- */
+  .ui{position:fixed;inset:0;z-index:6;pointer-events:none;}
+  .ui a,.ui button{pointer-events:auto;}
+
+  .brand{
+    position:absolute;top:clamp(20px,4vh,42px);left:clamp(20px,4vw,54px);
+    display:flex;align-items:center;gap:16px;
+  }
+  .mark{width:16px;height:16px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 40% 35%,#fffef2,#fef08a 42%,rgba(217,249,157,0) 72%);
+    box-shadow:0 0 16px 4px rgba(254,240,138,.55),0 0 42px 12px rgba(254,240,138,.22);
+    animation:pulse 4.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);opacity:.9;}50%{transform:scale(1.25);opacity:1;}}
+  .wordmark{font-family:var(--serif);font-weight:400;letter-spacing:.42em;
+    font-size:clamp(12px,1.35vw,15px);text-transform:uppercase;color:var(--text);}
+
+  .hero{
+    position:absolute;left:clamp(20px,4vw,54px);bottom:clamp(120px,20vh,210px);
+    max-width:min(680px,90vw);
+  }
+  .eyebrow{font-size:clamp(10px,1.15vw,12px);letter-spacing:.44em;text-transform:uppercase;
+    color:var(--muted);font-weight:400;margin-bottom:clamp(16px,2.4vh,26px);}
+  h1{font-family:var(--serif);font-weight:300;color:var(--text);
+    font-size:clamp(2.7rem,6.6vw,5.7rem);line-height:1.02;letter-spacing:.004em;
+    text-shadow:0 2px 40px rgba(0,0,0,.55);}
+  h1 em{font-style:italic;font-weight:400;color:#fef3c7;}
+  .lede{margin-top:clamp(18px,2.6vh,26px);font-weight:300;letter-spacing:.03em;
+    color:#cdd6e4;font-size:clamp(.9rem,1.4vw,1.02rem);line-height:1.75;max-width:44ch;}
+
+  .cta{display:flex;flex-wrap:wrap;gap:clamp(16px,2vw,26px);margin-top:clamp(26px,3.6vh,40px);align-items:center;}
+  .btn{font-family:var(--sans);font-weight:400;letter-spacing:.2em;text-transform:uppercase;
+    font-size:11px;color:var(--text);background:rgba(254,240,138,.04);
+    border:1px solid rgba(254,240,138,.4);padding:15px 26px;border-radius:2px;cursor:pointer;
+    transition:background .45s ease,box-shadow .45s ease,border-color .45s ease,transform .45s ease;}
+  .btn:hover{background:rgba(254,240,138,.12);box-shadow:0 0 30px rgba(254,240,138,.28);border-color:rgba(254,240,138,.75);}
+  .btn:active{transform:translateY(1px);}
+  .link{font-family:var(--sans);font-weight:300;letter-spacing:.16em;text-transform:uppercase;
+    font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;
+    padding-bottom:4px;border-bottom:1px solid rgba(148,163,184,.35);transition:color .4s,border-color .4s;}
+  .link:hover{color:var(--text);border-color:rgba(254,240,138,.6);}
+
+  .hint{position:absolute;left:50%;bottom:clamp(20px,3.4vh,34px);transform:translateX(-50%);
+    font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;gap:12px;transition:opacity .8s ease;}
+  .hint .dot{width:5px;height:5px;border-radius:50%;background:var(--glow);
+    box-shadow:0 0 10px 2px rgba(254,240,138,.7);animation:pulse 2.6s ease-in-out infinite;}
+  .hint.hidden{opacity:0;}
+
+  /* ---- Reveal panel ---- */
+  .reveal{position:fixed;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;
+    padding:clamp(24px,5vw,64px);opacity:0;pointer-events:none;transition:opacity .7s ease;}
+  .reveal.open{opacity:1;pointer-events:auto;}
+  .reveal .panel{max-width:640px;width:100%;position:relative;padding-right:clamp(10px,2vw,24px);}
+  .reveal .close{position:absolute;top:-8px;right:-6px;width:40px;height:40px;border-radius:50%;
+    border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.4);color:var(--muted);
+    font-size:18px;line-height:1;cursor:pointer;transition:.4s;}
+  .reveal .close:hover{color:var(--text);border-color:rgba(254,240,138,.6);background:rgba(15,23,42,.7);}
+  .reveal h2{font-family:var(--serif);font-weight:300;font-size:clamp(1.9rem,3.8vw,3rem);line-height:1.12;margin-bottom:22px;}
+  .reveal h2 em{font-style:italic;color:#fef3c7;}
+  .reveal p{color:#c4cdda;font-weight:300;line-height:1.85;font-size:clamp(.92rem,1.35vw,1.02rem);margin-bottom:22px;max-width:56ch;}
+  .services{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px 26px;margin-top:8px;}
+  .service{border-top:1px solid rgba(148,163,184,.22);padding-top:12px;}
+  .service .n{font-family:var(--serif);font-size:1.15rem;color:var(--text);margin-bottom:5px;}
+  .service .d{font-size:12px;letter-spacing:.05em;color:var(--muted);line-height:1.6;font-weight:300;}
+  .reveal .btn{margin-top:32px;}
+
+  /* entrance choreography */
+  .hero>*{opacity:0;transform:translateY(20px);
+    transition:opacity 1.3s cubic-bezier(.2,.7,.2,1),transform 1.3s cubic-bezier(.2,.7,.2,1);}
+  body.ready .hero>*{opacity:1;transform:none;}
+  body.ready .eyebrow{transition-delay:.15s;}
+  body.ready h1{transition-delay:.35s;}
+  body.ready .lede{transition-delay:.6s;}
+  body.ready .cta{transition-delay:.85s;}
+  body.ready .hint{transition-delay:1.5s;}
+
+  @media (max-width:720px){
+    .hero{bottom:clamp(96px,16vh,150px);}
+    .hint{bottom:16px;font-size:10px;letter-spacing:.24em;}
+    .services{grid-template-columns:1fr 1fr;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    body::before{animation:none;}
+    .mark,.hint .dot{animation:none;}
+    .hero>*{transition:none;}
+    body .hero>*{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+  <canvas id="swarm" aria-hidden="true"></canvas>
+  <div class="vignette"></div>
+  <div class="scrim"></div>
+
+  <!-- tree silhouettes -->
+  <svg class="trees back" viewBox="0 0 1440 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path fill="#0a1120" d="M0,240 L0,196 L30,200 L52,150 L74,200 L108,188 L132,150 L156,196 L190,182 L214,138 L240,190 L274,176 L298,150 L322,196 L356,184 L380,144 L406,192 L440,178 L464,152 L488,198 L522,186 L546,140 L572,194 L606,180 L630,156 L654,200 L688,186 L712,148 L738,196 L772,182 L796,154 L820,200 L854,186 L878,142 L904,194 L938,180 L962,158 L986,202 L1020,188 L1044,146 L1070,196 L1104,182 L1128,156 L1152,202 L1186,188 L1210,144 L1236,194 L1270,180 L1294,154 L1318,200 L1352,186 L1376,148 L1402,196 L1440,190 L1440,240 Z"/>
+  </svg>
+  <svg class="trees front" viewBox="0 0 1440 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <path fill="#060b16" d="M0,220 L0,150 L26,158 L46,110 L66,158 L96,146 L118,104 L140,154 L172,140 L196,96 L222,150 L256,136 L280,112 L304,158 L338,144 L362,100 L388,152 L422,138 L446,116 L470,160 L504,146 L528,104 L554,154 L588,140 L612,120 L636,162 L670,148 L694,108 L720,156 L754,142 L778,122 L802,164 L836,150 L860,110 L886,158 L920,144 L944,124 L968,166 L1002,152 L1026,112 L1052,160 L1086,146 L1110,126 L1134,168 L1168,154 L1192,114 L1218,162 L1252,148 L1276,128 L1300,170 L1334,156 L1358,116 L1384,164 L1418,150 L1440,158 L1440,220 Z"/>
+  </svg>
+
+  <div class="ui">
+    <div class="brand">
+      <span class="mark"></span>
+      <span class="wordmark">Lumina Nights</span>
+    </div>
+
+    <div class="hero">
+      <p class="eyebrow">Outdoor Event Curators</p>
+      <h1>Choreograph the<br>night, one <em>light</em> at a time.</h1>
+      <p class="lede">Bespoke evenings beneath open skies — where a thousand drifting lights answer to your presence, and the dark becomes a living stage.</p>
+      <div class="cta">
+        <button class="btn" id="planBtn">Plan Your Night</button>
+        <button class="link" id="readBtn">Read More</button>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">
+      <span class="dot"></span>
+      <span>Move your cursor · hold to gather · click to scatter</span>
+    </div>
+  </div>
+
+  <div class="reveal" id="reveal" role="dialog" aria-modal="true" aria-label="About Lumina Nights">
+    <div class="panel">
+      <button class="close" id="closeBtn" aria-label="Close">×</button>
+      <h2>We curate the <em>dark</em>, so the light can tell a story.</h2>
+      <p>Lumina Nights designs intimate outdoor experiences — private garden dinners, forest ceremonies, and after-dark gatherings — where atmosphere is engineered as carefully as the guest list. Nothing is borrowed from a catalogue; every night is composed for the place, the season, and the people.</p>
+      <div class="services">
+        <div class="service"><div class="n">Private Dinners</div><div class="d">Candlelit tables set beneath the canopy.</div></div>
+        <div class="service"><div class="n">Garden Ceremonies</div><div class="d">Vows choreographed with living light.</div></div>
+        <div class="service"><div class="n">After-Dark Gatherings</div><div class="d">Swarming ambience, tuned to the crowd.</div></div>
+        <div class="service"><div class="n">Atmosphere Design</div><div class="d">Sound, scent and glow, in perfect balance.</div></div>
+      </div>
+      <button class="btn" id="revealCta">Begin a Conversation</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('swarm');
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,DPR=1;
+  let fireflies=[], stars=[], sprites=[];
+  const pointer = {x:0,y:0,active:false,hold:0};
+  let attract = false, attractX=0, attractY=0, attractLife=0;
+  let dim = 1, dimTarget = 1;
+  let time = 0;
+
+  /* ---- glow sprites (pre-rendered, drawn with 'lighter' for cheap bloom) ---- */
+  function makeSprite(r,g,b){
+    const s=64, c=document.createElement('canvas'); c.width=c.height=s;
+    const x=c.getContext('2d');
+    const grd=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+    grd.addColorStop(0,'rgba('+r+','+g+','+b+',1)');
+    grd.addColorStop(.22,'rgba('+r+','+g+','+b+',.55)');
+    grd.addColorStop(.5,'rgba('+r+','+g+','+b+',.16)');
+    grd.addColorStop(1,'rgba('+r+','+g+','+b+',0)');
+    x.fillStyle=grd; x.fillRect(0,0,s,s);
+    return c;
+  }
+  function buildSprites(){
+    sprites=[
+      makeSprite(254,240,138), // warm yellow #fef08a
+      makeSprite(217,249,157), // lime core #d9f99d
+      makeSprite(255,255,244)  // warm white
+    ];
+  }
+
+  function makeFirefly(){
+    return {
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3-.05,
+      size:1.5+Math.random()*3.4,
+      sprite:sprites[Math.floor(Math.random()*sprites.length)],
+      glow:.3+Math.random()*.5,
+      flick:.5+Math.random()*1.6,
+      phase:Math.random()*6.283,
+      wobble:.4+Math.random()*.9,
+      seed:Math.random()*1000
+    };
+  }
+  function makeStar(){
+    return {x:Math.random()*W,y:Math.random()*H*.72,r:Math.random()*1.1+.2,a:.05+Math.random()*.28,ph:Math.random()*6.283,sp:.3+Math.random()*.7};
+  }
+
+  function count(){
+    const area=W*H;
+    if(area>1_600_000) return 200;
+    if(area>900_000) return 160;
+    if(area>450_000) return 110;
+    return 70;
+  }
+
+  function resize(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    const target=count();
+    while(fireflies.length<target) fireflies.push(makeFirefly());
+    if(fireflies.length>target) fireflies.length=target;
+    stars=[]; const sc=Math.round((W*H)/16000);
+    for(let i=0;i<sc;i++) stars.push(makeStar());
+  }
+
+  function update(f,dt){
+    // organic wandering via smooth pseudo-noise
+    const t=time*.001;
+    f.vx += Math.sin(f.y*.008+f.seed)*.012*f.wobble;
+    f.vy += Math.cos(f.x*.008+f.seed*1.3)*.012*f.wobble;
+    f.vy -= .004; // gentle upward drift (entrance + life)
+
+    // cursor gravity well — hold to gather
+    if(pointer.active && pointer.hold>0){
+      const dx=pointer.x-f.x, dy=pointer.y-f.y;
+      const d2=dx*dx+dy*dy+400;
+      const pull=pointer.hold*26/d2;
+      f.vx+=dx*pull; f.vy+=dy*pull;
+    }
+    // attract point (reveal / CTA)
+    if(attractLife>0){
+      const dx=attractX-f.x, dy=attractY-f.y;
+      const d2=dx*dx+dy*dy+400;
+      const pull=attractLife*22/d2;
+      f.vx+=dx*pull; f.vy+=dy*pull;
+    }
+
+    // damping + clamp
+    f.vx*=.965; f.vy*=.965;
+    const sp=Math.hypot(f.vx,f.vy), max=1.7;
+    if(sp>max){ f.vx=f.vx/sp*max; f.vy=f.vy/sp*max; }
+
+    f.x+=f.vx*dt; f.y+=f.vy*dt;
+
+    // soft wrap
+    const m=30;
+    if(f.x<-m) f.x=W+m; else if(f.x>W+m) f.x=-m;
+    if(f.y<-m) f.y=H+m; else if(f.y>H+m) f.y=-m;
+  }
+
+  function render(){
+    ctx.globalCompositeOperation='source-over';
+    ctx.clearRect(0,0,W,H);
+
+    // stars (subtle)
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<stars.length;i++){
+      const s=stars[i];
+      const a=s.a*(.6+.4*Math.sin(time*.001*s.sp+s.ph));
+      ctx.globalAlpha=a*dim;
+      ctx.fillStyle='#cdd7ea';
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.283); ctx.fill();
+    }
+
+    // fireflies
+    for(let i=0;i<fireflies.length;i++){
+      const f=fireflies[i];
+      const flick=.45+.55*Math.sin(time*.0022*f.flick+f.phase);
+      const a=f.glow*flick*dim;
+      const r=f.size*7.5;
+      ctx.globalAlpha=a;
+      ctx.drawImage(f.sprite,f.x-r,f.y-r,r*2,r*2);
+      // bright core
+      ctx.globalAlpha=Math.min(1,a*1.25);
+      ctx.fillStyle='#fffef2';
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.size*.6,0,6.283); ctx.fill();
+    }
+
+    // attract point glow
+    if(attractLife>0){
+      ctx.globalAlpha=attractLife*.5;
+      ctx.drawImage(sprites[0],attractX-70,attractY-70,140,140);
+    }
+    ctx.globalAlpha=1;
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  let last=performance.now();
+  function frame(now){
+    let dt=(now-last)/16.667; last=now;
+    if(dt>3) dt=3;
+    time=now;
+
+    // hold timer for cursor
+    if(pointer.active){ pointer.hold=Math.min(1,pointer.hold+.02); }
+    else { pointer.hold=Math.max(0,pointer.hold-.05); }
+    if(attractLife>0) attractLife=Math.max(0,attractLife-.012);
+
+    dim += (dimTarget-dim)*.06;
+
+    for(let i=0;i<fireflies.length;i++) update(fireflies[i],dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function scatter(x,y){
+    for(let i=0;i<fireflies.length;i++){
+      const f=fireflies[i];
+      const dx=f.x-x, dy=f.y-y;
+      const d=Math.hypot(dx,dy)+.001;
+      const force=Math.max(0,1-d/260)*9;
+      f.vx+=dx/d*force; f.vy+=dy/d*force;
+    }
+  }
+
+  /* ---- interactions ---- */
+  window.addEventListener('pointermove',e=>{
+    pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true;
+    hideHint();
+  });
+  window.addEventListener('pointerdown',e=>{
+    pointer.x=e.clientX; pointer.y=e.clientY; pointer.active=true;
+    scatter(e.clientX,e.clientY);
+    hideHint();
+  });
+  window.addEventListener('pointerleave',()=>{ pointer.active=false; });
+  window.addEventListener('blur',()=>{ pointer.active=false; });
+
+  /* ---- reveal / CTA behaviour ---- */
+  const reveal=document.getElementById('reveal');
+  const hint=document.getElementById('hint');
+  let hintHidden=false;
+  function hideHint(){ if(!hintHidden){ hint.classList.add('hidden'); hintHidden=true; } }
+
+  function openReveal(){
+    reveal.classList.add('open');
+    dimTarget=.32;
+    attract=true; attractX=W/2; attractY=H/2; attractLife=1;
+  }
+  function closeReveal(){
+    reveal.classList.remove('open');
+    dimTarget=1; attractLife=0; attract=false;
+  }
+  document.getElementById('readBtn').addEventListener('click',openReveal);
+  document.getElementById('planBtn').addEventListener('click',openReveal);
+  document.getElementById('revealCta').addEventListener('click',closeReveal);
+  document.getElementById('closeBtn').addEventListener('click',closeReveal);
+  reveal.addEventListener('click',e=>{ if(e.target===reveal) closeReveal(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeReveal(); });
+
+  window.addEventListener('resize',resize);
+
+  /* ---- boot ---- */
+  buildSprites();
+  resize();
+  requestAnimationFrame(frame);
+  requestAnimationFrame(()=>document.body.classList.add('ready'));
+})();
+</script>
+</body>
+</html>

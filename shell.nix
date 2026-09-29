@@ -10,6 +10,7 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     nodejs # follows nixpkgs current / non-EOL default
     git
+    gh # GitHub CLI — pages:deploy / worker --gh-pages
     chromium # system browser for Playwright shots (no CDN download)
   ];
 
@@ -18,6 +19,10 @@ pkgs.mkShell {
     # Playwright prefers its own browsers path under $HOME, not nix store
     export PLAYWRIGHT_BROWSERS_PATH="$HOME/.cache/ms-playwright"
     export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1
+    # gh uses GH_TOKEN; map from .env GITHUB_TOKEN when present
+    if [ -z "''${GH_TOKEN:-}" ] && [ -n "''${GITHUB_TOKEN:-}" ]; then
+      export GH_TOKEN="$GITHUB_TOKEN"
+    fi
 
     # Interactive picker (aliases — work in bash nix-shell without export -f)
     chmod +x "$PWD/scripts/nix-menu.sh" 2>/dev/null || true
@@ -28,7 +33,7 @@ pkgs.mkShell {
     if [ -t 1 ] && [ -z "''${DPC_QUIET:-}" ]; then
       echo ""
       echo "design-prompt-collection  ·  node $(node -v)  npm $(npm -v)"
-      echo "chromium: $(command -v chromium || echo missing)"
+      echo "chromium: $(command -v chromium || echo missing)  ·  gh: $(command -v gh || echo missing)"
       echo ""
       echo "  menu / dpc          interactive command picker"
       echo "  menu help           print full cheat sheet"

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RhizoNet — The Decentralized Bio-Computing Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil:#052e16;
+    --soil-deep:#022c22;
+    --ink:#010a06;
+    --glow:#34d399;
+    --bright:#6ee7b7;
+    --trail:#a7f3d0;
+    --text:#ecfdf5;
+    --muted:#94a3b8;
+    --card:rgba(2,44,34,0.60);
+    --line:rgba(110,231,183,0.16);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--soil);
+    color:var(--text);
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+
+  /* ---------- Background layers ---------- */
+  #mycelium{
+    position:fixed;inset:0;width:100%;height:100%;
+    z-index:0;display:block;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(1,10,6,0.55) 100%),
+      radial-gradient(80% 60% at 82% 78%, rgba(52,211,153,0.06), transparent 60%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Nav ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px clamp(18px,4vw,54px);
+    transition:background .4s ease, backdrop-filter .4s ease, border-color .4s ease;
+    border-bottom:1px solid transparent;
+  }
+  nav.scrolled{
+    background:rgba(1,10,6,0.55);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex;align-items:center;gap:11px;
+    font-family:'Syne',sans-serif;font-weight:800;font-size:1.28rem;letter-spacing:-0.01em;
+    color:var(--text);text-decoration:none;
+  }
+  .brand .mark{
+    width:26px;height:26px;position:relative;flex:none;
+  }
+  .brand .mark::before,.brand .mark::after{
+    content:"";position:absolute;inset:0;border-radius:50%;
+    border:1.5px solid var(--glow);
+  }
+  .brand .mark::after{
+    inset:7px;border-color:var(--bright);
+    box-shadow:0 0 10px rgba(52,211,153,0.7);
+    animation:spin 14s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .nav-links{display:flex;gap:30px;align-items:center}
+  .nav-links a{
+    color:var(--muted);text-decoration:none;font-size:.78rem;letter-spacing:.06em;
+    text-transform:uppercase;transition:color .25s;
+  }
+  .nav-links a:hover{color:var(--bright)}
+  .nav-cta{
+    border:1px solid var(--line);border-radius:2px;padding:9px 16px;
+    color:var(--bright)!important;background:rgba(52,211,153,0.05);
+  }
+  .nav-cta:hover{background:rgba(52,211,153,0.14)}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;z-index:10;
+    min-height:100vh;
+    display:grid;grid-template-columns:1.05fr 0.95fr;
+    gap:clamp(28px,4vw,64px);align-items:center;
+    padding:120px clamp(18px,4vw,54px) 90px;
+    max-width:1400px;margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:9px;
+    font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--glow);margin-bottom:26px;
+  }
+  .eyebrow .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--glow);
+    box-shadow:0 0 12px var(--glow);animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+
+  h1{
+    font-family:'Syne',sans-serif;font-weight:800;
+    font-size:clamp(2.9rem,6.4vw,5.4rem);line-height:0.98;letter-spacing:-0.03em;
+    margin-bottom:26px;
+  }
+  h1 .accent{
+    color:var(--bright);
+    text-shadow:0 0 40px rgba(110,231,183,0.35);
+  }
+  .lead{
+    font-size:clamp(.95rem,1.4vw,1.08rem);color:#c9d8d0;max-width:44ch;
+    margin-bottom:34px;line-height:1.65;
+  }
+  .lead b{color:var(--text);font-weight:600}
+
+  .actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{
+    font-family:'IBM Plex Mono',monospace;font-size:.82rem;letter-spacing:.04em;
+    padding:14px 24px;border-radius:2px;text-decoration:none;cursor:pointer;
+    border:1px solid transparent;transition:all .28s ease;
+  }
+  .btn-primary{
+    background:var(--glow);color:#04140c;font-weight:600;
+    box-shadow:0 0 0 rgba(52,211,153,0);
+  }
+  .btn-primary:hover{background:var(--bright);box-shadow:0 0 30px rgba(110,231,183,0.35);transform:translateY(-2px)}
+  .btn-ghost{border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--glow);background:rgba(52,211,153,0.06)}
+
+  .hint{
+    margin-top:26px;font-size:.74rem;color:var(--muted);letter-spacing:.04em;
+    display:flex;align-items:center;gap:8px;
+  }
+  .hint .cursor{color:var(--bright)}
+
+  /* ---------- Node panel ---------- */
+  .panel{
+    background:var(--card);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line);border-radius:4px;
+    padding:26px 26px 22px;
+    box-shadow:0 30px 80px rgba(0,0,0,0.45);
+    position:relative;overflow:hidden;
+  }
+  .panel::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(110,231,183,0.5),transparent);
+  }
+  .panel-head{
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:18px;
+  }
+  .live{display:flex;align-items:center;gap:7px;color:var(--glow)}
+  .live .dot{width:6px;height:6px;border-radius:50%;background:var(--glow);box-shadow:0 0 8px var(--glow);animation:pulse 1.8s ease-in-out infinite}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:20px}
+  .stat{background:rgba(2,44,34,0.5);padding:14px 15px}
+  .stat .label{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .stat .val{font-size:1.35rem;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+  .stat .val small{font-size:.72rem;color:var(--glow);margin-left:3px;font-weight:400}
+
+  .focus{margin-bottom:18px}
+  .focus .label{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .focus .species{font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;color:var(--bright)}
+  .focus .id{font-size:.72rem;color:var(--muted);margin-top:3px}
+
+  .load-row{display:flex;align-items:center;justify-content:space-between;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .load-bar{height:5px;background:rgba(110,231,183,0.1);border-radius:3px;overflow:hidden}
+  .load-bar span{display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--glow),var(--trail));box-shadow:0 0 12px rgba(110,231,183,0.6);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+
+  .log{
+    border-top:1px solid var(--line);padding-top:14px;margin-top:6px;
+    font-size:.72rem;color:var(--muted);height:96px;overflow:hidden;
+  }
+  .log .line{display:flex;gap:8px;margin-bottom:5px;opacity:.55;animation:fadein .5s ease}
+  .log .line:first-child{opacity:1;color:var(--bright)}
+  .log .t{color:var(--glow);flex:none}
+  @keyframes fadein{from{opacity:0;transform:translateX(-6px)}to{opacity:.55;transform:none}}
+  .log .line:first-child{opacity:1}
+
+  /* ---------- Sections ---------- */
+  section.band{
+    position:relative;z-index:10;
+    padding:clamp(60px,9vw,120px) clamp(18px,4vw,54px);
+    max-width:1400px;margin:0 auto;
+  }
+  .sec-head{max-width:640px;margin-bottom:56px}
+  .sec-head .eyebrow{margin-bottom:18px}
+  .sec-head h2{
+    font-family:'Syne',sans-serif;font-weight:700;
+    font-size:clamp(1.9rem,3.6vw,3rem);line-height:1.05;letter-spacing:-0.02em;
+  }
+  .sec-head h2 .accent{color:var(--bright)}
+  .sec-head p{color:#c9d8d0;margin-top:16px;max-width:52ch;line-height:1.6}
+
+  .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  .spec{background:rgba(2,44,34,0.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:26px 22px}
+  .spec .n{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,3vw,2.6rem);color:var(--bright);letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+  .spec .n .u{font-size:1rem;color:var(--glow);margin-left:2px}
+  .spec .d{font-size:.74rem;color:var(--muted);margin-top:8px;letter-spacing:.02em;line-height:1.45}
+
+  /* protocol steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .step{
+    background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid var(--line);border-radius:4px;padding:28px 24px;position:relative;
+    transition:transform .4s ease,border-color .4s ease;
+  }
+  .step:hover{transform:translateY(-5px);border-color:rgba(110,231,183,0.4)}
+  .step .idx{
+    font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;color:var(--glow);
+    letter-spacing:.14em;margin-bottom:18px;
+  }
+  .step h3{font-family:'Syne',sans-serif;font-weight:700;font-size:1.25rem;margin-bottom:12px;letter-spacing:-0.01em}
+  .step p{font-size:.84rem;color:#b7c8bf;line-height:1.6}
+  .step .glyph{
+    width:34px;height:34px;border:1px solid var(--line);border-radius:50%;
+    display:grid;place-items:center;margin-bottom:16px;color:var(--bright);font-size:.9rem;
+  }
+
+  /* CTA */
+  .cta{
+    position:relative;z-index:10;
+    margin:0 clamp(18px,4vw,54px) clamp(60px,9vw,120px);
+    max-width:1308px;
+    background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--line);border-radius:6px;
+    padding:clamp(40px,6vw,72px);
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:32px;
+    overflow:hidden;
+  }
+  .cta::before{
+    content:"";position:absolute;top:-40%;right:-10%;width:420px;height:420px;
+    background:radial-gradient(circle,rgba(52,211,153,0.14),transparent 65%);pointer-events:none;
+  }
+  .cta h2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.7rem,3.4vw,2.7rem);letter-spacing:-0.02em;max-width:16ch;line-height:1.05}
+  .cta h2 .accent{color:var(--bright)}
+  .cta .sub{color:#c9d8d0;margin-top:14px;max-width:40ch;font-size:.92rem;line-height:1.6}
+
+  /* footer */
+  footer{
+    position:relative;z-index:10;
+    border-top:1px solid var(--line);
+    padding:40px clamp(18px,4vw,54px);
+    display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;
+    color:var(--muted);font-size:.76rem;letter-spacing:.03em;
+  }
+  footer .brand{font-size:1rem}
+  footer .links{display:flex;gap:22px;flex-wrap:wrap}
+  footer a{color:var(--muted);text-decoration:none;transition:color .25s}
+  footer a:hover{color:var(--bright)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:960px){
+    .hero{grid-template-columns:1fr;min-height:auto;padding-top:130px}
+    .panel{max-width:520px}
+    .specs{grid-template-columns:1fr 1fr}
+    .steps{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    .nav-links a:not(.nav-cta){display:none}
+    .specs{grid-template-columns:1fr}
+    .cta{flex-direction:column;align-items:flex-start}
+    .stat-grid{grid-template-columns:1fr 1fr}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="mycelium"></canvas>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<nav id="nav">
+  <a class="brand" href="#top">
+    <span class="mark"></span>RhizoNet
+  </a>
+  <div class="nav-links">
+    <a href="#network">Network</a>
+    <a href="#protocol">Protocol</a>
+    <a href="#specs">Specs</a>
+    <a class="nav-cta" href="#join">Request Access</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="dot"></span> Living substrate · v0.9.4</div>
+    <h1>Compute that<br><span class="accent">grows</span> beneath<br>the surface.</h1>
+    <p class="lead">RhizoNet is a decentralized bio-computing mesh where fungal hyphae carry data like nutrients — <b>self-healing, fractal, and impossibly efficient</b>. No servers. Only soil, signal, and symbiosis.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#join">Inoculate a node</a>
+      <a class="btn btn-ghost" href="#protocol">Read the protocol</a>
+    </div>
+    <div class="hint"><span class="cursor">◇</span> Move across the substrate to send a chemical signal.</div>
+  </div>
+
+  <aside class="panel" aria-label="Live network status">
+    <div class="panel-head">
+      <span>Node Status · live</span>
+      <span class="live"><span class="dot"></span> connected</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="label">Active Nodes</div>
+        <div class="val" id="st-nodes">1,284,907</div>
+      </div>
+      <div class="stat">
+        <div class="label">Throughput</div>
+        <div class="val" id="st-thru">8.42<small>TB/s</small></div>
+      </div>
+      <div class="stat">
+        <div class="label">Latency</div>
+        <div class="val" id="st-lat">3.1<small>ms</small></div>
+      </div>
+      <div class="stat">
+        <div class="label">Uptime</div>
+        <div class="val" id="st-up">99.98<small>%</small></div>
+      </div>
+    </div>
+
+    <div class="focus">
+      <div class="label">Focus Node</div>
+      <div class="species" id="f-species">Mycena chlorophos</div>
+      <div class="id" id="f-id">rhz://node/7f3a · biome: temperate · depth: 22cm</div>
+    </div>
+
+    <div class="load-row"><span>Metabolic Load</span><span id="f-load-pct">38%</span></div>
+    <div class="load-bar"><span id="f-load-bar" style="width:38%"></span></div>
+
+    <div class="log" id="log"></div>
+  </aside>
+</header>
+
+<section class="band" id="specs">
+  <div class="sec-head reveal">
+    <div class="eyebrow"><span class="dot"></span> Network substrate</div>
+    <h2>A forest floor that <span class="accent">thinks</span> in parallel.</h2>
+    <p>Every hyphal tip is a processor. Every mycorrhizal junction is a router. The network scales the way ecosystems do — locally, redundantly, and without a single point of failure.</p>
+  </div>
+
+  <div class="specs reveal">
+    <div class="spec"><div class="n">1.28<span class="u">M</span></div><div class="d">Active hyphal nodes across 41 biomes, self-organizing in real time.</div></div>
+    <div class="spec"><div class="n">8.4<span class="u">TB/s</span></div><div class="d">Aggregate bio-signal throughput carried by electrochemical pulses.</div></div>
+    <div class="spec"><div class="n">3.1<span class="u">ms</span></div><div class="d">Median node-to-node latency through the mycelial mesh.</div></div>
+    <div class="spec"><div class="n">0<span class="u"> servers</span></div><div class="d">Fully decentralized. The substrate is the infrastructure.</div></div>
+  </div>
+</section>
+
+<section class="band" id="protocol">
+  <div class="sec-head reveal">
+    <div class="eyebrow"><span class="dot"></span> The protocol</div>
+    <h2>Three phases of <span class="accent">symbiotic</span> computation.</h2>
+    <p>RhizoNet doesn't deploy. It colonizes. Each phase mirrors the life-cycle of the organisms that power it.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="glyph">❋</div>
+      <div class="idx">PHASE 01</div>
+      <h3>Inoculation</h3>
+      <p>Seed a substrate node with a starter culture. Within hours it establishes root contact with the wider mesh and negotiates its first routing weights.</p>
+    </div>
+    <div class="step reveal">
+      <div class="glyph">⌁</div>
+      <div class="idx">PHASE 02</div>
+      <h3>Mycorrhization</h3>
+      <p>Hyphae branch and fuse, forming redundant chemical pathways. Data is encoded in electrochemical gradients — no electricity, no heat, no clock.</p>
+    </div>
+    <div class="step reveal">
+      <div class="glyph">✦</div>
+      <div class="idx">PHASE 03</div>
+      <h3>Fruiting</h3>
+      <p>Computation surfaces as emergent output. The network self-heals damaged paths and reallocates load the moment a node goes dormant.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta reveal" id="join">
+  <div>
+    <h2>Plant your <span class="accent">first spore.</span></h2>
+    <p class="sub">Early cultivators get priority substrate, a dedicated biome, and a seat at the root council. The network is growing — join before the canopy closes.</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-primary" href="#top">Request substrate</a>
+    <a class="btn btn-ghost" href="#protocol">Read the whitepaper</a>
+  </div>
+</section>
+
+<footer>
+  <a class="brand" href="#top"><span class="mark"></span>RhizoNet</a>
+  <div class="links">
+    <a href="#network">Network</a>
+    <a href="#protocol">Protocol</a>
+    <a href="#specs">Specs</a>
+    <a href="#join">Access</a>
+  </div>
+  <div>© 2025 RhizoNet Collective · grown, not built</div>
+</footer>
+
+<script>
+(function(){
+  const canvas = document.getElementById('mycelium');
+  const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,dpr=1;
+  let nodes=[], edges=[], packets=[], pulses=[], spores=[];
+  let growth=0, mouse={x:-9999,y:-9999,active:false}, t=0, last=performance.now();
+
+  const isMobile = window.matchMedia('(max-width:820px)').matches;
+  const CFG = {
+    seeds: isMobile?3:5,
+    maxBranch: isMobile?150:280,
+    step: isMobile?24:26,
+    maxLen: isMobile?9:13,
+    packets: isMobile?10:26,
+    maxPulses: isMobile?2:4
+  };
+
+  function rand(a,b){return a+Math.random()*(b-a);}
+  function pick(a){return a[(Math.random()*a.length)|0];}
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+
+  function build(){
+    nodes=[]; edges=[]; packets=[];
+    // grow mycelium from the bottom upward, fractal branching
+    const seeds=[];
+    for(let i=0;i<CFG.seeds;i++){
+      seeds.push({x:rand(0.08,0.92)*W, y:H+10, dir:-Math.PI/2 + rand(-0.5,0.5), len:0});
+    }
+    let guard=0;
+    while(seeds.length && guard++<CFG.maxBranch){
+      const b=seeds.pop();
+      const n=nodes.length;
+      const parent = b.parent!=null?b.parent:-1;
+      nodes.push({
+        x:b.x, y:b.y,
+        r: rand(0.9, 2.4),
+        parent: parent,
+        phase: rand(0,Math.PI*2),
+        speed: rand(0.6,1.4),
+        stim: 0
+      });
+      if(parent>=0) edges.push({a:parent, b:n, len: b.len||CFG.step});
+      const count = Math.random()<0.42?2:1;
+      for(let k=0;k<count;k++){
+        const spread = k===0?rand(-0.32,0.32):rand(0.35,0.85)*(k===1?1:-1);
+        let dir = b.dir + spread;
+        // bias upward so it climbs the screen
+        dir += (-Math.PI/2 - dir)*0.18;
+        const nx = b.x + Math.cos(dir)*CFG.step;
+        const ny = b.y + Math.sin(dir)*CFG.step;
+        if(ny> -40 && nx>-40 && nx<W+40 && nodes.length<CFG.maxBranch){
+          seeds.push({x:nx,y:ny,dir:dir,len:CFG.step,parent:n});
+        }
+      }
+    }
+    // adjacency for packet routing
+    nodes.forEach(n=>n.children=[]);
+    edges.forEach(e=>{ nodes[e.a].children.push(e.b); });
+
+    // spawn packets on random edges
+    for(let i=0;i<CFG.packets;i++) spawnPacket();
+
+    // ambient spores
+    spores=[];
+    const sc = isMobile?14:34;
+    for(let i=0;i<sc;i++){
+      spores.push({x:rand(0,W),y:rand(0,H),vx:rand(-4,4),vy:rand(-8,-2),r:rand(0.4,1.4),a:rand(0.05,0.28)});
+    }
+    growth = 0;
+  }
+
+  function spawnPacket(){
+    const e = edges.length?pick(edges):null;
+    if(!e) return;
+    packets.push({a:e.a,b:e.b,p:0,speed:rand(0.006,0.018),trail:[]});
+  }
+
+  function drawGlow(x,y,r,core,halo){
+    ctx.globalCompositeOperation='lighter';
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,core);
+    g.addColorStop(0.4,halo);
+    g.addColorStop(1,'rgba(52,211,153,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  function frame(now){
+    const dt=Math.min((now-last)/1000,0.05); last=now; t+=dt;
+    if(growth<1) growth=Math.min(1, growth + dt/2.4);
+
+    // fade trails
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='rgba(5,46,22,0.30)';
+    ctx.fillRect(0,0,W,H);
+
+    const shown = Math.floor(nodes.length*growth);
+
+    // edges
+    for(let i=0;i<edges.length;i++){
+      const e=edges[i];
+      if(e.b>=shown) continue;
+      const a=nodes[e.a], b=nodes[e.b];
+      const s=Math.max(a.stim,b.stim);
+      const base=0.05 + s*0.5;
+      ctx.strokeStyle=`rgba(110,231,183,${base})`;
+      ctx.lineWidth=0.6 + s*1.2;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+
+    // nodes
+    for(let i=0;i<shown;i++){
+      const n=nodes[i];
+      // ambient pulse
+      const amb=0.5+0.5*Math.sin(t*n.speed + n.phase);
+      // mouse stimulation
+      if(mouse.active){
+        const dx=n.x-mouse.x, dy=n.y-mouse.y;
+        const d2=dx*dx+dy*dy;
+        const R=180;
+        if(d2<R*R){ n.stim=Math.max(n.stim, 1-Math.sqrt(d2)/R); }
+      }
+      n.stim*=0.92;
+      const bright=0.12 + amb*0.16 + n.stim*0.9;
+      const rr=n.r*(1+n.stim*1.6);
+      drawGlow(n.x,n.y, rr*4.2, `rgba(167,243,208,${0.5*bright})`, `rgba(52,211,153,${0.22*bright})`);
+      ctx.fillStyle=`rgba(236,253,245,${Math.min(1,0.4+bright)})`;
+      ctx.beginPath();ctx.arc(n.x,n.y,rr,0,Math.PI*2);ctx.fill();
+    }
+
+    // packets
+    for(let i=packets.length-1;i>=0;i--){
+      const p=packets[i];
+      const a=nodes[p.a], b=nodes[p.b];
+      if(!a||!b){packets.splice(i,1);spawnPacket();continue;}
+      p.p+=p.speed;
+      const x=a.x+(b.x-a.x)*p.p, y=a.y+(b.y-a.y)*p.p;
+      p.trail.push([x,y]); if(p.trail.length>7)p.trail.shift();
+      // trail
+      for(let k=0;k<p.trail.length;k++){
+        const tp=p.trail[k];
+        drawGlow(tp[0],tp[1],4,`rgba(167,243,208,${0.10*(k/p.trail.length)})`,'rgba(52,211,153,0)');
+      }
+      drawGlow(x,y,7,'rgba(200,255,230,0.9)','rgba(110,231,183,0.5)');
+      if(p.p>=1){
+        // route onward to a child, else respawn
+        const ch=a.children.length?pick(a.children):null;
+        const next = nodes[ch]?ch:(Math.random()<0.5?p.a:p.b);
+        p.a=b; p.b=ch!=null?ch:pick(edges).a; p.p=0; p.trail=[];
+        if(p.b===p.a){ packets.splice(i,1); spawnPacket(); }
+      }
+    }
+
+    // chemical signal pulses (mouse)
+    for(let i=pulses.length-1;i>=0;i--){
+      const pu=pulses[i];
+      pu.r+=dt*380;
+      const alpha=Math.max(0,1-pu.r/pu.max)*0.5;
+      ctx.globalCompositeOperation='lighter';
+      ctx.strokeStyle=`rgba(110,231,183,${alpha})`;
+      ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(pu.x,pu.y,pu.r,0,Math.PI*2);ctx.stroke();
+      ctx.globalCompositeOperation='source-over';
+      if(pu.r>pu.max) pulses.splice(i,1);
+    }
+
+    // spores
+    ctx.globalCompositeOperation='lighter';
+    for(const s of spores){
+      s.x+=s.vx*dt; s.y+=s.vy*dt;
+      if(s.y<-10){s.y=H+10;s.x=rand(0,W);}
+      if(s.x<-10)s.x=W+10; if(s.x>W+10)s.x=-10;
+      ctx.fillStyle=`rgba(167,243,208,${s.a})`;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalCompositeOperation='source-over';
+
+    requestAnimationFrame(frame);
+  }
+
+  // interaction
+  function move(x,y){ mouse.x=x; mouse.y=y; mouse.active=true; }
+  window.addEventListener('pointermove',e=>{ move(e.clientX,e.clientY); });
+  window.addEventListener('pointerdown',e=>{
+    move(e.clientX,e.clientY);
+    if(!reduce && pulses.length<CFG.maxPulses){
+      pulses.push({x:e.clientX,y:e.clientY,r:0,max:Math.max(W,H)*0.7});
+    }
+  });
+  window.addEventListener('pointerleave',()=>{mouse.active=false;});
+
+  // ---------- UI: live data + log ----------
+  const el=id=>document.getElementById(id);
+  const species=[
+    ['Mycena chlorophos','biome: subtropical · depth: 14cm'],
+    ['Armillaria mellea','biome: coniferous · depth: 31cm'],
+    ['Panellus stipticus','biome: temperate · depth: 9cm'],
+    ['Omphalotus olearius','biome: broadleaf · depth: 22cm'],
+    ['Neonothopanus nambi','biome: tropical · depth: 6cm']
+  ];
+  const verbs=['signal routed via','gradient encoded on','load rebalanced to','spore handshake w/','pathway healed at'];
+  let baseNodes=1284907;
+
+  function hex(){ return Math.floor(Math.random()*0xffff).toString(16).padStart(4,'0'); }
+  function log(){
+    const box=el('log');
+    const sp=pick(species);
+    const d=new Date();
+    const ts=d.toTimeString().slice(0,8);
+    const line=document.createElement('div');
+    line.className='line';
+    line.innerHTML=`<span class="t">${ts}</span><span>${pick(verbs)} rhz://node/${hex()}</span>`;
+    box.prepend(line);
+    while(box.children.length>6) box.removeChild(box.lastChild);
+  }
+  function tick(){
+    baseNodes += Math.floor(rand(-40,90));
+    el('st-nodes').textContent=baseNodes.toLocaleString();
+    el('st-thru').innerHTML=(8.2+Math.random()*0.6).toFixed(2)+'<small>TB/s</small>';
+    el('st-lat').innerHTML=(2.8+Math.random()*0.7).toFixed(1)+'<small>ms</small>';
+    el('st-up').innerHTML=(99.9+Math.random()*0.09).toFixed(2)+'<small>%</small>';
+    const sp=pick(species);
+    el('f-species').textContent=sp[0];
+    el('f-id').textContent='rhz://node/'+hex()+' · '+sp[1];
+    const load=Math.floor(20+Math.random()*65);
+    el('f-load-pct').textContent=load+'%';
+    el('f-load-bar').style.width=load+'%';
+    log();
+  }
+
+  // ---------- scroll reveal + nav ----------
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(e=>io.observe(e));
+
+  window.addEventListener('scroll',()=>{
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY>40);
+  });
+
+  // boot
+  resize();
+  window.addEventListener('resize',()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(resize,200); });
+  if(reduce){
+    // single static-ish render loop but no packet motion
+    growth=1;
+  }
+  requestAnimationFrame(frame);
+  tick(); setInterval(tick, reduce?6000:2600);
+})();
+</script>
+</body>
+</html>

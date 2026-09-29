@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gluten & Gauge — Hydrocolloid Shear Control</title>
+<meta name="description" content="Commercial extrusion systems for high-hydration pasta. Precision rheology for Michelin-grade kitchens.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* ============================ TOKENS ============================ */
+:root{
+  --linen:#F4F4F0;
+  --paper:#FBFBF8;
+  --ink:#1A1A1A;
+  --ink-soft:#3A3A38;
+  --beige:#C4B7A6;
+  --beige-lt:#D8CDBE;
+  --beige-dk:#A8977F;
+  --steel:#9C9C9E;
+  --steel-lt:#C6C6C9;
+  --steel-dk:#5A5A5C;
+  --line:rgba(26,26,26,.14);
+  --line-soft:rgba(26,26,26,.07);
+  --serif:'Playfair Display','Times New Roman',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--mono);
+  color:var(--ink);
+  background:var(--linen);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* linen noise + north-light wash */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 78% -10%, rgba(255,255,255,.9), rgba(255,255,255,0) 60%),
+    radial-gradient(90% 70% at 10% 110%, rgba(196,183,166,.16), rgba(196,183,166,0) 55%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-blend-mode:normal,normal,multiply;
+}
+body::after{ /* faint linen weave */
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(26,26,26,.018) 0 1px,transparent 1px 4px),
+    repeating-linear-gradient(90deg,rgba(26,26,26,.018) 0 1px,transparent 1px 4px);
+}
+main,header,footer{position:relative;z-index:2}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ============================ STEEL MATERIAL ============================ */
+.steel{
+  background:linear-gradient(118deg,#c9c9cb 0%,#e6e6e8 20%,#b3b3b6 40%,#d6d6d9 60%,#a6a6aa 82%,#c2c2c5 100%);
+  background-size:200% 100%;
+  animation:sheen 9s linear infinite;
+  color:#151515;
+  border:1px solid rgba(255,255,255,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.12);
+}
+@keyframes sheen{to{background-position:-200% 0}}
+
+/* ============================ NAV ============================ */
+.nav{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px clamp(18px,4vw,56px);
+  background:rgba(244,244,240,.72);
+  backdrop-filter:blur(10px) saturate(1.1);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--serif);font-weight:600;font-size:1.15rem;letter-spacing:-.01em}
+.brand .mark{width:26px;height:26px;flex:none}
+.brand .mark circle,.brand .mark path{stroke:var(--ink);stroke-width:1.4;fill:none}
+.nav-links{display:flex;gap:30px;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.nav-links a{position:relative;padding:4px 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--ink);transition:width .35s var(--ease)}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:18px}
+.nav-status{font-size:.62rem;letter-spacing:.16em;color:var(--steel-dk);text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.nav-status .dot{width:6px;height:6px;border-radius:50%;background:var(--beige-dk);box-shadow:0 0 0 0 rgba(168,151,127,.5);animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(168,151,127,.45)}70%{box-shadow:0 0 0 8px rgba(168,151,127,0)}100%{box-shadow:0 0 0 0 rgba(168,151,127,0)}}
+.btn-steel{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:10px 18px;border-radius:2px;cursor:pointer;transition:filter .3s,transform .3s;
+}
+.btn-steel:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.btn-steel:active{transform:translateY(0)}
+
+/* ============================ HERO ============================ */
+.hero{
+  display:grid;grid-template-columns:60fr 40fr;
+  min-height:calc(100vh - 62px);
+  border-bottom:1px solid var(--line);
+}
+.hero-left{position:relative;overflow:hidden;border-right:1px solid var(--line);min-height:520px}
+.hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* die (extruder) at left */
+.die{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:clamp(120px,17vw,210px);z-index:3;
+  padding:22px 0 22px 26px;
+}
+.die-plate{
+  background:linear-gradient(100deg,#8f8f93,#c9c9cc 30%,#7f7f83 55%,#b6b6b9 78%,#8f8f93);
+  border:1px solid rgba(255,255,255,.4);
+  border-radius:3px;
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -3px 5px rgba(0,0,0,.3),6px 8px 22px rgba(0,0,0,.14);
+  padding:16px 14px 16px 20px;position:relative;
+}
+.die-plate::after{ /* perforated brass edge */
+  content:"";position:absolute;right:-1px;top:8px;bottom:8px;width:8px;
+  background:repeating-linear-gradient(0deg,#b98a4e 0 3px,#8a6537 3px 6px);
+  border-radius:2px;box-shadow:inset 0 0 3px rgba(0,0,0,.4);
+}
+.die-label{font-size:.56rem;letter-spacing:.2em;color:#26262a;text-transform:uppercase;writing-mode:vertical-rl;position:absolute;left:6px;top:50%;transform:translateY(-50%);opacity:.7}
+.die-spec{font-size:.58rem;letter-spacing:.1em;color:#3a3a3d;line-height:1.7}
+.die-spec b{color:#151518;font-weight:600}
+.flow-caption{
+  position:absolute;left:clamp(18px,4vw,56px);bottom:22px;z-index:3;
+  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--steel-dk);
+  display:flex;align-items:center;gap:10px;
+}
+.flow-caption .bar{width:34px;height:1px;background:var(--steel-dk)}
+.cursor-hint{
+  position:absolute;right:22px;top:22px;z-index:3;font-size:.58rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--steel-dk);text-align:right;
+}
+.cursor-hint b{color:var(--ink);font-weight:600}
+
+/* hero right — spec column */
+.hero-right{
+  padding:clamp(28px,4vw,64px) clamp(24px,3vw,52px);
+  display:flex;flex-direction:column;justify-content:center;gap:34px;
+  background:linear-gradient(180deg,rgba(251,251,248,.6),rgba(244,244,240,.2));
+}
+.eyebrow{font-size:.64rem;letter-spacing:.28em;text-transform:uppercase;color:var(--beige-dk);display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--beige-dk)}
+.hero-title{
+  font-family:var(--serif);font-weight:600;
+  font-size:clamp(2.6rem,5.4vw,4.6rem);line-height:.98;letter-spacing:-.02em;
+}
+.hero-title em{font-style:italic;font-weight:500;color:var(--beige-dk)}
+.hero-title .scr{display:block;overflow:hidden}
+.hero-title .scr>span{display:block;transform:translateY(105%);transition:transform 1s var(--ease-out)}
+body.loaded .hero-title .scr>span{transform:translateY(0)}
+.hero-title .scr:nth-child(2)>span{transition-delay:.1s}
+.hero-title .scr:nth-child(3)>span{transition-delay:.2s}
+.hero-lede{font-size:.86rem;color:var(--ink-soft);max-width:42ch;line-height:1.75}
+.hero-lede .scramble{color:var(--ink)}
+
+/* live readout */
+.readout{
+  border:1px solid var(--line);border-radius:3px;background:rgba(251,251,248,.7);
+  padding:18px 20px;display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;
+  box-shadow:0 18px 40px rgba(26,26,26,.05);
+}
+.readout .rlabel{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--steel-dk);margin-bottom:5px}
+.readout .rval{font-size:1.02rem;font-weight:500;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.readout .rval small{font-size:.6rem;color:var(--steel-dk);font-weight:400;margin-left:4px}
+.readout .visc-bar{grid-column:1/-1;height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:2px}
+.readout .visc-fill{height:100%;background:linear-gradient(90deg,var(--beige),var(--beige-dk));width:40%;transition:width .5s var(--ease-out)}
+.spec-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.spec-tab{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 12px;border:1px solid var(--line);border-radius:2px;background:transparent;
+  cursor:pointer;color:var(--ink-soft);transition:all .3s var(--ease);
+}
+.spec-tab:hover{border-color:var(--beige-dk);color:var(--ink)}
+.spec-tab.active{background:var(--ink);color:var(--linen);border-color:var(--ink)}
+.hero-foot{display:flex;gap:26px;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--steel-dk);flex-wrap:wrap}
+.hero-foot b{color:var(--ink);font-weight:600}
+
+/* ============================ SECTION SHELL ============================ */
+section{padding:clamp(64px,9vw,130px) clamp(18px,4vw,56px)}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:clamp(34px,5vw,60px)}
+.sec-index{font-size:.62rem;letter-spacing:.24em;color:var(--beige-dk);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-index::before{content:"";width:30px;height:1px;background:var(--beige-dk)}
+.sec-title{font-family:var(--serif);font-weight:600;font-size:clamp(1.9rem,4vw,3.2rem);line-height:1.02;letter-spacing:-.02em;max-width:16ch}
+.sec-title em{font-style:italic;color:var(--beige-dk)}
+.sec-note{font-size:.74rem;color:var(--ink-soft);max-width:34ch;line-height:1.7}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+/* ============================ RHEOLOGY ============================ */
+.rheo{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(28px,4vw,60px);align-items:center}
+.rheo-chart{border:1px solid var(--line);border-radius:4px;background:var(--paper);padding:26px;box-shadow:0 24px 60px rgba(26,26,26,.05)}
+.rheo-chart svg{width:100%;height:auto;display:block}
+.rheo-chart .grid-line{stroke:var(--line-soft);stroke-width:1}
+.rheo-chart .curve{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-dasharray:1000;stroke-dashoffset:1000}
+.rheo-chart.in .curve{animation:draw 1.8s var(--ease-out) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.rheo-chart .curve-2{stroke:var(--beige-dk);stroke-width:1.5;stroke-dasharray:4 5}
+.rheo-chart .curve-2{animation-delay:.25s}
+.rheo-chart .axis{font-family:var(--mono);font-size:9px;fill:var(--steel-dk);letter-spacing:.08em}
+.rheo-chart .pt{fill:var(--ink)}
+.rheo-chart .pt-halo{fill:none;stroke:var(--beige-dk);stroke-width:1;opacity:.6}
+.rheo-list{display:flex;flex-direction:column;gap:0}
+.rheo-item{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:baseline;padding:20px 0;border-top:1px solid var(--line)}
+.rheo-item:last-child{border-bottom:1px solid var(--line)}
+.rheo-item .num{font-family:var(--serif);font-size:1.5rem;color:var(--beige-dk);font-weight:500}
+.rheo-item h4{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.rheo-item p{font-size:.7rem;color:var(--ink-soft);margin-top:5px;line-height:1.65}
+.rheo-item .val{font-size:.72rem;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink)}
+.rheo-item .val small{display:block;font-size:.56rem;color:var(--steel-dk);font-weight:400;letter-spacing:.1em;text-align:right;margin-top:3px}
+
+/* ============================ FLOW / STICKY ============================ */
+.flow{border-top:1px solid var(--line)}
+.flow-grid{display:grid;grid-template-columns:42fr 58fr;gap:clamp(30px,5vw,80px)}
+.flow-sticky{position:sticky;top:90px;height:fit-content}
+.flow-vis{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--paper);aspect-ratio:4/5;box-shadow:0 30px 70px rgba(26,26,26,.06)}
+.flow-vis img{width:100%;height:100%;object-fit:cover;filter:saturate(.7) contrast(1.02)}
+.kb{animation:kb 22s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1.05) translate(0,0)}to{transform:scale(1.16) translate(-2%,-2%)}}
+.flow-vis .overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(244,244,240,0) 40%,rgba(26,26,26,.55));display:flex;flex-direction:column;justify-content:flex-end;padding:22px}
+.flow-vis .ov-code{font-size:.6rem;letter-spacing:.2em;color:rgba(244,244,240,.7);text-transform:uppercase}
+.flow-vis .ov-hyd{font-family:var(--serif);font-size:2.6rem;color:var(--linen);font-weight:600;line-height:1;margin-top:4px}
+.flow-vis .ov-name{font-size:.68rem;letter-spacing:.14em;color:var(--beige-lt);text-transform:uppercase;margin-top:8px}
+.flow-readout{margin-top:20px;border:1px solid var(--line);border-radius:4px;background:rgba(251,251,248,.7);padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.flow-readout .rlabel{font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--steel-dk)}
+.flow-readout .rval{font-size:.9rem;font-weight:500;font-variant-numeric:tabular-nums;margin-top:3px}
+.flow-readout .rval small{font-size:.56rem;color:var(--steel-dk);font-weight:400;margin-left:3px}
+.flow-track{display:flex;flex-direction:column;gap:clamp(60px,12vh,140px);padding-top:8px}
+.flow-step{min-height:52vh;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.flow-step .step-no{font-size:.62rem;letter-spacing:.24em;color:var(--beige-dk);text-transform:uppercase}
+.flow-step h3{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,3.4vw,2.7rem);line-height:1.05;letter-spacing:-.02em}
+.flow-step h3 em{font-style:italic;color:var(--beige-dk)}
+.flow-step p{font-size:.82rem;color:var(--ink-soft);max-width:46ch;line-height:1.8}
+.flow-step .metrics{display:flex;gap:34px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+.flow-step .metrics .m{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel-dk)}
+.flow-step .metrics .m b{display:block;font-family:var(--serif);font-size:1.5rem;color:var(--ink);font-weight:600;letter-spacing:0;margin-top:4px}
+
+/* ============================ PRODUCTS ============================ */
+.products{background:linear-gradient(180deg,rgba(244,244,240,1),rgba(236,234,228,1));border-top:1px solid var(--line)}
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,26px)}
+.p-card{
+  position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;
+  background:var(--paper);transition:transform .5s var(--ease),box-shadow .5s var(--ease);
+  display:flex;flex-direction:column;
+}
+.p-card:hover{transform:translateY(-6px);box-shadow:0 30px 60px rgba(26,26,26,.1)}
+.p-media{position:relative;aspect-ratio:5/4;overflow:hidden}
+.p-media img{width:100%;height:100%;object-fit:cover;transition:transform 1.1s var(--ease)}
+.p-card:hover .p-media img{transform:scale(1.06)}
+/* frost overlay */
+.p-frost{
+  position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.85),rgba(255,255,255,.25) 45%,rgba(198,198,201,.4)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  opacity:0;transition:opacity .6s var(--ease);mix-blend-mode:screen;
+}
+.p-card:hover .p-frost{opacity:.55}
+/* steel border condenses */
+.p-card::before{
+  content:"";position:absolute;inset:0;border-radius:4px;pointer-events:none;z-index:4;
+  border:1px solid transparent;transition:border-color .5s var(--ease),box-shadow .5s var(--ease);
+}
+.p-card:hover::before{border-color:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),inset 0 0 26px rgba(255,255,255,.35)}
+.p-code{position:absolute;top:12px;left:12px;z-index:5;font-size:.56rem;letter-spacing:.16em;color:var(--linen);background:rgba(26,26,26,.55);padding:5px 9px;border-radius:2px;text-transform:uppercase;backdrop-filter:blur(4px)}
+.p-body{padding:20px;display:flex;flex-direction:column;gap:14px;flex:1}
+.p-body h4{font-family:var(--serif);font-weight:600;font-size:1.35rem;letter-spacing:-.01em}
+.p-body .p-desc{font-size:.72rem;color:var(--ink-soft);line-height:1.65}
+.p-specs{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}
+.p-specs .s{font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel-dk)}
+.p-specs .s b{display:block;font-size:.78rem;color:var(--ink);font-weight:500;letter-spacing:.02em;margin-top:3px;font-variant-numeric:tabular-nums}
+.p-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--line);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase}
+.p-foot .price{font-weight:600}
+.p-foot .link{color:var(--ink-soft);display:flex;align-items:center;gap:6px;transition:gap .3s,color .3s}
+.p-card:hover .p-foot .link{gap:11px;color:var(--ink)}
+
+/* ============================ GALLERY / POSTCARDS ============================ */
+.gallery{border-top:1px solid var(--line)}
+.g-wrap{display:flex;flex-wrap:wrap;gap:clamp(18px,3vw,40px);justify-content:center;align-items:center;padding-top:10px}
+.postcard{
+  position:relative;background:var(--paper);padding:12px 12px 46px;border:1px solid var(--line);
+  box-shadow:0 20px 50px rgba(26,26,26,.1);transition:transform .6s var(--ease),box-shadow .6s var(--ease);
+  width:clamp(220px,26vw,320px);
+}
+.postcard img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.postcard figcaption{position:absolute;left:14px;bottom:14px;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft)}
+.postcard .tape{position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-3deg);width:64px;height:22px;background:rgba(196,183,166,.5);border:1px solid rgba(168,151,127,.4)}
+.postcard:nth-child(1){transform:rotate(-3deg)}
+.postcard:nth-child(2){transform:rotate(2deg) translateY(24px)}
+.postcard:nth-child(3){transform:rotate(-1.5deg) translateY(-10px)}
+.postcard:nth-child(4){transform:rotate(3deg) translateY(14px)}
+.postcard:hover{transform:rotate(0) translateY(-8px) scale(1.03);box-shadow:0 34px 70px rgba(26,26,26,.16);z-index:5}
+
+/* ============================ SPECS TABLE ============================ */
+.specs{background:var(--ink);color:var(--linen);border-top:1px solid var(--ink)}
+.specs .sec-index{color:var(--beige)}
+.specs .sec-index::before{background:var(--beige)}
+.specs .sec-title{color:var(--linen)}
+.specs .sec-title em{color:var(--beige)}
+.specs .sec-note{color:rgba(244,244,240,.6)}
+.spec-table{width:100%;border-collapse:collapse;font-size:.74rem}
+.spec-table th,.spec-table td{text-align:left;padding:16px 14px;border-bottom:1px solid rgba(244,244,240,.14)}
+.spec-table thead th{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--beige);font-weight:500}
+.spec-table tbody td{color:rgba(244,244,240,.85);font-variant-numeric:tabular-nums}
+.spec-table tbody td:first-child{font-family:var(--serif);font-size:1.05rem;color:var(--linen)}
+.spec-table tbody tr{transition:background .3s}
+.spec-table tbody tr:hover{background:rgba(244,244,240,.05)}
+.spec-table .hi{color:var(--beige-lt)}
+
+/* ============================ CTA ============================ */
+.cta{text-align:center;border-top:1px solid var(--line)}
+.cta .eyebrow{justify-content:center}
+.cta .eyebrow::before{display:none}
+.cta h2{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,6vw,4.4rem);line-height:1;letter-spacing:-.02em;max-width:16ch;margin:22px auto 0}
+.cta h2 em{font-style:italic;color:var(--beige-dk)}
+.cta p{font-size:.82rem;color:var(--ink-soft);max-width:48ch;margin:24px auto 0;line-height:1.8}
+.cta-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+.btn-line{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;padding:14px 26px;border:1px solid var(--ink);border-radius:2px;cursor:pointer;background:transparent;color:var(--ink);transition:background .35s,color .35s,transform .35s}
+.btn-line:hover{background:var(--ink);color:var(--linen);transform:translateY(-2px)}
+.cta-meta{margin-top:44px;display:flex;gap:40px;justify-content:center;flex-wrap:wrap;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--steel-dk)}
+.cta-meta b{display:block;font-family:var(--serif);font-size:1.7rem;color:var(--ink);font-weight:600;letter-spacing:0;margin-bottom:4px}
+
+/* ============================ FOOTER ============================ */
+footer{border-top:1px solid var(--line);padding:clamp(48px,6vw,80px) clamp(18px,4vw,56px) 34px;background:var(--linen)}
+.f-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:36px;padding-bottom:44px;border-bottom:1px solid var(--line)}
+.f-brand{font-family:var(--serif);font-size:1.5rem;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:12px}
+.f-brand .mark{width:28px;height:28px}
+.f-brand .mark circle,.f-brand .mark path{stroke:var(--ink);stroke-width:1.4;fill:none}
+.f-tag{font-size:.72rem;color:var(--ink-soft);margin-top:16px;max-width:34ch;line-height:1.7}
+.f-col h5{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--steel-dk);margin-bottom:16px}
+.f-col a{display:block;font-size:.74rem;color:var(--ink-soft);padding:5px 0;transition:color .3s,transform .3s}
+.f-col a:hover{color:var(--ink);transform:translateX(4px)}
+.f-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding-top:26px;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--steel-dk)}
+.f-bot .coords{font-variant-numeric:tabular-nums}
+
+/* ============================ RESPONSIVE ============================ */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr}
+  .hero-left{border-right:none;border-bottom:1px solid var(--line);min-height:380px}
+  .hero-canvas{opacity:.28}
+  .die{opacity:.6}
+  .flow-caption,.cursor-hint{display:none}
+  .rheo{grid-template-columns:1fr}
+  .flow-grid{grid-template-columns:1fr}
+  .flow-sticky{position:relative;top:0;margin-bottom:40px}
+  .flow-vis{aspect-ratio:16/10}
+  .flow-step{min-height:auto;padding:20px 0}
+  .p-grid{grid-template-columns:1fr 1fr}
+  .f-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+  .nav-links{display:none}
+  .nav-status{display:none}
+  .p-grid{grid-template-columns:1fr}
+  .f-top{grid-template-columns:1fr}
+  .readout{grid-template-columns:1fr}
+  .hero-title{font-size:clamp(2.2rem,10vw,3rem)}
+}
+
+/* ============================ REDUCED MOTION ============================ */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+  .hero-title .scr>span{transform:none}
+  .rheo-chart .curve{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ NAV ============================ -->
+<header class="nav">
+  <a class="brand" href="#top">
+    <svg class="mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/></svg>
+    Gluten&nbsp;&amp;&nbsp;Gauge
+  </a>
+  <nav class="nav-links">
+    <a href="#rheology">Rheology</a>
+    <a href="#flow">Extrusion</a>
+    <a href="#systems">Systems</a>
+    <a href="#specs">Spec Sheet</a>
+  </nav>
+  <div class="nav-right">
+    <span class="nav-status"><span class="dot"></span>Line&nbsp;Nominal</span>
+    <button class="btn-steel">Request&nbsp;Calibration</button>
+  </div>
+</header>
+
+<!-- ============================ HERO ============================ -->
+<section class="hero" id="top" style="padding:0">
+  <div class="hero-left">
+    <canvas class="hero-canvas" id="flowCanvas"></canvas>
+    <div class="die">
+      <div class="die-plate">
+        <span class="die-label">BRASS DIE · Ø2.0</span>
+        <div class="die-spec">
+          <b>GG-04</b><br>
+          EXTRUDER<br>
+          <b id="diePress">18.4</b> BAR<br>
+          <b id="dieTemp">41.0</b>°C
+        </div>
+      </div>
+    </div>
+    <div class="cursor-hint">Move cursor to<br><b>shear the melt</b></div>
+    <div class="flow-caption"><span class="bar"></span> LIVE SHEAR FIELD · <span id="capState">LAMBDA 0.42</span></div>
+  </div>
+
+  <div class="hero-right">
+    <div class="eyebrow">Hydrocolloid Shear Control</div>
+    <h1 class="hero-title">
+      <span class="scr"><span>Water,</span></span>
+      <span class="scr"><span>starch &amp; <em>protein</em></span></span>
+      <span class="scr"><span>under pressure.</span></span>
+    </h1>
+    <p class="hero-lede">
+      <span class="scramble">Precision extrusion</span> for high-hydration pasta dough. We engineer the rheology of the melt — the exact point where gluten networks yield — so every strand leaves the brass die at a controlled, repeatable viscosity.
+    </p>
+
+    <div class="readout">
+      <div><div class="rlabel">Hydration λ</div><div class="rval" id="roHyd">0.42</div></div>
+      <div><div class="rlabel">Apparent Viscosity</div><div class="rval" id="roVisc">48.2<small>Pa·s</small></div></div>
+      <div><div class="rlabel">Shear Rate γ̇</div><div class="rval" id="roShear">320<small>s⁻¹</small></div></div>
+      <div><div class="rlabel">Melt Temp</div><div class="rval" id="roTemp">41.0<small>°C</small></div></div>
+      <div class="visc-bar"><div class="visc-fill" id="viscFill"></div></div>
+    </div>
+
+    <div class="spec-tabs" id="specTabs">
+      <button class="spec-tab active" data-hyd="0.42" data-visc="48.2" data-shear="320" data-temp="41.0" data-press="18.4" data-name="Semola / Water">0.42 · Semola</button>
+      <button class="spec-tab" data-hyd="0.58" data-visc="22.6" data-shear="540" data-temp="44.0" data-press="14.1" data-name="Durum + Egg">0.58 · Egg Yolk</button>
+      <button class="spec-tab" data-hyd="0.72" data-visc="9.4" data-shear="880" data-temp="47.0" data-press="9.6" data-name="Barley + Water">0.72 · Barley</button>
+      <button class="spec-tab" data-hyd="0.30" data-visc="86.0" data-shear="140" data-temp="38.0" data-press="24.8" data-name="Hard Red Wheat">0.30 · Khorasan</button>
+    </div>
+
+    <div class="hero-foot">
+      <span>ISO <b>22000</b></span>
+      <span>Traceability <b>Batch-locked</b></span>
+      <span>Throughput <b>120 kg/h</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RHEOLOGY ============================ -->
+<section class="rheo-sec" id="rheology">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">01 — Rheology</div>
+      <h2 class="sec-title reveal d1">The melt behaves like a <em>shear-thinning</em> fluid.</h2>
+    </div>
+    <p class="sec-note reveal d2">Dough viscosity is not constant. It falls as shear rises — the hydrocolloid matrix aligns under pressure. We map the curve, then hold the line.</p>
+  </div>
+
+  <div class="rheo">
+    <div class="rheo-chart reveal">
+      <svg viewBox="0 0 520 360" role="img" aria-label="Flow curve: apparent viscosity versus shear rate">
+        <!-- grid -->
+        <g class="grid-line">
+          <line x1="60" y1="40" x2="60" y2="300"/><line x1="60" y1="300" x2="490" y2="300"/>
+          <line x1="60" y1="235" x2="490" y2="235" opacity=".5"/>
+          <line x1="60" y1="170" x2="490" y2="170" opacity=".5"/>
+          <line x1="60" y1="105" x2="490" y2="105" opacity=".5"/>
+          <line x1="168" y1="40" x2="168" y2="300" opacity=".5"/>
+          <line x1="276" y1="40" x2="276" y2="300" opacity=".5"/>
+          <line x1="384" y1="40" x2="384" y2="300" opacity=".5"/>
+        </g>
+        <!-- target band -->
+        <rect x="60" y="120" width="430" height="60" fill="#C4B7A6" opacity=".12"/>
+        <!-- curves -->
+        <path class="curve" pathLength="1000" d="M60,70 C150,150 240,205 340,235 C400,252 450,262 490,268"/>
+        <path class="curve curve-2" pathLength="1000" d="M60,110 C160,175 260,225 360,250 C410,262 455,270 490,274"/>
+        <!-- points -->
+        <circle class="pt" cx="168" cy="150" r="4"/><circle class="pt-halo" cx="168" cy="150" r="9"/>
+        <circle class="pt" cx="276" cy="215" r="4"/><circle class="pt-halo" cx="276" cy="215" r="9"/>
+        <circle class="pt" cx="384" cy="245" r="4"/>
+        <!-- labels -->
+        <text class="axis" x="60" y="322">γ̇ 0 s⁻¹</text>
+        <text class="axis" x="240" y="322">SHEAR RATE →</text>
+        <text class="axis" x="470" y="322">1000</text>
+        <text class="axis" x="14" y="74" transform="rotate(-90 14 74)">η APPARENT</text>
+        <text class="axis" x="330" y="112" fill="#A8977F">PROCESS WINDOW</text>
+      </svg>
+    </div>
+
+    <div class="rheo-list">
+      <div class="rheo-item reveal">
+        <span class="num">01</span>
+        <div><h4>Kneading / Hydration</h4><p>Water binds to starch granules and glutenin. The dough is a solid; viscosity is undefined.</p></div>
+        <div class="val">λ 0.10<small>STATIC</small></div>
+      </div>
+      <div class="rheo-item reveal d1">
+        <span class="num">02</span>
+        <div><h4>Plasticisation</h4><p>Under pressure the matrix yields. The melt becomes a viscous liquid ready for the die.</p></div>
+        <div class="val">λ 0.42<small>YIELD POINT</small></div>
+      </div>
+      <div class="rheo-item reveal d2">
+        <span class="num">03</span>
+        <div><h4>Die Shear</h4><p>Forced through brass at 18 bar. Shear-thinning drops resistance as strands align.</p></div>
+        <div class="val">η 48.2<small>Pa·s</small></div>
+      </div>
+      <div class="rheo-item reveal d3">
+        <span class="num">04</span>
+        <div><h4>Relaxation</h4><p>Downstream, the melt relaxes and holds shape — the memory of the network.</p></div>
+        <div class="val">τ 1.4<small>s RECOVER</small></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ FLOW / STICKY ============================ -->
+<section class="flow" id="flow">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">02 — Extrusion Sequence</div>
+      <h2 class="sec-title reveal d1">From hydration to <em>strand</em>, measured at every stage.</h2>
+    </div>
+    <p class="sec-note reveal d2">Scroll the sequence. The gauge column tracks the live melt state as each phase engages.</p>
+  </div>
+
+  <div class="flow-grid">
+    <div class="flow-sticky">
+      <div class="flow-vis">
+        <img class="kb" src="https://picsum.photos/seed/pasta-dough-extrusion/700/900" alt="High-hydration pasta dough being extruded through a brass die">
+        <div class="overlay">
+          <div class="ov-code" id="fsCode">GG-04 / PHASE 01</div>
+          <div class="ov-hyd" id="fsHyd">0.42</div>
+          <div class="ov-name" id="fsName">Semola / Water</div>
+        </div>
+      </div>
+      <div class="flow-readout">
+        <div><div class="rlabel">Pressure</div><div class="rval" id="fsPress">18.4<small>bar</small></div></div>
+        <div><div class="rlabel">Temp</div><div class="rval" id="fsTemp">41.0<small>°C</small></div></div>
+        <div><div class="rlabel">Viscosity</div><div class="rval" id="fsVisc">48.2<small>Pa·s</small></div></div>
+        <div><div class="rlabel">Throughput</div><div class="rval" id="fsRate">120<small>kg/h</small></div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <article class="flow-step reveal" data-hyd="0.42" data-press="18.4" data-temp="41.0" data-visc="48.2" data-rate="120" data-name="Semola / Water" data-code="GG-04 / PHASE 01">
+        <span class="step-no">Phase 01 — Hydration</span>
+        <h3>The dough <em>intakes</em> water at a fixed ratio.</h3>
+        <p>Every batch begins with a gravimetric dose. Hydration is set to the tenth of a percent — the single variable that decides whether the network forms or collapses.</p>
+        <div class="metrics"><div class="m">Hydration<b>0.42</b></div><div class="m">Dose Tolerance<b>±0.005</b></div><div class="m">Mix Time<b>14 min</b></div></div>
+      </article>
+
+      <article class="flow-step reveal" data-hyd="0.58" data-press="14.1" data-temp="44.0" data-visc="22.6" data-rate="145" data-name="Durum + Egg" data-code="GG-06 / PHASE 02">
+        <span class="step-no">Phase 02 — Plasticisation</span>
+        <h3>Pressure <em>plasticises</em> the melt.</h3>
+        <p>Vacuum removes air pockets while twin screws knead the mass into a homogeneous, air-free dough. Viscosity falls as the matrix begins to flow.</p>
+        <div class="metrics"><div class="m">Vacuum<b>−0.92 bar</b></div><div class="m">Screw Speed<b>220 rpm</b></div><div class="m">Homogeneity<b>99.4%</b></div></div>
+      </article>
+
+      <article class="flow-step reveal" data-hyd="0.72" data-press="9.6" data-temp="47.0" data-visc="9.4" data-rate="180" data-name="Barley + Water" data-code="GG-09 / PHASE 03">
+        <span class="step-no">Phase 03 — Die Shear</span>
+        <h3>The melt <em>shears</em> through brass.</h3>
+        <p>At the die face, shear rate peaks and the dough thins. Strand geometry is cut by the perforated plate; temperature is held to protect the protein.</p>
+        <div class="metrics"><div class="m">Die Temp<b>47.0 °C</b></div><div class="m">Shear γ̇<b>880 s⁻¹</b></div><div class="m">Strand Ø<b>2.0 mm</b></div></div>
+      </article>
+
+      <article class="flow-step reveal" data-hyd="0.30" data-press="24.8" data-temp="38.0" data-visc="86.0" data-rate="90" data-name="Hard Red Wheat" data-code="GG-01 / PHASE 04">
+        <span class="step-no">Phase 04 — Relaxation</span>
+        <h3>The strand <em>relaxes</em> and holds.</h3>
+        <p>Downstream, the melt recovers its structure. Controlled drying locks the shape without cracking — the memory of the network preserved to the gram.</p>
+        <div class="metrics"><div class="m">Recovery τ<b>1.4 s</b></div><div class="m">Dry Loss<b>&lt;0.3%</b></div><div class="m">Crack Rate<b>0 / 10⁶</b></div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ PRODUCTS ============================ -->
+<section class="products" id="systems">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">03 — Systems</div>
+      <h2 class="sec-title reveal d1">Extrusion <em>instruments</em> for the pass.</h2>
+    </div>
+    <p class="sec-note reveal d2">Brushed-steel chassis, brass dies, closed-loop rheology. Hover a unit to read its condensing spec sheet.</p>
+  </div>
+
+  <div class="p-grid">
+    <article class="p-card reveal">
+      <div class="p-media"><img src="https://picsum.photos/seed/brass-die-extruder-steel/600/480" alt="Brass die extrusion head"><div class="p-frost"></div><span class="p-code">GG-04</span></div>
+      <div class="p-body">
+        <h4>Die Head GG-04</h4>
+        <p class="p-desc">Interchangeable brass plate, Ø2.0 perforation array. The heart of the extrusion line.</p>
+        <div class="p-specs">
+          <div class="s">Max Press<b>24.8 bar</b></div><div class="s">Temp<b>38–47 °C</b></div>
+          <div class="s">Die Ø<b>2.0 mm</b></div><div class="s">Throughput<b>120 kg/h</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+
+    <article class="p-card reveal d1">
+      <div class="p-media"><img src="https://picsum.photos/seed/vacuum-mixer-dough-steel/600/480" alt="Vacuum kneading mixer"><div class="p-frost"></div><span class="p-code">GG-06</span></div>
+      <div class="p-body">
+        <h4>Vacuum Kneader GG-06</h4>
+        <p class="p-desc">Twin-screw plasticiser with integrated vacuum. Removes air, homogenises the melt.</p>
+        <div class="p-specs">
+          <div class="s">Vacuum<b>−0.92 bar</b></div><div class="s">Screw<b>220 rpm</b></div>
+          <div class="s">Batch<b>60 kg</b></div><div class="s">Homog.<b>99.4%</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+
+    <article class="p-card reveal d2">
+      <div class="p-media"><img src="https://picsum.photos/seed/rheology-sensor-lab-steel/600/480" alt="Inline rheology sensor"><div class="p-frost"></div><span class="p-code">GG-09</span></div>
+      <div class="p-body">
+        <h4>Rheology Gauge GG-09</h4>
+        <p class="p-desc">Inline viscometer. Reads apparent viscosity at the die face and feeds the loop.</p>
+        <div class="p-specs">
+          <div class="s">Range<b>0–120 Pa·s</b></div><div class="s">Sample<b>5 Hz</b></div>
+          <div class="s">Accuracy<b>±0.5%</b></div><div class="s">Output<b>4–20 mA</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+
+    <article class="p-card reveal">
+      <div class="p-media"><img src="https://picsum.photos/seed/cooling-conveyor-pasta-steel/600/480" alt="Cooling and relaxation conveyor"><div class="p-frost"></div><span class="p-code">GG-11</span></div>
+      <div class="p-body">
+        <h4>Relaxation Line GG-11</h4>
+        <p class="p-desc">Slow, controlled cooling belt. Manages strand recovery without cracking.</p>
+        <div class="p-specs">
+          <div class="s">Belt<b>12 m</b></div><div class="s">ΔT<b>47→22 °C</b></div>
+          <div class="s">Speed<b>0.4 m/s</b></div><div class="s">Crack<b>0 / 10⁶</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+
+    <article class="p-card reveal d1">
+      <div class="p-media"><img src="https://picsum.photos/seed/calibration-console-lab/600/480" alt="Calibration console"><div class="p-frost"></div><span class="p-code">GG-CC</span></div>
+      <div class="p-body">
+        <h4>Calibration Console</h4>
+        <p class="p-desc">The operator interface. Sets hydration, pressure and temperature targets per batch.</p>
+        <div class="p-specs">
+          <div class="s">Display<b>10.4″</b></div><div class="s">Logs<b>Batch-locked</b></div>
+          <div class="s">Protocol<b>ISO 22000</b></div><div class="s">Ports<b>6× I/O</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+
+    <article class="p-card reveal d2">
+      <div class="p-media"><img src="https://picsum.photos/seed/brass-perforated-plate-macro/600/480" alt="Brass perforated die plate macro"><div class="p-frost"></div><span class="p-code">GG-DIE</span></div>
+      <div class="p-body">
+        <h4>Brass Die Library</h4>
+        <p class="p-desc">CNC-cut perforation plates. Custom strand geometry, from tondarelli to bucatini.</p>
+        <div class="p-specs">
+          <div class="s">Geometries<b>40+</b></div><div class="s">Material<b>Brass CW614N</b></div>
+          <div class="s">Tolerance<b>±0.02 mm</b></div><div class="s">Lead<b>10 days</b></div>
+        </div>
+      </div>
+      <div class="p-foot"><span class="price">On Request</span><span class="link">Datasheet →</span></div>
+    </article>
+  </div>
+</section>
+
+<!-- ============================ GALLERY ============================ -->
+<section class="gallery">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">04 — Field Notes</div>
+      <h2 class="sec-title reveal d1">Documented on the <em>production floor</em>.</h2>
+    </div>
+    <p class="sec-note reveal d2">Installs across Michelin kitchens and craft labs. Sterile, bright, measured.</p>
+  </div>
+  <div class="g-wrap">
+    <figure class="postcard reveal"><span class="tape"></span><img src="https://picsum.photos/seed/pasta-extruder-facility/500/380" alt="Extruder in a sterile facility"><figcaption>Facility 04 — Bologna</figcaption></figure>
+    <figure class="postcard reveal d1"><span class="tape"></span><img src="https://picsum.photos/seed/brass-die-macro-dough/500/380" alt="Macro of dough at the brass die"><figcaption>Die Face — 18 bar</figcaption></figure>
+    <figure class="postcard reveal d2"><span class="tape"></span><img src="https://picsum.photos/seed/fresh-pasta-strands-white/500/380" alt="Fresh extruded pasta strands"><figcaption>Strand QC — Ø2.0</figcaption></figure>
+    <figure class="postcard reveal d3"><span class="tape"></span><img src="https://picsum.photos/seed/kitchen-rheology-console/500/380" alt="Rheology console in kitchen"><figcaption>Console — Batch-locked</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============================ SPECS TABLE ============================ -->
+<section class="specs" id="specs">
+  <div class="sec-head">
+    <div>
+      <div class="sec-index reveal">05 — Spec Sheet</div>
+      <h2 class="sec-title reveal d1">Full technical <em>envelope</em>.</h2>
+    </div>
+    <p class="sec-note reveal d2">Consolidated reference for the GG extrusion platform. All values verified at the die face.</p>
+  </div>
+  <div class="reveal">
+    <table class="spec-table">
+      <thead>
+        <tr><th>Parameter</th><th>Min</th><th>Nominal</th><th>Max</th><th>Unit</th><th>Tolerance</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hydration λ</td><td>0.30</td><td class="hi">0.42</td><td>0.72</td><td>—</td><td>±0.005</td></tr>
+        <tr><td>Apparent Viscosity</td><td>9.4</td><td class="hi">48.2</td><td>86.0</td><td>Pa·s</td><td>±0.5%</td></tr>
+        <tr><td>Shear Rate γ̇</td><td>140</td><td class="hi">320</td><td>880</td><td>s⁻¹</td><td>±2%</td></tr>
+        <tr><td>Die Pressure</td><td>9.6</td><td class="hi">18.4</td><td>24.8</td><td>bar</td><td>±0.1</td></tr>
+        <tr><td>Melt Temperature</td><td>38.0</td><td class="hi">41.0</td><td>47.0</td><td>°C</td><td>±0.2</td></tr>
+        <tr><td>Throughput</td><td>90</td><td class="hi">120</td><td>180</td><td>kg/h</td><td>±1%</td></tr>
+        <tr><td>Strand Diameter</td><td>1.6</td><td class="hi">2.0</td><td>3.2</td><td>mm</td><td>±0.02</td></tr>
+        <tr><td>Relaxation τ</td><td>0.8</td><td class="hi">1.4</td><td>2.1</td><td>s</td><td>±5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ CTA ============================ -->
+<section class="cta">
+  <div class="eyebrow">Calibration Program</div>
+  <h2>Hold the line at <em>your</em> hydration.</h2>
+  <p>We commission the GG platform against your exact dough — semola, egg, barley or heritage wheat. A rheology engineer maps your flow curve before a single strand is cut.</p>
+  <div class="cta-actions">
+    <button class="btn-line">Request Calibration</button>
+    <button class="btn-steel">Download Spec Sheet</button>
+  </div>
+  <div class="cta-meta">
+    <div><b>ISO 22000</b>Certified</div>
+    <div><b>Batch-locked</b>Traceability</div>
+    <div><b>40+</b>Die Geometries</div>
+    <div><b>±0.5%</b>Viscosity Accuracy</div>
+  </div>
+</section>
+
+<!-- ============================ FOOTER ============================ -->
+<footer>
+  <div class="f-top">
+    <div>
+      <div class="f-brand">
+        <svg class="mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M6 6l12 12M18 6L6 18"/></svg>
+        Gluten &amp; Gauge
+      </div>
+      <p class="f-tag">Commercial extrusion systems for high-hydration pasta. Scientific rigour, applied to the craft.</p>
+    </div>
+    <div class="f-col">
+      <h5>Systems</h5>
+      <a href="#systems">Die Heads</a><a href="#systems">Vacuum Kneaders</a><a href="#systems">Rheology Gauges</a><a href="#systems">Relaxation Lines</a>
+    </div>
+    <div class="f-col">
+      <h5>Reference</h5>
+      <a href="#rheology">Rheology</a><a href="#flow">Extrusion</a><a href="#specs">Spec Sheet</a><a href="#">Brass Library</a>
+    </div>
+    <div class="f-col">
+      <h5>Company</h5>
+      <a href="#">Calibration</a><a href="#">Certification</a><a href="#">Installations</a><a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="f-bot">
+    <span>© 2024 Gluten &amp; Gauge — Hydrocolloid Shear Control</span>
+    <span class="coords">44.4949° N · 11.3426° E</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- entrance ---------- */
+  window.addEventListener('load', function(){ document.body.classList.add('loaded'); });
+  setTimeout(function(){ document.body.classList.add('loaded'); }, 300);
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.16});
+  document.querySelectorAll('.reveal, .rheo-chart').forEach(function(el){ io.observe(el); });
+
+  /* ---------- scramble decode ---------- */
+  function scramble(el){
+    var target = el.textContent, glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/%·—";
+    if(reduced) return;
+    var frame = 0, total = target.length * 3 + 12;
+    function tick(){
+      var out = "";
+      for(var i=0;i<target.length;i++){
+        if(target[i]===' '){ out+=' '; continue; }
+        var reveal = frame - i*2;
+        if(reveal > 6){ out += target[i]; }
+        else if(reveal > 0){ out += glyphs[Math.floor(Math.random()*glyphs.length)]; }
+        else { out += glyphs[Math.floor(Math.random()*glyphs.length)]; }
+      }
+      el.textContent = out;
+      frame++;
+      if(frame < total){ requestAnimationFrame(tick); } else { el.textContent = target; }
+    }
+    tick();
+  }
+  document.querySelectorAll('.scramble').forEach(function(el){
+    var o = new IntersectionObserver(function(en){ en.forEach(function(e){ if(e.isIntersecting){ scramble(e.target); o.unobserve(e.target); } }); }, {threshold:0.6});
+    o.observe(el);
+  });
+
+  /* ---------- hero flow canvas ---------- */
+  var canvas = document.getElementById('flowCanvas');
+  var ctx = canvas.getContext('2d');
+  var W=0,H=0,dpr=Math.min(window.devicePixelRatio||1,2);
+  var mx=0.5,my=0.5, tmx=0.5,tmy=0.5;
+  var viscosity = 0.42;        // current (animated)
+  var targetVisc = 0.42;       // tab target
+  var shearBoost = 0;          // from mouse
+  var tShear = 0;
+
+  function resize(){
+    var r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function lerp(a,b,n){ return a+(b-a)*n; }
+
+  function drawFlow(t){
+    ctx.clearRect(0,0,W,H);
+    var dieX = W*0.16;
+    var cy = H*0.5;
+    var lanes = 7;
+    var spread = H*0.16;
+    // viscosity -> thickness & speed; shearBoost -> thinning
+    var effVisc = lerp(viscosity, viscosity*0.55, tShear);
+    var baseThick = lerp(46, 14, effVisc);
+    var speed = lerp(0.00022, 0.0006, effVisc);
+    var wobbleAmp = lerp(6, 20, tShear);
+
+    for(var i=0;i<lanes;i++){
+      var frac = i/(lanes-1);
+      var laneOffset = (frac-0.5)*2*spread;
+      var thick = baseThick*(1-Math.abs(frac-0.5)*0.9);
+      if(thick<2) thick=2;
+      ctx.beginPath();
+      for(var x=dieX; x<=W; x+=10){
+        var p = (x-dieX)/(W-dieX);
+        var wave = Math.sin(x*0.012 - t*speed*1000 + i*0.6)*wobbleAmp*(0.3+p);
+        var flow = Math.sin(x*0.006 + t*speed*600)*spread*0.4;
+        // mouse guidance: pull toward cursor
+        var dx = (x/W)-mx, dy = ((cy+laneOffset)/H)-my;
+        var d = Math.sqrt(dx*dx+dy*dy);
+        var pull = Math.max(0, 1-d/0.35);
+        var guideY = (cy+laneOffset) + (my*H-(cy+laneOffset))*pull*0.4;
+        var y = guideY + wave + flow*0.3;
+        if(x===dieX) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      var g = ctx.createLinearGradient(dieX,0,W,0);
+      g.addColorStop(0,'rgba(196,183,166,0.0)');
+      g.addColorStop(0.12,'rgba(196,183,166,0.95)');
+      g.addColorStop(0.7,'rgba(168,151,127,0.85)');
+      g.addColorStop(1,'rgba(168,151,127,0.0)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = thick;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.stroke();
+    }
+    // glossy highlight on top lane
+    ctx.beginPath();
+    for(var x2=dieX; x2<=W; x2+=10){
+      var p2=(x2-dieX)/(W-dieX);
+      var w2=Math.sin(x2*0.012 - t*speed*1000)*wobbleAmp*(0.3+p2);
+      var y2=cy+w2 - baseThick*0.35;
+      if(x2===dieX) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+    }
+    ctx.strokeStyle='rgba(216,205,190,0.5)';
+    ctx.lineWidth=baseThick*0.4;
+    ctx.stroke();
+  }
+
+  function loop(t){
+    // smooth mouse
+    mx = lerp(mx,tmx,0.06); my = lerp(my,tmy,0.06);
+    viscosity = lerp(viscosity, targetVisc, 0.05);
+    tShear = lerp(tShear, shearBoost, 0.08);
+    shearBoost *= 0.96; // decay
+    drawFlow(t);
+    requestAnimationFrame(loop);
+  }
+
+  if(reduced){
+    // static frame
+    viscosity = targetVisc;
+    drawFlow(0);
+  } else {
+    requestAnimationFrame(loop);
+    var heroLeft = document.querySelector('.hero-left');
+    heroLeft.addEventListener('pointermove', function(e){
+      var r = canvas.getBoundingClientRect();
+      tmx = (e.clientX-r.left)/r.width;
+      tmy = (e.clientY-r.top)/r.height;
+      // shear the melt: moving fast thins it
+      shearBoost = Math.min(1, shearBoost + 0.18);
+      updateLiveReadout();
+    });
+    heroLeft.addEventListener('pointerleave', function(){ tmx=0.5; tmy=0.5; });
+  }
+
+  /* ---------- live readout tied to viscosity + shear ---------- */
+  var roHyd=document.getElementById('roHyd'), roVisc=document.getElementById('roVisc'),
+      roShear=document.getElementById('roShear'), roTemp=document.getElementById('roTemp'),
+      viscFill=document.getElementById('viscFill'), capState=document.getElementById('capState'),
+      diePress=document.getElementById('diePress'), dieTemp=document.getElementById('dieTemp');
+  var base = {hyd:0.42,visc:48.2,shear:320,temp:41.0,press:18.4};
+
+  function updateLiveReadout(){
+    var s = tShear;
+    var hyd = base.hyd;
+    var visc = base.visc*(1 - s*0.45);
+    var shear = base.shear*(1 + s*1.6);
+    var temp = base.temp + s*1.2;
+    var press = base.press*(1 - s*0.25);
+    roHyd.textContent = hyd.toFixed(2);
+    roVisc.innerHTML = visc.toFixed(1)+'<small>Pa·s</small>';
+    roShear.innerHTML = Math.round(shear)+'<small>s⁻¹</small>';
+    roTemp.innerHTML = temp.toFixed(1)+'<small>°C</small>';
+    diePress.textContent = press.toFixed(1);
+    dieTemp.textContent = temp.toFixed(1);
+    var fillPct = Math.max(4, Math.min(100, (visc/90)*100));
+    viscFill.style.width = fillPct+'%';
+    capState.textContent = 'LAMBDA '+hyd.toFixed(2);
+  }
+
+  /* ---------- spec tabs ---------- */
+  document.getElementById('specTabs').addEventListener('click', function(e){
+    var btn = e.target.closest('.spec-tab'); if(!btn) return;
+    document.querySelectorAll('.spec-tab').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    base.hyd = parseFloat(btn.dataset.hyd);
+    base.visc = parseFloat(btn.dataset.visc);
+    base.shear = parseFloat(btn.dataset.shear);
+    base.temp = parseFloat(btn.dataset.temp);
+    base.press = parseFloat(btn.dataset.press);
+    targetVisc = base.hyd;
+    updateLiveReadout();
+    if(reduced){ viscosity=targetVisc; drawFlow(0); }
+  });
+  updateLiveReadout();
+
+  /* ---------- sticky flow gauge updates ---------- */
+  var fsCode=document.getElementById('fsCode'),fsHyd=document.getElementById('fsHyd'),
+      fsName=document.getElementById('fsName'),fsPress=document.getElementById('fsPress'),
+      fsTemp=document.getElementById('fsTemp'),fsVisc=document.getElementById('fsVisc'),
+      fsRate=document.getElementById('fsRate');
+  var flowIO = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var d = e.target.dataset;
+        fsCode.textContent = d.code;
+        fsHyd.textContent = d.hyd;
+        fsName.textContent = d.name;
+        fsPress.innerHTML = d.press+'<small>bar</small>';
+        fsTemp.innerHTML = d.temp+'<small>°C</small>';
+        fsVisc.innerHTML = d.visc+'<small>Pa·s</small>';
+        fsRate.innerHTML = d.rate+'<small>kg/h</small>';
+      }
+    });
+  }, {threshold:0.5, rootMargin:'-20% 0px -20% 0px'});
+  document.querySelectorAll('.flow-step').forEach(function(el){ flowIO.observe(el); });
+
+})();
+</script>
+</body>
+</html>

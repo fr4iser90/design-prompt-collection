@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prussix — Cyanotype Indexing System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#003153;
+    --blue-deep:#00203a;
+    --blue-soft:#0a3f68;
+    --white:#e6f2ff;
+    --grid:#4a90e2;
+    --rust:#8b4513;
+    --hair:rgba(74,144,226,.20);
+    --hair-strong:rgba(74,144,226,.40);
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --sans:'Space Grotesk',system-ui,sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--blue);
+    color:var(--white);
+    font-family:var(--mono);
+    font-size:15px;
+    line-height:1.55;
+    letter-spacing:.01em;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    cursor:crosshair;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .grain{
+    position:fixed;inset:0;z-index:60;pointer-events:none;
+    opacity:.07;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:55;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(0,20,38,.55) 100%);
+  }
+  .wash{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 15% 12%, rgba(255,255,255,.05), transparent 60%),
+      radial-gradient(55% 60% at 88% 82%, rgba(0,15,30,.55), transparent 65%);
+  }
+  /* 12-column contact-tape grid */
+  .col-grid{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    display:grid;grid-template-columns:repeat(12,1fr);
+    max-width:1440px;margin:0 auto;
+  }
+  .col-grid span{border-left:1px solid var(--hair)}
+  .col-grid span:first-child{border-left:none}
+
+  /* ---------- FLASH ON LOAD ---------- */
+  .flash{
+    position:fixed;inset:0;z-index:100;background:var(--white);
+    pointer-events:none;transition:opacity 1.1s ease-out;
+  }
+  .flash.go{opacity:0}
+
+  /* ---------- UV LIGHT ---------- */
+  .uv-light{
+    position:fixed;top:0;left:0;width:420px;height:420px;z-index:50;
+    pointer-events:none;transform:translate(-50%,-50%);
+    opacity:0;transition:opacity .5s ease;
+    background:radial-gradient(circle, rgba(230,242,255,.12) 0%, rgba(230,242,255,.05) 30%, transparent 62%);
+  }
+  .uv-light.on{opacity:1}
+  .uv-ring{
+    position:absolute;inset:44%;border:1px solid rgba(230,242,255,.35);
+    border-radius:50%;
+  }
+  .uv-ring::after{content:"";position:absolute;inset:38%;border:1px solid rgba(230,242,255,.18);border-radius:50%}
+  .uv-cross::before,.uv-cross::after{
+    content:"";position:absolute;background:rgba(230,242,255,.25);
+  }
+  .uv-cross::before{left:50%;top:30%;width:1px;height:40%;transform:translateX(-50%)}
+  .uv-cross::after{top:50%;left:30%;height:1px;width:40%;transform:translateY(-50%)}
+
+  /* ---------- LAYOUT SHELL ---------- */
+  .wrap{position:relative;z-index:10;max-width:1440px;margin:0 auto;padding:0 clamp(20px,4vw,64px)}
+
+  /* ---------- TOP BAR ---------- */
+  header.top{
+    position:relative;z-index:10;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:20px clamp(20px,4vw,64px);
+    border-bottom:1px solid var(--hair);
+    max-width:1440px;margin:0 auto;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  }
+  header.top .mark{display:flex;align-items:center;gap:10px;font-weight:600}
+  header.top .dot{width:9px;height:9px;background:var(--white);border-radius:50%;box-shadow:0 0 0 4px rgba(230,242,255,.12)}
+  header.top nav{display:flex;gap:26px}
+  header.top nav a{color:rgba(230,242,255,.55);text-decoration:none;transition:color .25s}
+  header.top nav a:hover{color:var(--white)}
+  header.top .coord{color:rgba(230,242,255,.4)}
+  @media(max-width:760px){header.top nav{display:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative;padding:clamp(40px,7vw,90px) 0 clamp(60px,8vw,110px)}
+  .hero .kicker{
+    font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:rgba(230,242,255,.5);margin-bottom:26px;
+  }
+  .brand{
+    font-family:var(--sans);font-weight:700;
+    font-size:clamp(52px,13vw,168px);line-height:.86;
+    letter-spacing:-.03em;text-transform:uppercase;
+    text-shadow:0 1px 0 rgba(0,20,38,.6), 0 -1px 0 rgba(255,255,255,.06);
+  }
+  .brand .sub{
+    display:block;font-size:clamp(11px,1.4vw,15px);font-weight:400;
+    letter-spacing:.42em;color:rgba(230,242,255,.55);margin-top:14px;
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,4vw,56px);
+    align-items:end;margin-top:clamp(30px,4vw,54px);
+  }
+  .hero-lead p{
+    max-width:44ch;color:rgba(230,242,255,.72);font-size:15px;
+  }
+  .hero-lead .reveal-line{
+    font-family:var(--sans);font-weight:500;
+    font-size:clamp(20px,2.6vw,30px);line-height:1.2;
+    color:var(--white);margin-bottom:18px;letter-spacing:-.01em;
+  }
+  .hero-meta{display:flex;flex-direction:column;gap:14px;font-size:12px;color:rgba(230,242,255,.5)}
+  .hero-meta div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--hair);padding-bottom:8px}
+  .hero-meta b{color:var(--white);font-weight:500}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;align-items:start}}
+
+  /* ---------- SECTION LABEL ---------- */
+  .sec-label{
+    display:flex;align-items:baseline;gap:16px;
+    padding:26px 0 22px;border-top:1px solid var(--hair);
+    font-size:11px;letter-spacing:.28em;text-transform:uppercase;
+    color:rgba(230,242,255,.5);
+  }
+  .sec-label .num{color:var(--white);font-weight:600}
+  .sec-label .rule{flex:1;height:1px;background:var(--hair)}
+
+  /* ---------- LATENT BLOCKS ---------- */
+  .blocks{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--hair);border:1px solid var(--hair);
+  }
+  .block{
+    position:relative;background:var(--blue);
+    padding:clamp(22px,2.4vw,34px);min-height:300px;
+    display:flex;flex-direction:column;
+    animation:pulse 7s ease-in-out infinite;
+  }
+  .block:nth-child(2){animation-delay:-2.5s}
+  .block:nth-child(3){animation-delay:-4.5s}
+  @keyframes pulse{0%,100%{opacity:.94}50%{opacity:1}}
+
+  .block .bhead{
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(230,242,255,.4);margin-bottom:22px;
+  }
+  .block .bhead .idx{color:rgba(230,242,255,.6)}
+  .block .btitle{
+    font-family:var(--sans);font-weight:700;font-size:20px;
+    letter-spacing:-.01em;color:var(--white);margin-bottom:18px;
+  }
+
+  /* latent / bleached data rows */
+  .lat{
+    display:flex;justify-content:space-between;gap:12px;
+    padding:11px 0;border-bottom:1px dashed var(--hair);
+    font-size:13px;
+  }
+  .lat .k{color:rgba(230,242,255,.42);text-transform:lowercase}
+  .lat .v{
+    position:relative;color:var(--blue);overflow:hidden;
+    transition:color .35s ease;max-width:60%;text-align:right;
+  }
+  .lat .v::after{
+    content:"";position:absolute;inset:0;background:var(--blue);
+    transition:opacity .35s ease;pointer-events:none;
+  }
+  .block.is-lit .lat .v{color:var(--white);text-shadow:0 0 2px rgba(230,242,255,.7)}
+  .block.is-lit .lat .v::after{opacity:0}
+
+  .block .stamp{
+    position:absolute;top:14px;right:14px;
+    font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--white);
+    border:2px solid var(--white);border-radius:3px;
+    padding:5px 9px;transform:rotate(-11deg);
+    opacity:0;transition:opacity .4s ease;
+    box-shadow:inset 0 0 0 1px rgba(230,242,255,.3);
+  }
+  .block .stamp::after{
+    content:"";position:absolute;inset:2px;border:1px dashed rgba(230,242,255,.4);border-radius:2px;
+  }
+  .block.is-lit .stamp{opacity:.9}
+  .block.is-lit .stamp.err{color:var(--rust);border-color:var(--rust);box-shadow:inset 0 0 0 1px rgba(139,69,19,.4)}
+  .block.is-lit .stamp.err::after{border-color:rgba(139,69,19,.4)}
+
+  .block .foot{
+    margin-top:auto;padding-top:22px;font-size:10px;
+    letter-spacing:.14em;color:rgba(230,242,255,.35);text-transform:lowercase;
+  }
+  .block .hint{
+    display:inline-flex;align-items:center;gap:7px;
+    color:rgba(230,242,255,.5);transition:opacity .3s;
+  }
+  .block.is-lit .hint{opacity:0}
+  .block .hint .lamp{width:6px;height:6px;border-radius:50%;background:var(--white);animation:blink 1.4s steps(2) infinite}
+  @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:.2}}
+
+  /* touch / mobile behaviour */
+  .block .tap-hold{display:none}
+  @media(max-width:860px){
+    .blocks{grid-template-columns:1fr}
+    body{cursor:auto}
+    .uv-light{display:none}
+    .block{min-height:auto}
+    .block .hint{display:none}
+    .block .tap-hold{
+      display:block;margin-top:16px;font-size:11px;letter-spacing:.16em;
+      text-transform:uppercase;color:rgba(230,242,255,.45);
+      border:1px solid var(--hair);padding:10px;text-align:center;
+    }
+    .block.is-lit .tap-hold{opacity:.4}
+  }
+  @media(min-width:861px){
+    .block{cursor:pointer}
+    .block .stamp{transition:opacity .5s ease .1s}
+  }
+
+  /* ---------- PROTOCOL ---------- */
+  .protocol{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+    background:var(--hair);border:1px solid var(--hair);margin-top:2px;
+  }
+  .step{background:var(--blue);padding:clamp(24px,2.6vw,38px)}
+  .step .n{font-family:var(--sans);font-weight:700;font-size:34px;color:rgba(230,242,255,.28);line-height:1}
+  .step h3{font-family:var(--sans);font-weight:500;font-size:18px;margin:16px 0 12px;letter-spacing:-.01em}
+  .step p{font-size:13px;color:rgba(230,242,255,.6)}
+  @media(max-width:760px){.protocol{grid-template-columns:1fr}}
+
+  /* ---------- CTA ---------- */
+  .cta{
+    margin:clamp(50px,7vw,90px) 0;padding:clamp(34px,5vw,64px);
+    border:1px solid var(--hair-strong);background:var(--blue-deep);
+    display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:30px;
+  }
+  .cta .big{font-family:var(--sans);font-weight:700;font-size:clamp(24px,3.4vw,40px);letter-spacing:-.02em;max-width:20ch;line-height:1.1}
+  .cta .btns{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{
+    font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    padding:16px 26px;border:1px solid var(--white);background:transparent;color:var(--white);
+    cursor:pointer;transition:background .25s,color .25s;text-decoration:none;display:inline-block;
+  }
+  .btn.solid{background:var(--white);color:var(--blue)}
+  .btn:hover{background:var(--white);color:var(--blue)}
+  .btn.solid:hover{background:transparent;color:var(--white)}
+
+  /* ---------- FOOTER / FILM ADVANCE ---------- */
+  footer{border-top:1px solid var(--hair);position:relative;z-index:10}
+  .film{
+    overflow:hidden;border-bottom:1px solid var(--hair);padding:14px 0;
+    font-size:11px;letter-spacing:.1em;color:rgba(230,242,255,.4);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+            mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  }
+  .film-track{display:flex;gap:34px;white-space:nowrap;width:max-content;animation:advance 40s linear infinite}
+  .film-track span{display:inline-flex;gap:8px;align-items:center}
+  .film-track span::before{content:"";width:5px;height:5px;background:rgba(230,242,255,.4);border-radius:50%}
+  @keyframes advance{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  .foot-main{
+    max-width:1440px;margin:0 auto;padding:40px clamp(20px,4vw,64px);
+    display:flex;flex-wrap:wrap;justify-content:space-between;gap:30px;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(230,242,255,.4);
+  }
+  .foot-main .fbrand{font-family:var(--sans);font-weight:700;font-size:22px;letter-spacing:.02em;color:var(--white);text-transform:none}
+  .foot-main a{color:rgba(230,242,255,.5);text-decoration:none}
+  .foot-main a:hover{color:var(--white)}
+  .foot-main ul{list-style:none;display:flex;gap:22px}
+
+  /* reveal on scroll */
+  .rise{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease}
+  .rise.in{opacity:1;transform:none}
+
+  @media (prefers-reduced-motion: reduce){
+    .flash{display:none}
+    .block,.film-track,.hint .lamp{animation:none!important}
+    .rise{opacity:1;transform:none;transition:none}
+    .uv-light{display:none}
+    .lat .v{color:var(--white)}
+    .lat .v::after{opacity:0}
+    .block .stamp{opacity:.9}
+  }
+</style>
+</head>
+<body>
+
+<div class="flash" id="flash"></div>
+<div class="wash"></div>
+<div class="col-grid" aria-hidden="true">
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span><span></span><span></span>
+</div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="uv-light" id="uv" aria-hidden="true">
+  <div class="uv-ring"></div>
+  <div class="uv-cross"></div>
+</div>
+
+<header class="top">
+  <div class="mark"><span class="dot"></span> Prussix / Cyanotype Index</div>
+  <nav>
+    <a href="#index">index</a>
+    <a href="#protocol">protocol</a>
+    <a href="#verify">verify</a>
+    <a href="#archive">archive</a>
+  </nav>
+  <div class="coord">lat 51.5074 · lon −0.1278</div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="kicker">immutable logging · light-based verification · rev 04</div>
+    <h1 class="brand">Prussix<span class="sub">the cyanotype indexing system</span></h1>
+
+    <div class="hero-grid">
+      <div class="hero-lead">
+        <div class="reveal-line">Truth revealed by light.</div>
+        <p>Every record enters the ledger in a <em>latent</em> state — a dense wash of Prussian blue, illegible and unproven. Only when a block is exposed to the verification beam does the iron salt reduce, and the record bleach to permanent white. What is printed by light cannot be quietly rewritten.</p>
+      </div>
+      <div class="hero-meta">
+        <div><span>exposure</span><b>0.8 s / block</b></div>
+        <div><span>reduction</span><b>fe(III) → fe(II)</b></div>
+        <div><span>substrate</span><b>immutable ledger</b></div>
+        <div><span>status</span><b>open network</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INDEX / LATENT BLOCKS -->
+  <div class="sec-label" id="index">
+    <span class="num">01</span> <span>latent index — move the beam to expose</span>
+    <span class="rule"></span>
+    <span>3 of 1,204,880 shown</span>
+  </div>
+
+  <section class="blocks">
+
+    <article class="block" tabindex="0">
+      <div class="bhead"><span>record / node-07</span><span class="idx">#0x1a</span></div>
+      <div class="btitle">Ledger Entry</div>
+      <div class="lat"><span class="k">timestamp</span><span class="v">2025-06-11T04:12:09Z</span></div>
+      <div class="lat"><span class="k">hash</span><span class="v">a9f2c07d41be</span></div>
+      <div class="lat"><span class="k">source</span><span class="v">sensor-array-b</span></div>
+      <div class="lat"><span class="k">weight</span><span class="v">1.000000</span></div>
+      <div class="stamp">verified</div>
+      <div class="foot">
+        <span class="hint"><span class="lamp"></span> latent — awaiting exposure</span>
+      </div>
+      <div class="tap-hold">press &amp; hold to expose</div>
+    </article>
+
+    <article class="block" tabindex="0">
+      <div class="bhead"><span>record / node-19</span><span class="idx">#0x2f</span></div>
+      <div class="btitle">Chain Anchor</div>
+      <div class="lat"><span class="k">timestamp</span><span class="v">2025-06-11T04:12:11Z</span></div>
+      <div class="lat"><span class="k">hash</span><span class="v">7e3d91aa0c58</span></div>
+      <div class="lat"><span class="k">prev</span><span class="v">a9f2c07d41be</span></div>
+      <div class="lat"><span class="k">depth</span><span class="v">block 88,142</span></div>
+      <div class="stamp">verified</div>
+      <div class="foot">
+        <span class="hint"><span class="lamp"></span> latent — awaiting exposure</span>
+      </div>
+      <div class="tap-hold">press &amp; hold to expose</div>
+    </article>
+
+    <article class="block" tabindex="0">
+      <div class="bhead"><span>record / node-33</span><span class="idx">#0x44</span></div>
+      <div class="btitle">Raw Capture</div>
+      <div class="lat"><span class="k">timestamp</span><span class="v">2025-06-11T04:12:14Z</span></div>
+      <div class="lat"><span class="k">hash</span><span class="v">000000000000</span></div>
+      <div class="lat"><span class="k">source</span><span class="v">unattributed</span></div>
+      <div class="lat"><span class="k">weight</span><span class="v">0.000000</span></div>
+      <div class="stamp err">rejected</div>
+      <div class="foot">
+        <span class="hint"><span class="lamp"></span> latent — awaiting exposure</span>
+      </div>
+      <div class="tap-hold">press &amp; hold to expose</div>
+    </article>
+
+  </section>
+
+  <!-- PROTOCOL -->
+  <div class="sec-label" id="protocol">
+    <span class="num">02</span> <span>the exposure protocol</span>
+    <span class="rule"></span>
+    <span>three passes</span>
+  </div>
+
+  <section class="protocol">
+    <div class="step rise">
+      <div class="n">01</div>
+      <h3>Coat</h3>
+      <p>Each datum is brushed onto the substrate as a latent image — chemically present, optically dark. Nothing is legible, nothing is trusted, until proven.</p>
+    </div>
+    <div class="step rise">
+      <div class="n">02</div>
+      <h3>Expose</h3>
+      <p>The verification beam scans the block. Where light lands, iron salts reduce and the record bleaches to white. The beam leaves no residue and cannot be aimed twice.</p>
+    </div>
+    <div class="step rise">
+      <div class="n">03</div>
+      <h3>Fix</h3>
+      <p>A confirmed block is stamped and sealed into the chain. Fixed prints resist further light — an immutable record, dated by the moment of its own exposure.</p>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta rise" id="verify">
+    <div class="big">Point the beam at your first record.</div>
+    <div class="btns">
+      <a class="btn solid" href="#index">begin exposure</a>
+      <a class="btn" href="#archive">read the spec</a>
+    </div>
+  </section>
+
+</main>
+
+<footer id="archive">
+  <div class="film" aria-hidden="true">
+    <div class="film-track" id="filmTrack"></div>
+  </div>
+  <div class="foot-main">
+    <div>
+      <div class="fbrand">Prussix</div>
+      <div style="margin-top:8px">cyanotype indexing system</div>
+    </div>
+    <ul>
+      <li><a href="#index">index</a></li>
+      <li><a href="#protocol">protocol</a></li>
+      <li><a href="#verify">verify</a></li>
+      <li><a href="#">status</a></li>
+    </ul>
+    <div>
+      <div>© 2025 prussix consortium</div>
+      <div style="margin-top:8px">printed by light · not by ink</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- flash on load ---- */
+  var flash = document.getElementById('flash');
+  if(reduce){ flash.style.display='none'; }
+  else { requestAnimationFrame(function(){ setTimeout(function(){ flash.classList.add('go'); }, 60); }); }
+
+  /* ---- film advance hashes ---- */
+  var track = document.getElementById('filmTrack');
+  function hex(n){ var s=''; for(var i=0;i<n;i++){ s+=Math.floor(Math.random()*16).toString(16); } return s; }
+  var line='';
+  for(var i=0;i<26;i++){ line += '<span>0x'+hex(12)+'</span>'; }
+  track.innerHTML = line + line;
+
+  /* ---- reveal on scroll ---- */
+  if(!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    },{threshold:.2});
+    document.querySelectorAll('.rise').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.rise').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---- UV reveal ---- */
+  var blocks = Array.prototype.slice.call(document.querySelectorAll('.block'));
+  var uv = document.getElementById('uv');
+
+  function lit(block, on){
+    if(on){ block.classList.add('is-lit'); }
+    else if(!block.dataset.pinned){ block.classList.remove('is-lit'); }
+  }
+
+  if(!reduce && window.matchMedia('(pointer:fine)').matches){
+    /* desktop: UV light + proximity reveal */
+    var mx=0,my=0,tx=0,ty=0,active=false;
+    window.addEventListener('mousemove', function(e){
+      mx=e.clientX; my=e.clientY;
+      if(!active){ active=true; uv.classList.add('on'); }
+    });
+    function loop(){
+      tx += (mx-tx)*0.22; ty += (my-ty)*0.22;
+      uv.style.transform = 'translate('+tx+'px,'+ty+'px) translate(-50%,-50%)';
+      var R=190;
+      blocks.forEach(function(b){
+        var r=b.getBoundingClientRect();
+        var cx=r.left+r.width/2, cy=r.top+r.height/2;
+        var d=Math.hypot(mx-cx, my-cy);
+        lit(b, d < R + Math.max(r.width,r.height)/2);
+      });
+      requestAnimationFrame(loop);
+    }
+    loop();
+  } else if(!reduce){
+    /* touch: tap-to-reveal (permanent) */
+    blocks.forEach(function(b){
+      b.addEventListener('click', function(){ b.dataset.pinned='1'; lit(b,true); });
+    });
+  } else {
+    blocks.forEach(function(b){ b.classList.add('is-lit'); });
+  }
+})();
+</script>
+</body>
+</html>

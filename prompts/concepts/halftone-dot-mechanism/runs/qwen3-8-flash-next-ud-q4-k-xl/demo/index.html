@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halftone Dot Mechanism — Screen-Print Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f4f0;
+    --ink:#1a1a1a;
+    --spot:#ff3366;
+    --rule:rgba(26,26,26,.16);
+    --rule2:rgba(26,26,26,.30);
+    --display:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:'Space Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+    --gut:clamp(20px,4.5vw,54px);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--display);
+    line-height:1.5;
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---- atmosphere: paper grain + faint press grid ---- */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background-image:
+      linear-gradient(to right,var(--rule) 1px,transparent 1px),
+      linear-gradient(to bottom,var(--rule) 1px,transparent 1px);
+    background-size:calc(100%/12) 100%;
+    mask-image:linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent);
+    -webkit-mask-image:linear-gradient(to bottom,transparent,#000 12%,#000 88%,transparent);
+  }
+
+  .wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:clamp(18px,3vw,34px) var(--gut) 60px}
+
+  /* ---- masthead ---- */
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;flex-wrap:wrap}
+  .brand{font-weight:900;letter-spacing:-.04em;font-size:clamp(1.05rem,2.4vw,1.7rem);line-height:.95;text-transform:uppercase}
+  .brand .dot{color:var(--spot)}
+  .meta{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);
+    display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .meta b{color:var(--spot);font-weight:700}
+
+  /* ---- ticker ---- */
+  .ticker{overflow:hidden;border-bottom:1px solid var(--rule);white-space:nowrap;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+  .ticker-track{display:inline-flex;gap:34px;padding:9px 0;will-change:transform;
+    animation:marq 34s linear infinite;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+  .ticker-track span{display:inline-flex;gap:34px}
+  .ticker-track em{color:var(--spot);font-style:normal}
+  @keyframes marq{to{transform:translateX(-50%)}}
+
+  /* ---- main split ---- */
+  .split{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,5vw,72px);
+    padding-top:clamp(30px,5vw,64px);align-items:start}
+
+  .col-head{display:flex;flex-direction:column;gap:22px}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--spot)}
+  .kicker::before{content:"◉ ";}
+  h1{font-weight:900;letter-spacing:-.045em;line-height:.86;text-transform:uppercase;
+    font-size:clamp(3rem,9.4vw,7.4rem);cursor:pointer;transition:color .25s}
+  h1 .l2{display:block}
+  h1 .l3{display:block;color:transparent;-webkit-text-stroke:2px var(--ink)}
+  h1:hover{color:var(--spot)}
+  h1:hover .l3{-webkit-text-stroke-color:var(--spot)}
+  .lede{max-width:46ch;font-size:clamp(1rem,1.35vw,1.18rem);line-height:1.65;color:rgba(26,26,26,.82)}
+  .lede b{font-weight:700;color:var(--ink)}
+  .cue{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--spot);display:inline-flex;align-items:center;gap:8px}
+  .cue .arrow{display:inline-block;transition:transform .3s}
+  .col-head:hover .cue .arrow{transform:translateX(6px)}
+
+  /* ---- spec table ---- */
+  .spec{border-top:1px solid var(--rule2);margin-top:6px}
+  .spec-row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--rule);
+    font-family:var(--mono);font-size:12px;letter-spacing:.05em}
+  .spec-row .k{color:rgba(26,26,26,.55);text-transform:uppercase}
+  .spec-row .v{font-weight:700;text-align:right}
+  .spec-row .v.spot{color:var(--spot)}
+
+  /* ---- image stage ---- */
+  .stage{position:relative;width:100%;aspect-ratio:1/1;will-change:transform;cursor:crosshair;
+    background:var(--paper);border:1px solid var(--rule2);
+    box-shadow:14px 14px 0 rgba(26,26,26,.06)}
+  .stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .screen{transform-origin:50% 50%;transform:rotate(15deg);
+    transition:transform .3s cubic-bezier(.22,.61,.36,1)}
+  .stage.hot .screen{transform:rotate(45deg)}
+  .dot{transition:r .3s cubic-bezier(.22,.61,.36,1),opacity .3s}
+  .stage.hot .dot{r:calc(var(--r) * 1.2)}
+  .stage.cmyk .dot{mix-blend-mode:multiply}
+
+  /* ---- registration + crop marks (never rotate) ---- */
+  .reg{position:absolute;inset:0;pointer-events:none;z-index:3}
+  .reg .cross{position:absolute;width:22px;height:22px}
+  .reg .cross::before,.reg .cross::after{content:"";position:absolute;background:var(--spot)}
+  .reg .cross::before{left:50%;top:0;width:1.4px;height:100%;transform:translateX(-50%)}
+  .reg .cross::after{top:50%;left:0;height:1.4px;width:100%;transform:translateY(-50%)}
+  .reg .ring{position:absolute;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%);
+    border:1.4px solid var(--spot);border-radius:50%}
+  .reg .ring::before,.reg .ring::after{content:"";position:absolute;background:var(--spot)}
+  .reg .ring::before{left:50%;top:-9px;width:1.4px;height:52px;transform:translateX(-50%)}
+  .reg .ring::after{top:50%;left:-9px;height:1.4px;width:52px;transform:translateY(-50%)}
+  .crop{position:absolute;width:26px;height:26px;z-index:3;pointer-events:none}
+  .crop::before,.crop::after{content:"";position:absolute;background:var(--ink)}
+  .crop::before{width:100%;height:1.4px;top:0}
+  .crop::after{height:100%;width:1.4px;left:0}
+  .crop.tl{top:-14px;left:-14px}
+  .crop.tr{top:-14px;right:-14px;transform:scaleX(-1)}
+  .crop.bl{bottom:-14px;left:-14px;transform:scaleY(-1)}
+  .crop.br{bottom:-14px;right:-14px;transform:scale(-1)}
+
+  /* ---- readout ---- */
+  .readout{margin-top:12px;display:flex;justify-content:space-between;gap:12px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(26,26,26,.6)}
+  .readout b{color:var(--ink)}
+  .readout .live{color:var(--spot);font-weight:700}
+
+  /* ---- footer ---- */
+  .foot{margin-top:clamp(40px,6vw,80px);border-top:2px solid var(--ink);padding-top:16px;
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(26,26,26,.6)}
+  .foot b{color:var(--ink)}
+
+  /* ---- reveal ---- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (max-width:860px){
+    .split{grid-template-columns:1fr;gap:34px}
+    .col-img{order:-1}
+    h1{font-size:clamp(2.9rem,15vw,4.6rem)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .ticker-track{animation:none}
+    .reveal{transition:none;opacity:1;transform:none}
+    .screen,.dot{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="brand">Halftone<span class="dot">.</span>Dot<span class="dot">.</span>Mechanism</div>
+    <div class="meta">
+      <span>Issue <b>№ 07</b></span>
+      <span>Raster Studies</span>
+      <span>Screen <b>150 lpi</b></span>
+    </div>
+  </header>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track" id="track"></div>
+  </div>
+
+  <main class="split">
+
+    <section class="col-head reveal" id="colHead">
+      <div class="kicker">Screen-Print Study / Mechanism 07</div>
+      <h1 id="headline">
+        <span class="l1">The</span>
+        <span class="l2">Dot</span>
+        <span class="l3">Gain</span>
+      </h1>
+      <p class="lede">A photograph is never a photograph on paper — it is a <b>grid of ink</b>. Tilt the screen and swell the dots, and the image snaps into focus; straighten and shrink them, and the subject dissolves back into pure mechanism.</p>
+      <div class="cue">Hover the headline <span class="arrow">→</span> to rotate the screen</div>
+
+      <div class="spec" aria-hidden="true">
+        <div class="spec-row"><span class="k">Screen angle</span><span class="v" id="vAngle">15°</span></div>
+        <div class="spec-row"><span class="k">Dot radius</span><span class="v" id="vRadius">3.4 px</span></div>
+        <div class="spec-row"><span class="k">Frequency</span><span class="v">150 lpi</span></div>
+        <div class="spec-row"><span class="k">Ink set</span><span class="v spot" id="vInk">1-C · Black</span></div>
+        <div class="spec-row"><span class="k">Press</span><span class="v">Flatbed / 4-color</span></div>
+      </div>
+    </section>
+
+    <section class="col-img reveal">
+      <div class="stage" id="stage" role="img" aria-label="Halftone-rendered portrait of a screen-printing press operator">
+        <svg id="halftone" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="reg" aria-hidden="true">
+          <span class="cross" style="top:8px;left:8px"></span>
+          <span class="cross" style="top:8px;right:8px"></span>
+          <span class="cross" style="bottom:8px;left:8px"></span>
+          <span class="cross" style="bottom:8px;right:8px"></span>
+          <span class="ring"></span>
+        </div>
+        <span class="crop tl"></span><span class="crop tr"></span>
+        <span class="crop bl"></span><span class="crop br"></span>
+      </div>
+      <div class="readout">
+        <span>Angle <b id="rAngle">15°</b> · Radius <b id="rRadius">3.4</b></span>
+        <span class="live" id="rState">IDLE · MONO</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>Click the image to toggle <b>CMYK separation</b></span>
+    <span><b>Halftone</b> · Dot Mechanism · Monochrome → 4-Color</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const NS="http://www.w3.org/2000/svg";
+  const svg=document.getElementById('halftone');
+  const stage=document.getElementById('stage');
+  const headline=document.getElementById('headline');
+  const colHead=document.getElementById('colHead');
+  const track=document.getElementById('track');
+
+  /* ---- ticker content ---- */
+  const words=["Dot Gain","Screen Angle","Raster","Registration","Overprint","Line Frequency","Spot Color","Moiré","Ink Density","Screen Mesh"];
+  let tstr="";
+  words.forEach(w=>{ tstr += `<em>◆</em><span>${w}</span>`; });
+  track.innerHTML = `<span>${tstr}</span><span>${tstr}</span>`;
+
+  /* ---- build halftone grid ---- */
+  const W=600,H=600,gap=18;
+  const cols=Math.ceil(W/gap)+1, rows=Math.ceil(H/gap)+1;
+  const maxR=gap*0.62;
+  const cx=W/2, cy=H/2;
+
+  const screen=document.createElementNS(NS,'g');
+  screen.setAttribute('class','screen');
+  svg.appendChild(screen);
+
+  const dots=[];
+  const frag=document.createDocumentFragment();
+
+  // luminance field: a "portrait" — head + shoulders
+  const headR=118, headCY=238, shoulderW=300, shoulderY=432;
+  function lum(x,y){
+    let v;
+    // shoulders (rounded trapezoid)
+    const sTop=shoulderY-70, sBot=H+40;
+    if(y>sTop && y<sBot){
+      const t=(y-sTop)/(sBot-sTop);
+      const half=shoulderW*0.5*(0.62+0.5*t);
+      if(Math.abs(x-cx)<half) v=0.20; else v=0;
+    } else v=0;
+    // head (ellipse)
+    const dx=(x-cx)/(headR*0.92), dy=(y-headCY)/(headR*1.06);
+    const d=Math.sqrt(dx*dx+dy*dy);
+    if(d<1){
+      const edge=Math.max(0,1-d);
+      // shading: lighter toward top-left light source
+      const shade=0.55 - 0.42*((x-cx)/headR) + 0.16*((y-headCY)/headR);
+      const core=0.30 + 0.42*edge;
+      v=Math.max(v, Math.min(0.92, core + shade*0.25));
+    }
+    // crisp edge ring for definition
+    if(d>=0.94 && d<=1.02) v=Math.max(v,0.85);
+    return v;
+  }
+
+  for(let j=0;j<rows;j++){
+    for(let i=0;i<cols;i++){
+      const x=i*gap, y=j*gap;
+      const l=lum(x,y);
+      const r=Math.max(0.6, l*maxR);
+      const c=document.createElementNS(NS,'circle');
+      c.setAttribute('class','dot');
+      c.setAttribute('cx',x);
+      c.setAttribute('cy',y);
+      c.setAttribute('r',r);
+      c.setAttribute('fill','#1a1a1a');
+      c.style.setProperty('--r', r+'px');
+      frag.appendChild(c);
+      dots.push({el:c, x, y, l});
+    }
+  }
+  screen.appendChild(frag);
+
+  /* ---- interaction state ---- */
+  let hot=false, cmyk=false;
+
+  function apply(){
+    stage.classList.toggle('hot',hot);
+    stage.classList.toggle('cmyk',cmyk);
+    const ang=hot?45:15;
+    const rad=(hot?3.4*1.2:3.4).toFixed(1);
+    document.getElementById('vAngle').textContent=ang+'°';
+    document.getElementById('rAngle').textContent=ang+'°';
+    document.getElementById('vRadius').textContent=rad+' px';
+    document.getElementById('rRadius').textContent=rad;
+    document.getElementById('vInk').textContent=cmyk?'4-C · CMYK':'1-C · Black';
+    document.getElementById('rState').textContent=(hot?'HOT · ':'IDLE · ')+(cmyk?'CMYK':'MONO');
+    updateColors();
+  }
+
+  function updateColors(){
+    for(const d of dots){
+      if(!cmyk){ d.el.setAttribute('fill','#1a1a1a'); continue; }
+      // pseudo RGB from luminance field -> CMYK
+      const R=0.15+0.72*d.l, G=0.28+0.58*d.l, B=0.52+0.34*d.l;
+      const K=Math.max(0,1-Math.max(R,G,B));
+      const C=(1-R-K)/(1-K||1), M=(1-G-K)/(1-K||1), Y=(1-B-K)/(1-K||1);
+      d.el.setAttribute('fill',
+        `rgb(${Math.round(255*(1-Math.min(1,C)))},${Math.round(255*(1-Math.min(1,M)))},${Math.round(255*(1-Math.min(1,Y)))})`);
+    }
+  }
+
+  function setHot(v){ if(hot!==v){hot=v;apply();} }
+
+  // image hover / touch-hold
+  stage.addEventListener('pointerenter',()=>setHot(true));
+  stage.addEventListener('pointerleave',()=>setHot(false));
+  stage.addEventListener('pointerdown',()=>setHot(true));
+  stage.addEventListener('pointerup',()=>setHot(false));
+  stage.addEventListener('pointercancel',()=>setHot(false));
+
+  // headline triggers remotely
+  headline.addEventListener('pointerenter',()=>setHot(true));
+  headline.addEventListener('pointerleave',()=>setHot(false));
+  colHead.addEventListener('focusin',()=>setHot(true));
+  colHead.addEventListener('focusout',()=>setHot(false));
+
+  // click toggles CMYK
+  stage.addEventListener('click',()=>{ cmyk=!cmyk; apply(); });
+
+  apply();
+
+  /* ---- reveal on scroll ---- */
+  const io=new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+</script>
+</body>
+</html>

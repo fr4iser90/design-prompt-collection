@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turbine &amp; Bean — Airflow Control for Commercial Roasting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#111111;
+  --bg2:#161616;
+  --panel:#181818;
+  --panel2:#1d1d1d;
+  --line:#2a2a2a;
+  --line2:#333333;
+  --grey:#8a8a82;
+  --grey-d:#6a6a64;
+  --white:#f4f4f1;
+  --orange:#FF5733;
+  --orange-d:#c23a1e;
+  --ember:#ff8a5c;
+  --display:'Archivo',system-ui,sans-serif;
+  --mono:'Space Mono',ui-monospace,monospace;
+  --pad:clamp(20px,5vw,84px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--mono);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+::selection{background:var(--orange);color:#000}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ---------- overlays ---------- */
+.grain{
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;
+}
+.progress{position:fixed;top:0;left:0;height:2px;width:0;background:var(--orange);z-index:70;box-shadow:0 0 12px rgba(255,87,51,.6)}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px var(--pad);
+  border-bottom:1px solid transparent;
+  transition:background .3s,border-color .3s;
+}
+.nav.scrolled{background:rgba(14,14,14,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:900;letter-spacing:.02em;font-size:18px;text-transform:uppercase}
+.brand svg{width:22px;height:22px;flex:none}
+.brand .amp{color:var(--orange)}
+.nav-links{display:flex;gap:30px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey)}
+.nav-links a{position:relative;padding:4px 0;transition:color .2s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--orange);transition:width .25s}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:22px}
+.status{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;color:var(--grey);text-transform:uppercase}
+.dot{width:7px;height:7px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 0 rgba(255,87,51,.5);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,87,51,.55)}70%{box-shadow:0 0 0 9px rgba(255,87,51,0)}100%{box-shadow:0 0 0 0 rgba(255,87,51,0)}}
+.btn{
+  font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  padding:11px 20px;border:1px solid var(--line2);color:var(--white);background:transparent;
+  cursor:pointer;transition:.25s;white-space:nowrap;
+}
+.btn:hover{border-color:var(--orange);color:var(--orange)}
+.btn-solid{background:var(--orange);color:#0b0b0b;border-color:var(--orange);font-weight:700}
+.btn-solid:hover{background:#ff6d4d;border-color:#ff6d4d;color:#0b0b0b}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px var(--pad) 60px;overflow:hidden}
+#airflow{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+.hero-grid{
+  position:relative;z-index:2;width:100%;
+  display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:center;
+}
+.eyebrow{font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--orange);margin-bottom:26px;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:34px;height:1px;background:var(--orange)}
+.hero h1{
+  font-family:var(--display);font-weight:900;text-transform:uppercase;
+  font-size:clamp(2.7rem,7.6vw,7rem);line-height:.9;letter-spacing:-.02em;
+}
+.hero h1 .l2{color:var(--orange)}
+.hero p.lede{max-width:520px;margin-top:28px;color:var(--grey);font-size:15px;line-height:1.7}
+.hero p.lede b{color:var(--white);font-weight:700}
+.hero-cta{display:flex;gap:16px;margin-top:38px;flex-wrap:wrap}
+.hero-meta{display:flex;gap:34px;margin-top:44px;flex-wrap:wrap}
+.hero-meta div{border-left:1px solid var(--line2);padding-left:16px}
+.hero-meta .k{font-size:11px;letter-spacing:.2em;color:var(--grey-d);text-transform:uppercase}
+.hero-meta .v{font-family:var(--display);font-weight:800;font-size:26px;margin-top:4px}
+
+/* ---------- control panel ---------- */
+.panel{
+  background:linear-gradient(160deg,#1c1c1c,#141414);
+  border:1px solid var(--line2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 30px 60px -30px rgba(0,0,0,.9);
+  padding:20px;
+}
+.panel-head{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
+.panel-head .t{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.panel-head .id{font-size:11px;color:var(--grey-d);letter-spacing:.1em}
+.dial{display:flex;gap:18px;align-items:center;margin-bottom:18px}
+.dial svg{width:104px;height:104px;flex:none}
+.dial-info .lab{font-size:10px;letter-spacing:.2em;color:var(--grey-d);text-transform:uppercase}
+.dial-info .big{font-family:var(--display);font-weight:900;font-size:44px;line-height:1;margin:6px 0 4px}
+.dial-info .sub{font-size:11px;color:var(--grey)}
+.sliders{display:flex;flex-direction:column;gap:15px}
+.sl-row .sl-top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);margin-bottom:7px}
+.sl-row .sl-top b{color:var(--orange);font-weight:700}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:var(--line2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--orange);border:2px solid #0b0b0b;box-shadow:0 0 8px rgba(255,87,51,.5);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;background:var(--orange);border:2px solid #0b0b0b;cursor:pointer}
+.mode-row{display:flex;gap:8px;margin-top:18px}
+.mode{flex:1;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:9px 4px;border:1px solid var(--line2);color:var(--grey);cursor:pointer;transition:.2s;text-align:center}
+.mode.on{background:var(--orange);color:#0b0b0b;border-color:var(--orange);font-weight:700}
+.mode:not(.on):hover{border-color:var(--orange);color:var(--orange)}
+.foot-readout{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:var(--grey-d);text-transform:uppercase;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+
+/* ---------- marquee ---------- */
+.marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2);overflow:hidden;padding:14px 0}
+.marquee-track{display:flex;gap:44px;white-space:nowrap;width:max-content;animation:scroll 32s linear infinite;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey)}
+.marquee-track span{display:flex;align-items:center;gap:44px}
+.marquee-track b{color:var(--orange);font-weight:900}
+.marquee:hover .marquee-track{animation-play-state:paused}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ---------- section frame ---------- */
+section{position:relative;padding:clamp(70px,10vw,140px) var(--pad)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:56px}
+.sec-num{font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.2em;color:var(--orange)}
+.sec-title{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(2rem,5vw,4.2rem);line-height:.95;letter-spacing:-.02em;max-width:14ch}
+.sec-desc{max-width:400px;color:var(--grey);font-size:14px;line-height:1.7}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- systems (sticky two-col) ---------- */
+.sys-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:64px;align-items:start}
+.sys-sticky{position:sticky;top:120px}
+.sys-sticky .big{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(2rem,4vw,3.4rem);line-height:.95;letter-spacing:-.02em}
+.sys-sticky p{color:var(--grey);font-size:14px;line-height:1.7;margin-top:22px;max-width:34ch}
+.sys-sticky .spec{margin-top:30px;border-top:1px solid var(--line);padding-top:20px;display:flex;flex-direction:column;gap:12px;font-size:12px}
+.sys-sticky .spec div{display:flex;justify-content:space-between;color:var(--grey)}
+.sys-sticky .spec b{color:var(--white);font-weight:700}
+.sys-list{display:flex;flex-direction:column;gap:2px}
+.sys-item{border:1px solid var(--line);background:var(--bg2);padding:30px;transition:.3s;position:relative;overflow:hidden}
+.sys-item:hover{border-color:var(--orange);background:#1a1a1a}
+.sys-item .idx{font-family:var(--display);font-weight:900;font-size:13px;color:var(--orange);letter-spacing:.1em}
+.sys-item h3{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:1.5rem;margin:12px 0 12px;letter-spacing:-.01em}
+.sys-item p{color:var(--grey);font-size:13.5px;line-height:1.7;max-width:46ch}
+.sys-item .metric{margin-top:18px;display:flex;gap:26px}
+.sys-item .metric span{font-size:11px;letter-spacing:.12em;color:var(--grey-d);text-transform:uppercase}
+.sys-item .metric b{display:block;font-family:var(--display);font-weight:800;font-size:22px;color:var(--white);margin-top:3px}
+
+/* ---------- curve ---------- */
+.curve-wrap{display:grid;grid-template-columns:1.4fr 1fr;gap:56px;align-items:center}
+.curve-chart{border:1px solid var(--line2);background:linear-gradient(180deg,#141414,#0f0f0f);padding:24px;position:relative}
+.curve-chart .cap{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;color:var(--grey-d);text-transform:uppercase;margin-bottom:14px}
+.curve-chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:24px;margin-top:16px;font-size:11px;letter-spacing:.1em;color:var(--grey);text-transform:uppercase}
+.legend i{display:inline-block;width:16px;height:2px;vertical-align:middle;margin-right:8px}
+.curve-copy h3{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(1.6rem,3vw,2.4rem);line-height:1;letter-spacing:-.01em}
+.curve-copy p{color:var(--grey);font-size:14px;line-height:1.7;margin-top:20px}
+.curve-steps{margin-top:30px;display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.curve-steps div{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);font-size:12px;letter-spacing:.1em;color:var(--grey);text-transform:uppercase}
+.curve-steps b{color:var(--orange);font-weight:700}
+
+/* ---------- gallery ---------- */
+.gallery{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.gcard{position:relative;overflow:hidden;border:1px solid var(--line);background:#0d0d0d}
+.gcard .kb{overflow:hidden;height:100%}
+.gcard img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5) contrast(1.05) brightness(.82);transition:transform .9s cubic-bezier(.2,.7,.2,1),filter .5s}
+.gcard:hover img{transform:scale(1.06);filter:grayscale(0) contrast(1.1) brightness(.95)}
+.gcard::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85));pointer-events:none}
+.gcard .gtag{position:absolute;top:14px;left:14px;z-index:2;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);border:1px solid var(--orange);padding:5px 9px;background:rgba(11,11,11,.55)}
+.gcard .gcap{position:absolute;left:16px;bottom:14px;z-index:2}
+.gcard .gcap h4{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:1.05rem;letter-spacing:.01em}
+.gcard .gcap span{font-size:11px;color:var(--grey);letter-spacing:.08em}
+.g1{grid-column:span 7;height:420px}
+.g2{grid-column:span 5;height:420px}
+.g3{grid-column:span 4;height:300px}
+.g4{grid-column:span 4;height:300px}
+.g5{grid-column:span 4;height:300px}
+
+/* ---------- specs table ---------- */
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table caption{text-align:left;font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.14em;font-size:14px;color:var(--orange);margin-bottom:20px}
+.table th,.table td{padding:16px 18px;text-align:left;border-bottom:1px solid var(--line)}
+.table thead th{font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--white);border-bottom:1px solid var(--line2)}
+.table tbody tr{transition:background .2s}
+.table tbody tr:hover{background:#161616}
+.table td:first-child{color:var(--grey);letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.table td b{color:var(--orange);font-weight:700}
+.table .model{font-family:var(--display);font-weight:800;letter-spacing:.04em}
+
+/* ---------- testimonials ---------- */
+.quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.quote{border:1px solid var(--line);background:var(--bg2);padding:34px;position:relative;transition:.3s}
+.quote:hover{border-color:var(--line2);transform:translateY(-4px)}
+.quote .mark{font-family:var(--display);font-weight:900;font-size:60px;color:var(--orange);line-height:.6;opacity:.85}
+.quote p{font-size:14px;line-height:1.75;color:var(--white);margin:18px 0 26px}
+.quote .who{border-top:1px solid var(--line);padding-top:16px;font-size:11px;letter-spacing:.1em;color:var(--grey);text-transform:uppercase}
+.quote .who b{display:block;color:var(--white);font-weight:700;letter-spacing:.06em;margin-bottom:3px}
+
+/* ---------- install ---------- */
+.install{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line)}
+.step{padding:34px 28px;border-right:1px solid var(--line);position:relative;transition:.3s}
+.step:last-child{border-right:none}
+.step:hover{background:#161616}
+.step .n{font-family:var(--display);font-weight:900;font-size:48px;color:var(--line2);line-height:1;transition:color .3s}
+.step:hover .n{color:var(--orange)}
+.step h4{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:1.1rem;margin:16px 0 12px}
+.step p{font-size:12.5px;color:var(--grey);line-height:1.65}
+
+/* ---------- cta ---------- */
+.cta{position:relative;overflow:hidden;border-top:1px solid var(--line);text-align:left}
+.cta-bg{position:absolute;inset:0;z-index:0;opacity:.5}
+.cta-bg img{width:100%;height:100%;object-fit:cover;filter:grayscale(.6) brightness(.35)}
+.cta-inner{position:relative;z-index:2;max-width:760px}
+.cta h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(2.2rem,6vw,5rem);line-height:.92;letter-spacing:-.02em}
+.cta h2 em{color:var(--orange);font-style:normal}
+.cta p{color:var(--grey);font-size:15px;line-height:1.7;margin:26px 0 34px;max-width:52ch}
+.cta-form{display:flex;gap:12px;max-width:520px;flex-wrap:wrap}
+.cta-form input{flex:1;min-width:220px;background:rgba(11,11,11,.7);border:1px solid var(--line2);color:var(--white);font-family:var(--mono);font-size:13px;padding:14px 16px;letter-spacing:.05em}
+.cta-form input:focus{outline:none;border-color:var(--orange)}
+.cta-note{font-size:11px;color:var(--grey-d);letter-spacing:.1em;margin-top:16px;text-transform:uppercase}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:70px var(--pad) 40px;background:#0c0c0c}
+.foot-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:60px}
+.foot-brand .brand{font-size:22px;margin-bottom:18px}
+.foot-brand p{color:var(--grey);font-size:13px;line-height:1.7;max-width:34ch}
+.foot-col h5{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.16em;color:var(--white);margin-bottom:18px}
+.foot-col a{display:block;color:var(--grey);font-size:13px;padding:6px 0;transition:.2s}
+.foot-col a:hover{color:var(--orange)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:28px;font-size:11px;letter-spacing:.1em;color:var(--grey-d);text-transform:uppercase}
+.foot-bot .live{display:flex;align-items:center;gap:8px;color:var(--grey)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1024px){
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .panel{max-width:440px}
+  .sys-grid{grid-template-columns:1fr;gap:40px}
+  .sys-sticky{position:static}
+  .curve-wrap{grid-template-columns:1fr;gap:36px}
+  .quotes{grid-template-columns:1fr}
+  .install{grid-template-columns:1fr 1fr}
+  .step:nth-child(2){border-right:none}
+  .step:nth-child(1),.step:nth-child(2){border-bottom:1px solid var(--line)}
+  .foot-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:720px){
+  .nav-links{display:none}
+  .status{display:none}
+  .hero{padding-top:100px}
+  .gallery{grid-template-columns:1fr}
+  .g1,.g2,.g3,.g4,.g5{grid-column:span 1;height:260px}
+  .install{grid-template-columns:1fr}
+  .step{border-right:none;border-bottom:1px solid var(--line)}
+  .step:last-child{border-bottom:none}
+  .foot-top{grid-template-columns:1fr}
+  .table{font-size:12px}
+  .table th,.table td{padding:12px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="progress" id="progress"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a class="brand" href="#top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#FF5733" stroke-width="1.6">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/>
+    </svg>
+    <span>TURBINE<span class="amp"> &amp; </span>BEAN</span>
+  </a>
+  <div class="nav-links">
+    <a href="#systems">Systems</a>
+    <a href="#curve">Control</a>
+    <a href="#fleet">Fleet</a>
+    <a href="#specs">Specs</a>
+  </div>
+  <div class="nav-right">
+    <div class="status"><span class="dot"></span> SIM · LIVE</div>
+    <button class="btn btn-solid">Request Demo</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <canvas id="airflow"></canvas>
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Commercial Roasting · Airflow Control</div>
+      <h1>Master<br>the <span class="l2">Airflow</span></h1>
+      <p class="lede">Turbine &amp; Bean builds roasting systems that <b>command heat as a vector field</b> — not a guess. Every degree of the roast is metered, mapped and held inside a closed thermodynamic loop.</p>
+      <div class="hero-cta">
+        <button class="btn btn-solid">Configure a Drum</button>
+        <button class="btn">Read the Whitepaper</button>
+      </div>
+      <div class="hero-meta">
+        <div><div class="k">Temp Accuracy</div><div class="v">±0.4°</div></div>
+        <div><div class="k">Airflow Range</div><div class="v">0–100%</div></div>
+        <div><div class="k">Batch</div><div class="v">1–60kg</div></div>
+      </div>
+    </div>
+
+    <!-- CONTROL PANEL -->
+    <aside class="panel" aria-label="Live roaster control panel">
+      <div class="panel-head">
+        <span class="t">Roast Controller</span>
+        <span class="id">UNIT&nbsp;/&nbsp;TB-60X</span>
+      </div>
+      <div class="dial">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#2a2a2a" stroke-width="6"/>
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#FF5733" stroke-width="6" stroke-linecap="butt"
+                  stroke-dasharray="264" stroke-dashoffset="90" transform="rotate(-90 50 50)"/>
+          <text x="50" y="46" text-anchor="middle" fill="#f4f4f1" font-family="Archivo" font-weight="900" font-size="20" id="dialTemp">205</text>
+          <text x="50" y="60" text-anchor="middle" fill="#8a8a82" font-family="Space Mono" font-size="9" letter-spacing="1">°C DRUM</text>
+        </svg>
+        <div class="dial-info">
+          <div class="lab">Current Phase</div>
+          <div class="big" id="phase">DEVELOP</div>
+          <div class="sub">Rate of rise · <span id="ror">14.2</span>°/min</div>
+        </div>
+      </div>
+      <div class="sliders">
+        <div class="sl-row">
+          <div class="sl-top"><span>Airflow</span><b id="vAir">68%</b></div>
+          <input type="range" id="sAir" min="0" max="100" value="68">
+        </div>
+        <div class="sl-row">
+          <div class="sl-top"><span>Charge Heat</span><b id="vHeat">82%</b></div>
+          <input type="range" id="sHeat" min="0" max="100" value="82">
+        </div>
+      </div>
+      <div class="mode-row">
+        <button class="mode" data-mode="cool">Cool</button>
+        <button class="mode on" data-mode="roast">Roast</button>
+        <button class="mode" data-mode="turbo">Turbo</button>
+      </div>
+      <div class="foot-readout"><span id="readout">CHARGE · 205°C</span><span id="fps">60 FPS</span></div>
+    </aside>
+  </div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>DRUM TEMPERATURE <b>205°C</b> · AIRFLOW <b>68%</b> · RATE OF RISE <b>14.2°/MIN</b> · DEVELOPMENT <b>21.4%</b> · BEAN TEMP <b>196°C</b> · CHAFF SEPARATION <b>99.1%</b> · </span>
+    <span>DRUM TEMPERATURE <b>205°C</b> · AIRFLOW <b>68%</b> · RATE OF RISE <b>14.2°/MIN</b> · DEVELOPMENT <b>21.4%</b> · BEAN TEMP <b>196°C</b> · CHAFF SEPARATION <b>99.1%</b> · </span>
+  </div>
+</div>
+
+<!-- SYSTEMS -->
+<section id="systems">
+  <div class="sys-grid">
+    <div class="sys-sticky">
+      <div class="sec-num reveal">01 / SYSTEMS</div>
+      <h2 class="sys-sticky big reveal" style="margin-top:18px">The machine is a<br>thermodynamic<br>instrument.</h2>
+      <p class="reveal">Heat is not applied — it is directed. Each subsystem closes a feedback loop between sensor, turbine and drum, so the operator sets a curve and the machine defends it.</p>
+      <div class="spec reveal">
+        <div><span>Sensor Latency</span><b>40 ms</b></div>
+        <div><span>Control Loop</span><b>25 Hz</b></div>
+        <div><span>Thermal Mass</span><b>Cast Iron</b></div>
+        <div><span>Interface</span><b>Modbus / OPC-UA</b></div>
+      </div>
+    </div>
+    <div class="sys-list">
+      <article class="sys-item reveal">
+        <div class="idx">S-01</div>
+        <h3>Variable Airflow Turbine</h3>
+        <p>Brushless EC impeller with a closed-loop damper. Airflow is metered to the percent, letting convective heat carry the roast instead of contact alone.</p>
+        <div class="metric"><span>Static Pressure<b>4.2 kPa</b></span><span>Turn-down<b>20:1</b></span></div>
+      </article>
+      <article class="sys-item reveal">
+        <div class="idx">S-02</div>
+        <h3>Induction Drum Heat</h3>
+        <p>Segmented induction coils replace the burner. Zones ramp independently, so the charge hits temperature in seconds and holds a flat plateau through first crack.</p>
+        <div class="metric"><span>Ramp to Charge<b>18 s</b></span><span>Zone Control<b>4×</b></span></div>
+      </article>
+      <article class="sys-item reveal">
+        <div class="idx">S-03</div>
+        <h3>Real-time Roast Curve</h3>
+        <p>Bean probe, drum probe and exhaust probe stream to a single canvas. Deviation from the loaded profile is flagged before it becomes a defect.</p>
+        <div class="metric"><span>Probe Freq<b>10 Hz</b></span><span>Deviation Alarm<b>±1.5°</b></span></div>
+      </article>
+      <article class="sys-item reveal">
+        <div class="idx">S-04</div>
+        <h3>Chaff &amp; Smoke Extraction</h3>
+        <p>Inline cyclone and afterburner keep the exhaust clean and the drum bed unobstructed — maintaining the airflow map the curve depends on.</p>
+        <div class="metric"><span>Separation<b>99.1%</b></span><span>Afterburn<b>815°C</b></span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- CURVE -->
+<section id="curve">
+  <div class="sec-head">
+    <div>
+      <div class="sec-num reveal">02 / TEMPERATURE CURVE</div>
+      <h2 class="sec-title reveal" style="margin-top:16px">Defend the line</h2>
+    </div>
+    <p class="sec-desc reveal">Load a profile. The controller drives the turbine and induction zones to hold bean temperature inside a ±1.5° corridor for the entire roast.</p>
+  </div>
+  <div class="curve-wrap">
+    <div class="curve-chart reveal">
+      <div class="cap"><span>Profile · ETHIOPIA NATURAL</span><span>12:40 / 205°C</span></div>
+      <svg viewBox="0 0 600 300" id="curveSvg" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stop-color="#2C2C22"/>
+            <stop offset="0.5" stop-color="#c23a1e"/>
+            <stop offset="1" stop-color="#FF5733"/>
+          </linearGradient>
+        </defs>
+        <g stroke="#242424" stroke-width="1">
+          <line x1="40" y1="40" x2="40" y2="260"/><line x1="40" y1="260" x2="580" y2="260"/>
+          <line x1="40" y1="185" x2="580" y2="185" stroke-dasharray="3 5"/>
+          <line x1="40" y1="110" x2="580" y2="110" stroke-dasharray="3 5"/>
+        </g>
+        <g fill="#6a6a64" font-family="Space Mono" font-size="10">
+          <text x="14" y="264">0°</text><text x="8" y="189">120°</text><text x="8" y="114">200°</text><text x="2" y="44">240°</text>
+          <text x="40" y="280">0:00</text><text x="290" y="280" text-anchor="middle">6:20</text><text x="580" y="280" text-anchor="end">12:40</text>
+        </g>
+        <path id="curvePath" fill="none" stroke="url(#cg)" stroke-width="2.5" stroke-linecap="round"
+              d="M40,260 C120,120 160,118 220,150 C300,190 340,150 400,120 C470,85 520,60 580,52"/>
+        <path id="drumPath" fill="none" stroke="#555" stroke-width="1.5" stroke-dasharray="4 4"
+              d="M40,90 C160,70 300,95 440,80 C510,72 560,66 580,60"/>
+        <circle id="curveDot" cx="40" cy="260" r="5" fill="#FF5733"/>
+        <g id="markers"></g>
+      </svg>
+      <div class="legend"><span><i style="background:#FF5733"></i>Bean Temp</span><span><i style="background:#555"></i>Drum Temp</span><span><i style="background:#2C2C22"></i>Charge</span></div>
+    </div>
+    <div class="curve-copy">
+      <h3 class="reveal">Charge · Dry · Crack · Drop</h3>
+      <p class="reveal">Four phases, one continuous vector. The turbine opens through the drying phase to carry off moisture, then closes to concentrate convective heat into first crack — all while the curve stays locked.</p>
+      <div class="curve-steps reveal">
+        <div><span>Charge Temp</span><b>198°C</b></div>
+        <div><span>Turning Point</span><b>1:22</b></div>
+        <div><span>First Crack</span><b>9:05 / 196°C</b></div>
+        <div><span>Development Time</span><b>21.4%</b></div>
+        <div><span>Drop Temp</span><b>205°C</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="fleet">
+  <div class="sec-head">
+    <div>
+      <div class="sec-num reveal">03 / THE FLEET</div>
+      <h2 class="sec-title reveal" style="margin-top:16px">Built for the line</h2>
+    </div>
+    <p class="sec-desc reveal">Machined aluminium, cast-iron drums and sealed turbine housings. No burlap. No romance. Just heat you can hold.</p>
+  </div>
+  <div class="gallery">
+    <figure class="gcard g1 reveal"><span class="gtag">Drum Assembly</span><div class="kb"><img src="https://picsum.photos/seed/industrial-roast-drum/900/700" alt="Cast iron drum assembly"></div><figcaption class="gcap"><h4>TB-60X Drum</h4><span>60kg · induction · 4-zone</span></figcaption></figure>
+    <figure class="gcard g2 reveal"><span class="gtag">Turbine</span><div class="kb"><img src="https://picsum.photos/seed/airflow-turbine-metal/700/700" alt="Variable airflow turbine"></div><figcaption class="gcap"><h4>EC Impeller</h4><span>20:1 turn-down</span></figcaption></figure>
+    <figure class="gcard g3 reveal"><span class="gtag">Heat</span><div class="kb"><img src="https://picsum.photos/seed/ember-furnace-glow/600/500" alt="Induction heat zone"></div><figcaption class="gcap"><h4>Induction Coil</h4><span>18s ramp</span></figcaption></figure>
+    <figure class="gcard g4 reveal"><span class="gtag">Control</span><div class="kb"><img src="https://picsum.photos/seed/industrial-control-panel/600/500" alt="Control panel"></div><figcaption class="gcap"><h4>Roast Console</h4><span>OPC-UA / Modbus</span></figcaption></figure>
+    <figure class="gcard g5 reveal"><span class="gtag">Extraction</span><div class="kb"><img src="https://picsum.photos/seed/ventilation-duct-steel/600/500" alt="Extraction ducting"></div><figcaption class="gcap"><h4>Afterburner</h4><span>815°C</span></figcaption></figure>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section id="specs">
+  <div class="sec-head">
+    <div>
+      <div class="sec-num reveal">04 / SPECIFICATIONS</div>
+      <h2 class="sec-title reveal" style="margin-top:16px">Three drums, one platform</h2>
+    </div>
+  </div>
+  <div class="reveal" style="overflow-x:auto">
+    <table class="table">
+      <caption>MODEL MATRIX</caption>
+      <thead>
+        <tr><th>Parameter</th><th class="model">TB-15</th><th class="model">TB-30</th><th class="model">TB-60X</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Batch Capacity</td><td>1–15 kg</td><td>4–30 kg</td><td>10–60 kg</td></tr>
+        <tr><td>Drum Speed</td><td>12–64 rpm</td><td>12–64 rpm</td><td>8–64 rpm</td></tr>
+        <tr><td>Airflow</td><td>0–100% EC</td><td>0–100% EC</td><td>0–100% EC · <b>20:1</b></td></tr>
+        <tr><td>Heat Source</td><td>Induction 2-zone</td><td>Induction 3-zone</td><td>Induction 4-zone</td></tr>
+        <tr><td>Temp Accuracy</td><td>±0.6°</td><td>±0.5°</td><td><b>±0.4°</b></td></tr>
+        <tr><td>Probe Freq</td><td>5 Hz</td><td>10 Hz</td><td>10 Hz</td></tr>
+        <tr><td>Footprint</td><td>1.1 × 0.9 m</td><td>1.4 × 1.1 m</td><td>1.9 × 1.4 m</td></tr>
+        <tr><td>Interface</td><td>Modbus</td><td>Modbus / OPC-UA</td><td>Modbus / OPC-UA</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="sec-head">
+    <div>
+      <div class="sec-num reveal">05 / FROM THE LINE</div>
+      <h2 class="sec-title reveal" style="margin-top:16px">Operators, not marketers</h2>
+    </div>
+  </div>
+  <div class="quotes">
+    <blockquote class="quote reveal">
+      <div class="mark">“</div>
+      <p>We used to chase the curve. Now the machine holds it. My batch-to-batch spread dropped from 6° to under a degree.</p>
+      <div class="who"><b>Dana Reyes</b>Head Roaster · Foundry Coffee Works</div>
+    </blockquote>
+    <blockquote class="quote reveal">
+      <div class="mark">“</div>
+      <p>The airflow map is the whole product. Once you can see convection as a vector, you stop guessing at first crack.</p>
+      <div class="who"><b>Marcus Feld</b>Process Engineer · Northgate Roasting</div>
+    </blockquote>
+    <blockquote class="quote reveal">
+      <div class="mark">“</div>
+      <p>Integration into our SCADA took a morning. OPC-UA out of the box, no bespoke glue. That never happens.</p>
+      <div class="who"><b>Priya Nandakumar</b>Automation Lead · Meridian Roasters</div>
+    </blockquote>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section>
+  <div class="sec-head">
+    <div>
+      <div class="sec-num reveal">06 / DEPLOYMENT</div>
+      <h2 class="sec-title reveal" style="margin-top:16px">Rigged in a week</h2>
+    </div>
+  </div>
+  <div class="install reveal">
+    <div class="step"><div class="n">01</div><h4>Site Survey</h4><p>Power, extraction and floor load mapped against the drum you need.</p></div>
+    <div class="step"><div class="n">02</div><h4>Install &amp; Rig</h4><p>Drum, turbine and afterburner set on the pad. Sealed and tested.</p></div>
+    <div class="step"><div class="n">03</div><h4>Calibrate</h4><p>Probes zeroed, curves loaded, control loop tuned to your facility.</p></div>
+    <div class="step"><div class="n">04</div><h4>Train &amp; Run</h4><p>Operators certified on the console. The line is hot by day seven.</p></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-bg"><img src="https://picsum.photos/seed/furnace-intake-heat/1600/700" alt=""></div>
+  <div class="cta-inner">
+    <h2>Turn up the<br><em>heat. Hold the line.</em></h2>
+    <p>Book a live airflow demonstration. We'll load your profile, run a batch and hand you the curve — with every degree accounted for.</p>
+    <form class="cta-form" onsubmit="return false">
+      <input type="email" placeholder="WORK EMAIL" aria-label="Work email">
+      <button class="btn btn-solid" type="submit">Request Demo</button>
+    </form>
+    <div class="cta-note">Response within one business day · On-site or remote</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-top">
+    <div class="foot-brand">
+      <a class="brand" href="#top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FF5733" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/></svg>
+        <span>TURBINE<span class="amp"> &amp; </span>BEAN</span>
+      </a>
+      <p>Commercial roasting systems that treat heat as a controllable vector. Engineered, not artisanal.</p>
+    </div>
+    <div class="foot-col"><h5>Systems</h5><a href="#systems">Airflow Turbine</a><a href="#systems">Induction Drum</a><a href="#curve">Roast Curve</a><a href="#fleet">Extraction</a></div>
+    <div class="foot-col"><h5>Company</h5><a href="#">About</a><a href="#">Engineering</a><a href="#">Careers</a><a href="#">Press</a></div>
+    <div class="foot-col"><h5>Support</h5><a href="#">Documentation</a><a href="#">Service</a><a href="#">Contact</a><a href="#">Status</a></div>
+  </div>
+  <div class="foot-bot">
+    <span>© 2024 Turbine &amp; Bean Industrial Systems</span>
+    <span class="live"><span class="dot"></span> All units nominal · 205°C</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- nav + progress ---------- */
+  const nav = document.getElementById('nav');
+  const progress = document.getElementById('progress');
+  function onScroll(){
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 40);
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (h>0? (y/h*100):0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---------- reveal ---------- */
+  const io = new IntersectionObserver((es)=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  }, {threshold:0.14});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{
+    el.style.transitionDelay = (Math.min(i,4)*70)+'ms';
+    io.observe(el);
+  });
+
+  /* ---------- curve draw animation ---------- */
+  const cp = document.getElementById('curvePath');
+  if(cp && !reduce){
+    const len = cp.getTotalLength();
+    cp.style.strokeDasharray = len;
+    cp.style.strokeDashoffset = len;
+    const cio = new IntersectionObserver((es)=>{
+      es.forEach(e=>{ if(e.isIntersecting){
+        cp.style.transition = 'stroke-dashoffset 2.2s cubic-bezier(.4,.1,.2,1)';
+        cp.style.strokeDashoffset = 0;
+        cio.disconnect();
+      }});
+    }, {threshold:0.3});
+    cio.observe(cp);
+  }
+  // curve dot travelling
+  const dot = document.getElementById('curveDot');
+  if(dot && cp && !reduce){
+    const len = cp.getTotalLength();
+    let t0 = null;
+    function loop(ts){
+      if(!t0) t0 = ts;
+      const p = ((ts-t0)%6000)/6000;
+      const pt = cp.getPointAtLength(p*len);
+      dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  }
+  // markers
+  const mk = document.getElementById('markers');
+  if(mk){
+    const pts = [[40,260,'CHARGE'],[220,150,'DRY'],[400,120,'CRACK'],[580,52,'DROP']];
+    pts.forEach(p=>{
+      const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p[0]); c.setAttribute('cy',p[1]); c.setAttribute('r',3.5);
+      c.setAttribute('fill','#111'); c.setAttribute('stroke','#FF5733'); c.setAttribute('stroke-width',1.5);
+      mk.appendChild(c);
+    });
+  }
+
+  /* ---------- AIRFLOW SIM ---------- */
+  const canvas = document.getElementById('airflow');
+  const ctx = canvas.getContext('2d');
+  let W=0,H=0,DPR=1,parts=[],mx=-9999,my=-9999;
+  let sim = { air:68, heat:82, mode:'roast' };
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    seed();
+  }
+  function maxP(){ return W<720? 320 : 620; }
+  function seed(){
+    const n = maxP();
+    parts = [];
+    for(let i=0;i<n;i++){
+      parts.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        vx:0, vy:0,
+        seed: Math.random()*1000,
+        life: Math.random()
+      });
+    }
+  }
+
+  // pseudo curl field
+  function field(x,y,t){
+    const s = 0.0016;
+    const a = Math.sin(x*s + t*0.0004) + Math.cos(y*s*1.3 - t*0.0005);
+    const b = Math.cos(x*s*1.1 - t*0.0006) + Math.sin(y*s - t*0.0003);
+    return { fx: a, fy: b*0.55 };
+  }
+  // colour from heat value 0..1
+  function col(v){
+    v = Math.max(0,Math.min(1,v));
+    const r = Math.round(44 + (255-44)*v);
+    const g = Math.round(44 + (87-44)*v);
+    const b = Math.round(34 + (51-34)*v);
+    return 'rgb('+r+','+g+','+b+')';
+  }
+
+  let heat = 0.15; // ambient global heat, ramps on load
+  let last = performance.now(), fpsAcc=0, fpsN=0, fpsT=0;
+  const fpsEl = document.getElementById('fps');
+
+  function step(now){
+    const dt = Math.min((now-last)/16.67, 2.2); last = now;
+    // fps
+    fpsAcc += 1000/((now - (step._p||now))||16); step._p=now; fpsN++;
+    if(now-fpsT>500){ if(fpsEl) fpsEl.textContent = Math.round(fpsAcc/fpsN)+' FPS'; fpsAcc=0;fpsN=0;fpsT=now; }
+
+    // ramp global heat toward target
+    const target = 0.15 + sim.heat/100*0.7;
+    heat += (target-heat)*0.02*dt;
+
+    ctx.fillStyle = 'rgba(17,17,17,0.16)';
+    ctx.fillRect(0,0,W,H);
+
+    const cx = W*0.5, cy = H*0.5;
+    const zoneR = Math.min(W,H)*0.42;
+    const speedBase = 0.4 + sim.air/100*2.4;
+
+    for(let i=0;i<parts.length;i++){
+      const p = parts[i];
+      const f = field(p.x,p.y,now);
+      let vx = f.fx*speedBase;
+      let vy = f.fy*speedBase;
+
+      // push through roast zone (horizontal acceleration)
+      const dx = p.x-cx, dy = p.y-cy;
+      const d = Math.sqrt(dx*dx+dy*dy);
+      const inZone = Math.max(0, 1 - d/zoneR);
+      vx += inZone*inZone*2.2;
+      vy += inZone*inZone*(dy>0?0.3:-0.3);
+
+      // mouse repulsion
+      const mdx = p.x-mx, mdy = p.y-my;
+      const md = Math.sqrt(mdx*mdx+mdy*mdy);
+      if(md < 150){
+        const force = (1-md/150)*6;
+        vx += (mdx/(md||1))*force;
+        vy += (mdy/(md||1))*force;
+      }
+
+      p.vx += (vx-p.vx)*0.15*dt;
+      p.vy += (vy-p.vy)*0.15*dt;
+      const px = p.x, py = p.y;
+      p.x += p.vx*dt; p.y += p.vy*dt;
+
+      // wrap
+      if(p.x>W+20){p.x=-20;p.y=Math.random()*H;}
+      if(p.x<-20){p.x=W+20;p.y=Math.random()*H;}
+      if(p.y>H+20)p.y=-20; if(p.y<-20)p.y=H+20;
+
+      // heat value -> colour + width
+      const hv = Math.min(1, heat + inZone*0.55);
+      const spd = Math.min(1, (Math.abs(p.vx)+Math.abs(p.vy))/8);
+      const w = 0.5 + hv*1.6 + spd*0.8;
+      ctx.strokeStyle = col(hv);
+      ctx.globalAlpha = 0.35 + hv*0.6;
+      ctx.lineWidth = w;
+      ctx.beginPath();
+      ctx.moveTo(px,py);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // roast zone pulse ring
+    const pulse = 0.5 + 0.5*Math.sin(now*0.0015);
+    ctx.strokeStyle = 'rgba(255,87,51,'+(0.06+heat*0.10*pulse)+')';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, zoneR*(0.92+0.05*pulse), 0, Math.PI*2);
+    ctx.stroke();
+
+    raf = requestAnimationFrame(step);
+  }
+
+  let raf;
+  function start(){
+    resize();
+    window.addEventListener('resize', ()=>{ resize(); });
+    const hero = document.querySelector('.hero');
+    hero.addEventListener('mousemove', e=>{
+      const r = canvas.getBoundingClientRect();
+      mx = e.clientX - r.left; my = e.clientY - r.top;
+    });
+    hero.addEventListener('mouseleave', ()=>{ mx=-9999; my=-9999; });
+    if(reduce){
+      // static frame
+      heat = 0.15 + sim.heat/100*0.7;
+      ctx.fillStyle='#111'; ctx.fillRect(0,0,W,H);
+      for(let k=0;k<40;k++) step(performance.now());
+    } else {
+      raf = requestAnimationFrame(step);
+    }
+  }
+  start();
+
+  /* ---------- control panel wiring ---------- */
+  const sAir=document.getElementById('sAir'), sHeat=document.getElementById('sHeat');
+  const vAir=document.getElementById('vAir'), vHeat=document.getElementById('vHeat');
+  const dialTemp=document.getElementById('dialTemp'), phase=document.getElementById('phase');
+  const ror=document.getElementById('ror'), readout=document.getElementById('readout');
+  const dialArc=document.querySelector('.dial svg circle:nth-of-type(2)');
+
+  function applyPanel(){
+    sim.air = +sAir.value; sim.heat = +sHeat.value;
+    vAir.textContent = sim.air+'%';
+    vHeat.textContent = sim.heat+'%';
+    const temp = Math.round(150 + sim.heat*0.6);
+    dialTemp.textContent = temp;
+    ror.textContent = (8 + sim.air/100*14).toFixed(1);
+    const off = 264 - 264*(sim.heat/100);
+    dialArc.style.strokeDashoffset = off;
+    readout.textContent = 'CHARGE · '+temp+'°C';
+    // phase by heat
+    phase.textContent = sim.heat<40?'DRY':(sim.heat<70?'DEVELOP':(sim.heat<88?'CRACK':'DROP'));
+  }
+  sAir.addEventListener('input', applyPanel);
+  sHeat.addEventListener('input', applyPanel);
+
+  const modes = document.querySelectorAll('.mode');
+  modes.forEach(m=>{
+    m.addEventListener('click', ()=>{
+      modes.forEach(x=>x.classList.remove('on'));
+      m.classList.add('on');
+      const mode = m.dataset.mode;
+      if(mode==='cool'){ sAir.value=90; sHeat.value=25; }
+      else if(mode==='roast'){ sAir.value=68; sHeat.value=82; }
+      else { sAir.value=40; sHeat.value=100; }
+      applyPanel();
+    });
+  });
+  applyPanel();
+})();
+</script>
+</body>
+</html>

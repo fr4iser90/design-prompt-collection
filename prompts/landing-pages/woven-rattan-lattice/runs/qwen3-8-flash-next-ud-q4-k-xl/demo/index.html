@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loom & Light — Artisan Rattan Furniture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --strand-light:#C19A6B;
+    --strand-mid:#A9824F;
+    --strand-shadow:#8B7355;
+    --cream:#F5F5DC;
+    --cream-soft:#FBFAF0;
+    --ink:#4A3F35;
+    --ink-soft:#6E6152;
+    --deep:#2C2419;
+    --gold:#D9B98A;
+    --gap:clamp(64px,9vw,132px);
+    --wrap:1200px;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Karla',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--cream);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    font-weight:400;
+  }
+  h1,h2,h3,h4,.display{font-family:'DM Serif Display',Georgia,serif;font-weight:400;line-height:1.02;letter-spacing:-.01em}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  ::selection{background:var(--strand-shadow);color:var(--cream)}
+
+  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+
+  /* ---------- Weave texture layers ---------- */
+  .weave-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .weave-bg .strand{stroke:var(--strand-shadow);stroke-width:2.4;fill:none;opacity:.55}
+  .weave-bg .strand.dark{stroke:var(--deep);opacity:.4}
+
+  /* ---------- Sunlight dapples (ambient) ---------- */
+  .dapple{position:fixed;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:2;mix-blend-mode:soft-light}
+  .dapple.a{width:60vw;height:60vw;top:-10vw;left:-5vw;background:radial-gradient(circle,rgba(255,244,214,.9),transparent 68%);animation:drift 26s ease-in-out infinite alternate}
+  .dapple.b{width:48vw;height:48vw;bottom:-14vw;right:-6vw;background:radial-gradient(circle,rgba(139,115,85,.55),transparent 66%);animation:drift2 34s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(16vw,10vh) scale(1.15)}}
+  @keyframes drift2{from{transform:translate(0,0) scale(1.1)}to{transform:translate(-14vw,-8vh) scale(.9)}}
+
+  /* ---------- Nav ---------- */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,4vw,48px);transition:background .5s var(--ease),padding .5s var(--ease),box-shadow .5s var(--ease)}
+  .nav.scrolled{background:rgba(245,245,220,.86);backdrop-filter:blur(10px);padding:14px clamp(20px,4vw,48px);box-shadow:0 1px 0 rgba(74,63,53,.08)}
+  .brand{font-family:'DM Serif Display',serif;font-size:1.5rem;letter-spacing:.02em;display:flex;align-items:center;gap:10px;color:var(--cream);transition:color .5s var(--ease)}
+  .nav.scrolled .brand{color:var(--ink)}
+  .brand .mark{width:26px;height:26px;flex:none}
+  .brand .mark .strand{stroke:currentColor;stroke-width:2.2;fill:none}
+  .nav-links{display:flex;gap:clamp(18px,3vw,40px);align-items:center}
+  .nav-links a{font-size:.82rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);position:relative;padding:4px 0;transition:color .5s var(--ease)}
+  .nav.scrolled .nav-links a{color:var(--ink)}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1.5px;background:currentColor;transition:width .4s var(--ease)}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{border:1.5px solid currentColor;padding:9px 20px;border-radius:2px;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;transition:background .4s,color .4s}
+  .nav-cta:hover{background:var(--strand-shadow);border-color:var(--strand-shadow);color:var(--cream)}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;background:var(--deep)}
+  .hero .weave-bg .strand{stroke:var(--strand-light);opacity:.9}
+  .hero .weave-bg .strand.dark{stroke:var(--strand-shadow);opacity:.7}
+  .hero::after{content:"";position:absolute;inset:0;z-index:1;background:radial-gradient(120% 90% at 50% 40%,transparent 30%,rgba(44,36,25,.55) 100%);pointer-events:none}
+  .hero-inner{position:relative;z-index:3;width:100%;padding-top:90px}
+  .hero-eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin-bottom:26px;display:flex;align-items:center;gap:14px}
+  .hero-eyebrow::before{content:"";width:46px;height:1px;background:var(--gold);display:inline-block}
+  .hero h1{font-size:clamp(3.4rem,12.5vw,10.5rem);color:var(--cream);line-height:.9;letter-spacing:-.02em}
+  .hero h1 em{font-style:italic;color:var(--gold);display:inline-block}
+  .hero h1 .line{display:block;overflow:hidden}
+  .hero h1 .line span{display:block;transform:translateY(110%);transition:transform 1.1s var(--ease)}
+  .hero.ready h1 .line span{transform:translateY(0)}
+  .hero h1 .line:nth-child(2) span{transition-delay:.12s}
+  .hero h1 .line:nth-child(3) span{transition-delay:.24s}
+  .hero-sub{max-width:440px;margin-top:34px;color:rgba(245,245,220,.82);font-size:1.08rem;font-weight:300;opacity:0;transform:translateY(20px);transition:opacity 1s .5s var(--ease),transform 1s .5s var(--ease)}
+  .hero.ready .hero-sub{opacity:1;transform:none}
+  .hero-actions{margin-top:38px;display:flex;gap:18px;flex-wrap:wrap;opacity:0;transform:translateY(20px);transition:opacity 1s .68s var(--ease),transform 1s .68s var(--ease)}
+  .hero.ready .hero-actions{opacity:1;transform:none}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 30px;font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;border-radius:2px;transition:transform .35s var(--ease),background .35s,color .35s;cursor:pointer;border:1.5px solid transparent}
+  .btn.solid{background:var(--cream);color:var(--deep)}
+  .btn.solid:hover{transform:translateY(-3px);background:var(--gold)}
+  .btn.ghost{border-color:rgba(245,245,220,.5);color:var(--cream)}
+  .btn.ghost:hover{border-color:var(--cream);transform:translateY(-3px)}
+  .btn .arw{transition:transform .35s var(--ease)}
+  .btn:hover .arw{transform:translateX(5px)}
+  .hero-meta{position:absolute;bottom:34px;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-end;padding:0 clamp(20px,4vw,48px);color:rgba(245,245,220,.7);font-size:.78rem;letter-spacing:.1em}
+  .hero-meta .est{font-family:'DM Serif Display',serif;font-size:1rem;letter-spacing:.02em}
+  .scroll-cue{display:flex;flex-direction:column;align-items:center;gap:8px;text-transform:uppercase;font-size:.68rem;letter-spacing:.28em}
+  .scroll-cue .bar{width:1px;height:44px;background:linear-gradient(var(--gold),transparent);animation:cue 2.4s ease-in-out infinite}
+  @keyframes cue{0%,100%{transform:scaleY(.4);transform-origin:top;opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+  /* ---------- Marquee ---------- */
+  .marquee{background:var(--strand-shadow);color:var(--cream);overflow:hidden;padding:20px 0;border-top:1px solid rgba(245,245,220,.15);border-bottom:1px solid rgba(245,245,220,.15);position:relative;z-index:3}
+  .marquee-track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:march 34s linear infinite}
+  .marquee span{font-family:'DM Serif Display',serif;font-size:1.5rem;padding:0 34px;display:inline-flex;align-items:center;gap:34px;opacity:.92}
+  .marquee span::after{content:"✦";font-size:.9rem;color:var(--gold)}
+  @keyframes march{to{transform:translateX(-50%)}}
+
+  /* ---------- Section shell ---------- */
+  section{position:relative}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;flex-wrap:wrap;margin-bottom:56px}
+  .sec-tag{font-size:.78rem;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--strand-shadow);display:flex;align-items:center;gap:12px}
+  .sec-tag::before{content:"";width:34px;height:1px;background:var(--strand-shadow)}
+  .sec-title{font-size:clamp(2.4rem,6vw,4.6rem);max-width:14ch;margin-top:16px}
+  .sec-note{max-width:38ch;color:var(--ink-soft);font-size:1.02rem;font-weight:300}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(38px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+  /* line-mask heading */
+  .mask-line{overflow:hidden;display:block}
+  .mask-line>span{display:block;transform:translateY(115%);transition:transform 1s var(--ease)}
+  .in .mask-line>span,.mask-line.in>span{transform:translateY(0)}
+
+  /* ---------- Intro / manifesto ---------- */
+  .intro{padding:var(--gap) 0}
+  .intro-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(40px,6vw,90px);align-items:center}
+  .intro-lead{font-family:'DM Serif Display',serif;font-size:clamp(1.6rem,3.2vw,2.5rem);line-height:1.28;letter-spacing:-.01em}
+  .intro-lead .hl{background:linear-gradient(transparent 62%,rgba(193,154,107,.4) 62%);padding:0 2px}
+  .intro-body p{margin-bottom:20px;color:var(--ink-soft);font-weight:300;font-size:1.04rem}
+  .intro-stats{display:flex;gap:36px;margin-top:34px;flex-wrap:wrap}
+  .intro-stats .num{font-family:'DM Serif Display',serif;font-size:2.6rem;color:var(--strand-shadow);line-height:1}
+  .intro-stats .lbl{font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+  .intro-fig{position:relative;aspect-ratio:3/4;border-radius:2px;overflow:hidden;box-shadow:0 30px 60px -30px rgba(74,63,53,.5)}
+  .intro-fig img{width:100%;height:100%;object-fit:cover;transform:scale(1.05);transition:transform 1.4s var(--ease)}
+  .intro-fig:hover img{transform:scale(1)}
+  .intro-fig .cap{position:absolute;left:0;bottom:0;right:0;padding:26px;background:linear-gradient(transparent,rgba(44,36,25,.7));color:var(--cream);font-size:.82rem;letter-spacing:.08em}
+
+  /* ---------- Products ---------- */
+  .products{padding:var(--gap) 0;background:linear-gradient(180deg,transparent,rgba(193,154,107,.09) 20%,rgba(193,154,107,.09) 80%,transparent)}
+  .prod-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(18px,2.4vw,30px)}
+  .card{position:relative;grid-column:span 4;overflow:hidden;border-radius:3px;cursor:grab;background:var(--cream-soft);box-shadow:0 14px 30px -22px rgba(74,63,53,.55);transition:transform .6s var(--ease),box-shadow .6s var(--ease)}
+  .card:nth-child(1){grid-column:span 7;aspect-ratio:16/11}
+  .card:nth-child(2){grid-column:span 5;aspect-ratio:4/5}
+  .card:nth-child(3){grid-column:span 5;aspect-ratio:4/5}
+  .card:nth-child(4){grid-column:span 7;aspect-ratio:16/11}
+  .card:nth-child(5){grid-column:span 4;aspect-ratio:1/1}
+  .card:nth-child(6){grid-column:span 4;aspect-ratio:1/1}
+  .card:nth-child(7){grid-column:span 4;aspect-ratio:1/1}
+  .card:hover{transform:translateY(-8px);box-shadow:0 34px 60px -26px rgba(74,63,53,.6);cursor:grabbing}
+  .card .shot{position:absolute;inset:0;overflow:hidden}
+  .card .shot img{width:100%;height:100%;object-fit:cover;filter:brightness(.92) contrast(1.02);transition:transform 1.1s var(--ease),filter .6s}
+  .card:hover .shot img{transform:scale(1.06);filter:brightness(1.02) contrast(1)}
+  .card .weave-ov{position:absolute;inset:0;z-index:2;transition:opacity .6s var(--ease),transform .7s var(--ease);transform-origin:center;pointer-events:none}
+  .card:hover .weave-ov{opacity:.12;transform:scale(1.09)}
+  .card .info{position:absolute;left:0;bottom:0;right:0;z-index:3;padding:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px;background:linear-gradient(transparent,rgba(44,36,25,.78))}
+  .card .info h3{font-size:1.5rem;color:var(--cream)}
+  .card .info .type{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .card .price{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--cream);white-space:nowrap}
+  .card .swatch{position:absolute;top:16px;left:16px;z-index:3;display:flex;gap:6px}
+  .card .swatch i{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(245,245,220,.7);display:block}
+
+  /* ---------- Process ---------- */
+  .process{padding:var(--gap) 0;background:var(--deep);color:var(--cream);overflow:hidden}
+  .process .weave-bg .strand{stroke:var(--strand-shadow);opacity:.35}
+  .process .sec-tag{color:var(--gold)}.process .sec-tag::before{background:var(--gold)}
+  .process .sec-title{color:var(--cream)}
+  .process .sec-note{color:rgba(245,245,220,.7)}
+  .steps{position:relative;display:flex;flex-direction:column}
+  .steps::before{content:"";position:absolute;left:39px;top:20px;bottom:20px;width:2px;background:linear-gradient(var(--gold),transparent);opacity:.5}
+  .step{display:grid;grid-template-columns:80px 1fr auto;gap:clamp(20px,4vw,60px);align-items:center;padding:38px 0;border-bottom:1px solid rgba(245,245,220,.12);position:relative}
+  .step:last-child{border-bottom:none}
+  .step .no{width:80px;height:80px;border-radius:50%;border:1.5px solid rgba(217,185,138,.5);display:grid;place-items:center;font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--gold);background:var(--deep);position:relative;z-index:2;transition:background .5s,color .5s,transform .5s}
+  .step:hover .no{background:var(--gold);color:var(--deep);transform:scale(1.05)}
+  .step h3{font-size:clamp(1.5rem,3vw,2.2rem);color:var(--cream)}
+  .step p{color:rgba(245,245,220,.7);max-width:52ch;margin-top:8px;font-weight:300}
+  .step .dur{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);white-space:nowrap;align-self:start;padding-top:6px}
+
+  /* ---------- Materials ---------- */
+  .materials{padding:var(--gap) 0}
+  .mat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,2vw,26px)}
+  .mat{position:relative;padding:30px 26px 26px;border-radius:3px;overflow:hidden;background:var(--cream-soft);border:1px solid rgba(139,115,85,.16);transition:transform .5s var(--ease),box-shadow .5s var(--ease)}
+  .mat:hover{transform:translateY(-6px);box-shadow:0 24px 44px -28px rgba(74,63,53,.5)}
+  .mat .swatch{height:96px;border-radius:2px;margin-bottom:20px;position:relative;overflow:hidden}
+  .mat h4{font-size:1.35rem;margin-bottom:6px}
+  .mat .origin{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--strand-shadow);margin-bottom:12px}
+  .mat p{font-size:.92rem;color:var(--ink-soft);font-weight:300}
+  .mat .tag{position:absolute;top:20px;right:20px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border:1px solid rgba(139,115,85,.3);padding:4px 9px;border-radius:20px}
+
+  /* ---------- Quote ---------- */
+  .quote{padding:var(--gap) 0;position:relative;overflow:hidden;background:var(--strand-shadow);color:var(--cream)}
+  .quote .weave-bg .strand{stroke:var(--cream);opacity:.12}
+  .quote blockquote{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,4.6vw,3.4rem);line-height:1.24;max-width:20ch;position:relative;z-index:2}
+  .quote blockquote .mk{color:var(--gold);font-style:italic}
+  .quote cite{display:block;margin-top:30px;font-family:'Karla',sans-serif;font-style:normal;font-size:.82rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,245,220,.75)}
+
+  /* ---------- Journal ---------- */
+  .journal{padding:var(--gap) 0}
+  .j-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,34px)}
+  .post{cursor:pointer}
+  .post .thumb{aspect-ratio:4/3;border-radius:3px;overflow:hidden;margin-bottom:20px;position:relative}
+  .post .thumb img{width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease),filter .6s;filter:grayscale(.15)}
+  .post:hover .thumb img{transform:scale(1.07);filter:grayscale(0)}
+  .post .meta{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--strand-shadow);margin-bottom:10px;display:flex;gap:14px}
+  .post h3{font-size:1.5rem;line-height:1.15;transition:color .4s}
+  .post:hover h3{color:var(--strand-shadow)}
+  .post p{margin-top:10px;color:var(--ink-soft);font-weight:300;font-size:.96rem}
+
+  /* ---------- Newsletter ---------- */
+  .news{padding:var(--gap) 0}
+  .news-box{background:var(--cream-soft);border:1px solid rgba(139,115,85,.18);border-radius:4px;padding:clamp(36px,6vw,72px);display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:center;position:relative;overflow:hidden}
+  .news-box h2{font-size:clamp(2rem,4.5vw,3.2rem);max-width:12ch}
+  .news-box p{margin-top:16px;color:var(--ink-soft);font-weight:300;max-width:40ch}
+  .news-form{display:flex;gap:10px;flex-wrap:wrap}
+  .news-form input{flex:1;min-width:200px;padding:16px 18px;border:1.5px solid rgba(139,115,85,.35);background:var(--cream);border-radius:2px;font-family:'Karla',sans-serif;font-size:1rem;color:var(--ink)}
+  .news-form input:focus{outline:none;border-color:var(--strand-shadow)}
+  .news-form .btn.solid{background:var(--strand-shadow);color:var(--cream)}
+  .news-form .btn.solid:hover{background:var(--ink)}
+  .news-fine{margin-top:14px;font-size:.78rem;color:var(--ink-soft)}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--deep);color:var(--cream);padding:80px 0 40px;position:relative;overflow:hidden}
+  footer .weave-bg .strand{stroke:var(--strand-shadow);opacity:.3}
+  .foot-top{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;position:relative;z-index:2;padding-bottom:50px;border-bottom:1px solid rgba(245,245,220,.12)}
+  .foot-brand .brand{color:var(--cream);font-size:1.8rem;margin-bottom:18px}
+  .foot-brand p{color:rgba(245,245,220,.65);font-weight:300;max-width:32ch;font-size:.96rem}
+  .foot-col h5{font-size:.76rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+  .foot-col a{display:block;color:rgba(245,245,220,.72);padding:6px 0;font-size:.94rem;font-weight:300;transition:color .3s,padding-left .3s}
+  .foot-col a:hover{color:var(--cream);padding-left:6px}
+  .foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding-top:30px;position:relative;z-index:2;color:rgba(245,245,220,.55);font-size:.82rem;letter-spacing:.06em}
+  .foot-bot .socials{display:flex;gap:22px}
+  .foot-bot .socials a{color:rgba(245,245,220,.7);transition:color .3s}
+  .foot-bot .socials a:hover{color:var(--gold)}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:900px){
+    .intro-grid,.news-box{grid-template-columns:1fr}
+    .intro-fig{order:-1;aspect-ratio:16/10}
+    .prod-grid{grid-template-columns:1fr}
+    .card,.card:nth-child(n){grid-column:span 1 !important;aspect-ratio:4/3 !important}
+    .mat-grid{grid-template-columns:repeat(2,1fr)}
+    .j-grid{grid-template-columns:1fr}
+    .foot-top{grid-template-columns:1fr 1fr}
+    .step{grid-template-columns:56px 1fr;gap:18px}
+    .step .no{width:56px;height:56px;font-size:1.2rem}
+    .steps::before{left:27px}
+    .step .dur{grid-column:2;padding-top:0}
+    .nav-links{display:none}
+  }
+  @media(max-width:560px){
+    .mat-grid{grid-template-columns:1fr}
+    .foot-top{grid-template-columns:1fr}
+    .hero-meta{font-size:.66rem}
+    .hero-meta .est{display:none}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+    .reveal{opacity:1 !important;transform:none !important}
+    .mask-line>span,.hero h1 .line span{transform:none !important}
+    .hero-sub,.hero-actions{opacity:1 !important;transform:none !important}
+    .dapple{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ambient sunlight -->
+<div class="dapple a"></div>
+<div class="dapple b"></div>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <a class="brand" href="#top">
+    <svg class="mark" viewBox="0 0 26 26"><g class="strand"><path d="M2 8h22M2 13h22M2 18h22M8 2v22M13 2v22M18 2v22"/></g></svg>
+    Loom &amp; Light
+  </a>
+  <div class="nav-links">
+    <a href="#collection">Collection</a>
+    <a href="#process">The Weave</a>
+    <a href="#materials">Materials</a>
+    <a href="#journal">Journal</a>
+  </div>
+  <a class="nav-cta" href="#news">Visit Studio</a>
+</nav>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="top">
+  <svg class="weave-bg" id="heroWeave" preserveAspectRatio="none"></svg>
+  <div class="hero-inner wrap">
+    <div class="hero-eyebrow">Handwoven rattan furniture</div>
+    <h1>
+      <span class="line"><span>Woven</span></span>
+      <span class="line"><span>between</span></span>
+      <span class="line"><span><em>light &amp; shadow</em></span></span>
+    </h1>
+    <p class="hero-sub">Every chair, screen and shade is interlaced strand by strand — so the room breathes, and the sun paints it in moving stripes.</p>
+    <div class="hero-actions">
+      <a class="btn solid" href="#collection">Explore the collection <span class="arw">→</span></a>
+      <a class="btn ghost" href="#process">Watch it woven</a>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <div class="est">Est. 1974 · Ubud, Bali</div>
+    <div class="scroll-cue">Scroll<span class="bar"></span></div>
+  </div>
+</header>
+
+<!-- ===== MARQUEE ===== -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marquee">
+    <span>Rattan</span><span>Seagrass</span><span>Water Hyacinth</span><span>Woven by hand</span><span>Filipino Loom</span><span>Natural fibre</span><span>Slow craft</span>
+    <span>Rattan</span><span>Seagrass</span><span>Water Hyacinth</span><span>Woven by hand</span><span>Filipino Loom</span><span>Natural fibre</span><span>Slow craft</span>
+  </div>
+</div>
+
+<!-- ===== INTRO ===== -->
+<section class="intro">
+  <div class="wrap">
+    <div class="intro-grid">
+      <div class="intro-body reveal">
+        <div class="sec-tag">Our philosophy</div>
+        <p class="intro-lead" style="margin-top:22px">A woven surface is never solid. It is a <span class="hl">thousand decisions</span> about where light may pass and where it must rest.</p>
+        <p>We build furniture the way basketry taught us — patiently, by hand, one crossing at a time. The result is not a barrier but a filter: a place for the sun to slow down, to dapple, to warm a room without ever scorching it.</p>
+        <p>Our rattan is harvested, cured and split on the island where it grows, then carried to a workshop where six weavers share a single loom. Nothing is rushed. Nothing is hidden behind a finish.</p>
+        <div class="intro-stats">
+          <div><div class="num" data-count="48">0</div><div class="lbl">Weaving hands</div></div>
+          <div><div class="num" data-count="1200">0</div><div class="lbl">Strands per chair</div></div>
+          <div><div class="num" data-count="50">0</div><div class="lbl">Years at the loom</div></div>
+        </div>
+      </div>
+      <figure class="intro-fig reveal d1">
+        <img src="https://picsum.photos/seed/rattan-weaver-hands/900/1200" alt="Artisan hands weaving rattan strands">
+        <figcaption class="cap">The crossing — where two strands decide the fate of a single square of light.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRODUCTS ===== -->
+<section class="products" id="collection">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-tag">The collection</div>
+        <h2 class="sec-title">Furniture that lets the sun through</h2>
+      </div>
+      <p class="sec-note">Hover any piece to part the weave and see the form beneath. Each frame is bound in a finished edge of rattan.</p>
+    </div>
+
+    <div class="prod-grid">
+      <article class="card reveal">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-peacock-chair/1000/720" alt="Peacock lounge chair"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="swatch"><i style="background:#C19A6B"></i><i style="background:#8B7355"></i><i style="background:#F5F5DC"></i></div>
+        <div class="info"><div><div class="type">Lounge chair</div><h3>The Peacock</h3></div><div class="price">$640</div></div>
+      </article>
+
+      <article class="card reveal d1">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-room-screen/800/1000" alt="Room divider screen"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="swatch"><i style="background:#C19A6B"></i><i style="background:#4A3F35"></i></div>
+        <div class="info"><div><div class="type">Room screen</div><h3>Lattice III</h3></div><div class="price">$410</div></div>
+      </article>
+
+      <article class="card reveal">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-pendant-lamp/800/1000" alt="Woven pendant lamp"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="swatch"><i style="background:#D9B98A"></i><i style="background:#8B7355"></i></div>
+        <div class="info"><div><div class="type">Pendant light</div><h3>Dappled</h3></div><div class="price">$280</div></div>
+      </article>
+
+      <article class="card reveal d1">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-hanging-egg-chair/1000/720" alt="Hanging egg chair"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="swatch"><i style="background:#C19A6B"></i><i style="background:#F5F5DC"></i><i style="background:#4A3F35"></i></div>
+        <div class="info"><div><div class="type">Hanging chair</div><h3>The Cocoon</h3></div><div class="price">$720</div></div>
+      </article>
+
+      <article class="card reveal">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-side-table/700/700" alt="Woven side table"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="info"><div><div class="type">Side table</div><h3>Mesh</h3></div><div class="price">$190</div></div>
+      </article>
+
+      <article class="card reveal d1">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-dining-chair/700/700" alt="Woven dining chair"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="info"><div><div class="type">Dining chair</div><h3>Settee</h3></div><div class="price">$240</div></div>
+      </article>
+
+      <article class="card reveal d2">
+        <div class="shot"><img src="https://picsum.photos/seed/rattan-headboard-panel/700/700" alt="Headboard panel"></div>
+        <svg class="weave-ov" preserveAspectRatio="none"></svg>
+        <div class="info"><div><div class="type">Headboard</div><h3>Panel 07</h3></div><div class="price">$360</div></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROCESS ===== -->
+<section class="process" id="process">
+  <svg class="weave-bg" preserveAspectRatio="none"></svg>
+  <div class="wrap" style="position:relative;z-index:2">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-tag">The weave</div>
+        <h2 class="sec-title">Six hands, one loom, forty hours</h2>
+      </div>
+      <p class="sec-note">From raw cane to finished frame, every crossing is deliberate. Here is the passage a piece takes before it reaches your room.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="no">01</div>
+        <div><h3>Harvest &amp; cure</h3><p>Rattan is cut at dawn, stripped and sun-cured for weeks until it turns supple and honeyed.</p></div>
+        <div class="dur">~3 weeks</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">02</div>
+        <div><h3>Split &amp; sort</h3><p>Each pole is split into strands of graded thickness — the spine of the weave and its fine weft.</p></div>
+        <div class="dur">2 days</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">03</div>
+        <div><h3>The crossing</h3><p>Strands pass over and under in a fixed rhythm, tightening the lattice until it holds its own weight.</p></div>
+        <div class="dur">20 hours</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">04</div>
+        <div><h3>Binding the edge</h3><p>The border is wrapped and locked, giving the open weave a finished, tactile rim you can run a hand along.</p></div>
+        <div class="dur">6 hours</div>
+      </div>
+      <div class="step reveal">
+        <div class="no">05</div>
+        <div><h3>Light test</h3><p>Each piece is held to the sun. If the dapple is wrong, it goes back to the loom — never shipped.</p></div>
+        <div class="dur">1 day</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MATERIALS ===== -->
+<section class="materials" id="materials">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-tag">Materials</div>
+        <h2 class="sec-title">Fibre, honestly named</h2>
+      </div>
+      <p class="sec-note">No laminates, no plastic cane. Only what grows, bends and ages gracefully.</p>
+    </div>
+    <div class="mat-grid">
+      <div class="mat reveal">
+        <div class="swatch" style="background:linear-gradient(135deg,#C19A6B,#A9824F)"></div>
+        <div class="tag">Primary</div>
+        <h4>Rattan</h4><div class="origin">Calamus · Indonesia</div>
+        <p>Solid, flexible and springy — the backbone of every frame we build.</p>
+      </div>
+      <div class="mat reveal d1">
+        <div class="swatch" style="background:linear-gradient(135deg,#8B7355,#6E5A3E)"></div>
+        <div class="tag">Weft</div>
+        <h4>Seagrass</h4><div class="origin">Coastal harvest · Vietnam</div>
+        <p>Matte and sturdy, it fills the seat and resists the wear of daily sitting.</p>
+      </div>
+      <div class="mat reveal d2">
+        <div class="swatch" style="background:linear-gradient(135deg,#D9B98A,#C19A6B)"></div>
+        <div class="tag">Accent</div>
+        <h4>Water Hyacinth</h4><div class="origin">River reed · Thailand</div>
+        <p>Soft and pale, woven into the panels that catch and scatter light.</p>
+      </div>
+      <div class="mat reveal d3">
+        <div class="swatch" style="background:linear-gradient(135deg,#4A3F35,#2C2419)"></div>
+        <div class="tag">Finish</div>
+        <h4>Teak Oil</h4><div class="origin">Cold-pressed · 3 coats</div>
+        <p>Hand-rubbed to protect and warm the fibre without sealing it shut.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUOTE ===== -->
+<section class="quote">
+  <svg class="weave-bg" preserveAspectRatio="none"></svg>
+  <div class="wrap">
+    <blockquote class="reveal">
+      We don't build a chair to block the <span class="mk">sun</span>. We build it to teach the sun how to <span class="mk">rest</span>.
+    </blockquote>
+    <cite class="reveal d1">— I Wayan Sudarma, Master Weaver</cite>
+  </div>
+</section>
+
+<!-- ===== JOURNAL ===== -->
+<section class="journal" id="journal">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <div class="sec-tag">From the studio</div>
+        <h2 class="sec-title">Notes on light &amp; craft</h2>
+      </div>
+      <a class="btn solid" style="background:var(--strand-shadow);color:var(--cream)" href="#">All stories →</a>
+    </div>
+    <div class="j-grid">
+      <article class="post reveal">
+        <div class="thumb"><img src="https://picsum.photos/seed/dappled-morning-light/700/520" alt="Morning light through a screen"></div>
+        <div class="meta"><span>Field notes</span><span>6 min read</span></div>
+        <h3>How a lattice learns to hold the morning</h3>
+        <p>On the geometry of shadow, and why the best weaves are the ones you never notice.</p>
+      </article>
+      <article class="post reveal d1">
+        <div class="thumb"><img src="https://picsum.photos/seed/rattan-repair-workshop/700/520" alt="Repairing a rattan chair"></div>
+        <div class="meta"><span>Care</span><span>4 min read</span></div>
+        <h3>Mending a strand, keeping a chair</h3>
+        <p>A woven thing can be repaired forever. Here is how to keep yours for a lifetime.</p>
+      </article>
+      <article class="post reveal d2">
+        <div class="thumb"><img src="https://picsum.photos/seed/bali-rattan-harvest/700/520" alt="Rattan harvest in the forest"></div>
+        <div class="meta"><span>Sourcing</span><span>8 min read</span></div>
+        <h3>Following a cane from forest to loom</h3>
+        <p>Tracing one rattan pole through the hands that turn it into furniture.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section class="news" id="news">
+  <div class="wrap">
+    <div class="news-box reveal">
+      <div>
+        <h2>Let the light in, first</h2>
+        <p>New weaves, studio openings and slow-craft notes — a few times a year, never more.</p>
+      </div>
+      <div>
+        <form class="news-form" onsubmit="return false">
+          <input type="email" placeholder="Your email address" aria-label="Email address" required>
+          <button class="btn solid" type="submit">Subscribe</button>
+        </form>
+        <p class="news-fine">By subscribing you agree to our privacy policy. Unsubscribe anytime.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <svg class="weave-bg" preserveAspectRatio="none"></svg>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand">
+          <svg class="mark" viewBox="0 0 26 26"><g class="strand"><path d="M2 8h22M2 13h22M2 18h22M8 2v22M13 2v22M18 2v22"/></g></svg>
+          Loom &amp; Light
+        </div>
+        <p>Artisan rattan furniture, handwoven in Ubud, Bali. Built to let the sun through.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Collection</h5>
+        <a href="#collection">Seating</a><a href="#collection">Screens</a><a href="#collection">Lighting</a><a href="#collection">Tables</a>
+      </div>
+      <div class="foot-col">
+        <h5>Studio</h5>
+        <a href="#process">The Weave</a><a href="#materials">Materials</a><a href="#journal">Journal</a><a href="#news">Visit Us</a>
+      </div>
+      <div class="foot-col">
+        <h5>Support</h5>
+        <a href="#">Care Guide</a><a href="#">Shipping</a><a href="#">Repairs</a><a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 1974–2025 Loom &amp; Light · Ubud, Bali · Woven by hand</span>
+      <div class="socials">
+        <a href="#">Instagram</a><a href="#">Pinterest</a><a href="#">Trade</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const NS = 'http://www.w3.org/2000/svg';
+
+  /* Build a woven lattice inside an <svg> element (fills its box) */
+  function buildWeave(svg, opt){
+    opt = opt || {};
+    const cell = opt.cell || 42;
+    const w = svg.clientWidth || 1200;
+    const h = svg.clientHeight || 800;
+    svg.setAttribute('viewBox', '0 0 '+w+' '+h);
+    svg.innerHTML = '';
+    const g = document.createElementNS(NS,'g');
+    const strands = [];
+
+    // horizontal strands
+    for(let y=cell/2; y<h; y+=cell){
+      const p = document.createElementNS(NS,'path');
+      p.setAttribute('class','strand'+(((y/cell)|0)%2?' dark':''));
+      p.setAttribute('d','M0 '+y+' H'+w);
+      g.appendChild(p); strands.push(p);
+    }
+    // vertical strands
+    for(let x=cell/2; x<w; x+=cell){
+      const p = document.createElementNS(NS,'path');
+      p.setAttribute('class','strand'+(((x/cell)|0)%2?' dark':''));
+      p.setAttribute('d','M'+x+' 0 V'+h);
+      g.appendChild(p); strands.push(p);
+    }
+    svg.appendChild(g);
+    return strands;
+  }
+
+  /* Entrance draw for the hero weave */
+  function drawHero(){
+    const svg = document.getElementById('heroWeave');
+    const strands = buildWeave(svg,{cell:46});
+    if(reduce) return;
+    strands.forEach((p,i)=>{
+      const len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      p.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)';
+      p.style.transitionDelay = (i*0.006)+'s';
+    });
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      strands.forEach(p=>p.style.strokeDashoffset = '0');
+    }));
+  }
+
+  /* Fill all other weave layers + card overlays */
+  function fillWeaves(){
+    document.querySelectorAll('section .weave-bg, footer .weave-bg').forEach(s=>buildWeave(s,{cell:54}));
+    document.querySelectorAll('.card .weave-ov').forEach(s=>buildWeave(s,{cell:26}));
+    // card overlay styling
+    document.querySelectorAll('.card .weave-ov').forEach(s=>{
+      s.style.opacity = '0.5';
+      s.querySelectorAll('.strand').forEach(p=>{p.style.strokeWidth='3';p.style.stroke='#2C2419';p.style.opacity='0.5';});
+    });
+  }
+
+  /* Nav scroll state */
+  const nav = document.getElementById('nav');
+  const onScroll = ()=> nav.classList.toggle('scrolled', window.scrollY > 40);
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* Reveal on scroll */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.16, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* Count-up */
+  const cio = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting) return;
+      const el = e.target, target = +el.dataset.count, dur = 1400, start = performance.now();
+      if(reduce){ el.textContent = target.toLocaleString(); cio.unobserve(el); return; }
+      function tick(now){
+        const t = Math.min((now-start)/dur,1);
+        const val = Math.floor(target * (1-Math.pow(1-t,3)));
+        el.textContent = val.toLocaleString();
+        if(t<1) requestAnimationFrame(tick); else el.textContent = target.toLocaleString();
+      }
+      requestAnimationFrame(tick); cio.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+  /* Subtle parallax on hero weave */
+  const hero = document.querySelector('.hero');
+  const heroWeave = document.getElementById('heroWeave');
+  if(!reduce && hero){
+    window.addEventListener('scroll', ()=>{
+      const y = window.scrollY;
+      if(y < window.innerHeight){
+        heroWeave.style.transform = 'translateY('+(y*0.18)+'px)';
+      }
+    }, {passive:true});
+  }
+
+  /* Hero entrance trigger */
+  window.addEventListener('load', ()=>{
+    hero.classList.add('ready');
+    drawHero();
+    fillWeaves();
+  });
+  // fallback if load already fired
+  if(document.readyState==='complete'){ hero.classList.add('ready'); drawHero(); fillWeaves(); }
+
+  /* Rebuild weaves on resize (debounced) */
+  let rt;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(rt);
+    rt = setTimeout(fillWeaves, 250);
+  });
+})();
+</script>
+</body>
+</html>

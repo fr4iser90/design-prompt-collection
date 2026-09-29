@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Daily Wire — Modern Broadsheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f5f5;
+    --ink:#141311;
+    --grey:#6b6a66;
+    --grey-2:#8f8e89;
+    --rule:#c9c7c1;
+    --rule-2:#d9d7d1;
+    --red:#c0182b;
+    --serif:"Merriweather",Georgia,"Times New Roman",serif;
+    --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+    --measure:16px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* subtle dot-matrix newsprint texture */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background-image:radial-gradient(rgba(20,19,17,.045) .6px, transparent .6px);
+    background-size:4px 4px;
+    opacity:.8;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(0,0,0,.05), transparent 55%),
+      radial-gradient(120% 120% at 50% 120%, rgba(0,0,0,.06), transparent 60%);
+  }
+
+  .wrap{
+    position:relative;
+    z-index:1;
+    max-width:1240px;
+    margin:0 auto;
+    padding:0 clamp(16px,3vw,34px);
+  }
+
+  /* ============ TICKER ============ */
+  .ticker{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:var(--ink);
+    color:var(--paper);
+    display:flex;
+    align-items:stretch;
+    border-bottom:3px solid var(--red);
+    font-family:var(--sans);
+    height:38px;
+    overflow:hidden;
+  }
+  .ticker__tag{
+    flex:0 0 auto;
+    background:var(--red);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 16px;
+    font-weight:800;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .ticker__tag .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:#fff;
+    animation:blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.15}}
+  .ticker__viewport{
+    flex:1 1 auto;
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+  .ticker__track{
+    display:flex;
+    white-space:nowrap;
+    will-change:transform;
+    animation:ticker 42s linear infinite;
+  }
+  .ticker:hover .ticker__track{animation-play-state:paused}
+  .ticker__track span{
+    font-size:12.5px;
+    letter-spacing:.02em;
+    padding:0 26px;
+    color:#e9e7e2;
+  }
+  .ticker__track span b{color:var(--red);font-weight:800;margin-right:6px}
+  .ticker__track span::after{content:"◆";color:#5a5954;margin-left:26px;font-size:8px;vertical-align:middle}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ============ MASTHEAD ============ */
+  .masthead{
+    padding-top:22px;
+    border-bottom:1px solid var(--ink);
+  }
+  .masthead__meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:var(--sans);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--grey);
+    padding-bottom:14px;
+    border-bottom:1px solid var(--rule);
+  }
+  .masthead__meta .live{color:var(--red);font-weight:700}
+  .masthead__meta .live::before{content:"● ";font-size:8px;vertical-align:middle}
+  .wordmark{
+    text-align:center;
+    padding:18px 0 12px;
+  }
+  .wordmark h1{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(46px,11.5vw,138px);
+    line-height:.82;
+    letter-spacing:-.02em;
+    text-transform:uppercase;
+    color:var(--ink);
+    display:inline-block;
+  }
+  .wordmark h1 .the{
+    font-weight:300;
+    font-style:italic;
+    font-size:.42em;
+    letter-spacing:.02em;
+    text-transform:none;
+    vertical-align:.32em;
+    color:var(--grey);
+    margin-right:.12em;
+  }
+  .wordmark .tagline{
+    font-family:var(--sans);
+    font-size:11px;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--grey);
+    margin-top:12px;
+  }
+  .masthead__strip{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:12px 0 16px;
+    border-top:1px solid var(--rule);
+    border-bottom:3px double var(--ink);
+    font-family:var(--sans);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--grey);
+  }
+  .masthead__strip .edition{color:var(--ink);font-weight:700}
+
+  /* ============ NAV ============ */
+  .nav{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    border-bottom:1px solid var(--ink);
+    font-family:var(--sans);
+    font-size:11.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-weight:600;
+  }
+  .nav a{
+    color:var(--ink);
+    text-decoration:none;
+    padding:12px 16px;
+    border-right:1px solid var(--rule);
+    position:relative;
+    transition:color .2s ease,background .2s ease;
+  }
+  .nav a:first-child{padding-left:0}
+  .nav a::after{
+    content:"";
+    position:absolute;
+    left:16px;right:16px;bottom:6px;
+    height:2px;
+    background:var(--red);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:transform .25s ease;
+  }
+  .nav a:hover{color:var(--red)}
+  .nav a:hover::after{transform:scaleX(1)}
+
+  /* ============ LEAD / HERO ============ */
+  .lead{
+    padding:26px 0 8px;
+    border-bottom:1px solid var(--ink);
+    display:grid;
+    grid-template-columns:1fr 300px;
+    gap:34px;
+  }
+  .lead__main{position:relative;padding-right:34px}
+  .lead__main::after{
+    content:"";
+    position:absolute;
+    right:0;top:6px;bottom:6px;
+    width:1px;
+    background:var(--rule);
+  }
+  .kicker{
+    font-family:var(--sans);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin-bottom:14px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .kicker::before{content:"";width:34px;height:2px;background:var(--red)}
+  .headline{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(34px,5.6vw,68px);
+    line-height:.98;
+    letter-spacing:-.015em;
+    color:var(--ink);
+    cursor:pointer;
+    display:inline;
+    background-image:linear-gradient(var(--ink),var(--ink));
+    background-repeat:no-repeat;
+    background-position:0 100%;
+    background-size:0% 3px;
+    transition:background-size .45s cubic-bezier(.2,.7,.2,1),color .3s ease;
+    padding-bottom:2px;
+  }
+  .headline:hover{background-size:100% 3px;color:var(--red)}
+  .standfirst{
+    font-size:19px;
+    line-height:1.5;
+    color:#2c2b28;
+    margin-top:20px;
+    max-width:60ch;
+    font-weight:300;
+  }
+  .standfirst b{font-weight:700}
+  .byline{
+    font-family:var(--sans);
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--grey);
+    margin-top:18px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 16px;
+    align-items:center;
+  }
+  .byline .sep{color:var(--rule)}
+  .byline .author{color:var(--ink);font-weight:700}
+
+  /* lead secondary column */
+  .lead__side{display:flex;flex-direction:column;gap:0}
+  .side-block{padding:18px 0;border-bottom:1px solid var(--rule)}
+  .side-block:first-child{padding-top:6px}
+  .side-block:last-child{border-bottom:none}
+  .side-block h4{
+    font-family:var(--sans);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin-bottom:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .side-block h4 .mark{color:var(--red)}
+  .mini-item{
+    font-size:14px;
+    line-height:1.35;
+    padding:9px 0;
+    border-top:1px dotted var(--rule);
+    cursor:pointer;
+    transition:color .2s ease;
+  }
+  .mini-item:first-of-type{border-top:none}
+  .mini-item:hover{color:var(--red)}
+  .mini-item .num{
+    font-family:var(--sans);
+    font-size:10px;
+    color:var(--grey-2);
+    font-weight:700;
+    margin-right:8px;
+  }
+  .stock-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:var(--sans);
+    font-size:12px;
+    padding:6px 0;
+    border-bottom:1px dotted var(--rule);
+  }
+  .stock-row:last-child{border-bottom:none}
+  .stock-row .name{font-weight:700;letter-spacing:.04em}
+  .stock-row .val{color:var(--grey)}
+  .stock-row .chg{font-weight:700;font-size:11px}
+  .up{color:#1f7a3d}
+  .down{color:var(--red)}
+
+  /* ============ SECTION HEAD ============ */
+  .section-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin:34px 0 22px;
+    font-family:var(--sans);
+  }
+  .section-head .label{
+    font-size:13px;
+    font-weight:800;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .section-head .line{flex:1;height:2px;background:var(--ink)}
+  .section-head .count{
+    font-size:10px;
+    letter-spacing:.14em;
+    color:var(--grey);
+    text-transform:uppercase;
+  }
+
+  /* ============ COLUMN CASCADE ============ */
+  .cascade{
+    column-count:3;
+    column-gap:34px;
+    column-rule:1px solid var(--rule);
+    padding-bottom:10px;
+  }
+  .cascade > *{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:26px}
+  .cascade .rule-break{
+    break-before:column;
+    -webkit-column-break-before:always;
+    height:0;margin:0;padding:0;
+  }
+
+  .article{
+    padding-top:2px;
+  }
+  .article .cat{
+    font-family:var(--sans);
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin-bottom:8px;
+    display:block;
+  }
+  .article .cat.grey{color:var(--grey)}
+  .art-title{
+    font-family:var(--serif);
+    font-weight:700;
+    font-size:21px;
+    line-height:1.12;
+    letter-spacing:-.01em;
+    cursor:pointer;
+    display:inline;
+    background-image:linear-gradient(var(--ink),var(--ink));
+    background-repeat:no-repeat;
+    background-position:0 100%;
+    background-size:0% 2px;
+    transition:background-size .4s cubic-bezier(.2,.7,.2,1),color .25s ease;
+    padding-bottom:2px;
+  }
+  .art-title:hover{background-size:100% 2px;color:var(--red)}
+  .art-body{
+    text-align:justify;
+    font-size:14px;
+    line-height:1.5;
+    color:#26251f;
+    margin-top:10px;
+    hyphens:auto;
+  }
+  .art-body::first-letter{
+    font-weight:900;
+    font-size:2.6em;
+    line-height:.78;
+    float:left;
+    padding:4px 8px 0 0;
+    color:var(--ink);
+  }
+  .art-meta{
+    font-family:var(--sans);
+    font-size:9.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--grey-2);
+    margin-top:12px;
+    display:flex;
+    justify-content:space-between;
+    border-top:1px solid var(--rule-2);
+    padding-top:8px;
+  }
+
+  /* pull quote */
+  .pullquote{
+    border-top:3px solid var(--ink);
+    border-bottom:3px solid var(--ink);
+    padding:18px 0;
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:400;
+    font-size:20px;
+    line-height:1.3;
+    color:var(--ink);
+  }
+  .pullquote cite{
+    display:block;
+    font-family:var(--sans);
+    font-style:normal;
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--grey);
+    margin-top:12px;
+  }
+
+  /* listicle */
+  .listicle ol{
+    list-style:none;
+    counter-reset:item;
+    margin-top:6px;
+  }
+  .listicle li{
+    counter-increment:item;
+    font-size:14px;
+    line-height:1.4;
+    padding:10px 0 10px 34px;
+    border-bottom:1px dotted var(--rule);
+    position:relative;
+    text-align:justify;
+  }
+  .listicle li::before{
+    content:counter(item,decimal-leading-zero);
+    position:absolute;
+    left:0;top:8px;
+    font-family:var(--sans);
+    font-weight:900;
+    font-size:16px;
+    color:var(--red);
+  }
+
+  /* data table */
+  .table-block table{width:100%;border-collapse:collapse;font-family:var(--sans)}
+  .table-block caption{
+    text-align:left;
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--grey);
+    padding-bottom:8px;
+  }
+  .table-block th,.table-block td{
+    text-align:left;
+    font-size:12px;
+    padding:7px 4px;
+    border-bottom:1px solid var(--rule-2);
+  }
+  .table-block th{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:10px;color:var(--grey)}
+  .table-block td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+  /* opinion */
+  .opinion{
+    background:#ededeb;
+    border:1px solid var(--rule);
+    padding:18px;
+  }
+  .opinion .op-head{
+    font-family:var(--sans);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--grey);
+    margin-bottom:10px;
+    display:flex;justify-content:space-between;
+  }
+  .opinion .op-title{
+    font-family:var(--serif);
+    font-style:italic;
+    font-weight:700;
+    font-size:19px;
+    line-height:1.15;
+  }
+  .opinion .op-body{
+    font-size:13.5px;
+    line-height:1.5;
+    margin-top:10px;
+    color:#33322c;
+    text-align:justify;
+  }
+  .opinion .op-sign{
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin-top:12px;
+    font-weight:700;
+  }
+
+  /* ============ SCROLL REVEAL (liquid fill) ============ */
+  .reveal{
+    opacity:0;
+    transform:translateY(26px);
+    transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in{opacity:1;transform:none}
+
+  /* ============ FOOTER ============ */
+  .footer{
+    margin-top:40px;
+    border-top:3px double var(--ink);
+    padding:30px 0 60px;
+    font-family:var(--sans);
+  }
+  .footer__grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr;
+    gap:30px;
+  }
+  .footer h5{
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink);
+    margin-bottom:14px;
+    font-weight:800;
+  }
+  .footer .fbrand{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:26px;
+    text-transform:uppercase;
+    letter-spacing:-.01em;
+    margin-bottom:12px;
+  }
+  .footer .fbrand .the{font-weight:300;font-style:italic;text-transform:none;font-size:.55em;color:var(--grey)}
+  .footer p{font-size:12px;line-height:1.6;color:var(--grey);max-width:34ch}
+  .footer ul{list-style:none}
+  .footer li{font-size:12px;padding:5px 0;color:var(--grey)}
+  .footer a{color:var(--grey);text-decoration:none;transition:color .2s}
+  .footer a:hover{color:var(--red)}
+  .footer__bar{
+    margin-top:34px;
+    padding-top:18px;
+    border-top:1px solid var(--rule);
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:10px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--grey-2);
+  }
+
+  /* ============ READER PANEL ============ */
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,19,17,.5);
+    opacity:0;
+    visibility:hidden;
+    transition:opacity .35s ease,visibility .35s ease;
+    z-index:80;
+  }
+  .overlay.open{opacity:1;visibility:visible}
+  .reader{
+    position:fixed;
+    top:0;right:0;
+    height:100%;
+    width:min(560px,92vw);
+    background:var(--paper);
+    border-left:3px solid var(--ink);
+    transform:translateX(100%);
+    transition:transform .45s cubic-bezier(.2,.7,.2,1);
+    z-index:90;
+    overflow-y:auto;
+    box-shadow:-20px 0 50px rgba(0,0,0,.25);
+  }
+  .reader.open{transform:none}
+  .reader__inner{padding:30px clamp(22px,4vw,44px) 60px}
+  .reader__close{
+    position:sticky;
+    top:0;
+    background:var(--paper);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 0;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    font-weight:800;
+    z-index:2;
+  }
+  .reader__close button{
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    padding:8px 14px;
+    cursor:pointer;
+    font-weight:800;
+    transition:background .2s;
+  }
+  .reader__close button:hover{background:var(--red)}
+  .reader .r-kicker{
+    font-family:var(--sans);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--red);
+    margin:22px 0 12px;
+  }
+  .reader h2{
+    font-family:var(--serif);
+    font-weight:900;
+    font-size:clamp(26px,4vw,40px);
+    line-height:1.02;
+    letter-spacing:-.01em;
+  }
+  .reader .r-standfirst{
+    font-size:17px;
+    line-height:1.5;
+    color:#2c2b28;
+    margin:16px 0;
+    font-weight:300;
+    font-style:italic;
+  }
+  .reader .r-byline{
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--grey);
+    padding:12px 0;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    margin-bottom:20px;
+  }
+  .reader .r-body{
+    font-size:15px;
+    line-height:1.62;
+    color:#26251f;
+    text-align:justify;
+    hyphens:auto;
+  }
+  .reader .r-body p{margin-bottom:16px}
+  .reader .r-body p:first-of-type::first-letter{
+    font-weight:900;font-size:3em;line-height:.78;float:left;padding:6px 10px 0 0;color:var(--ink)
+  }
+  .reader .r-foot{
+    margin-top:26px;
+    padding-top:16px;
+    border-top:3px double var(--ink);
+    font-family:var(--sans);
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--grey-2);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width:960px){
+    .lead{grid-template-columns:1fr;gap:24px}
+    .lead__main{padding-right:0}
+    .lead__main::after{display:none}
+    .cascade{column-count:2}
+    .footer__grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:600px){
+    .cascade{column-count:1}
+    .cascade .rule-break{display:none}
+    .masthead__meta{font-size:9px;letter-spacing:.08em}
+    .footer__grid{grid-template-columns:1fr}
+    .nav a{padding:10px 11px;font-size:10.5px}
+    .nav a::after{left:11px;right:11px}
+    .standfirst{font-size:17px}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+    .reveal{opacity:1;transform:none}
+    .ticker__track{animation:none;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker" aria-label="Breaking news ticker">
+  <div class="ticker__tag"><span class="dot"></span>Breaking</div>
+  <div class="ticker__viewport">
+    <div class="ticker__track" id="tickerTrack"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="masthead__meta">
+      <span>Vol. CXLVII · No. <span id="issueNo">52,318</span></span>
+      <span class="live">Live Desk · Updated <span id="clock">--:--:--</span></span>
+      <span>Final Edition</span>
+    </div>
+    <div class="wordmark">
+      <h1><span class="the">The</span>Daily Wire</h1>
+      <div class="tagline">All the News · Aggregated · Set in Type</div>
+    </div>
+    <div class="masthead__strip">
+      <span class="edition">Metropolitan Edition</span>
+      <span id="dateLine">—</span>
+      <span>Weather: Overcast 14°C · Winds NW 12km/h</span>
+      <span>Price: $2.00</span>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav" aria-label="Primary sections">
+    <a href="#">Front Page</a>
+    <a href="#">World</a>
+    <a href="#">Politics</a>
+    <a href="#">Business</a>
+    <a href="#">Technology</a>
+    <a href="#">Culture</a>
+    <a href="#">Science</a>
+    <a href="#">Sport</a>
+    <a href="#">Opinion</a>
+    <a href="#">Weather</a>
+  </nav>
+
+  <!-- LEAD -->
+  <section class="lead">
+    <div class="lead__main">
+      <span class="kicker">Lead Story · Exclusive</span>
+      <h2 class="headline" data-story="lead">The Column That Never Sleeps: How a Century-Old Grid Outran the Feed</h2>
+      <p class="standfirst">While the industry chased infinite scroll and algorithmic feeds, a quiet rebellion returned to the <b>column</b> — the oldest unit of the press — and found it still holds more authority than any recommendation engine.</p>
+      <div class="byline">
+        <span class="author">By Margaret Holloway</span>
+        <span class="sep">|</span>
+        <span>Chief Correspondent</span>
+        <span class="sep">|</span>
+        <span>6 min read</span>
+        <span class="sep">|</span>
+        <span>Filed 07:14</span>
+      </div>
+    </div>
+
+    <aside class="lead__side">
+      <div class="side-block">
+        <h4>Most Read <span class="mark">★</span></h4>
+        <div class="mini-item" data-story="m1"><span class="num">01</span>Markets rally on rate-cut signal from central bank</div>
+        <div class="mini-item" data-story="m2"><span class="num">02</span>The return of the printed word in a screen-first decade</div>
+        <div class="mini-item" data-story="m3"><span class="num">03</span>Transit authority unveils overnight express network</div>
+        <div class="mini-item" data-story="m4"><span class="num">04</span>Architects defend the brutalist library slated for demolition</div>
+        <div class="mini-item" data-story="m5"><span class="num">05</span>A field guide to reading the broadsheet like a pro</div>
+      </div>
+      <div class="side-block">
+        <h4>Markets <span class="mark">↗</span></h4>
+        <div class="stock-row"><span class="name">INDL</span><span class="val">4,182.6</span><span class="chg up">+0.84%</span></div>
+        <div class="stock-row"><span class="name">TECH</span><span class="val">17,440</span><span class="chg up">+1.21%</span></div>
+        <div class="stock-row"><span class="name">BOND</span><span class="val">4.12%</span><span class="chg down">−0.03</span></div>
+        <div class="stock-row"><span class="name">OIL</span><span class="val">78.40</span><span class="chg down">−0.55%</span></div>
+        <div class="stock-row"><span class="name">GOLD</span><span class="val">2,318</span><span class="chg up">+0.30%</span></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- CASCADE SECTION -->
+  <div class="section-head">
+    <span class="label">The Cascade</span>
+    <span class="line"></span>
+    <span class="count">12 stories · set &amp; flowing</span>
+  </div>
+
+  <div class="cascade" id="cascade">
+
+    <article class="article reveal">
+      <span class="cat">Politics</span>
+      <h3 class="art-title" data-story="a1">Coalition Talks Stall as Budget Deadline Nears</h3>
+      <p class="art-body">Negotiators from three parties emerged after midnight with no agreement, leaving ministers to draft contingency spending lines before the chamber reconvenes at nine. Sources close to the table describe a widening gap over capital investment, with smaller partners demanding guarantees the treasury says it cannot underwrite.</p>
+      <div class="art-meta"><span>By R. Osei</span><span>3 min</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat grey">Business</span>
+      <h3 class="art-title" data-story="a2">Printers Report Best Quarter in a Decade</h3>
+      <p class="art-body">Counter to every forecast, presses across the region ran overtime last month. Publishers credit a surge in long-form subscriptions and a renewed appetite for physical editions among readers fatigued by ephemeral feeds. Orders for letterpress equipment rose sharply, a trend industry veterans had written off as nostalgia.</p>
+      <div class="art-meta"><span>By L. Fenwick</span><span>4 min</span></div>
+    </article>
+
+    <div class="pullquote reveal">
+      “The column is not a relic. It is a promise that the news will end somewhere, that a reader can finish a thing.”
+      <cite>— Editorial Board</cite>
+    </div>
+
+    <article class="article reveal">
+      <span class="cat">Technology</span>
+      <h3 class="art-title" data-story="a3">The Algorithm That Refuses to Feed You</h3>
+      <p class="art-body">A new aggregator deliberately stops scrolling, presenting exactly one page of curated reports before closing the book. Early adopters call it a relief; critics call it a gimmick. Either way, engagement per session has tripled, suggesting that restraint may be the most radical feature a news product can ship.</p>
+      <div class="art-meta"><span>By D. Marsh</span><span>5 min</span></div>
+    </article>
+
+    <div class="rule-break"></div>
+
+    <article class="article reveal">
+      <span class="cat grey">World</span>
+      <h3 class="art-title" data-story="a4">Border Talks Resume After Six-Month Freeze</h3>
+      <p class="art-body">Envoys returned to the neutral venue this morning, the first formal contact since the spring standoff. Observers caution that procedural agreements rarely signal substantive breakthroughs, but the mere act of sitting down has steadied regional currencies and eased shipping insurance premiums along the corridor.</p>
+      <div class="art-meta"><span>By A. Petrov</span><span>3 min</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat">Science</span>
+      <h3 class="art-title" data-story="a5">Telescope Array Captures Faintest Galaxy Yet</h3>
+      <p class="art-body">A cluster of dishes in the high desert has imaged a galaxy so dim it took eleven hours of stacked exposure to resolve. The light left its source when the universe was a fraction of its current age, offering astronomers a rare glimpse of the era when the first stars began to punctuate the cosmic dark.</p>
+      <div class="art-meta"><span>By N. Adeyemi</span><span>6 min</span></div>
+    </article>
+
+    <article class="opinion reveal">
+      <div class="op-head"><span>Opinion</span><span>Column 7</span></div>
+      <div class="op-title">In Praise of Reading to the Bottom of the Page</div>
+      <p class="op-body">We have confused speed with comprehension. A story that ends on the fold is a story you can remember, argue about, and cite the next morning. The infinite feed gives us everything and holds nothing. Perhaps the deepest innovation left to journalism is simply the courage to stop.</p>
+      <div class="op-sign">— T. Whitcombe</div>
+    </article>
+
+    <div class="rule-break"></div>
+
+    <article class="listicle reveal">
+      <span class="cat grey">Culture</span>
+      <h3 class="art-title" data-story="a6">Five Typefaces That Built the Twentieth Century</h3>
+      <ol>
+        <li>Bodoni, whose razor-thin hairlines became the language of luxury and poster art.</li>
+        <li>Garamond, still the default for books that intend to be read slowly.</li>
+        <li>Helvetica, the neutral voice of the modern corporation and the subway sign.</li>
+        <li>Futura, the geometric ideal that sent humanity to the moon on a cover.</li>
+        <li>Times New Roman, commissioned for a newspaper and never quite forgiven.</li>
+      </ol>
+      <div class="art-meta"><span>By P. Lindqvist</span><span>4 min</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat">Sport</span>
+      <h3 class="art-title" data-story="a7">Underdogs Stun Champions in Overtime Thriller</h3>
+      <p class="art-body">A goal scored with four seconds remaining forced extra time, where the visitors completed a comeback few had pencilled in. The result reshuffles the table heading into the final stretch and hands the champions their first loss since the season's opening fixture.</p>
+      <div class="art-meta"><span>By J. Calloway</span><span>2 min</span></div>
+    </article>
+
+    <article class="table-block reveal">
+      <span class="cat grey grey">Data Desk</span>
+      <h3 class="art-title" data-story="a8">Circulation, by Quarter</h3>
+      <table>
+        <caption>Print vs. Digital · thousands of readers</caption>
+        <thead><tr><th>Quarter</th><th class="num">Print</th><th class="num">Digital</th><th class="num">Δ</th></tr></thead>
+        <tbody>
+          <tr><td>Q1</td><td class="num">412</td><td class="num">1,204</td><td class="num">+3.1%</td></tr>
+          <tr><td>Q2</td><td class="num">438</td><td class="num">1,289</td><td class="num>+4.4%</td></tr>
+          <tr><td>Q3</td><td class="num">461</td><td class="num">1,402</td><td class="num">+5.2%</td></tr>
+          <tr><td>Q4</td><td class="num">490</td><td class="num">1,517</td><td class="num">+6.0%</td></tr>
+        </tbody>
+      </table>
+      <div class="art-meta"><span>Compiled by Data Desk</span><span>Fig. 3</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat">City</span>
+      <h3 class="art-title" data-story="a9">Historic Newsroom to Reopen as Reading Room</h3>
+      <p class="art-body">The building where three generations of reporters filed copy will reopen to the public, its linotype machines restored and its archive digitised. Planners intend to keep the desks and the deadlines spirit, if not the deadlines themselves, turning a monument to the press into a commons for the curious.</p>
+      <div class="art-meta"><span>By S. Bianchi</span><span>3 min</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat grey grey">Weather</span>
+      <h3 class="art-title" data-story="a10">Front Moves In: A Grey Week Ahead</h3>
+      <p class="art-body">A slow-moving low will settle over the region through Thursday, bringing overcast skies and light showers. Temperatures hold near seasonal norms, but forecasters warn of reduced visibility overnight. The weekend looks brighter, with clearing from the west and a brisk morning chill.</p>
+      <div class="art-meta"><span>Met. Office</span><span>1 min</span></div>
+    </article>
+
+    <article class="article reveal">
+      <span class="cat">Media</span>
+      <h3 class="art-title" data-story="a11">The Masthead Endures as a Brand Anchor</h3>
+      <p class="art-body">In an age of faceless feeds, the old nameplate still commands trust. Readers say a bold masthead signals accountability — someone stands behind the words. Designers note that the typographic signature has become a badge of provenance, a small declaration that the report was made by hand.</p>
+      <div class="art-meta"><span>By K. Novak</span><span>4 min</span></div>
+    </article>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer__grid">
+      <div>
+        <div class="fbrand"><span class="the">The</span>Daily Wire</div>
+        <p>A modern news aggregator set in the grammar of the classic broadsheet. Dense, justified, and finished at the bottom of the page.</p>
+      </div>
+      <div>
+        <h5>Sections</h5>
+        <ul>
+          <li><a href="#">World</a></li>
+          <li><a href="#">Politics</a></li>
+          <li><a href="#">Business</a></li>
+          <li><a href="#">Culture</a></li>
+          <li><a href="#">Sport</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Subscribe</h5>
+        <ul>
+          <li><a href="#">Print Edition</a></li>
+          <li><a href="#">Morning Brief</a></li>
+          <li><a href="#">Evening Wire</a></li>
+          <li><a href="#">Archive Access</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>The Desk</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Standards</a></li>
+          <li><a href="#">Corrections</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>© <span id="year">2024</span> The Daily Wire · All Rights Reserved</span>
+      <span>Set in Merriweather &amp; Archivo · Composed on the Grid</span>
+      <span>Printed on Recycled Pixels</span>
+    </div>
+  </footer>
+
+</div>
+
+<!-- READER PANEL -->
+<div class="overlay" id="overlay"></div>
+<aside class="reader" id="reader" aria-hidden="true" role="dialog" aria-label="Article reader">
+  <div class="reader__inner">
+    <div class="reader__close">
+      <span>Reading Room</span>
+      <button id="closeReader" type="button">Close ✕</button>
+    </div>
+    <div id="readerContent"></div>
+  </div>
+</aside>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Clock & Date ---------- */
+  function pad(n){return String(n).padStart(2,"0");}
+  function tick(){
+    var d=new Date();
+    var el=document.getElementById("clock");
+    if(el) el.textContent=pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  var months=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var now=new Date();
+  var dl=document.getElementById("dateLine");
+  if(dl) dl.textContent=days[now.getDay()]+" · "+months[now.getMonth()]+" "+now.getDate()+", "+now.getFullYear();
+  var yr=document.getElementById("year"); if(yr) yr.textContent=now.getFullYear();
+
+  /* ---------- Ticker ---------- */
+  var headlines=[
+    ["14:02","Central bank signals possible rate cut next quarter"],
+    ["13:48","Print circulation climbs for fourth consecutive quarter"],
+    ["13:15","Transit authority unveils overnight express network"],
+    ["12:57","Telescope array captures faintest galaxy yet recorded"],
+    ["12:30","Coalition budget talks stall ahead of deadline"],
+    ["11:58","Historic newsroom to reopen as public reading room"],
+    ["11:22","Underdogs stun champions in overtime thriller"],
+    ["10:45","Border negotiations resume after six-month freeze"],
+    ["10:10","Typeface exhibition draws record morning crowd"]
+  ];
+  var track=document.getElementById("tickerTrack");
+  function buildTicker(){
+    var html="";
+    headlines.forEach(function(h){
+      html+='<span><b>'+h[0]+'</b>'+h[1]+'</span>';
+    });
+    // duplicate for seamless loop
+    track.innerHTML=html+html;
+  }
+  buildTicker();
+
+  /* ---------- Scroll reveal (liquid fill) ---------- */
+  var reveals=document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var delay=(parseInt(e.target.getAttribute("data-delay")||0,10));
+          setTimeout(function(){e.target.classList.add("in");},delay);
+          io.unobserve(e.target);
+        }
+      });
+    },{threshold:0.12,rootMargin:"0px 0px -40px 0px"});
+    // stagger within cascade columns
+    var cascade=document.getElementById("cascade");
+    if(cascade){
+      var kids=cascade.querySelectorAll(".reveal");
+      kids.forEach(function(k,i){ k.setAttribute("data-delay",(i%4)*90); });
+    }
+    reveals.forEach(function(r){io.observe(r);});
+  } else {
+    reveals.forEach(function(r){r.classList.add("in");});
+  }
+
+  /* ---------- Reader panel content ---------- */
+  var stories={
+    lead:{kicker:"Lead Story · Exclusive",title:"The Column That Never Sleeps: How a Century-Old Grid Outran the Feed",
+      standfirst:"While the industry chased infinite scroll, a quiet rebellion returned to the column — the oldest unit of the press — and found it still holds more authority than any recommendation engine.",
+      byline:"By Margaret Holloway · Chief Correspondent · Filed 07:14",
+      body:[
+        "For two decades the dominant instinct in digital news was to never let the reader finish. The feed was endless by design, a river with no mouth, and every metric was tuned to keep the eye drifting downward into an ocean of related links. The column, by contrast, ends. It has a bottom. It can be held, scanned, and set aside.",
+        "And yet the column is winning. Not because readers have rejected screens — they have not — but because the screen, at last, has learned to imitate the page. Justified text, thin vertical rules, a dense hierarchy built from size and weight rather than colour: these are not nostalgic gestures. They are the grammar of trust.",
+        "Publishers who rebuilt their front ends around a strict grid report that readers stay longer and return more often. The reason is simple. A finished story is a story a person can remember, argue about, and cite the following morning. An infinite feed gives us everything and holds nothing.",
+        "The experiment is not without its critics, who call the broadsheet revival a costume, a way to dress the same algorithmic content in the clothes of a dead medium. But the designers behind it insist the form is the function. To set a story in a column is to declare that it has a shape, that someone stood behind it, and that it will, mercifully, end."
+      ]},
+    a1:{kicker:"Politics",title:"Coalition Talks Stall as Budget Deadline Nears",
+      standfirst:"Negotiators emerged after midnight with no agreement, leaving ministers to draft contingency spending lines before the chamber reconvenes at nine.",
+      byline:"By R. Osei · Filed 01:20",
+      body:[
+        "The three parties at the table have been unable to close the gap on capital investment, with smaller partners demanding guarantees the treasury says it cannot underwrite under current borrowing rules.",
+        "A senior official, speaking on condition of anonymity, described the mood as 'tired but not broken.' Procedural agreements on committee scheduling were reached, a small sign that the machinery of government still turns even when the policy does not.",
+        "Ministers are expected to table a temporary appropriation today to keep essential services funded while talks continue behind closed doors."
+      ]},
+    a2:{kicker:"Business",title:"Printers Report Best Quarter in a Decade",
+      standfirst:"Counter to every forecast, presses across the region ran overtime last month as long-form subscriptions surged.",
+      byline:"By L. Fenwick · Filed 06:05",
+      body:[
+        "Orders for letterpress equipment rose sharply, a trend industry veterans had written off as nostalgia. One supplier reported a backlog stretching into the new year.",
+        "Analysts point to a growing cohort of readers who pay for depth rather than immediacy, and who treat a physical edition as a finished artefact rather than a live stream.",
+        "The rebound is modest in absolute terms but significant in direction, suggesting that the decline of print may have found its floor."
+      ]},
+    a3:{kicker:"Technology",title:"The Algorithm That Refuses to Feed You",
+      standfirst:"A new aggregator deliberately stops scrolling, presenting exactly one page of curated reports before closing the book.",
+      byline:"By D. Marsh · Filed 08:40",
+      body:[
+        "Early adopters call it a relief; critics call it a gimmick. Either way, engagement per session has tripled, suggesting that restraint may be the most radical feature a news product can ship.",
+        "The product's designers describe their brief as 'build a newspaper that happens to be on a screen.' The result is a single, finite page — no infinite scroll, no autoplay, no related-content trap.",
+        "Whether the model scales remains an open question, but its popularity has drawn the attention of larger platforms now weighing their own 'stop' buttons."
+      ]},
+    a4:{kicker:"World",title:"Border Talks Resume After Six-Month Freeze",
+      standfirst:"Envoys returned to the neutral venue this morning, the first formal contact since the spring standoff.",
+      byline:"By A. Petrov · Filed 07:55",
+      body:[
+        "Observers caution that procedural agreements rarely signal substantive breakthroughs, but the mere act of sitting down has steadied regional currencies and eased shipping insurance premiums.",
+        "Both delegations issued identical statements praising 'the constructive atmosphere,' a diplomatic phrase that can mean anything from genuine progress to a polite agreement to disagree.",
+        "A follow-up session is scheduled for next week, contingent on the release of a detained aid worker."
+      ]},
+    a5:{kicker:"Science",title:"Telescope Array Captures Faintest Galaxy Yet",
+      standfirst:"A cluster of dishes in the high desert has imaged a galaxy so dim it took eleven hours of stacked exposure to resolve.",
+      byline:"By N. Adeyemi · Filed 05:30",
+      body:[
+        "The light left its source when the universe was a fraction of its current age, offering astronomers a rare glimpse of the era when the first stars began to punctuate the cosmic dark.",
+        "The team credits improvements in detector sensitivity and a novel noise-reduction pipeline for the result, which they say would have been impossible a decade ago.",
+        "Follow-up observations with space-based instruments are planned to confirm the galaxy's distance and composition."
+      ]},
+    a6:{kicker:"Culture",title:"Five Typefaces That Built the Twentieth Century",
+      standfirst:"From the razor hairlines of Bodoni to the geometric ideal of Futura, the century was set in metal and pixels.",
+      byline:"By P. Lindqvist · Filed 09:15",
+      body:[
+        "Typography is the invisible architecture of the modern world. We read its choices every day without naming them, yet each face carries a philosophy — of luxury, of neutrality, of the future.",
+        "This week's exhibition gathers specimens from a hundred years of printing, inviting visitors to trace how a single curve can shift the tone of an entire page.",
+        "Curators argue that understanding type is understanding persuasion, and that in an age of screens the skill matters more than ever."
+      ]},
+    a7:{kicker:"Sport",title:"Underdogs Stun Champions in Overtime Thriller",
+      standfirst:"A goal scored with four seconds remaining forced extra time, where the visitors completed a comeback few had pencilled in.",
+      byline:"By J. Calloway · Filed 10:30",
+      body:[
+        "The result reshuffles the table heading into the final stretch and hands the champions their first loss since the season's opening fixture.",
+        "The winning side, written off before kickoff, now find themselves within touching distance of a place in the continental competition.",
+        "Their manager, speaking afterwards, called it 'a night the city will remember,' a phrase usually reserved for far larger occasions."
+      ]},
+    a8:{kicker:"Data Desk",title:"Circulation, by Quarter",
+      standfirst:"Print and digital both climbed, with print posting its first sustained growth in years.",
+      byline:"Compiled by Data Desk · Fig. 3",
+      body:[
+        "The numbers tell a story of coexistence rather than replacement. As digital subscriptions rose, print circulation followed, suggesting the two formats serve different needs.",
+        "Readers who hold both formats report the highest engagement of any group, using print for depth and digital for immediacy.",
+        "The data desk will publish the full methodology alongside next month's report."
+      ]},
+    a9:{kicker:"City",title:"Historic Newsroom to Reopen as Reading Room",
+      standfirst:"The building where three generations of reporters filed copy will reopen to the public this autumn.",
+      byline:"By S. Bianchi · Filed 08:00",
+      body:[
+        "Its linotype machines will be restored and its archive digitised, turning a monument to the press into a commons for the curious.",
+        "Planners intend to keep the desks and the spirit of the deadline, if not the deadlines themselves, hosting workshops and public readings.",
+        "Former staff have been invited back to contribute oral histories to the collection."
+      ]},
+    a10:{kicker:"Weather",title:"Front Moves In: A Grey Week Ahead",
+      standfirst:"A slow-moving low will settle over the region through Thursday, bringing overcast skies and light showers.",
+      byline:"Met. Office · Filed 06:45",
+      body:[
+        "Temperatures hold near seasonal norms, but forecasters warn of reduced visibility overnight as moisture builds.",
+        "The weekend looks brighter, with clearing from the west and a brisk morning chill returning by Sunday.",
+        "Coastal areas should expect gusty winds through midweek."
+      ]},
+    a11:{kicker:"Media",title:"The Masthead Endures as a Brand Anchor",
+      standfirst:"In an age of faceless feeds, the old nameplate still commands trust.",
+      byline:"By K. Novak · Filed 07:20",
+      body:[
+        "Readers say a bold masthead signals accountability — someone stands behind the words. Designers note that the typographic signature has become a badge of provenance.",
+        "A small declaration, set in type, that the report was made by hand and stands for something.",
+        "As platforms multiply, the nameplate may prove the last reliable signal of who, exactly, is speaking."
+      ]}
+  };
+
+  var overlay=document.getElementById("overlay");
+  var reader=document.getElementById("reader");
+  var readerContent=document.getElementById("readerContent");
+  var closeBtn=document.getElementById("closeReader");
+
+  function openReader(key){
+    var s=stories[key];
+    if(!s) return;
+    var bodyHtml=s.body.map(function(p){return "<p>"+p+"</p>";}).join("");
+    readerContent.innerHTML=
+      '<div class="r-kicker">'+s.kicker+'</div>'+
+      '<h2>'+s.title+'</h2>'+
+      '<p class="r-standfirst">'+s.standfirst+'</p>'+
+      '<div class="r-byline">'+s.byline+'</div>'+
+      '<div class="r-body">'+bodyHtml+'</div>'+
+      '<div class="r-foot">The Daily Wire · Reading Room · Filed under '+s.kicker+'</div>';
+    reader.classList.add("open");
+    overlay.classList.add("open");
+    reader.setAttribute("aria-hidden","false");
+    reader.scrollTop=0;
+    document.body.style.overflow="hidden";
+  }
+  function closeReader(){
+    reader.classList.remove("open");
+    overlay.classList.remove("open");
+    reader.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+
+  // attach to all clickable titles
+  document.querySelectorAll("[data-story]").forEach(function(el){
+    el.addEventListener("click",function(e){
+      e.preventDefault();
+      openReader(el.getAttribute("data-story"));
+    });
+  });
+  closeBtn.addEventListener("click",closeReader);
+  overlay.addEventListener("click",closeReader);
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape") closeReader();
+  });
+
+})();
+</script>
+</body>
+</html>

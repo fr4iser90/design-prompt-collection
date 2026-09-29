@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anodized Titanium Blotter — Voltage Color Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2b2b2b;
+    --ink-soft:#6b6b6b;
+    --ink-faint:#9a9a9a;
+    --line:#e6e6e6;
+    --line-soft:#f0f0f0;
+    --paper:#ffffff;
+    --paper-2:#fafafa;
+    --mono:'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans:'Inter', system-ui, -apple-system, sans-serif;
+    --plate: linear-gradient(115deg,#cfcfcf,#b6b6b6 45%,#c6c6c6);
+    --glare: rgba(255,255,255,.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #ffffff 0%, #f6f6f7 60%, #ececed 100%);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  /* faint lab grid */
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(0,0,0,.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.022) 1px, transparent 1px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(120% 100% at 50% 30%, #000 40%, transparent 92%);
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width:1240px; margin:0 auto;
+    padding:clamp(20px,3.4vw,46px);
+    display:flex; flex-direction:column; min-height:100vh;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{
+    display:flex; align-items:center; gap:12px;
+    font-family:var(--mono); font-weight:500;
+    letter-spacing:.22em; font-size:13px; text-transform:uppercase;
+  }
+  .wordmark .dot{
+    width:11px;height:11px;border-radius:50%;
+    background:var(--plate);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);
+  }
+  .wordmark b{font-weight:500;}
+  .wordmark span{color:var(--ink-faint);}
+  .topmeta{
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+    color:var(--ink-faint); text-transform:uppercase;
+    display:flex; gap:20px; align-items:center;
+  }
+  .topmeta i{font-style:normal;color:var(--ink-soft);}
+  .live{display:inline-flex;align-items:center;gap:7px;}
+  .live .pulse{width:7px;height:7px;border-radius:50%;background:#2ecc71;
+    box-shadow:0 0 0 0 rgba(46,204,113,.5);animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.45);}70%{box-shadow:0 0 0 8px rgba(46,204,113,0);}100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns: minmax(0,1.35fr) minmax(320px,.9fr);
+    gap:clamp(24px,4vw,64px);
+    align-items:center;
+    padding:clamp(28px,4.5vw,60px) 0 clamp(20px,3vw,40px);
+    flex:1;
+  }
+
+  /* ---------- stage / plate ---------- */
+  .stage{
+    position:relative;
+    min-height:min(66vh,560px);
+    display:flex; align-items:center; justify-content:center;
+    padding:clamp(24px,5vw,72px);
+  }
+  /* bench shadow under plate */
+  .stage::after{
+    content:""; position:absolute; left:50%; bottom:12%;
+    width:74%; height:60px; transform:translateX(-50%);
+    background:radial-gradient(50% 50% at 50% 50%, rgba(20,20,25,.22), transparent 72%);
+    filter:blur(6px); z-index:0;
+  }
+  .plate{
+    position:relative; z-index:2;
+    width:min(100%,470px); aspect-ratio:16/10.5;
+    border-radius:16px;
+    background:var(--plate);
+    box-shadow:
+      0 1px 1px rgba(255,255,255,.9) inset,
+      0 2px 3px rgba(0,0,0,.10),
+      0 18px 40px -14px rgba(20,20,30,.35),
+      0 40px 80px -30px rgba(20,20,30,.28);
+    cursor:crosshair;
+    transform:translateY(46px); opacity:0;
+    animation:rise .95s cubic-bezier(.2,.8,.2,1) .15s forwards;
+  }
+  @keyframes rise{to{transform:translateY(0);opacity:1;}}
+  /* brushed grain */
+  .plate::before{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    background:repeating-linear-gradient(90deg,
+      rgba(255,255,255,.05) 0 1px,
+      rgba(0,0,0,.045) 1px 2px);
+    mix-blend-mode:overlay; opacity:.9; pointer-events:none;
+  }
+  /* interference film */
+  .plate .film{
+    position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:var(--film,linear-gradient(115deg,#cfcfcf,#b6b6b6));
+    mix-blend-mode:color;
+    animation:filmShift 14s ease-in-out infinite alternate;
+  }
+  @keyframes filmShift{
+    0%{filter:hue-rotate(-4deg) brightness(1.02);}
+    100%{filter:hue-rotate(5deg) brightness(.98);}
+  }
+  /* specular glare */
+  .plate .glare{
+    position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:radial-gradient(130% 95% at 30% 22%,
+      var(--glare) 0%, rgba(255,255,255,.10) 22%, transparent 46%);
+    mix-blend-mode:screen; opacity:.85;
+    animation:glare 12s ease-in-out infinite alternate;
+  }
+  @keyframes glare{
+    0%{background-position:0% 0%; transform:translate(0,0);}
+    100%{transform:translate(6%,4%);}
+  }
+  /* rim highlight */
+  .plate .rim{
+    position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),
+               inset 0 -14px 30px -18px rgba(0,0,0,.4);
+  }
+  .plate .grain{
+    position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    opacity:.10; mix-blend-mode:multiply;
+  }
+
+  /* corner registration marks */
+  .stage .tick{position:absolute;width:14px;height:14px;border:1px solid rgba(0,0,0,.16);z-index:3;}
+  .stage .tick.tl{top:14px;left:14px;border-right:none;border-bottom:none;}
+  .stage .tick.tr{top:14px;right:14px;border-left:none;border-bottom:none;}
+  .stage .tick.bl{bottom:14px;left:14px;border-right:none;border-top:none;}
+  .stage .tick.br{bottom:14px;right:14px;border-left:none;border-top:none;}
+  .stage .scale{
+    position:absolute; left:0; right:0; bottom:-2px; display:flex;
+    justify-content:space-between; padding:0 4px;
+    font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:var(--ink-faint);
+  }
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex; flex-direction:column; gap:clamp(20px,2.4vw,30px);
+  }
+  .kicker{
+    font-family:var(--mono); font-size:11px; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--ink-faint);
+    display:flex; align-items:center; gap:10px;
+  }
+  .kicker::before{content:"";width:26px;height:1px;background:var(--ink-faint);}
+  .title{
+    font-weight:300; font-size:clamp(26px,3.4vw,40px); line-height:1.08;
+    letter-spacing:.02em; margin-top:14px; color:var(--ink);
+  }
+  .title em{font-style:normal;color:var(--ink-soft);}
+  .lede{
+    margin-top:14px; font-size:14px; line-height:1.65; color:var(--ink-soft);
+    max-width:38ch;
+  }
+
+  .readout{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:16px; padding-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .hex{
+    font-family:var(--mono); font-weight:500;
+    font-size:clamp(30px,4.6vw,46px); letter-spacing:.01em; line-height:1;
+    color:var(--ink);
+  }
+  .hex .caret{color:var(--ink-faint);}
+  .readmeta{text-align:right;display:flex;flex-direction:column;gap:6px;}
+  .swatch{
+    width:44px;height:44px;border-radius:8px;background:var(--plate);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18), 0 4px 10px -4px rgba(0,0,0,.3);
+    margin-left:auto;
+  }
+  .rgb{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--ink-soft);}
+
+  /* slider */
+  .sliderblock{display:flex;flex-direction:column;gap:14px;}
+  .sliderlabel{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .sliderlabel .band{color:var(--ink);font-weight:500;}
+  .sliderlabel .band .v{color:var(--ink-faint);}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:6px;border-radius:4px;
+    background:linear-gradient(90deg,#d4af37,#e2b04a,#4a90e2,#9b59b6,#2ecc71);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.25);
+  }
+  input[type=range]::-moz-range-track{
+    height:6px;border-radius:4px;
+    background:linear-gradient(90deg,#d4af37,#e2b04a,#4a90e2,#9b59b6,#2ecc71);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.25);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:20px;height:20px;border-radius:50%;margin-top:-7px;
+    background:radial-gradient(circle at 34% 30%,#fff,#dcdcdc 55%,#a9a9a9);
+    border:1px solid rgba(0,0,0,.28);
+    box-shadow:0 2px 6px rgba(0,0,0,.28);
+    transition:transform .12s ease;
+  }
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.12);}
+  input[type=range]::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,#fff,#dcdcdc 55%,#a9a9a9);
+    border:1px solid rgba(0,0,0,.28);box-shadow:0 2px 6px rgba(0,0,0,.28);
+  }
+  input[type=range]:focus{outline:none;}
+  input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(74,144,226,.3);}
+
+  /* copy */
+  .actions{display:flex;align-items:center;gap:14px;}
+  .copy{
+    font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink);background:#fff;border:1px solid #d9d9d9;border-radius:8px;
+    padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;
+    transition:border-color .2s, background .2s, transform .1s;
+  }
+  .copy:hover{border-color:#b9b9b9;background:#fcfcfc;}
+  .copy:active{transform:translateY(1px);}
+  .copy .ic{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .copy.done{border-color:#2ecc71;color:#1f9d55;}
+  .copy .chk{display:none;width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+  .copy.done .chk{display:block;}
+  .copy.done .ic{display:none;}
+  .hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;color:var(--ink-faint);}
+
+  /* ---------- footer ---------- */
+  .foot{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding-top:18px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);
+  }
+  .foot .legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .foot .legend b{color:var(--ink-soft);font-weight:400;}
+  .foot .sw{display:inline-flex;align-items:center;gap:6px;}
+  .foot .sw i{width:9px;height:9px;border-radius:2px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15);}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:880px){
+    .hero{grid-template-columns:1fr;gap:34px;padding-top:24px;}
+    .stage{min-height:auto;padding:20px 10px 30px;}
+    .plate{width:min(100%,420px);}
+    .controls{order:2;}
+  }
+  @media (max-width:460px){
+    .topmeta{gap:12px;}
+    .topmeta .hide-sm{display:none;}
+    .readout{flex-direction:row;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .plate{transform:none;opacity:1;}
+    .reveal{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar reveal">
+    <div class="wordmark">
+      <span class="dot" id="wordDot"></span>
+      <b>Anodized&nbsp;Titanium</b><span>Blotter</span>
+    </div>
+    <div class="topmeta">
+      <span class="live"><span class="pulse"></span><i>Cell&nbsp;Active</i></span>
+      <span class="hide-sm">Electrolyte&nbsp;·&nbsp;H₂SO₄</span>
+      <span class="hide-sm">Rev&nbsp;04</span>
+    </div>
+  </header>
+
+  <main class="hero">
+
+    <!-- PLATE STAGE -->
+    <section class="stage reveal" style="transition-delay:.05s">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+      <div class="plate" id="plate" role="img" aria-label="Anodized titanium plate — move pointer to shift iridescence">
+        <div class="film"></div>
+        <div class="glare"></div>
+        <canvas class="grain" id="grain"></canvas>
+        <div class="rim"></div>
+      </div>
+      <div class="scale"><span>0V</span><span>30</span><span>60</span><span>90</span><span>120V</span></div>
+    </section>
+
+    <!-- CONTROLS -->
+    <section class="controls">
+      <div class="reveal" style="transition-delay:.12s">
+        <div class="kicker">Color via Interference</div>
+        <h1 class="title">Dial the oxide<br><em>to a brand.</em></h1>
+        <p class="lede">Titanium color is not pigment — it is light bending through a nanometre-thick oxide film. Raise the voltage, thicken the layer, and watch the spectrum climb.</p>
+      </div>
+
+      <div class="readout reveal" style="transition-delay:.18s">
+        <div>
+          <div class="hex"><span class="caret">#</span><span id="hex">D4AF37</span></div>
+          <div class="rgb" id="rgb">RGB 212 · 175 · 55</div>
+        </div>
+        <div class="readmeta">
+          <div class="swatch" id="swatch"></div>
+        </div>
+      </div>
+
+      <div class="sliderblock reveal" style="transition-delay:.24s">
+        <div class="sliderlabel">
+          <span>Applied Voltage</span>
+          <span class="band"><span id="volt">12</span>V<span class="v">&nbsp;·&nbsp;<span id="band">Straw</span></span></span>
+        </div>
+        <input type="range" id="voltage" min="12" max="120" step="1" value="12"
+               aria-label="Applied voltage in volts">
+      </div>
+
+      <div class="actions reveal" style="transition-delay:.3s">
+        <button class="copy" id="copyBtn" type="button">
+          <svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+          <svg class="chk" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg>
+          <span id="copyTxt">Copy Hex</span>
+        </button>
+        <span class="hint">Hover the plate to shift the light.</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot reveal" style="transition-delay:.36s">
+    <div class="legend">
+      <span class="sw"><i style="background:#d4af37"></i><b>Straw&nbsp;12V</b></span>
+      <span class="sw"><i style="background:#4a90e2"></i><b>Blue&nbsp;60V</b></span>
+      <span class="sw"><i style="background:#9b59b6"></i><b>Purple&nbsp;90V</b></span>
+      <span class="sw"><i style="background:#2ecc71"></i><b>Green&nbsp;120V</b></span>
+    </div>
+    <span>Thin-Film Interference · No Pigment</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Voltage -> interference colour keyframes (approx. anodizing spectrum)
+  const keys = [
+    {v:12,  c:[212,175,55],  name:'Straw'},
+    {v:35,  c:[226,176,74],  name:'Gold'},
+    {v:50,  c:[196,120,64],  name:'Bronze'},
+    {v:60,  c:[74,144,226],  name:'Blue'},
+    {v:75,  c:[70,110,205],  name:'Blue-Violet'},
+    {v:90,  c:[155,89,182],  name:'Purple'},
+    {v:105, c:[120,110,190], name:'Violet'},
+    {v:120, c:[46,204,113],  name:'Green'}
+  ];
+
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  function colorAt(v){
+    if(v<=keys[0].v) return {c:keys[0].c.slice(), name:keys[0].name};
+    if(v>=keys[keys.length-1].v) return {c:keys[keys.length-1].c.slice(), name:keys[keys.length-1].name};
+    for(let i=0;i<keys.length-1;i++){
+      if(v>=keys[i].v && v<=keys[i+1].v){
+        const t=(v-keys[i].v)/(keys[i+1].v-keys[i].v);
+        const c=keys[i].c.map((cv,j)=>Math.round(lerp(cv,keys[i+1].c[j],t)));
+        return {c, name: keys[t<.5?i:i+1].name};
+      }
+    }
+    return {c:keys[0].c.slice(), name:keys[0].name};
+  }
+  const hexOf=c=>'#'+c.map(n=>n.toString(16).padStart(2,'0')).join('').toUpperCase();
+
+  const plate   = document.getElementById('plate');
+  const film    = plate.querySelector('.film');
+  const glare   = plate.querySelector('.glare');
+  const slider  = document.getElementById('voltage');
+  const hexEl   = document.getElementById('hex');
+  const rgbEl   = document.getElementById('rgb');
+  const voltEl  = document.getElementById('volt');
+  const bandEl  = document.getElementById('band');
+  const swatch  = document.getElementById('swatch');
+  const wordDot = document.getElementById('wordDot');
+
+  let cur = {x:.5,y:.5};      // smoothed light position
+  let target = {x:.5,y:.5};
+  let currentColor = colorAt(12);
+
+  function renderColor(c){
+    currentColor = c;
+    const hex = hexOf(c.c);
+    hexEl.textContent = hex.slice(1);
+    rgbEl.textContent = 'RGB '+c.c.join(' · ');
+    bandEl.textContent = c.name;
+    voltEl.textContent = slider.value;
+    swatch.style.background = 'linear-gradient(135deg, rgb('+c.c+'), rgb('+c.c.map(n=>Math.max(0,n-38))+'))';
+    wordDot.style.background = 'rgb('+c.c+')';
+    // base metallic fill driven by colour
+    plate.style.setProperty('--plate',
+      'linear-gradient(115deg, rgb('+c.c.map(n=>Math.min(255,n+34))+'), rgb('+c.c+') 46%, rgb('+c.c.map(n=>Math.max(0,n-26))+'))');
+  }
+
+  function applyLight(){
+    // iridescence: hue shifts with pointer position (thin-film angle)
+    const hue = Math.round((cur.x-0.5)*46 + (cur.y-0.5)*-22);
+    const sat = Math.round(100 + (cur.y-0.5)*46);
+    const bright = Math.round(100 + (cur.y-0.5)*16);
+    film.style.filter = 'hue-rotate('+hue+'deg) saturate('+sat+'%) brightness('+bright+'%)';
+    glare.style.setProperty('--glare',
+      'radial-gradient(130% 95% at '+(cur.x*100).toFixed(1)+'% '+(cur.y*100).toFixed(1)+'%, rgba(255,255,255,.62) 0%, rgba(255,255,255,.12) 24%, transparent 48%)');
+    glare.style.background =
+      'radial-gradient(130% 95% at '+(cur.x*100).toFixed(1)+'% '+(cur.y*100).toFixed(1)+'%, rgba(255,255,255,.62) 0%, rgba(255,255,255,.12) 24%, transparent 48%)';
+  }
+
+  function setFromSlider(){ renderColor(colorAt(+slider.value)); }
+
+  slider.addEventListener('input', setFromSlider);
+
+  // pointer-driven light
+  function onMove(e){
+    const r = plate.getBoundingClientRect();
+    const cx = (e.touches?e.touches[0].clientX:e.clientX);
+    const cy = (e.touches?e.touches[0].clientY:e.clientY);
+    target.x = Math.min(1,Math.max(0,(cx-r.left)/r.width));
+    target.y = Math.min(1,Math.max(0,(cy-r.top)/r.height));
+  }
+  function onLeave(){ target.x=.5; target.y=.5; }
+  plate.addEventListener('pointermove', onMove);
+  plate.addEventListener('pointerdown', onMove);
+  plate.addEventListener('pointerleave', onLeave);
+
+  // ambient light drift when idle
+  let idle = true;
+  plate.addEventListener('pointerenter',()=>idle=false);
+  plate.addEventListener('pointerleave',()=>idle=true);
+  let t0 = performance.now();
+
+  function loop(now){
+    const ease = reduce ? 1 : 0.12;
+    if(idle && !reduce){
+      const s = (now-t0)/1000;
+      target.x = .5 + Math.sin(s*0.35)*0.28;
+      target.y = .5 + Math.cos(s*0.27)*0.20;
+    }
+    cur.x += (target.x-cur.x)*ease;
+    cur.y += (target.y-cur.y)*ease;
+    applyLight();
+    requestAnimationFrame(loop);
+  }
+
+  // brushed grain texture via canvas
+  function paintGrain(){
+    const cv = document.getElementById('grain');
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    const w = plate.clientWidth, h = plate.clientHeight;
+    if(!w||!h) return;
+    cv.width = w*dpr; cv.height = h*dpr;
+    const ctx = cv.getContext('2d');
+    ctx.scale(dpr,dpr);
+    const img = ctx.createImageData(w,h);
+    for(let i=0;i<img.data.length;i+=4){
+      const n = 128 + (Math.random()*2-1)*46;
+      img.data[i]=img.data[i+1]=img.data[i+2]=n;
+      img.data[i+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+  }
+
+  // copy
+  const copyBtn = document.getElementById('copyBtn');
+  const copyTxt = document.getElementById('copyTxt');
+  copyBtn.addEventListener('click', async ()=>{
+    const hex = hexOf(currentColor.c);
+    try{
+      await navigator.clipboard.writeText(hex);
+    }catch(err){
+      const ta=document.createElement('textarea');ta.value=hex;document.body.appendChild(ta);
+      ta.select();try{document.execCommand('copy');}catch(e){}ta.remove();
+    }
+    copyBtn.classList.add('done');
+    copyTxt.textContent='Copied '+hex.slice(1);
+    setTimeout(()=>{copyBtn.classList.remove('done');copyTxt.textContent='Copy Hex';},1600);
+  });
+
+  // reveal on scroll
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  // init
+  renderColor(colorAt(12));
+  applyLight();
+  paintGrain();
+  window.addEventListener('resize', paintGrain);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

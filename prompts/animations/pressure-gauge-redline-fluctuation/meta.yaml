@@ -1,0 +1,26 @@
+id: pressure-gauge-redline-fluctuation
+title: "Pressure Gauge Redline Fluctuation"
+category: animations
+tags:
+  - analog-gauge
+  - safety-limit
+  - needle-physics
+  - utility-ui
+  - industrial-monitoring
+  - haptic-feedback
+  - status-alert
+status: polished
+summary: "A brass analog pressure gauge needle trembles and snaps against the redline zone, visualizing system stress and safety protocols with mechanical precision."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

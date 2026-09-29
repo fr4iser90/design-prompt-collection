@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wood Type — Incremental Heat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3E2723;
+    --wood:#8B4513;
+    --wood-light:#D2B48C;
+    --heat:#FFF8DC;
+    --bg:#F5F0E6;
+    --paper-2:#ECE4D3;
+    --paper-3:#E1D6BF;
+    --text:#3a2b20;
+    --muted:#7a6650;
+    --line:rgba(62,39,35,.16);
+    --display:'Alfa Slab One', Georgia, serif;
+    --mono:'Special Elite', 'Courier New', monospace;
+    --heat:0;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family:var(--mono);
+    color:var(--text);
+    line-height:1.62;
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(130% 90% at 50% -12%, rgba(255,248,220,.55), transparent 58%),
+      radial-gradient(120% 120% at 50% 120%, rgba(62,39,35,.10), transparent 55%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ---- atmospheric layers ---- */
+  .grain{
+    position:fixed; inset:0; z-index:9998; pointer-events:none;
+    opacity:.06; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:220px 220px;
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:9997; pointer-events:none;
+    background:radial-gradient(125% 95% at 50% 38%, transparent 55%, rgba(58,40,25,.14) 100%);
+  }
+
+  /* ---- cursor heat glow ---- */
+  .heat-glow{
+    position:fixed; left:0; top:0; width:540px; height:540px; margin:-270px 0 0 -270px;
+    border-radius:50%; pointer-events:none; z-index:9996; opacity:0;
+    mix-blend-mode:soft-light;
+    background:radial-gradient(circle, rgba(255,248,220,.95), rgba(255,220,160,.28) 42%, transparent 70%);
+    transition:opacity .35s ease;
+    will-change:transform;
+  }
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 26px;}
+
+  /* ---- masthead ---- */
+  .masthead{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:22px 0 18px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+  }
+  .wordmark{font-family:var(--display); font-size:1.02rem; letter-spacing:.01em; color:var(--ink);}
+  .wordmark .dot{color:var(--wood);}
+  .edition{font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);}
+  .edition b{color:var(--wood); font-weight:400;}
+
+  /* ---- hero ---- */
+  .hero{padding:46px 0 30px; text-align:center;}
+  .kicker{
+    font-size:.74rem; letter-spacing:.34em; text-transform:uppercase; color:var(--wood);
+    margin:0 0 30px;
+  }
+  .kicker span{color:var(--muted);}
+
+  .type-line{
+    display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+    gap:.045em; margin:0; line-height:1;
+  }
+
+  /* ---- the wooden block ---- */
+  .block{
+    position:relative;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-family:var(--display);
+    font-size:clamp(3.2rem, 12.5vw, 9.4rem);
+    line-height:1;
+    color:var(--ink);
+    background-color:var(--wood);
+    background-image:
+      radial-gradient(150% 150% at 50% 50%, var(--heat) 0%, rgba(255,248,220,0) 42%),
+      repeating-linear-gradient(91deg, rgba(255,248,220,.16) 0 1px, rgba(62,39,35,.12) 1px 2px, rgba(0,0,0,0) 2px 9px),
+      repeating-linear-gradient(88deg, rgba(62,39,35,.07) 0 2px, rgba(0,0,0,0) 2px 7px),
+      radial-gradient(120% 90% at 50% 118%, rgba(255,248,220,.10), rgba(62,39,35,.22));
+    background-size:140% 140%, auto, auto, auto;
+    background-repeat:no-repeat, repeat, repeat, no-repeat;
+    background-position:center center, calc(50% + var(--px,0px)*1.4) calc(50% + var(--py,0px)*1.4), center, center;
+    background-blend-mode:overlay, overlay, multiply, overlay;
+    padding:.05em .16em;
+    border-radius:5px;
+    transform-origin:50% 62%;
+    transform:scale(calc(1 + var(--heat,0)*.035));
+    box-shadow:
+      0 calc(5px + var(--heat,0)*15px) calc(9px + var(--heat,0)*26px) rgba(46,28,15,.30),
+      0 calc(2px + var(--heat,0)*4px) calc(3px + var(--heat,0)*6px) rgba(46,28,15,.24);
+    filter:brightness(calc(1 + var(--heat,0)*.15)) saturate(calc(1 - var(--heat,0)*.20));
+    cursor:pointer;
+    user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent;
+    transition:box-shadow .55s cubic-bezier(.2,.7,.2,1), filter .55s ease;
+    will-change:transform, filter, box-shadow;
+  }
+  .block .glyph{
+    position:relative; z-index:2;
+    text-shadow:
+      0 -1px 0 rgba(255,248,220,.14),
+      0 1px 1px rgba(62,39,35,.55);
+    transition:opacity .4s ease;
+    opacity:calc(1 - var(--heat,0)*.34);
+  }
+
+  /* ---- hero meta ---- */
+  .hero-meta{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:10px 26px;
+    margin:44px auto 0; max-width:720px;
+    font-size:.76rem; letter-spacing:.06em; color:var(--muted);
+  }
+  .hero-meta .tag{
+    border:1px solid var(--line); padding:5px 12px; border-radius:2px;
+    text-transform:uppercase; letter-spacing:.14em; font-size:.66rem;
+  }
+  .hero-meta .tag b{color:var(--wood); font-weight:400;}
+
+  /* ---- section shell ---- */
+  section{padding:64px 0; border-top:1px solid var(--line);}
+  .sec-head{
+    display:flex; align-items:baseline; gap:16px; margin:0 0 34px;
+    font-size:.78rem; letter-spacing:.24em; text-transform:uppercase; color:var(--wood);
+  }
+  .sec-head .num{
+    font-family:var(--display); font-size:1.5rem; letter-spacing:0; color:var(--ink);
+  }
+  .sec-head .rule{flex:1; height:1px; background:var(--line);}
+
+  .lead{font-size:1.02rem; max-width:60ch; color:#4a382b;}
+
+  /* ---- specimen grid ---- */
+  .spec-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:26px;}
+  .spec-card{
+    border:1px solid var(--line); border-radius:4px; padding:22px;
+    background:linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+  }
+  .spec-card h3{
+    font-family:var(--display); font-size:.98rem; margin:0 0 4px; color:var(--ink);
+  }
+  .spec-card .sub{font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 20px;}
+  .spec-row{display:flex; flex-wrap:wrap; gap:.06em; line-height:1;}
+  .spec-row .block{font-size:clamp(2rem,5.2vw,3.2rem);}
+  .spec-note{font-size:.72rem; color:var(--muted); margin:18px 0 0; line-height:1.5;}
+
+  /* ---- heat scale ---- */
+  .scale{display:flex; flex-wrap:wrap; gap:12px; margin-bottom:22px;}
+  .swatch{flex:1 1 150px; min-width:150px;}
+  .swatch .chip{
+    height:64px; border-radius:4px; border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,248,220,.25);
+  }
+  .swatch .lbl{font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:8px;}
+  .swatch .lbl b{color:var(--text); font-weight:400; display:block;}
+
+  .meter{
+    position:relative; height:14px; border-radius:8px; overflow:hidden;
+    border:1px solid var(--line);
+    background:linear-gradient(90deg, #8B4513 0%, #A85F2E 40%, #C98A4B 70%, #E7C98F 100%);
+  }
+  .meter::after{
+    content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,.18) 0 1px, transparent 1px 24px);
+  }
+  .meter-fill{
+    position:absolute; top:0; left:0; bottom:0; width:0%;
+    background:linear-gradient(90deg, transparent, rgba(255,248,220,.85));
+    transition:width .12s linear;
+  }
+  .meter-legend{display:flex; justify-content:space-between; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:10px;}
+
+  /* ---- process ---- */
+  .process{list-style:none; margin:0; padding:0; counter-reset:step;}
+  .process li{
+    counter-increment:step; display:grid; grid-template-columns:auto 1fr; gap:22px;
+    padding:22px 0; border-bottom:1px dashed var(--line);
+  }
+  .process li:last-child{border-bottom:none;}
+  .process li::before{
+    content:counter(step,decimal-leading-zero);
+    font-family:var(--display); font-size:1.9rem; color:var(--wood); line-height:1;
+  }
+  .process h4{margin:0 0 6px; font-family:var(--display); font-size:1.05rem; color:var(--ink);}
+  .process p{margin:0; color:#4a382b; font-size:.92rem; max-width:60ch;}
+
+  /* ---- colophon ---- */
+  .colophon{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:26px;
+    padding-bottom:8px;
+  }
+  .colophon dt{font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; color:var(--wood); margin-bottom:6px;}
+  .colophon dd{margin:0; font-size:.9rem; color:#4a382b;}
+  .colophon dd b{font-weight:400; color:var(--ink);}
+
+  footer{
+    text-align:center; padding:44px 0 54px; border-top:1px solid var(--line);
+    font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+  }
+  footer .mark{font-family:var(--display); color:var(--ink); letter-spacing:.02em; font-size:.86rem; text-transform:none;}
+
+  /* ---- reveal ---- */
+  .reveal{opacity:0; transform:translateY(20px); transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1; transform:none;}
+
+  @media (max-width:640px){
+    .hero{padding:34px 0 22px;}
+    section{padding:48px 0;}
+    .process li{grid-template-columns:auto 1fr; gap:16px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .block{transition:none;}
+    .reveal{opacity:1; transform:none; transition:none;}
+    .heat-glow{display:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="heat-glow" id="heatGlow" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="masthead">
+      <div class="wordmark">WOOD&nbsp;TYPE<span class="dot">.</span></div>
+      <div class="edition">Incremental Heat · <b>Specimen No. 07</b></div>
+    </header>
+
+    <main>
+      <section class="hero" style="border-top:none;">
+        <p class="kicker">Interactive Specimen <span>— 1890 Foundry</span></p>
+        <h1 class="type-line" id="heroLine" aria-label="WOOD TYPE"></h1>
+        <div class="hero-meta">
+          <span class="tag"><b>Drag</b> the cursor across the blocks</span>
+          <span class="tag">Tap &amp; hold on touch</span>
+          <span class="tag">Watch the <b>grain rise</b></span>
+        </div>
+      </section>
+
+      <section id="specimens">
+        <div class="sec-head"><span class="num">01</span> The Foundry Bed <span class="rule"></span></div>
+        <p class="lead reveal">Each character is a single block of end-grain maple, cut on the pantograph and inked by hand. Heat is not decoration here — it is the physical state of the material. Bring the cursor close and the fibers swell, the ink dries toward cornsilk, and the block lifts a hair off the press bed.</p>
+
+        <div class="spec-grid" style="margin-top:36px;">
+          <div class="spec-card reveal">
+            <h3>Press Caps</h3>
+            <p class="sub">Roman · 72pt</p>
+            <div class="spec-row" id="row1"></div>
+            <p class="spec-note">Warmth spreads radially from the cursor; the block nearest the pointer runs hottest.</p>
+          </div>
+          <div class="spec-card reveal">
+            <h3>Furnishings</h3>
+            <p class="sub">Numerals · 72pt</p>
+            <div class="spec-row" id="row2"></div>
+            <p class="spec-note">Numbers carry the same grain reveal — the heat map follows your hand.</p>
+          </div>
+          <div class="spec-card reveal">
+            <h3>Ornaments</h3>
+            <p class="sub">Dingbats · 72pt</p>
+            <div class="spec-row" id="row3"></div>
+            <p class="spec-note">Solid blocks read the temperature fastest; watch the ink lighten under the glow.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="heat">
+        <div class="sec-head"><span class="num">02</span> Thermal Scale <span class="rule"></span></div>
+        <p class="lead reveal" style="margin-bottom:26px;">From a cold, saturated ink to a dry, sun-bleached face. The meter tracks the hottest block currently under your cursor.</p>
+        <div class="scale reveal">
+          <div class="swatch"><div class="chip" style="background:#3E2723;"></div><div class="lbl"><b>Cold Ink</b>#3E2723</div></div>
+          <div class="swatch"><div class="chip" style="background:#8B4513;"></div><div class="lbl"><b>Warm Wood</b>#8B4513</div></div>
+          <div class="swatch"><div class="chip" style="background:#C98A4B;"></div><div class="lbl"><b>Rising</b>#C98A4B</div></div>
+          <div class="swatch"><div class="chip" style="background:#FFF8DC;"></div><div class="lbl"><b>Peak Heat</b>#FFF8DC</div></div>
+        </div>
+        <div class="meter reveal"><div class="meter-fill" id="meterFill"></div></div>
+        <div class="meter-legend"><span>Cool</span><span>Incremental</span><span>Incandescent</span></div>
+      </section>
+
+      <section id="process">
+        <div class="sec-head"><span class="num">03</span> Cutting the Block <span class="rule"></span></div>
+        <ol class="process">
+          <li class="reveal"><div><h4>Season the stock</h4><p>Maple end-grain is kiln-dried and planed true so the surface holds ink evenly and the grain runs clean across the face.</p></div></li>
+          <li class="reveal"><div><h4>Pantograph the letter</h4><p>A tracer copies a pattern onto the block; a cutter follows, sinking the relief a few thousandths deep.</p></div></li>
+          <li class="reveal"><div><h4>Set the bed</h4><p>Blocks are locked into the chase with furniture and quoins, spaced by the em, and leveled to bear even pressure.</p></div></li>
+          <li class="reveal"><div><h4>Ink &amp; pull</h4><p>A brayer lays a thin film of ink. The press closes, the fibers compress, and the image prints — warm, dense, alive.</p></div></li>
+        </ol>
+      </section>
+
+      <section id="colophon">
+        <div class="sec-head"><span class="num">04</span> Colophon <span class="rule"></span></div>
+        <dl class="colophon reveal">
+          <div><dt>Display</dt><dd>Alfa Slab One — blocky slab serif, cut for the press.</dd></div>
+          <div><dt>Support</dt><dd>Special Elite — the typewriter that followed the wood.</dd></div>
+          <div><dt>Palette</dt><dd><b>Ink</b> #3E2723 · <b>Wood</b> #8B4513 · <b>Heat</b> #FFF8DC</dd></div>
+          <div><dt>Method</dt><dd>Proximity heat via CSS custom properties; grain rises with <code>background-position</code>.</dd></div>
+        </dl>
+      </section>
+    </main>
+
+    <footer>
+      <span class="mark">WOOD TYPE</span> · Incremental Heat · an analog study in thermal expansion
+    </footer>
+  </div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var blocks = [];
+
+  function makeBlock(ch){
+    var el = document.createElement('span');
+    el.className = 'block';
+    el.setAttribute('aria-hidden','true');
+    el.style.setProperty('--heat', 0);
+    el.style.setProperty('--px', 0);
+    el.style.setProperty('--py', 0);
+    var g = document.createElement('span');
+    g.className = 'glyph';
+    g.textContent = ch;
+    el.appendChild(g);
+    blocks.push(el);
+    return el;
+  }
+
+  function fill(container, text){
+    if(!container) return;
+    text.split('').forEach(function(ch){
+      container.appendChild(makeBlock(ch));
+    });
+  }
+
+  fill(document.getElementById('heroLine'), 'WOOD TYPE');
+  fill(document.getElementById('row1'), 'ABC');
+  fill(document.getElementById('row2'), '123');
+  fill(document.getElementById('row3'), '◆●▲');
+
+  var glow = document.getElementById('heatGlow');
+  var meterFill = document.getElementById('meterFill');
+  var mouseX = 0, mouseY = 0, pointerActive = false, maxHeat = 0;
+
+  function update(){
+    maxHeat = 0;
+    for(var i=0;i<blocks.length;i++){
+      var el = blocks[i];
+      var r = el.getBoundingClientRect();
+      var cx = r.left + r.width/2;
+      var cy = r.top + r.height/2;
+      var dx = mouseX - cx;
+      var dy = mouseY - cy;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      var radius = Math.max(r.width, r.height) * 1.5;
+      var heat = pointerActive ? Math.max(0, 1 - dist/radius) : 0;
+      heat = heat * heat; // ease the falloff toward the block
+      if(heat > maxHeat) maxHeat = heat;
+
+      if(reduce){
+        el.style.setProperty('--heat', heat.toFixed(3));
+        continue;
+      }
+      var cur = parseFloat(el.style.getPropertyValue('--heat')) || 0;
+      var factor = heat > cur ? 0.22 : 0.06; // heat fast, cool slow
+      var next = cur + (heat - cur) * factor;
+      el.style.setProperty('--heat', next.toFixed(3));
+      el.style.setProperty('--px', (dx * next).toFixed(2) + 'px');
+      el.style.setProperty('--py', (dy * next).toFixed(2) + 'px');
+    }
+    if(meterFill) meterFill.style.width = (maxHeat * 100).toFixed(1) + '%';
+  }
+
+  function loop(){ update(); requestAnimationFrame(loop); }
+
+  function setPointer(x,y){ mouseX = x; mouseY = y; }
+
+  function onMove(e){
+    pointerActive = true;
+    setPointer(e.clientX, e.clientY);
+    if(!reduce){
+      glow.style.opacity = 0.85;
+      glow.style.transform = 'translate(' + e.clientX + 'px,' + e.clientY + 'px)';
+    }
+  }
+
+  window.addEventListener('pointermove', onMove, {passive:true});
+  window.addEventListener('pointerdown', onMove, {passive:true});
+  window.addEventListener('pointerup', function(){
+    if(window.matchMedia('(pointer: coarse)').matches){ pointerActive = false; glow.style.opacity = 0; }
+  }, {passive:true});
+  window.addEventListener('pointerleave', function(){ pointerActive = false; glow.style.opacity = 0; });
+  document.addEventListener('mouseleave', function(){ pointerActive = false; glow.style.opacity = 0; });
+
+  if(!reduce) requestAnimationFrame(loop);
+
+  // ---- entrance: heavy blocks drop onto the press bed ----
+  if(!reduce){
+    blocks.forEach(function(el, i){
+      var glyph = el.querySelector('.glyph');
+      glyph.animate([
+        {transform:'translateY(-160%)', opacity:0},
+        {transform:'translateY(8%)', opacity:1, offset:0.7},
+        {transform:'translateY(-3%)', offset:0.86},
+        {transform:'translateY(0)'}
+      ], {duration:760, delay:i*46, easing:'cubic-bezier(.2,.7,.2,1)', fill:'backwards'});
+    });
+  }
+
+  // ---- scroll reveals ----
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>

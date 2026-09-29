@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cast Iron Seasoning Layer — Polymerization Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1A1A;
+    --iron:#212124;
+    --slate:#3D3D3D;
+    --amber:#8B5A2B;
+    --white:#E0E0E0;
+    --steel:#6f8299;
+    --steel-dim:#42515f;
+    --line:rgba(111,130,153,.16);
+    --line-2:rgba(111,130,153,.30);
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --disp:'Space Grotesk',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:var(--disp);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+  /* ambient hood light from above */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(120% 55% at 50% -12%, rgba(111,130,153,.20), rgba(111,130,153,.05) 40%, transparent 66%),
+      radial-gradient(90% 60% at 50% 118%, rgba(0,0,0,.55), transparent 60%);
+  }
+  body::after{ /* faint grain */
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app{position:relative;z-index:2;display:flex;flex-direction:column;min-height:100vh}
+
+  /* ---- top bar ---- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:18px clamp(16px,3vw,40px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .mark{width:26px;height:26px;color:var(--steel)}
+  .brand .name{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--white)}
+  .brand .name b{color:var(--steel);font-weight:700}
+  .status{display:flex;align-items:center;gap:22px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--steel)}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);display:inline-block;margin-right:7px;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .status .k{color:var(--steel-dim)}
+  .status .v{color:var(--white)}
+
+  /* ---- main split ---- */
+  .stage{flex:1;display:grid;grid-template-columns:1.05fr .95fr;min-height:0}
+  .viz{position:relative;border-right:1px solid var(--line);overflow:hidden;min-height:420px}
+  .panel{padding:clamp(20px,2.4vw,34px);display:flex;flex-direction:column;gap:22px;overflow:auto}
+
+  /* ---- cross-section svg ---- */
+  .cross{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .iron-rise{transform-box:fill-box;transform-origin:center bottom;animation:rise 1.1s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes rise{from{transform:translateY(46px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .pore{transform-box:fill-box;transform-origin:center;animation:breathe 5.5s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.16}50%{opacity:.5}}
+  .spec{opacity:0;transition:opacity .4s}
+  .steam{opacity:0}
+
+  .lens{position:absolute;width:150px;height:150px;border-radius:50%;pointer-events:none;
+    border:1px solid var(--line-2);box-shadow:0 0 0 4px rgba(26,26,26,.6),0 10px 40px rgba(0,0,0,.6);
+    transform:translate(-50%,-50%) scale(.6);opacity:0;transition:opacity .18s, transform .18s;overflow:hidden;background:#141416}
+  .lens.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .lens svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(3.1)}
+  .lens::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, rgba(224,224,224,.14), transparent 42%)}
+  .lens .tag{position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);font-family:var(--mono);
+    font-size:9px;letter-spacing:.22em;color:var(--steel);white-space:nowrap}
+
+  .hud{position:absolute;inset:0;pointer-events:none;font-family:var(--mono)}
+  .hud .corner{position:absolute;font-size:10px;letter-spacing:.2em;color:var(--steel-dim)}
+  .hud .tl{top:16px;left:18px}
+  .hud .tr{top:16px;right:18px;text-align:right}
+  .hud .tr .big{color:var(--white);font-size:12px}
+  .hud .bl{bottom:16px;left:18px;color:var(--steel-dim)}
+  .hud .br{bottom:16px;right:18px;text-align:right}
+  .hud .br .val{color:var(--white);font-size:12px}
+
+  /* microscope overlay */
+  .micro{position:absolute;inset:0;opacity:0;transition:opacity .4s;pointer-events:none}
+  .micro.on{opacity:1}
+  .micro .scale{position:absolute;left:18px;bottom:18px;display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:10px;color:var(--steel)}
+  .micro .scale i{display:block;width:64px;height:1px;background:var(--steel);position:relative}
+  .micro .scale i::before,.micro .scale i::after{content:"";position:absolute;top:-3px;width:1px;height:7px;background:var(--steel)}
+  .micro .scale i::after{right:0}
+  .micro .mtitle{position:absolute;top:16px;left:18px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--steel)}
+
+  /* ---- panel ---- */
+  .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--steel)}
+  h1{font-weight:600;font-size:clamp(30px,4.4vw,52px);line-height:.96;letter-spacing:-.02em;text-transform:uppercase;margin-top:10px}
+  h1 .l2{display:block;color:var(--steel)}
+  .lede{font-size:13.5px;line-height:1.65;color:#b9bdc2;max-width:46ch;font-weight:400}
+
+  .card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(61,61,61,.16),rgba(26,26,26,.2));padding:18px 18px 20px}
+  .card .ch{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+  .card .ch .lab{font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--steel)}
+  .card .ch .sub{font-family:var(--mono);font-size:10px;color:var(--steel-dim)}
+
+  .temprow{display:flex;align-items:flex-end;gap:10px;margin-bottom:6px}
+  .temprow .big{font-family:var(--mono);font-weight:700;font-size:clamp(40px,7vw,60px);line-height:.85;letter-spacing:-.02em;color:var(--white)}
+  .temprow .unit{font-family:var(--mono);font-size:18px;color:var(--steel);margin-bottom:8px}
+  .temprow .state{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);
+    border:1px solid var(--line-2);padding:5px 10px;align-self:center;transition:color .3s,border-color .3s}
+
+  .slider-wrap{position:relative;padding-top:6px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;cursor:pointer;display:block}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;
+    background:linear-gradient(90deg,#2a2a2a 0%,#2a2a2a 100%)}
+  input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:#2a2a2a}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--white);margin-top:-5px;box-shadow:0 0 0 4px rgba(224,224,224,.12),0 0 14px rgba(224,224,224,.35);transition:box-shadow .2s}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border:none;border-radius:50%;background:var(--white);box-shadow:0 0 0 4px rgba(224,224,224,.12)}
+  input[type=range]:active::-webkit-slider-thumb{box-shadow:0 0 0 6px rgba(224,224,224,.16),0 0 22px rgba(224,224,224,.5)}
+  .ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--steel-dim);margin-top:2px}
+  .ticks span{position:relative}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--white);
+    background:transparent;border:1px solid var(--line-2);padding:11px 16px;cursor:pointer;transition:.18s;flex:1;min-width:120px}
+  .btn:hover{background:rgba(111,130,153,.12);border-color:var(--steel)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{border-color:var(--steel);background:rgba(111,130,153,.14)}
+  .btn.on{background:var(--steel);color:#141416;border-color:var(--steel)}
+
+  /* readouts */
+  .readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .ro{background:#1c1c1e;padding:14px 14px 15px}
+  .ro .k{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel-dim)}
+  .ro .v{font-family:var(--mono);font-weight:500;font-size:22px;margin-top:8px;color:var(--white)}
+  .ro .v small{font-size:11px;color:var(--steel);font-weight:400}
+
+  /* phase bar */
+  .phase{display:flex;flex-direction:column;gap:10px}
+  .phase .bar{height:8px;background:#242426;border:1px solid var(--line);position:relative;overflow:hidden}
+  .phase .fill{position:absolute;left:0;top:0;bottom:0;width:0%;background:linear-gradient(90deg,var(--amber),#3a2a1c);transition:width .12s linear}
+  .phase .fill::after{content:"";position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--white);opacity:.7}
+  .phase .legend{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--steel-dim);text-transform:uppercase}
+  .phase .legend .cur{color:var(--white)}
+
+  /* layers */
+  .layers{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+  .layers .lh{display:flex;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--steel)}
+  .lrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);
+    font-family:var(--mono);font-size:11px}
+  .lrow:last-child{border-bottom:none}
+  .lrow .sw{width:22px;height:10px;border-radius:2px}
+  .lrow .nm{color:#c9ccd0}
+  .lrow .th{color:var(--steel);text-align:right}
+  .lrow .st{color:var(--amber)}
+  .lrow .st.cured{color:var(--steel)}
+  .layers .empty{padding:22px 14px;text-align:center;color:var(--steel-dim);font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+
+  .foot{margin-top:auto;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--steel-dim);
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--line)}
+
+  /* mobile */
+  @media (max-width:860px){
+    .stage{grid-template-columns:1fr}
+    .viz{border-right:none;border-bottom:1px solid var(--line);height:46vh;min-height:320px}
+    .status{gap:14px}
+    .status .hide-sm{display:none}
+    .panel{overflow:visible}
+  }
+  @media (max-width:520px){
+    .readouts{grid-template-columns:1fr 1fr}
+    .brand .name{font-size:10px;letter-spacing:.24em}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .iron-rise{animation:none}
+    .pore{animation:none;opacity:.3}
+    .status .dot{animation:none;opacity:.8}
+    *{transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <ellipse cx="12" cy="9" rx="7.5" ry="3.2"/>
+        <path d="M4.5 9c0 3.2 3.4 5 7.5 5s7.5-1.8 7.5-5"/>
+        <path d="M6 16.5l-1.4 3.6M18 16.5l1.4 3.6M12 14v6"/>
+      </svg>
+      <span class="name"><b>CAST IRON</b> · SEASONING LAYER</span>
+    </div>
+    <div class="status">
+      <span><span class="dot"></span><span class="v" id="statusTxt">IDLE</span></span>
+      <span class="hide-sm"><span class="k">SUBSTRATE</span> <span class="v">GREY CAST IRON</span></span>
+      <span class="hide-sm"><span class="k">REACTOR</span> <span class="v">#04 / CULINARY</span></span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- ===================== CROSS SECTION ===================== -->
+    <section class="viz" id="viz">
+      <svg class="cross" id="cross" viewBox="0 0 640 520" preserveAspectRatio="xMidYMid slice" aria-label="Cast iron seasoning cross-section">
+        <defs>
+          <linearGradient id="ironGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a3a3e"/>
+            <stop offset=".18" stop-color="#2a2a2e"/>
+            <stop offset="1" stop-color="#141416"/>
+          </linearGradient>
+          <linearGradient id="hood" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6f8299" stop-opacity=".34"/>
+            <stop offset="1" stop-color="#6f8299" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="specGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="14"/>
+          </filter>
+          <clipPath id="surfaceClip">
+            <path id="surfacePath" d="M0,270 Q80,262 160,268 T320,266 T480,270 T640,264 L640,300 L0,300 Z"/>
+          </clipPath>
+        </defs>
+
+        <!-- hood light from above -->
+        <rect x="0" y="0" width="640" height="230" fill="url(#hood)"/>
+        <ellipse cx="320" cy="150" rx="300" ry="120" fill="#6f8299" opacity=".05" filter="url(#soft)"/>
+
+        <!-- steam wisps -->
+        <g id="steam" fill="none" stroke="#cfd6de" stroke-linecap="round" filter="url(#soft)"></g>
+
+        <!-- iron body -->
+        <g class="iron-rise">
+          <rect x="0" y="270" width="640" height="250" fill="url(#ironGrad)"/>
+          <!-- top surface highlight line -->
+          <path d="M0,270 Q80,262 160,268 T320,266 T480,270 T640,264" fill="none" stroke="#5a5a60" stroke-width="1.4" opacity=".7"/>
+          <!-- pores -->
+          <g id="pores"></g>
+        </g>
+
+        <!-- polymerized layers (populated by JS) -->
+        <g id="layers"></g>
+
+        <!-- specular sheen on top polymer surface -->
+        <path id="specPath" class="spec" d="M0,270 Q80,262 160,268 T320,266 T480,270 T640,264 L640,278 L0,278 Z" fill="url(#specGrad)"/>
+
+        <!-- polymerization glow -->
+        <ellipse id="polyGlow" cx="320" cy="258" rx="0" ry="0" fill="#8B5A2B" opacity="0" filter="url(#soft)"/>
+
+        <!-- labels -->
+        <g font-family="'JetBrains Mono',monospace" font-size="11" letter-spacing="2">
+          <line x1="70" y1="410" x2="150" y2="410" stroke="#6f8299" stroke-width="1" opacity=".5"/>
+          <text x="158" y="414" fill="#8a94a0">IRON</text>
+          <text x="158" y="430" fill="#42515f" font-size="9">FERROUS MATRIX · POROUS</text>
+
+          <line id="oilLine" x1="70" y1="262" x2="150" y2="262" stroke="#8B5A2B" stroke-width="1" opacity=".6"/>
+          <text id="oilLabel" x="158" y="258" fill="#b07a3a">OIL → POLYMER</text>
+        </g>
+      </svg>
+
+      <!-- microscope overlay -->
+      <div class="micro" id="micro">
+        <div class="mtitle">× MAGNIFICATION · LAYER STACK</div>
+        <svg id="microSvg" viewBox="0 0 640 520" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%"></div>
+        <div class="scale"><i></i> 10 µm</div>
+      </div>
+
+      <!-- HUD -->
+      <div class="hud">
+        <div class="corner tl">SECTION A–A′ · 400×</div>
+        <div class="corner tr"><div class="big" id="hudTemp">25°F</div>SURFACE TEMP</div>
+        <div class="corner bl">HOOD LIGHT · 5000K</div>
+        <div class="corner br"><div class="val" id="hudThick">0.00 µm</div>COATING</div>
+      </div>
+
+      <!-- hover lens -->
+      <div class="lens" id="lens">
+        <svg id="lensSvg" viewBox="0 0 150 150"></svg>
+        <span class="tag">SURFACE TOPOGRAPHY</span>
+      </div>
+    </section>
+
+    <!-- ===================== CONTROL PANEL ===================== -->
+    <aside class="panel">
+      <div>
+        <div class="eyebrow">Material Science · Culinary Lab</div>
+        <h1>Cast Iron<span class="l2">Seasoning Layer</span></h1>
+      </div>
+      <p class="lede">Seasoning is not black magic. It is a controlled polymerization — liquid triglyceride oil heated past its smoke point, cross-linked into a hard, bonded film on the iron's porous surface. Drive the temperature and watch the transformation.</p>
+
+      <!-- temperature control -->
+      <div class="card">
+        <div class="ch">
+          <span class="lab">Surface Temperature</span>
+          <span class="sub">Cure window 375–450°F</span>
+        </div>
+        <div class="temprow">
+          <span class="big" id="tempBig">25</span>
+          <span class="unit">°F</span>
+          <span class="state" id="stateChip">IDLE</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" id="temp" min="25" max="500" value="25" step="1" aria-label="Surface temperature in Fahrenheit">
+          <div class="ticks">
+            <span>25</span><span>375</span><span>450</span><span>500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- phase -->
+      <div class="phase">
+        <div class="bar"><div class="fill" id="phaseFill"></div></div>
+        <div class="legend">
+          <span>LIQUID OIL</span>
+          <span class="cur" id="phaseLabel">RAW IRON</span>
+          <span>CURED POLYMER</span>
+        </div>
+      </div>
+
+      <!-- actions -->
+      <div class="actions">
+        <button class="btn primary" id="applyBtn">Apply Oil</button>
+        <button class="btn" id="microBtn">Microscope</button>
+        <button class="btn" id="resetBtn">Reset</button>
+      </div>
+
+      <!-- readouts -->
+      <div class="readouts">
+        <div class="ro"><div class="k">Coating</div><div class="v"><span id="rThick">0.00</span> <small>µm</small></div></div>
+        <div class="ro"><div class="k">Layers</div><div class="v" id="rLayers">0</div></div>
+        <div class="ro"><div class="k">Polymerization</div><div class="v"><span id="rPoly">0</span> <small>%</small></div></div>
+      </div>
+
+      <!-- layer stack -->
+      <div class="layers">
+        <div class="lh"><span>Layer Stack</span><span>Top → Bottom</span></div>
+        <div id="layerList"><div class="empty">No polymerized layers yet — raise the heat.</div></div>
+      </div>
+
+      <div class="foot">
+        <span>MODEL: TRIGLYCERIDE → OXIDATIVE POLYMER</span>
+        <span id="footStatus">DRAG TEMPERATURE TO BEGIN</span>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const NS="http://www.w3.org/2000/svg";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- helpers ----------
+  function el(name,attrs){const e=document.createElementNS(NS,name);for(const k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+  function mix(c1,c2,t){return [Math.round(lerp(c1[0],c2[0],t)),Math.round(lerp(c1[1],c2[1],t)),Math.round(lerp(c1[2],c2[2],t))];}
+  function rgb(c){return "rgb("+c[0]+","+c[1]+","+c[2]+")";}
+  function rgba(c,a){return "rgba("+c[0]+","+c[1]+","+c[2]+","+a+")";}
+  const AMBER=[139,90,43], POLY=[16,14,13], STEEL=[111,130,153];
+
+  // ---------- DOM ----------
+  const $=id=>document.getElementById(id);
+  const svg=$("cross"), layersG=$("layers"), poresG=$("pores"), steamG=$("steam"),
+        specPath=$("specPath"), polyGlow=$("polyGlow"),
+        tempInput=$("temp"), tempBig=$("tempBig"), hudTemp=$("hudTemp"),
+        stateChip=$("stateChip"), phaseFill=$("phaseFill"), phaseLabel=$("phaseLabel"),
+        rThick=$("rThick"), rLayers=$("rLayers"), rPoly=$("rPoly"),
+        hudThick=$("hudThick"), layerList=$("layerList"),
+        oilLine=$("oilLine"), oilLabel=$("oilLabel"),
+        applyBtn=$("applyBtn"), microBtn=$("microBtn"), resetBtn=$("resetBtn"),
+        micro=$("micro"), microSvg=$("microSvg"),
+        lens=$("lens"), lensSvg=$("lensSvg"), viz=$("viz"),
+        statusTxt=$("statusTxt"), footStatus=$("footStatus");
+
+  // ---------- surface geometry ----------
+  const SURF_Y=270, SURF_AMP=5, SEG=320;
+  function surfY(x){
+    return SURF_Y
+      + Math.sin((x/640)*Math.PI*2*1.3)*SURF_AMP
+      + Math.sin((x/640)*Math.PI*2*3.1+1.1)*SURF_AMP*0.55
+      + Math.sin((x/640)*Math.PI*2*6.4+2.3)*SURF_AMP*0.28;
+  }
+  function surfaceTopPath(top){
+    let d="M0,"+surfY(0).toFixed(2);
+    for(let x=SEG;x<=640;x+=SEG) d+=" L"+x+","+surfY(x).toFixed(2);
+    d+=" L640,"+(top).toFixed(2);
+    for(let x=640-SEG;x>=0;x-=SEG) d+=" L"+x+","+(surfY(x)+top).toFixed(2);
+    d+=" Z";
+    return d;
+  }
+
+  // ---------- pores ----------
+  const pores=[];
+  (function buildPores(){
+    let seed=7;
+    const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+    for(let i=0;i<74;i++){
+      const x=rnd()*640, y=SURF_Y+10+rnd()*150, r=1.4+rnd()*3.4;
+      const c=el("circle",{cx:x.toFixed(1),cy:y.toFixed(1),r:r.toFixed(1),fill:"#0d0d0f",class:"pore"});
+      c.style.animationDelay=(-rnd()*5.5)+"s";
+      poresG.appendChild(c);
+      pores.push({x,y,r,el:c});
+    }
+  })();
+
+  // ---------- steam ----------
+  const steam=[];
+  (function buildSteam(){
+    for(let i=0;i<5;i++){
+      const baseX=180+i*70+(i%2?18:-14);
+      const path=el("path",{fill:"none",stroke:"#cfd6de","stroke-width":(2.2+ (i%3)).toFixed(1),class:"steam"});
+      steamG.appendChild(path);
+      steam.push({x:baseX,off:i*1.7,amp:10+(i%3)*6,el:path});
+    }
+  })();
+
+  // ---------- state ----------
+  const MAX_LAYERS=9, LAYER_H=13;
+  let temp=25, targetTemp=25;
+  let layers=[];            // {cure, applied, top}
+  let oil=0, oilTarget=0;   // 0..1 wet oil film
+  let microOn=false;
+  let hover={active:false,x:0,y:0};
+  let applying=false;
+
+  // ---------- layer rendering ----------
+  function buildLayerEls(){
+    layersG.innerHTML="";
+    layers.forEach(L=>{
+      const p=el("path",{class:"poly",fill:"#000"});
+      layersG.appendChild(p);
+      L.el=p;
+    });
+  }
+  function recomputeTops(){
+    let top=SURF_Y;
+    layers.forEach(L=>{top-=LAYER_H;L.top=top;});
+    return top;
+  }
+  function recomputeMicroTops(){
+    let top=SURF_Y;
+    layers.forEach(L=>{top-=LAYER_H*2.4;L.mtop=top;});
+    return top;
+  }
+
+  function layerColor(L){
+    // cure 0 = wet amber, 1 = hard black polymer
+    const c=mix(AMBER,POLY,L.cure);
+    return c;
+  }
+
+  function renderLayers(){
+    const top=recomputeTops();
+    layers.forEach(L=>{
+      if(!L.el) return;
+      const c=layerColor(L);
+      L.el.setAttribute("d",surfaceTopPath(L.top));
+      L.el.setAttribute("fill",rgb(c));
+      // wet sheen: amber layers get slight translucency + lighter top
+      L.el.setAttribute("opacity",(0.72+0.28*L.cure).toFixed(3));
+    });
+    // specular sheen follows top polymer surface, strength = avg cure
+    const avg = layers.length? layers.reduce((s,L)=>s+L.cure,0)/layers.length : 0;
+    const topY = layers.length? layers[layers.length-1].top : SURF_Y;
+    specPath.setAttribute("d", surfaceTopPath(topY-2));
+    specPath.style.opacity = (avg*0.55 + (oil>0.05?(1-oil*0.5)*0.12:0)).toFixed(3);
+  }
+
+  // ---------- microscope ----------
+  function renderMicro(){
+    if(!microOn){microSvg.innerHTML="";return;}
+    microSvg.innerHTML="";
+    const mtop=recomputeMicroTops();
+    // iron base
+    microSvg.appendChild(el("rect",{x:0,y:SURF_Y+30,width:640,height:250,fill:"#161618"}));
+    // pores in iron
+    for(let i=0;i<60;i++){
+      const x=(i*53)%640, y=SURF_Y+45+((i*37)%120);
+      microSvg.appendChild(el("circle",{cx:x,cy:y,r:(2+ (i%4)).toFixed(1),fill:"#0c0c0e"}));
+    }
+    // layers as thick bands
+    layers.forEach((L,i)=>{
+      const c=mix(AMBER,POLY,L.cure);
+      const band=el("rect",{x:0,y:L.mtop,width:640,height:LAYER_H*2.4,fill:rgb(c)});
+      microSvg.appendChild(band);
+      // boundary line
+      microSvg.appendChild(el("line",{x1:0,y1:L.mtop,x2:640,y2:L.mtop,stroke:rgba(mix(c,[224,224,224],0.4),0.5),"stroke-width":1}));
+    });
+    // top surface
+    microSvg.appendChild(el("line",{x1:0,y1:(layers.length?layers[layers.length-1].mtop:SURF_Y),x2:640,y2:(layers.length?layers[layers.length-1].mtop:SURF_Y),stroke:rgba([224,224,224],0.5),"stroke-width":1.4}));
+    // iron top line
+    microSvg.appendChild(el("line",{x1:0,y1:SURF_Y,x2:640,y2:SURF_Y,stroke:rgba(STEEL,0.6),"stroke-width":1.4}));
+  }
+
+  // ---------- lens ----------
+  function buildLens(){
+    lensSvg.innerHTML="";
+    lensSvg.appendChild(el("rect",{x:0,y:0,width:150,height:150,fill:"#1a1a1c"}));
+    let seed=3;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+    for(let i=0;i<46;i++){
+      lensSvg.appendChild(el("circle",{cx:(rnd()*150).toFixed(1),cy:(rnd()*150).toFixed(1),r:(2+rnd()*6).toFixed(1),fill:"#0d0d0f",opacity:(0.4+rnd()*0.5).toFixed(2)}));
+    }
+    for(let i=0;i<10;i++){
+      lensSvg.appendChild(el("circle",{cx:(rnd()*150).toFixed(1),cy:(rnd()*150).toFixed(1),r:(1+rnd()*2).toFixed(1),fill:"#5a5a60",opacity:.5}));
+    }
+  }
+  buildLens();
+
+  // ---------- metrics ----------
+  function computeMetrics(){
+    const cured=layers.filter(L=>L.cure>0.5).length;
+    const totalThick=layers.length*LAYER_H + oil*3.5; // µm
+    const poly = layers.length? layers.reduce((s,L)=>s+L.cure,0)/layers.length*100 : 0;
+    return {cured,totalThick,poly};
+  }
+
+  // ---------- UI update ----------
+  let lastLayerKey="";
+  function updateUI(){
+    const m=computeMetrics();
+    tempBig.textContent=Math.round(temp);
+    hudTemp.textContent=Math.round(temp)+"°F";
+    hudThick.textContent=m.totalThick.toFixed(2)+" µm";
+    rThick.textContent=m.totalThick.toFixed(2);
+    rLayers.textContent=layers.length;
+    rPoly.textContent=Math.round(m.poly);
+
+    // phase fill: wet oil -> cured
+    const fillPct = clamp((oil*0.5 + m.poly*0.005* (layers.length?1:0) + (temp>=375? (temp-375)/125*40:0)),0,100);
+    phaseFill.style.width=clamp(oil*55 + m.poly*0.45,0,100)+"%";
+
+    // state chip
+    let st, sc;
+    if(temp<120){st="IDLE";sc=STEEL;}
+    else if(temp<375){st="HEATING";sc=STEEL;}
+    else if(temp<=450){st="POLYMERIZING";sc=AMBER;}
+    else {st="OVERHEAT";sc=[200,120,90];}
+    stateChip.textContent=st;
+    stateChip.style.color=rgba(sc,1);
+    stateChip.style.borderColor=rgba(sc,0.5);
+    statusTxt.textContent=st;
+
+    // phase label
+    let pl;
+    if(layers.length===0 && oil<0.05) pl="RAW IRON";
+    else if(m.poly>0.85) pl="HARD POLYMER";
+    else if(m.poly>0.4) pl="CURING";
+    else if(oil>0.1) pl="WET OIL FILM";
+    else pl="RAW IRON";
+    phaseLabel.textContent=pl;
+
+    // foot status
+    if(layers.length===0 && oil<0.05) footStatus.textContent="DRAG TEMPERATURE TO BEGIN";
+    else if(st==="OVERHEAT") footStatus.textContent="WARNING · CARBONIZING · LOWER TEMP";
+    else if(st==="POLYMERIZING") footStatus.textContent="CROSS-LINKING IN PROGRESS";
+    else footStatus.textContent=(layers.length?layers.length+" LAYER"+(layers.length>1?"S":"")+" DEPOSITED":"APPLY OIL AT HEAT");
+
+    // oil label position
+    if(oil>0.02){
+      oilLabel.style.opacity="1";oilLine.style.opacity=".6";
+    }else{
+      oilLabel.style.opacity="0";oilLine.style.opacity="0";
+    }
+
+    // layer list (rebuild only when structure changes)
+    const key=layers.length+":"+Math.round(oil*10);
+    if(key!==lastLayerKey){
+      lastLayerKey=key;
+      if(layers.length===0){
+        layerList.innerHTML='<div class="empty">No polymerized layers yet — raise the heat.</div>';
+      }else{
+        layerList.innerHTML="";
+        for(let i=layers.length-1;i>=0;i--){
+          const L=layers[i];const c=layerColor(L);
+          const row=document.createElement("div");row.className="lrow";
+          const stTxt = L.cure>0.5?"CURED":"WET";
+          row.innerHTML='<span class="sw" style="background:'+rgb(c)+'"></span>'+
+                        '<span class="nm">LAYER '+(i+1)+'</span>'+
+                        '<span class="th">'+(LAYER_H).toFixed(0)+' µm</span>';
+          const s=document.createElement("span");s.className="st"+(L.cure>0.5?" cured":"");s.textContent=stTxt;
+          row.appendChild(s);
+          layerList.appendChild(row);
+        }
+      }
+    }
+  }
+
+  // ---------- main loop ----------
+  let last=performance.now();
+  function tick(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+    const t=now/1000;
+
+    // ease temperature toward target
+    temp += (targetTemp-temp)*Math.min(1,dt*6);
+
+    // cure dynamics
+    let curing=false;
+    if(temp>=375 && temp<=450){
+      // apply oil film if heating and not enough layers
+      if(layers.length<MAX_LAYERS && oil<0.92){ oil=Math.min(0.92,oil+dt*0.7); }
+      // polymerize: cure wet oil and existing wet layers
+      const rate=dt*0.5;
+      layers.forEach(L=>{ if(L.cure<1) L.cure=Math.min(1,L.cure+rate); });
+      if(oil>0.02){
+        // convert oil into a curing layer when enough heat applied
+        curing=true;
+      }
+      // when oil film has "cooked", convert to a new layer
+      if(oil>0.4 && layers.length<MAX_LAYERS){
+        // promote oil to a layer that starts partially cured
+        layers.push({cure:0.05,applied:true,top:0});
+        buildLayerEls();
+        oil=0.05; // residual wet sheen
+      }
+    } else if(temp>450){
+      // overheating: cure everything fast, slight carbon tint handled by color
+      layers.forEach(L=>{ if(L.cure<1) L.cure=Math.min(1,L.cure+dt*1.2); });
+      if(oil>0.02) oil=Math.max(0,oil-dt*0.5);
+    } else {
+      // cooling: wet oil slowly evaporates if not curing
+      if(oil>0 && temp<200) oil=Math.max(0,oil-dt*0.05);
+    }
+    if(oil>0 && temp>=375 && temp<=450) curing=true;
+
+    // glow during polymerization
+    const topY = layers.length? layers[layers.length-1].top : SURF_Y;
+    let glow=0;
+    if(temp>=375 && temp<=470 && (oil>0.03 || layers.some(L=>L.cure<1))) glow=clamp((temp-375)/75,0,1);
+    polyGlow.setAttribute("cx",320);
+    polyGlow.setAttribute("cy",topY-4);
+    polyGlow.setAttribute("rx",260);
+    polyGlow.setAttribute("ry",26);
+    polyGlow.setAttribute("opacity",(glow*0.5).toFixed(3));
+    polyGlow.setAttribute("fill", rgb(mix(AMBER,[230,150,70],glow*0.5)));
+
+    // steam intensity with heat
+    const steamI = clamp((temp-300)/200,0,1);
+    steam.forEach((s,i)=>{
+      if(reduce){ s.el.setAttribute("opacity","0"); return; }
+      const rise = (t*0.16 + s.off)%1;
+      const y0 = topY-6;
+      const yTop = y0 - 150*rise;
+      const wob = Math.sin((t*1.2 + s.off)*2)*s.amp;
+      const x = s.x + wob*rise;
+      const fade = Math.sin(rise*Math.PI); // 0->1->0
+      s.el.setAttribute("opacity",(steamI*fade*0.22).toFixed(3));
+      s.el.setAttribute("d","M"+s.x+","+(y0+10)+" Q"+(x-s.amp)+","+(y0-60)+" "+x+","+(yTop)+" Q"+(x+s.amp)+","+(yTop+70)+" "+(s.x+wob)+","+(y0+10));
+    });
+
+    // hover pores emphasis
+    pores.forEach(p=>{
+      let em=0;
+      if(hover.active){
+        const dx=p.x-hover.x, dy=p.y-hover.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        em=clamp(1-d/120,0,1);
+      }
+      const base = 0.16+0.34*(0.5+0.5*Math.sin(t*1.1 + p.x*0.05));
+      p.el.setAttribute("opacity",(base+em*0.5).toFixed(3));
+    });
+
+    renderLayers();
+    if(microOn) renderMicro();
+    updateUI();
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // ---------- interactions ----------
+  tempInput.addEventListener("input",e=>{
+    targetTemp=+e.target.value;
+  });
+
+  applyBtn.addEventListener("click",()=>{
+    if(layers.length>=MAX_LAYERS){ footStatus.textContent="MAX LAYERS · RESET TO CONTINUE"; return; }
+    oil=Math.min(1,oil+0.55);
+    // ensure we're in cure window to convert
+    if(targetTemp<375){ targetTemp=410; tempInput.value=410; }
+    applying=true;
+    setTimeout(()=>applying=false,300);
+  });
+
+  microBtn.addEventListener("click",()=>{
+    microOn=!microOn;
+    micro.classList.toggle("on",microOn);
+    microBtn.classList.toggle("on",microOn);
+    microBtn.textContent=microOn?"Exit Microscope":"Microscope";
+    if(microOn) renderMicro();
+  });
+
+  resetBtn.addEventListener("click",()=>{
+    layers=[]; oil=0; targetTemp=25; tempInput.value=25;
+    buildLayerEls(); lastLayerKey="";
+    footStatus.textContent="DRAG TEMPERATURE TO BEGIN";
+  });
+
+  // hover lens + pores
+  viz.addEventListener("pointermove",e=>{
+    const r=viz.getBoundingClientRect();
+    const px=e.clientX-r.left, py=e.clientY-r.top;
+    // map to svg coords (slice preserveAspect approx)
+    hover.x = (px/r.width)*640;
+    hover.y = (py/r.height)*520;
+    hover.active = true;
+    lens.classList.add("on");
+    lens.style.left=px+"px";
+    lens.style.top=py+"px";
+  });
+  viz.addEventListener("pointerleave",()=>{hover.active=false;lens.classList.remove("on");});
+
+  // keyboard nudges
+  window.addEventListener("keydown",e=>{
+    if(e.key==="ArrowUp"){targetTemp=clamp(targetTemp+10,25,500);tempInput.value=targetTemp;}
+    if(e.key==="ArrowDown"){targetTemp=clamp(targetTemp-10,25,500);tempInput.value=targetTemp;}
+  });
+
+  // initial
+  buildLayerEls();
+  updateUI();
+})();
+</script>
+</body>
+</html>

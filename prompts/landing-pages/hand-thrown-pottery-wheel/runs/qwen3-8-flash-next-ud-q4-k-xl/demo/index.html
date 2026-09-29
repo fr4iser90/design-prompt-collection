@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clay & Core — Hand-Thrown Pottery Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --clay:#A0785A;
+    --slip:#D4C4B1;
+    --charcoal:#3E3631;
+    --accent:#C28F66;
+    --ink:#2E2722;
+    --paper:#EAE0D2;
+    --line:rgba(62,54,49,.16);
+    --shadow:0 24px 60px -28px rgba(46,39,34,.55);
+    --maxw:1200px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    font-family:'Lato',system-ui,sans-serif;
+    font-weight:300;
+    color:var(--charcoal);
+    background:var(--paper);
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent);color:#fff}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+
+  .display{font-family:'Fraunces',Georgia,serif;font-weight:400;letter-spacing:-.015em;line-height:1.02}
+  .display em{font-style:italic;font-variation-settings:'SOFT' 70,'WONK' 1}
+  .kicker{
+    font-family:'Lato';font-weight:700;font-size:.72rem;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--accent);
+  }
+
+  /* ---------- ambient background ---------- */
+  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .ambient .glow{
+    position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;
+    mix-blend-mode:multiply;
+  }
+  .ambient .g1{width:60vw;height:60vw;top:-18vw;right:-12vw;background:radial-gradient(circle,var(--accent),transparent 68%)}
+  .ambient .g2{width:52vw;height:52vw;bottom:-20vw;left:-14vw;background:radial-gradient(circle,var(--clay),transparent 70%)}
+  .grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px);position:relative;z-index:2}
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:60;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px clamp(20px,5vw,56px);
+    transition:background .5s var(--ease),box-shadow .5s var(--ease),padding .4s var(--ease);
+  }
+  .nav.solid{
+    background:rgba(234,224,210,.82);
+    backdrop-filter:blur(12px);
+    box-shadow:0 1px 0 var(--line);
+    padding-top:12px;padding-bottom:12px;
+  }
+  .brand{display:flex;align-items:center;gap:11px;font-family:'Fraunces';font-weight:600;font-size:1.28rem;letter-spacing:-.02em}
+  .brand .dot{width:26px;height:26px;border-radius:50%;background:
+      radial-gradient(circle at 32% 30%,#E7D6C4 0 18%,var(--accent) 18% 55%,var(--clay) 55% 100%);
+    box-shadow:inset 0 -3px 6px rgba(46,39,34,.35);position:relative}
+  .brand .dot::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent 0 25%,rgba(255,255,255,.35) 25% 30%,transparent 30% 100%);
+    animation:spin 9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .nav-links{display:flex;align-items:center;gap:clamp(18px,3vw,40px);font-size:.9rem;font-weight:400}
+  .nav-links a{position:relative;padding:4px 0;color:var(--charcoal);opacity:.82;transition:opacity .3s}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:2px;width:0;background:var(--accent);transition:width .35s var(--ease)}
+  .nav-links a:hover{opacity:1}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    border:1.5px solid var(--charcoal);border-radius:40px;padding:9px 20px;font-weight:700;font-size:.82rem;
+    letter-spacing:.02em;transition:background .3s,color .3s,transform .3s;
+  }
+  .nav-cta:hover{background:var(--charcoal);color:var(--paper);transform:translateY(-2px)}
+  @media(max-width:820px){.nav-links{display:none}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100vh;min-height:100svh;position:relative;z-index:2;
+    display:flex;align-items:center;justify-content:center;
+    padding:120px 0 40px;
+  }
+  .hero-inner{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,4vw,64px);align-items:center;width:100%}
+  .hero-copy{max-width:560px}
+  .hero h1{
+    font-size:clamp(3rem,7.6vw,6.6rem);
+    font-variation-settings:'SOFT' 55,'opsz' 144;
+    margin:20px 0 24px;
+  }
+  .hero h1 .line{display:block;overflow:hidden}
+  .hero h1 .line span{display:block;transform:translateY(105%);transition:transform 1s var(--ease)}
+  .hero h1 .line:nth-child(2) span{transition-delay:.12s}
+  .hero h1 .line:nth-child(3) span{transition-delay:.24s}
+  .loaded .hero h1 .line span{transform:translateY(0)}
+  .hero .lead{font-size:clamp(1.02rem,1.5vw,1.18rem);color:rgba(62,54,49,.82);max-width:440px;margin-bottom:30px}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;border-radius:44px;padding:14px 26px;
+    font-weight:700;font-size:.92rem;letter-spacing:.01em;transition:transform .35s var(--ease),box-shadow .35s var(--ease),background .3s;
+  }
+  .btn-solid{background:var(--charcoal);color:var(--paper);box-shadow:var(--shadow)}
+  .btn-solid:hover{transform:translateY(-3px);box-shadow:0 30px 60px -24px rgba(46,39,34,.6)}
+  .btn-ghost{border:1.5px solid var(--line);color:var(--charcoal)}
+  .btn-ghost:hover{border-color:var(--charcoal);transform:translateY(-3px)}
+  .btn .arw{transition:transform .35s var(--ease)}
+  .btn:hover .arw{transform:translateX(5px)}
+
+  .hero-meta{display:flex;gap:26px;margin-top:38px;flex-wrap:wrap}
+  .hero-meta .m{border-left:2px solid var(--accent);padding-left:14px}
+  .hero-meta .m b{font-family:'Fraunces';font-weight:600;font-size:1.5rem;display:block;line-height:1}
+  .hero-meta .m small{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(62,54,49,.6)}
+
+  /* wheel */
+  .wheel-stage{position:relative;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none}
+  .wheel-wrap{position:relative;width:min(46vw,460px);aspect-ratio:1/1;cursor:grab}
+  .wheel-wrap.grabbing{cursor:grabbing}
+  .wheel-wrap svg{width:100%;height:100%;display:block;overflow:visible}
+  .spin{transform-origin:150px 150px;will-change:transform}
+  .speed-ring{transform-origin:150px 150px;opacity:0;transition:opacity .4s}
+  .speed-ring.on{opacity:.9}
+  .speed-ring circle{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:3 12;stroke-linecap:round}
+  .sheen{transform-origin:150px 150px;animation:sheen 7s linear infinite}
+  @keyframes sheen{to{transform:rotate(360deg)}}
+
+  .drag-hint{
+    position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+    display:flex;align-items:center;gap:9px;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(62,54,49,.6);white-space:nowrap;transition:opacity .5s;
+  }
+  .drag-hint .hand{font-size:1.1rem;animation:nudge 2.2s var(--ease) infinite}
+  @keyframes nudge{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+  .drag-hint.hide{opacity:0}
+
+  .scroll-cue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(62,54,49,.55);z-index:3}
+  .scroll-cue .track{width:1px;height:46px;background:linear-gradient(var(--charcoal),transparent);position:relative;overflow:hidden}
+  .scroll-cue .track::after{content:"";position:absolute;top:-46px;left:0;width:1px;height:46px;background:var(--accent);animation:drop 2s var(--ease) infinite}
+  @keyframes drop{to{top:46px}}
+
+  @media(max-width:900px){
+    .hero-inner{grid-template-columns:1fr;gap:34px;text-align:center;justify-items:center}
+    .hero-copy{max-width:520px}
+    .hero .lead{margin-left:auto;margin-right:auto}
+    .hero-actions,.hero-meta{justify-content:center}
+    .hero-meta .m{border-left:none;border-top:2px solid var(--accent);padding-left:0;padding-top:10px}
+    .wheel-wrap{width:min(74vw,360px)}
+    .hero{padding-top:104px}
+  }
+
+  /* ---------- marquee ---------- */
+  .marquee{border-block:1px solid var(--line);background:rgba(160,120,90,.06);overflow:hidden;padding:22px 0;position:relative;z-index:2}
+  .marquee-track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:marq 34s linear infinite}
+  .marquee:hover .marquee-track{animation-play-state:paused}
+  .marquee-track span{font-family:'Fraunces';font-weight:500;font-size:clamp(1.3rem,3vw,2.1rem);padding:0 34px;color:var(--charcoal);display:inline-flex;align-items:center;gap:34px}
+  .marquee-track span::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--accent);opacity:.55}
+  @keyframes marq{to{transform:translateX(-50%)}}
+
+  /* ---------- generic section ---------- */
+  section.block{padding:clamp(70px,10vw,130px) 0;position:relative;z-index:2}
+  .sec-head{max-width:640px;margin-bottom:clamp(40px,6vw,72px)}
+  .sec-head h2{font-size:clamp(2.1rem,5vw,3.6rem);font-variation-settings:'SOFT' 40,'opsz' 120;margin:14px 0 18px}
+  .sec-head p{color:rgba(62,54,49,.78);font-size:1.08rem;max-width:520px}
+  .num{font-family:'Fraunces';font-weight:300;font-style:italic;font-size:1.1rem;color:var(--accent)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- process ---------- */
+  .process{background:linear-gradient(180deg,transparent,rgba(160,120,90,.05))}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(18px,2.5vw,30px)}
+  .step{padding:26px 22px 30px;border-radius:22px;background:rgba(255,251,245,.55);border:1px solid var(--line);position:relative;transition:transform .5s var(--ease),box-shadow .5s var(--ease),background .4s}
+  .step:hover{transform:translateY(-8px);box-shadow:var(--shadow);background:#fffdf9}
+  .step .n{font-family:'Fraunces';font-size:2.4rem;font-weight:300;color:var(--accent);line-height:1}
+  .step h3{font-family:'Fraunces';font-weight:600;font-size:1.3rem;margin:16px 0 8px}
+  .step p{font-size:.94rem;color:rgba(62,54,49,.74)}
+  .step .ring{position:absolute;top:22px;right:22px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--accent);opacity:.4;transition:transform .6s var(--ease)}
+  .step:hover .ring{transform:rotate(180deg) scale(1.15)}
+  @media(max-width:820px){.steps{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.steps{grid-template-columns:1fr}}
+
+  /* ---------- gallery (drying shelves) ---------- */
+  .gallery{background:var(--charcoal);color:var(--slip)}
+  .gallery .sec-head h2,.gallery .sec-head p{color:var(--slip)}
+  .gallery .kicker{color:var(--accent)}
+  .gallery .num{color:var(--accent)}
+  .shelves{display:flex;flex-direction:column;gap:clamp(30px,5vw,64px)}
+  .shelf{position:relative;padding-bottom:26px}
+  .shelf::after{content:"";position:absolute;left:-2%;right:-2%;bottom:0;height:14px;border-radius:6px;
+    background:linear-gradient(180deg,#5a4d44,#3E3631);box-shadow:0 12px 24px -8px rgba(0,0,0,.6)}
+  .shelf-row{display:flex;flex-wrap:wrap;gap:clamp(14px,2.5vw,34px);align-items:flex-end;justify-content:center}
+  .pot{position:relative;transition:transform .6s var(--ease)}
+  .pot img{border-radius:14px 14px 20px 20px / 22px 22px 40px 40px;box-shadow:0 20px 40px -18px rgba(0,0,0,.7);filter:saturate(.92) contrast(1.02)}
+  .pot:hover{transform:translateY(-12px)}
+  .pot:hover img{filter:saturate(1.05)}
+  .pot .tag{position:absolute;left:12px;bottom:12px;background:rgba(62,54,49,.82);color:var(--slip);
+    padding:7px 14px;border-radius:30px;font-size:.76rem;letter-spacing:.06em;backdrop-filter:blur(4px);
+    opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s}
+  .pot:hover .tag{opacity:1;transform:none}
+  .pot:nth-child(1){transform:rotate(-1.4deg)}
+  .pot:nth-child(3){transform:rotate(1.2deg)}
+  .pot:nth-child(1):hover,.pot:nth-child(3):hover{transform:translateY(-12px) rotate(0deg)}
+  @media(max-width:640px){.pot .tag{opacity:1;transform:none}}
+
+  /* ---------- stats band ---------- */
+  .stats{background:linear-gradient(180deg,var(--paper),#E4D8C8)}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+  .stat{padding:20px 10px;border-radius:20px;transition:transform .4s var(--ease)}
+  .stat:hover{transform:translateY(-6px)}
+  .stat b{font-family:'Fraunces';font-weight:500;font-size:clamp(2.4rem,5vw,3.8rem);display:block;line-height:1;font-variation-settings:'SOFT' 60}
+  .stat small{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(62,54,49,.62)}
+  @media(max-width:640px){.stats-grid{grid-template-columns:1fr 1fr;gap:34px}}
+
+  /* ---------- workshop ---------- */
+  .workshop-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,64px);align-items:center}
+  .workshop-img{position:relative;border-radius:26px;overflow:hidden;box-shadow:var(--shadow)}
+  .workshop-img img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/5}
+  .workshop-img .badge{position:absolute;top:20px;left:20px;background:var(--accent);color:#fff;padding:8px 16px;border-radius:30px;font-weight:700;font-size:.8rem;letter-spacing:.04em}
+  .workshop-copy h2{font-size:clamp(2rem,4.4vw,3.2rem);font-variation-settings:'SOFT' 45;margin:14px 0 20px}
+  .workshop-copy p{color:rgba(62,54,49,.8);margin-bottom:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 30px}
+  .chip{border:1.5px solid var(--line);border-radius:30px;padding:8px 16px;font-size:.84rem;transition:border-color .3s,background .3s,transform .3s}
+  .chip:hover{border-color:var(--accent);background:rgba(194,143,102,.1);transform:translateY(-2px)}
+  @media(max-width:820px){.workshop-grid{grid-template-columns:1fr}.workshop-img{order:-1;aspect-ratio:16/10}}
+
+  /* ---------- testimonials ---------- */
+  .quotes{background:linear-gradient(180deg,#E4D8C8,var(--paper))}
+  .quote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .quote{background:rgba(255,251,245,.6);border:1px solid var(--line);border-radius:24px;padding:32px 28px;position:relative;transition:transform .5s var(--ease),box-shadow .5s}
+  .quote:hover{transform:translateY(-8px);box-shadow:var(--shadow)}
+  .quote .mark{font-family:'Fraunces';font-size:4rem;line-height:.6;color:var(--accent);opacity:.5}
+  .quote p{font-family:'Fraunces';font-weight:400;font-style:italic;font-size:1.16rem;line-height:1.45;margin:14px 0 22px}
+  .quote .who{display:flex;align-items:center;gap:12px}
+  .quote .who img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+  .quote .who b{font-family:'Lato';font-weight:700;font-size:.92rem}
+  .quote .who small{display:block;color:rgba(62,54,49,.6);font-size:.8rem}
+  @media(max-width:820px){.quote-grid{grid-template-columns:1fr}}
+
+  /* ---------- CTA ---------- */
+  .cta{background:var(--charcoal);color:var(--slip);text-align:center;position:relative;overflow:hidden}
+  .cta .kicker{color:var(--accent)}
+  .cta h2{font-size:clamp(2.4rem,6vw,4.6rem);font-variation-settings:'SOFT' 60,'WONK' 1;margin:16px 0 22px;color:var(--slip)}
+  .cta p{max-width:480px;margin:0 auto 34px;color:rgba(212,196,177,.8)}
+  .cta .btn-solid{background:var(--slip);color:var(--charcoal)}
+  .cta .btn-solid:hover{background:#fff}
+  .cta-orbit{position:absolute;width:520px;height:520px;border-radius:50%;border:1px dashed rgba(194,143,102,.25);top:50%;left:50%;transform:translate(-50%,-50%);animation:spin 40s linear infinite;pointer-events:none}
+  .cta-orbit::before{content:"";position:absolute;top:-6px;left:50%;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+
+  /* ---------- footer ---------- */
+  footer{background:#2E2722;color:var(--slip);padding:70px 0 34px;position:relative;z-index:2}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:34px;margin-bottom:48px}
+  .foot-brand .brand{color:var(--slip);font-size:1.5rem;margin-bottom:16px}
+  .foot-brand p{color:rgba(212,196,177,.66);max-width:280px;font-size:.94rem}
+  .foot-col h4{font-family:'Fraunces';font-weight:600;font-size:1rem;margin-bottom:16px;color:var(--slip)}
+  .foot-col a{display:block;color:rgba(212,196,177,.66);font-size:.9rem;padding:5px 0;transition:color .3s,padding-left .3s}
+  .foot-col a:hover{color:var(--accent);padding-left:6px}
+  .foot-bottom{border-top:1px solid rgba(212,196,177,.14);padding-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:.82rem;color:rgba(212,196,177,.55)}
+  @media(max-width:820px){.foot-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.foot-grid{grid-template-columns:1fr}}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+    .hero h1 .line span{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient" aria-hidden="true"><div class="glow g1"></div><div class="glow g2"></div></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><span class="dot"></span>Clay&nbsp;&amp;&nbsp;Core</a>
+  <nav class="nav-links">
+    <a href="#process">The Wheel</a>
+    <a href="#gallery">Collection</a>
+    <a href="#workshop">Workshops</a>
+    <a href="#visit">Visit</a>
+  </nav>
+  <a class="nav-cta" href="#visit">Book a Session</a>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <span class="kicker">Hand-thrown · Small batch · Est. 2016</span>
+      <h1 class="display">
+        <span class="line"><span>Clay &amp;</span></span>
+        <span class="line"><span>Core</span></span>
+        <span class="line"><span><em>studio</em></span></span>
+      </h1>
+      <p class="lead">A pottery studio built around one slow idea — that the best things are made with two hands, a spinning wheel, and a little patience. Give the wheel a turn.</p>
+      <div class="hero-actions">
+        <a class="btn btn-solid" href="#workshop">Join a class <span class="arw">→</span></a>
+        <a class="btn btn-ghost" href="#gallery">See the collection</a>
+      </div>
+      <div class="hero-meta">
+        <div class="m"><b>2,400+</b><small>Pieces thrown</small></div>
+        <div class="m"><b>18</b><small>Glaze recipes</small></div>
+        <div class="m"><b>1,260°C</b><small>Wood-fired kiln</small></div>
+      </div>
+    </div>
+
+    <div class="wheel-stage">
+      <div class="wheel-wrap" id="wheelWrap" role="img" aria-label="A spinning potter's wheel with a mound of wet clay. Drag it to spin faster.">
+        <svg viewBox="0 0 300 300" id="wheelSvg">
+          <defs>
+            <radialGradient id="clayGrad" cx="38%" cy="32%" r="75%">
+              <stop offset="0%" stop-color="#C9A07E"/>
+              <stop offset="45%" stop-color="#A0785A"/>
+              <stop offset="100%" stop-color="#6E503A"/>
+            </radialGradient>
+            <radialGradient id="wheelGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#4A403A"/>
+              <stop offset="70%" stop-color="#3E3631"/>
+              <stop offset="100%" stop-color="#2E2722"/>
+            </radialGradient>
+            <linearGradient id="sheenGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+              <stop offset="45%" stop-color="#fff" stop-opacity=".28"/>
+              <stop offset="60%" stop-color="#fff" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <filter id="soft"><feGaussianBlur stdDeviation="0.4"/></filter>
+          </defs>
+
+          <!-- static wheel disc -->
+          <circle cx="150" cy="150" r="146" fill="url(#wheelGrad)"/>
+          <circle cx="150" cy="150" r="146" fill="none" stroke="#211b17" stroke-width="3"/>
+
+          <!-- spinning group -->
+          <g class="spin" id="spin">
+            <circle cx="150" cy="150" r="132" fill="none" stroke="#5a4d44" stroke-width="1.5" opacity=".5"/>
+            <circle cx="150" cy="150" r="118" fill="none" stroke="#5a4d44" stroke-width="1" opacity=".35"/>
+            <!-- wheel spokes -->
+            <g stroke="#5a4d44" stroke-width="1.4" opacity=".45">
+              <line x1="150" y1="26" x2="150" y2="274"/>
+              <line x1="26" y1="150" x2="274" y2="150"/>
+              <line x1="62" y1="62" x2="238" y2="238"/>
+              <line x1="238" y1="62" x2="62" y2="238"/>
+            </g>
+            <circle cx="150" cy="150" r="14" fill="#211b17"/>
+            <circle cx="150" cy="150" r="6" fill="#6E503A"/>
+            <!-- water sheen streak -->
+            <path d="M150 18 A132 132 0 0 1 282 150" fill="none" stroke="url(#sheenGrad)" stroke-width="10" stroke-linecap="round" opacity=".6"/>
+          </g>
+
+          <!-- speed ring -->
+          <g class="speed-ring" id="speedRing"><circle cx="150" cy="150" r="140"/></g>
+
+          <!-- clay mound (morphs + wobbles) -->
+          <path id="clay" fill="url(#clayGrad)" filter="url(#soft)"/>
+          <!-- sheen on clay -->
+          <g class="sheen"><ellipse cx="120" cy="120" rx="26" ry="46" fill="#fff" opacity=".12"/></g>
+        </svg>
+      </div>
+      <div class="drag-hint" id="dragHint"><span class="hand">👋</span> Drag to spin the wheel</div>
+    </div>
+  </div>
+
+  <div class="scroll-cue"><span>Watch it rise</span><span class="track"></span></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marq">
+    <span>Center</span><span>Open</span><span>Thin</span><span>Shape</span><span>Trim</span><span>Glaze</span><span>Fire</span><span>Repeat</span>
+  </div>
+</div>
+
+<!-- PROCESS -->
+<section class="block process" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">01 — The Wheel</span>
+      <h2 class="display">Every piece begins as a <em>spinning question</em>.</h2>
+      <p>Throwing is a conversation between the potter's hands and the clay's own memory of water. Here's how a lump of earth becomes something you'll hold every morning.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><span class="ring"></span><div class="n">1</div><h3>Center</h3><p>Wedged and pressed to the wheel head, the clay must find its balance point before it can rise.</p></div>
+      <div class="step reveal"><span class="ring"></span><div class="n">2</div><h3>Open</h3><p>Thumbs press down and out, coaxing a floor and walls from solid earth.</p></div>
+      <div class="step reveal"><span class="ring"></span><div class="n">3</div><h3>Shape</h3><p>Fingers travel up and down, pulling the curve into a bowl, a vase, a quiet cup.</p></div>
+      <div class="step reveal"><span class="ring"></span><div class="n">4</div><h3>Fire</h3><p>Trimmed, bisque-dried, glazed, and sent into the wood kiln where it finds its final color.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="block gallery" id="gallery">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="kicker">The Collection</span>
+      <h2 class="display">Shelves of things <em>still drying</em>.</h2>
+      <p>Each piece is thrown one at a time, glazed in small batches, and signed on the foot. No two are ever quite the same.</p>
+    </div>
+    <div class="shelves">
+      <div class="shelf reveal">
+        <div class="shelf-row">
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-vessel-tall/300/380" alt="Tall thrown vessel"><figcaption class="tag">Tall Vessel · Ash glaze</figcaption></figure>
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-bowl-wide/440/300" alt="Wide serving bowl"><figcaption class="tag">Serving Bowl · Slip</figcaption></figure>
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-cup-stack/300/360" alt="Stacked cups"><figcaption class="tag">Cup Set · Iron oxide</figcaption></figure>
+        </div>
+      </div>
+      <div class="shelf reveal">
+        <div class="shelf-row">
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-jug-handle/360/300" alt="Handled jug"><figcaption class="tag">Jug · Celadon</figcaption></figure>
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-plate-raw/500/300" alt="Raw drying plate"><figcaption class="tag">Dinner Plate · Raw</figcaption></figure>
+          <figure class="pot"><img src="https://picsum.photos/seed/pottery-vase-round/320/360" alt="Round vase"><figcaption class="tag">Round Vase · Tenmoku</figcaption></figure>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="block stats">
+  <div class="wrap">
+    <div class="stats-grid">
+      <div class="stat reveal"><b data-count="2400" data-suffix="+">0</b><small>Pieces thrown</small></div>
+      <div class="stat reveal"><b data-count="18">0</b><small>Glaze recipes</small></div>
+      <div class="stat reveal"><b data-count="9">0</b><small>Years at the wheel</small></div>
+      <div class="stat reveal"><b data-count="1260">0</b><small>°C kiln peak</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKSHOP -->
+<section class="block" id="workshop">
+  <div class="wrap workshop-grid">
+    <div class="workshop-img reveal">
+      <span class="badge">Beginner friendly</span>
+      <img src="https://picsum.photos/seed/pottery-hands-clay-wheel/720/900" alt="Hands shaping clay on a pottery wheel">
+    </div>
+    <div class="workshop-copy reveal">
+      <span class="kicker">Learn the craft</span>
+      <h2 class="display">Sit down. Get your hands <em>wet</em>.</h2>
+      <p>Our evening and weekend sessions run in groups of six or fewer, so there's a potter's wheel and an attentive teacher for every pair of hands. No experience required — just a willingness to get a little muddy.</p>
+      <p>You'll throw, trim, and glaze your own pieces, then collect them fired a few weeks later. Clay, tools, apron, and kiln time are all included.</p>
+      <div class="chips">
+        <span class="chip">Wheel basics</span>
+        <span class="chip">Hand-building</span>
+        <span class="chip">Glaze lab</span>
+        <span class="chip">Kids &amp; families</span>
+        <span class="chip">Private sessions</span>
+      </div>
+      <a class="btn btn-solid" href="#visit">Reserve a seat <span class="arw">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="block quotes">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="num">02 — From the studio</span>
+      <h2 class="display">People who came for a class <em>and stayed</em>.</h2>
+    </div>
+    <div class="quote-grid">
+      <div class="quote reveal"><div class="mark">"</div><p>The first time I centered clay I cried a little. By the second hour I was hooked. Clay &amp; Core made me feel like a maker.</p><div class="who"><img src="https://picsum.photos/seed/maker-portrait-maya/80/80" alt=""><div><b>Maya R.</b><small>Weekend thrower</small></div></div></div>
+      <div class="quote reveal"><div class="mark">"</div><p>I bought a single mug on a whim and now my whole shelf is theirs. You can feel the hand that made each one.</p><div class="who"><img src="https://picsum.photos/seed/maker-portrait-tomas/80/80" alt=""><div><b>Tomás L.</b><small>Collector</small></div></div></div>
+      <div class="quote reveal"><div class="mark">"</div><p>My daughter and I do the family session every month. It's the quietest hour of our week — in the best way.</p><div class="who"><img src="https://picsum.photos/seed/maker-portrait-priya/80/80" alt=""><div><b>Priya S.</b><small>Family regular</small></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="block cta" id="visit">
+  <div class="cta-orbit" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="kicker">Come get your hands dirty</span>
+    <h2 class="display">Your first piece is <em>waiting</em>.</h2>
+    <p>Open studio hours daily. Book a class, browse the collection, or just wander in and watch the wheel spin.</p>
+    <a class="btn btn-solid" href="#top">Book a session <span class="arw">→</span></a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand"><span class="dot"></span>Clay&nbsp;&amp;&nbsp;Core</div>
+        <p>A hand-thrown pottery studio on the old mill road. Made slowly, in small batches, with two hands and a spinning wheel.</p>
+      </div>
+      <div class="foot-col"><h4>Studio</h4><a href="#process">The Wheel</a><a href="#gallery">Collection</a><a href="#workshop">Workshops</a><a href="#visit">Visit us</a></div>
+      <div class="foot-col"><h4>Visit</h4><a href="#">14 Mill Road</a><a href="#">Tue–Sun, 10–6</a><a href="#">hello@clayandcore.studio</a><a href="#">(0) 207 555 0142</a></div>
+      <div class="foot-col"><h4>Follow</h4><a href="#">Instagram</a><a href="#">Pinterest</a><a href="#">Newsletter</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2024 Clay &amp; Core Pottery Studio. Thrown by hand.</span>
+      <span>Privacy · Terms · Kiln safety</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- entrance ---------- */
+  window.addEventListener('load', function(){ document.body.classList.add('loaded'); });
+  setTimeout(function(){ document.body.classList.add('loaded'); }, 400);
+
+  /* ---------- nav solid ---------- */
+  var nav = document.getElementById('nav');
+  function onScrollNav(){ nav.classList.toggle('solid', window.scrollY > 40); }
+  window.addEventListener('scroll', onScrollNav, {passive:true}); onScrollNav();
+
+  /* ---------- marquee duplicate ---------- */
+  var marq = document.getElementById('marq');
+  if(marq){ marq.innerHTML += marq.innerHTML; }
+
+  /* ---------- reveal on scroll ---------- */
+  var revs = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.16});
+    revs.forEach(function(el){ io.observe(el); });
+  } else { revs.forEach(function(el){ el.classList.add('in'); }); }
+
+  /* ---------- count up ---------- */
+  function countUp(el){
+    var target = +el.dataset.count, suffix = el.dataset.suffix || '', dur = 1600, start = null;
+    if(reduce){ el.textContent = target.toLocaleString() + suffix; return; }
+    function tick(t){
+      if(!start) start = t;
+      var p = Math.min((t-start)/dur, 1);
+      var eased = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.round(target*eased).toLocaleString() + suffix;
+      if(p<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  var counters = document.querySelectorAll('[data-count]');
+  if('IntersectionObserver' in window){
+    var cio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ countUp(e.target); cio.unobserve(e.target); } });
+    }, {threshold:0.5});
+    counters.forEach(function(el){ cio.observe(el); });
+  } else { counters.forEach(countUp); }
+
+  /* ---------- the wheel: physics + morph ---------- */
+  var spin = document.getElementById('spin');
+  var clay = document.getElementById('clay');
+  var wrap = document.getElementById('wheelWrap');
+  var speedRing = document.getElementById('speedRing');
+  var hint = document.getElementById('dragHint');
+
+  var IDLE = 26;        // deg/frame at idle
+  var angle = 0;
+  var vel = 0;          // deg/frame
+  var friction = 0.965;
+  var scrollFactor = 0;
+  var dragging = false;
+  var lastX = 0, lastT = 0;
+  var hintHidden = false;
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+
+  function circlePath(cx,cy,r,rot,amp){
+    var N=12, pts=[];
+    for(var i=0;i<N;i++){
+      var a = (i/N)*Math.PI*2;
+      var rr = r + Math.sin(a*3 + rot*0.12)*amp;
+      pts.push([cx + Math.cos(a)*rr, cy + Math.sin(a)*rr]);
+    }
+    var d = 'M'+pts[0][0].toFixed(2)+' '+pts[0][1].toFixed(2);
+    for(var j=0;j<N;j++){
+      var p0=pts[j], p1=pts[(j+1)%N], p2=pts[(j+2)%N], p3=pts[(j+3)%N];
+      var c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+      var c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+      d += ' C'+c1x.toFixed(2)+' '+c1y.toFixed(2)+' '+c2x.toFixed(2)+' '+c2y.toFixed(2)+' '+p2[0].toFixed(2)+' '+p2[1].toFixed(2);
+    }
+    return d+' Z';
+  }
+
+  function vasePath(cx,cy,baseR,h,rot,amp){
+    var N=14, pts=[];
+    for(var i=0;i<N;i++){
+      var t=i/N;
+      var bulge = Math.sin(t*Math.PI);
+      var r = baseR*(0.5 + 0.85*bulge);
+      var wob = Math.sin(t*Math.PI*4 + rot*0.1)*amp;
+      pts.push([cx + Math.cos(t*Math.PI*2)*r, cy - t*h + wob*0.4]);
+    }
+    var d='M'+pts[0][0].toFixed(2)+' '+pts[0][1].toFixed(2);
+    for(var j=0;j<N;j++){
+      var p0=pts[j], p1=pts[(j+1)%N], p2=pts[(j+2)%N], p3=pts[(j+3)%N];
+      var c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+      var c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+      d += ' C'+c1x.toFixed(2)+' '+c1y.toFixed(2)+' '+c2x.toFixed(2)+' '+c2y.toFixed(2)+' '+p2[0].toFixed(2)+' '+p2[1].toFixed(2);
+    }
+    return d+' Z';
+  }
+
+  function render(){
+    var sf = scrollFactor;
+    var wob = clamp(vel/220, 0, 1);
+    var amp = wob*7*(1-sf*0.55);
+    var cx=150, cy=150;
+    var cRad = lerp(52, 40, sf);
+    var vBase = lerp(52, 14, sf);
+    var vH = lerp(0, 168, sf);
+    var d;
+    if(sf < 0.03){
+      d = circlePath(cx, cy, cRad, angle, amp);
+    } else if(sf > 0.97){
+      d = vasePath(cx, cy, vBase, vH, angle, amp);
+    } else {
+      var cp = circlePath(cx, cy, cRad, angle, amp);
+      var vp = vasePath(cx, cy, vBase, vH, angle, amp);
+      var cn = cp.match(/-?\d+\.?\d*/g).map(Number);
+      var vn = vp.match(/-?\d+\.?\d*/g).map(Number);
+      var mix = cn.map(function(v,i){ return lerp(v, vn[i]||v, sf); });
+      d = 'M'+mix[0].toFixed(2)+' '+mix[1].toFixed(2);
+      for(var j=2;j<mix.length;j+=6){
+        d += ' C'+mix[j].toFixed(2)+' '+mix[j+1].toFixed(2)+' '+mix[j+2].toFixed(2)+' '+mix[j+3].toFixed(2)+' '+mix[j+4].toFixed(2)+' '+mix[j+5].toFixed(2);
+      }
+      d += ' Z';
+    }
+    clay.setAttribute('d', d);
+  }
+
+  function loop(){
+    if(!dragging){
+      if(vel > IDLE) vel *= friction;
+      else if(vel < IDLE) vel = Math.min(vel + (IDLE-vel)*0.03, IDLE);
+      if(Math.abs(vel-IDLE) < 0.2) vel = IDLE;
+    }
+    angle += vel;
+    if(angle > 360) angle -= 360;
+    spin.setAttribute('transform','rotate('+angle.toFixed(2)+' 150 150)');
+
+    var speed = Math.abs(vel);
+    var ringOn = speed > IDLE*1.7;
+    speedRing.classList.toggle('on', ringOn);
+    if(ringOn){ speedRing.style.opacity = clamp((speed-IDLE*1.7)/120,0,1)*0.9; }
+
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  /* scroll factor for morph */
+  var hero = document.getElementById('top');
+  function onScrollMorph(){
+    var h = hero.offsetHeight;
+    var y = window.scrollY;
+    scrollFactor = clamp(y / (h*0.75), 0, 1);
+  }
+  window.addEventListener('scroll', onScrollMorph, {passive:true});
+  onScrollMorph();
+
+  /* drag interaction */
+  function startDrag(x){
+    dragging = true;
+    wrap.classList.add('grabbing');
+    lastX = x; lastT = performance.now();
+    if(!hintHidden && hint){ hint.classList.add('hide'); hintHidden = true; }
+  }
+  function moveDrag(x){
+    if(!dragging) return;
+    var now = performance.now();
+    var dx = x - lastX;
+    var dt = Math.max(now - lastT, 1);
+    angle += dx * 0.5;
+    vel = clamp((dx/dt)*180, -700, 700);
+    lastX = x; lastT = now;
+  }
+  function endDrag(){ dragging = false; wrap.classList.remove('grabbing'); }
+
+  wrap.addEventListener('pointerdown', function(e){ startDrag(e.clientX); });
+  window.addEventListener('pointermove', function(e){ moveDrag(e.clientX); });
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+
+  /* tap-to-spin on touch */
+  wrap.addEventListener('click', function(e){
+    if(Math.abs(vel) < IDLE*1.4){ vel = 300; }
+  });
+
+  /* ---------- init ---------- */
+  render();
+  if(reduce){
+    vel = IDLE;
+    var r = requestAnimationFrame;
+    requestAnimationFrame = function(cb){ return r(function(){ cb(performance.now()); }); };
+    // static-ish: still allow render once
+    render();
+    loop();
+  } else {
+    vel = 0; // spin-up from 0
+    loop();
+  }
+})();
+</script>
+</body>
+</html>

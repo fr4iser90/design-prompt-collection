@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gasket Compression Diagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6fa; --metal:#485460; --rubber:#1e272e; --hl:#a4b0be;
+    --ink:#2b3440; --ink-soft:#5a6472; --line:#c7ccd6; --paper:#ffffff;
+    --seal:#2e9e6b; --grid:#e2e6ef;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    background:var(--bg); color:var(--ink);
+    min-height:100vh; display:flex; flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+  /* atmospheric blueprint grid + soft vignette */
+  .bg{position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:34px 34px; opacity:.55;
+    -webkit-mask-image:radial-gradient(120% 90% at 50% 42%,#000 40%,transparent 100%);
+            mask-image:radial-gradient(120% 90% at 50% 42%,#000 40%,transparent 100%);
+  }
+  .bg::after{content:""; position:absolute; inset:0;
+    background:radial-gradient(60% 50% at 50% 45%,rgba(255,255,255,.6),transparent 70%);}
+
+  .wrap{position:relative; z-index:1; width:100%; max-width:1200px; margin:0 auto;
+    padding:clamp(16px,3vw,34px); flex:1; display:flex; flex-direction:column; gap:clamp(14px,2vw,22px);}
+
+  /* header */
+  header{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .brand .mark{display:flex; align-items:center; gap:12px;}
+  .brand h1{font-size:clamp(26px,5vw,50px); font-weight:700; letter-spacing:-.02em; line-height:.95; color:var(--ink);}
+  .brand .sub{font-size:clamp(11px,1.6vw,13px); letter-spacing:.28em; text-transform:uppercase; color:var(--ink-soft); margin-top:6px;}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--rubber);box-shadow:0 0 0 4px rgba(30,39,46,.08);}
+  .status{display:flex; align-items:center; gap:10px; padding:9px 15px; border:1px solid var(--line);
+    border-radius:100px; background:rgba(255,255,255,.7); backdrop-filter:blur(4px); font-size:13px; letter-spacing:.04em;}
+  .status .led{width:9px;height:9px;border-radius:50%;background:var(--hl);transition:background .4s,box-shadow .4s;}
+  .status.on .led{background:var(--seal); box-shadow:0 0 0 4px rgba(46,158,107,.18),0 0 12px rgba(46,158,107,.6);}
+
+  /* main grid */
+  main{flex:1; display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:clamp(16px,2.4vw,30px); align-items:stretch;}
+
+  .stage{position:relative; background:var(--paper); border:1px solid var(--line); border-radius:14px;
+    box-shadow:0 24px 60px -34px rgba(43,52,64,.35); overflow:hidden; display:flex; align-items:center; justify-content:center; padding:8px;}
+  .stage .corner{position:absolute; font-size:10px; letter-spacing:.18em; color:var(--ink-soft); opacity:.7; text-transform:uppercase;}
+  .stage .corner.tl{top:12px;left:14px} .stage .corner.br{bottom:12px;right:14px}
+  svg{width:100%; height:auto; display:block; max-height:66vh;}
+
+  /* control panel */
+  .panel{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:clamp(16px,2vw,22px);
+    box-shadow:0 24px 60px -40px rgba(43,52,64,.3); display:flex; flex-direction:column; gap:18px;}
+  .panel h2{font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft); font-weight:600;}
+  .torque-head{display:flex; align-items:baseline; justify-content:space-between;}
+  .torque-head .big{font-family:'IBM Plex Mono'; font-size:clamp(38px,6vw,54px); font-weight:600; line-height:1; color:var(--ink);}
+  .torque-head .pct{font-family:'IBM Plex Mono'; font-size:14px; color:var(--ink-soft);}
+
+  input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:34px; background:transparent; cursor:pointer;}
+  input[type=range]::-webkit-slider-runnable-track{height:6px; border-radius:6px;
+    background:linear-gradient(90deg,var(--metal) 0%,var(--metal) var(--fill,45%),var(--grid) var(--fill,45%),var(--grid) 100%);}
+  input[type=range]::-moz-range-track{height:6px; border-radius:6px; background:var(--grid);}
+  input[type=range]::-moz-range-progress{height:6px; border-radius:6px; background:var(--metal);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; margin-top:-11px;
+    width:26px;height:26px;border-radius:50%; background:#fff; border:2px solid var(--metal);
+    box-shadow:0 4px 12px rgba(43,52,64,.3); transition:transform .15s;}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.08);}
+  input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--metal);box-shadow:0 4px 12px rgba(43,52,64,.3);}
+  .scale{display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:10px; color:var(--ink-soft); margin-top:-4px;}
+
+  .readout{display:flex; flex-direction:column; gap:12px;}
+  .ro{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .ro .k{font-size:12px; letter-spacing:.05em; color:var(--ink-soft);}
+  .ro .v{font-family:'IBM Plex Mono'; font-size:15px; font-weight:500; color:var(--ink);}
+  .bar{height:5px; border-radius:5px; background:var(--grid); overflow:hidden; flex:1; max-width:120px;}
+  .bar i{display:block; height:100%; background:var(--metal); transition:width .12s linear;}
+  .bar.seal i{background:var(--seal);}
+  .divider{height:1px; background:var(--line);}
+
+  .legend{display:flex; flex-direction:column; gap:10px;}
+  .legend .row{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--ink-soft);}
+  .swatch{width:26px;height:14px;border-radius:3px; flex:none;}
+  .sw-m{background:linear-gradient(180deg,#6b7683,#3c4753);}
+  .sw-r{background:linear-gradient(180deg,#2b343d,#161d24);}
+  .sw-h{background:var(--hl);}
+
+  .actions{display:flex; gap:10px;}
+  button{font-family:'IBM Plex Sans'; font-size:12.5px; letter-spacing:.04em; padding:11px 14px; border-radius:9px;
+    border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; transition:.18s; flex:1;}
+  button:hover{border-color:var(--metal); background:#fafbfd;}
+  button.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+  button.primary:hover{background:#1c242e;}
+
+  .foot{font-size:11px; color:var(--ink-soft); letter-spacing:.05em; text-align:center; opacity:.8;}
+
+  /* svg label styling */
+  .lbl{font-family:'IBM Plex Sans'; font-size:12px; font-weight:600; fill:var(--ink); letter-spacing:.02em;}
+  .lbl-sm{font-family:'IBM Plex Mono'; font-size:10px; fill:var(--ink-soft); letter-spacing:.04em;}
+  .leader{stroke:var(--ink-soft); stroke-width:1; fill:none;}
+  .leader-dot{fill:var(--ink-soft);}
+  #sealMark{opacity:0; transition:opacity .5s ease;}
+  #sealMark.on{opacity:1;}
+  .glow{filter:drop-shadow(0 0 4px rgba(164,176,190,.9));}
+
+  @media (max-width:860px){
+    main{grid-template-columns:1fr;}
+    .panel{order:2;}
+    svg{max-height:52vh;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #sealMark{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="mark"><span class="dot"></span><h1>Gasket Compression</h1></div>
+      <div class="sub mono">Flange Sealing · Cross-Section Study</div>
+    </div>
+    <div class="status" id="status"><span class="led"></span><span id="statusTxt">LOOSE — NO SEAL</span></div>
+  </header>
+
+  <main>
+    <section class="stage">
+      <span class="corner tl mono">SECTION A–A · SCALE 4:1</span>
+      <span class="corner br mono">VOL. PRESERVED</span>
+      <svg id="diagram" viewBox="0 0 1000 620" role="img" aria-label="Cross-section of two metal flanges compressing a rubber gasket">
+        <defs>
+          <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6b7683"/>
+            <stop offset="0.45" stop-color="#485460"/>
+            <stop offset="1" stop-color="#333d48"/>
+          </linearGradient>
+          <linearGradient id="metalTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#5c6774"/>
+            <stop offset="1" stop-color="#3a4450"/>
+          </linearGradient>
+          <linearGradient id="rubber" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2b343d"/>
+            <stop offset="0.5" stop-color="#1e272e"/>
+            <stop offset="1" stop-color="#141a20"/>
+          </linearGradient>
+          <radialGradient id="hl" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stop-color="#a4b0be" stop-opacity="0.9"/>
+            <stop offset="1" stop-color="#a4b0be" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#2b3440" flood-opacity="0.22"/>
+          </filter>
+        </defs>
+
+        <!-- static labels -->
+        <text class="lbl" x="70" y="250">TOP FLANGE</text>
+        <text class="lbl-sm" x="70" y="268">STEEL · Ø 120</text>
+        <line class="leader" x1="150" y1="256" x2="250" y2="300"/>
+        <circle class="leader-dot" cx="250" cy="300" r="2.5"/>
+
+        <text class="lbl" x="855" y="300">BOTTOM FLANGE</text>
+        <text class="lbl-sm" x="855" y="318">STEEL · Ø 120</text>
+        <line class="leader" x1="850" y1="306" x2="750" y2="360"/>
+        <circle class="leader-dot" cx="750" cy="360" r="2.5"/>
+
+        <text class="lbl" id="rubberLbl" x="855" y="340">GASKET</text>
+        <text class="lbl-sm" id="rubberSub" x="855" y="358">NBR 70 SHA · h 24</text>
+        <line class="leader" id="rubberLeader" x1="850" y1="346" x2="650" y2="340"/>
+        <circle class="leader-dot" id="rubberDot" cx="650" cy="340" r="2.5"/>
+
+        <!-- bottom flange -->
+        <g id="bottom">
+          <rect x="250" y="360" width="500" height="130" rx="7" fill="url(#metal)" filter="url(#soft)"/>
+          <rect x="250" y="360" width="500" height="8" rx="4" fill="#727d8a" opacity="0.55"/>
+          <circle cx="300" cy="430" r="7" fill="#2c353f" stroke="#5a6673" stroke-width="1.5"/>
+          <circle cx="700" cy="430" r="7" fill="#2c353f" stroke="#5a6673" stroke-width="1.5"/>
+        </g>
+
+        <!-- gasket (path updated by JS) -->
+        <path id="gasket" d="" fill="url(#rubber)" filter="url(#soft)"/>
+        <ellipse id="gasketHi" cx="500" cy="335" rx="200" ry="10" fill="#3a4551" opacity="0.35"/>
+
+        <!-- top flange (moves down) -->
+        <g id="top">
+          <rect x="250" y="130" width="500" height="130" rx="7" fill="url(#metalTop)" filter="url(#soft)"/>
+          <rect x="250" y="130" width="500" height="8" rx="4" fill="#7c8794" opacity="0.6"/>
+          <circle cx="300" cy="195" r="7" fill="#2c353f" stroke="#5a6673" stroke-width="1.5"/>
+          <circle cx="700" cy="195" r="7" fill="#2c353f" stroke="#5a6673" stroke-width="1.5"/>
+        </g>
+
+        <!-- contact glows -->
+        <ellipse id="glowL" cx="300" cy="340" rx="60" ry="16" fill="url(#hl)" opacity="0"/>
+        <ellipse id="glowR" cx="700" cy="340" rx="60" ry="16" fill="url(#hl)" opacity="0"/>
+
+        <!-- seal checkmark -->
+        <g id="sealMark">
+          <circle cx="500" cy="520" r="20" fill="#fff" stroke="var(--seal)" stroke-width="2"/>
+          <path d="M490 520 l7 8 l14 -16" fill="none" stroke="var(--seal)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="lbl" x="532" y="526" fill="var(--seal)">SEAL INTACT</text>
+        </g>
+      </svg>
+    </section>
+
+    <aside class="panel">
+      <div>
+        <h2>Applied Torque</h2>
+        <div class="torque-head">
+          <span class="big" id="torqueVal">45</span>
+          <span class="pct">/ 100 %</span>
+        </div>
+        <input type="range" id="torque" min="0" max="100" value="45" aria-label="Applied torque">
+        <div class="scale"><span>0</span><span>50</span><span>100</span></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="readout">
+        <div class="ro"><span class="k">Gasket Height</span><span class="v" id="hVal">15.1 mm</span></div>
+        <div class="ro"><span class="k">Bulge Width</span><span class="v" id="wVal">412 mm</span></div>
+        <div class="ro"><span class="k">Compression</span><span class="bar"><i id="compBar" style="width:37%"></i></span></div>
+        <div class="ro"><span class="k">Seal Pressure</span><span class="bar seal"><i id="sealBar" style="width:45%"></i></span></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="legend">
+        <div class="row"><span class="swatch sw-m"></span> Metal Flange (rigid)</div>
+        <div class="row"><span class="swatch sw-r"></span> Rubber Gasket (deforming)</div>
+        <div class="row"><span class="swatch sw-h"></span> Contact Highlight</div>
+      </div>
+
+      <div class="actions">
+        <button id="sealBtn" class="primary">Full Seal</button>
+        <button id="releaseBtn">Release</button>
+      </div>
+    </aside>
+  </main>
+
+  <div class="foot mono">Drag the torque slider · volume-preserving deformation · hysteresis on release</div>
+</div>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CX=500, BASE_TOP=360, BASE_BOT=384, BASE_W=400;
+  const MAX_COMP=24; // px
+  const MIN_H=BASE_H();
+  function BASE_H(){ return BASE_BOT-BASE_TOP; } // 24
+  const MM_PER_PX = 24/24; // 1 px = 1 mm for readout realism (h in mm)
+
+  const gasket=document.getElementById('gasket');
+  const hi=document.getElementById('gasketHi');
+  const top=document.getElementById('top');
+  const glowL=document.getElementById('glowL'), glowR=document.getElementById('glowR');
+  const sealMark=document.getElementById('sealMark');
+  const statusEl=document.getElementById('status'), statusTxt=document.getElementById('statusTxt');
+  const slider=document.getElementById('torque');
+  const torqueVal=document.getElementById('torqueVal');
+  const hVal=document.getElementById('hVal'), wVal=document.getElementById('wVal');
+  const compBar=document.getElementById('compBar'), sealBar=document.getElementById('sealBar');
+  const rubberLbl=document.getElementById('rubberLbl'), rubberSub=document.getElementById('rubberSub');
+  const rubberLeader=document.getElementById('rubberLeader'), rubberDot=document.getElementById('rubberDot');
+
+  let target=45, current=45; // percent
+  const ease = reduce ? 1 : 0.12;
+
+  function gasketPath(h){
+    const w = (BASE_H()*BASE_W)/h;      // volume preservation
+    const x0=CX-w/2, x1=CX+w/2, y0=BASE_TOP, y1=BASE_BOT;
+    const c = (w-BASE_W)*0.55;          // bulge magnitude
+    return `M ${x0} ${y0} C ${x0-c} ${y0+14}, ${x0-c} ${y1-14}, ${x0} ${y1} `+
+           `L ${x1} ${y1} C ${x1+c} ${y1-14}, ${x1+c} ${y0+14}, ${x1} ${y0} Z`;
+  }
+
+  function render(p){
+    const comp = p/100;
+    const h = BASE_H() - MAX_COMP*comp;
+    const w = (BASE_H()*BASE_W)/h;
+    const x0 = CX-w/2;
+
+    gasket.setAttribute('d', gasketPath(h));
+
+    // highlight ellipse follows gasket top
+    hi.setAttribute('cx', CX);
+    hi.setAttribute('cy', BASE_TOP+ (h*0.12));
+    hi.setAttribute('rx', w*0.5);
+
+    // top flange moves down: bottom edge sits on gasket top
+    const dy = (BASE_TOP - (BASE_TOP - MAX_COMP*comp)) * -1; // top flange translateY
+    top.setAttribute('transform', `translate(0, ${- (BASE_TOP - (BASE_TOP - MAX_COMP*comp))})`);
+    // simpler: shift down by comp amount
+    top.setAttribute('transform', `translate(0, ${MAX_COMP*comp})`);
+
+    // contact glows at gasket edges, intensity by compression
+    const glow = Math.max(0, (comp-0.5)/0.5); // 0 until 50%, ramps to 1
+    const gy = BASE_TOP + MAX_COMP*comp*0.5;
+    glowL.setAttribute('cx', x0+8); glowL.setAttribute('cy', gy);
+    glowR.setAttribute('cx', CX+w/2-8); glowR.setAttribute('cy', gy);
+    glowL.setAttribute('rx', 50); glowR.setAttribute('rx', 50);
+    glowL.setAttribute('opacity', glow*0.85);
+    glowR.setAttribute('opacity', glow*0.85);
+    if(glow>0.6){ glowL.classList.add('glow'); glowR.classList.add('glow'); }
+    else { glowL.classList.remove('glow'); glowR.classList.remove('glow'); }
+
+    // rubber leader follows right edge mid
+    const midY = BASE_TOP + h/2 + MAX_COMP*comp;
+    rubberDot.setAttribute('cx', x0+w+4); rubberDot.setAttribute('cy', midY);
+    rubberLeader.setAttribute('x2', x0+w+4); rubberLeader.setAttribute('y2', midY);
+    rubberLbl.setAttribute('y', midY-4); rubberSub.setAttribute('y', midY+14);
+
+    // readouts
+    const hMM = (h*MM_PER_PX).toFixed(1);
+    const wMM = Math.round(w*MM_PER_PX*10); // widen scale for realism
+    torqueVal.textContent = Math.round(p);
+    hVal.textContent = hMM + ' mm';
+    wVal.textContent = wMM + ' mm';
+    compBar.style.width = (comp*100)+'%';
+    sealBar.style.width = (comp*100)+'%';
+    slider.style.setProperty('--fill', p+'%');
+
+    // seal state
+    const sealed = comp >= 0.995;
+    sealMark.classList.toggle('on', sealed);
+    statusEl.classList.toggle('on', sealed);
+    if(sealed){ statusTxt.textContent='SEALED — PRESSURE OK'; }
+    else if(comp>0.5){ statusTxt.textContent='SEATING…'; }
+    else { statusTxt.textContent='LOOSE — NO SEAL'; }
+  }
+
+  function loop(){
+    current += (target-current)*ease;
+    if(Math.abs(target-current)<0.05) current=target;
+    render(current);
+    requestAnimationFrame(loop);
+  }
+
+  slider.addEventListener('input', e=>{ target = +e.target.value; });
+  document.getElementById('sealBtn').addEventListener('click', ()=>{ target=100; slider.value=100; });
+  document.getElementById('releaseBtn').addEventListener('click', ()=>{ target=0; slider.value=0; });
+
+  // entrance: start loose, settle to 45 (pre-loaded)
+  current = 0; target = 45;
+  render(0);
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

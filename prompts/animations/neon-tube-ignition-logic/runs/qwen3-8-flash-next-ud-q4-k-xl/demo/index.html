@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Tube Ignition Logic</title>
+<meta name="description" content="Kinetic typography ignited by high-voltage electricity inside bent glass neon tubes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#121212;
+    --void-2:#161616;
+    --unlit:#333333;
+    --circuit:#4a4a4a;
+    --ink:#d7d7d7;
+    --ink-dim:#8a8a8a;
+    --ink-faint:#5a5a5a;
+    --gas:#ff6b6b;
+    --gas-core:#ffffff;
+    --gas-bright:#ff9a9a;
+    --gas-soft:rgba(255,107,107,.5);
+    --gas-halo:rgba(255,107,107,.16);
+    --gas-deep:rgba(255,107,107,.05);
+    --gas-rgb:255,107,107;
+    --stroke:clamp(9px,2.4vw,14px);
+    --disp:"Chakra Petch",sans-serif;
+    --mono:"Space Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:var(--disp);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+  /* ---------- Atmospheric background ---------- */
+  .bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .bg-grid{
+    position:absolute;inset:-2px;
+    background-image:
+      linear-gradient(rgba(var(--gas-rgb),.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(var(--gas-rgb),.05) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(120% 90% at 50% 40%,#000 0%,transparent 72%);
+            mask-image:radial-gradient(120% 90% at 50% 40%,#000 0%,transparent 72%);
+    transition:background-image .6s ease;
+  }
+  .bg-glow{
+    position:absolute;left:50%;top:38%;width:70vw;height:52vh;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(closest-side,var(--gas-halo),transparent 70%);
+    filter:blur(10px);opacity:0;transition:opacity 1.4s ease,background .6s ease;
+  }
+  body.lit .bg-glow{opacity:.75}
+  .bg-scan{
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(to bottom,rgba(255,255,255,.025) 0 1px,transparent 1px 3px);
+    opacity:.5;
+  }
+  .bg-vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(130% 100% at 50% 30%,transparent 40%,rgba(0,0,0,.55) 100%);
+  }
+  .bg-noise{
+    position:absolute;inset:0;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 clamp(16px,4vw,40px)}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    padding:22px 0 12px;border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .brand{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink)}
+  .brand .dot{color:var(--gas);text-shadow:0 0 8px var(--gas-soft);transition:color .5s,text-shadow .5s}
+  .status{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--ink-dim);text-transform:uppercase}
+  .status .led{width:8px;height:8px;border-radius:50%;background:#3a3a3a;box-shadow:inset 0 0 3px #000;transition:background .5s,box-shadow .5s}
+  body.lit .status .led{background:var(--gas);box-shadow:0 0 10px var(--gas),0 0 4px var(--gas-core);animation:pulseLed 2.4s ease-in-out infinite}
+  @keyframes pulseLed{0%,100%{opacity:1}50%{opacity:.55}}
+
+  /* ---------- Hero ---------- */
+  .hero{min-height:calc(100vh - 60px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(24px,6vh,60px) 0}
+  .kicker{font-family:var(--mono);font-size:clamp(10px,1.4vw,12px);letter-spacing:.42em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:clamp(14px,3vh,26px)}
+  .kicker b{color:var(--gas);font-weight:400;text-shadow:0 0 8px var(--gas-soft);transition:color .5s,text-shadow .5s}
+
+  .stage{position:relative;width:min(92vw,760px);height:clamp(130px,26vw,210px);cursor:pointer}
+  .stage:focus-visible{outline:1px dashed var(--gas);outline-offset:14px}
+  .neon{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .neon .trace{stroke:var(--circuit);stroke-width:2;fill:none;stroke-linecap:round;opacity:.5}
+  .neon .trace-lit{
+    stroke:var(--gas);stroke-width:2.4;fill:none;stroke-linecap:round;opacity:.85;
+    stroke-dasharray:1000;stroke-dashoffset:1000;
+    filter:drop-shadow(0 0 4px var(--gas));
+  }
+  .neon .spark{fill:var(--gas-core);opacity:0;filter:drop-shadow(0 0 8px var(--gas)) drop-shadow(0 0 16px var(--gas))}
+  .neon .tube{
+    fill:none;stroke:var(--unlit);stroke-width:var(--stroke);stroke-linecap:round;stroke-linejoin:round;
+    opacity:.35;transition:opacity .35s ease;
+  }
+  .neon .glow{
+    fill:none;stroke:var(--gas);stroke-width:var(--stroke);stroke-linecap:round;stroke-linejoin:round;
+    opacity:0;filter:drop-shadow(0 0 6px var(--gas)) drop-shadow(0 0 16px var(--gas));
+    transition:opacity .35s ease,stroke .5s ease;
+  }
+  .neon .core{
+    fill:none;stroke:var(--gas-core);stroke-width:calc(var(--stroke)*.42);stroke-linecap:round;stroke-linejoin:round;
+    opacity:0;transition:opacity .35s ease,stroke .5s ease;
+  }
+  .neon .tube.lit,.neon .glow.lit,.neon .core.lit{opacity:1}
+  .neon .glow.breath{animation:breathe 2.8s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:1}50%{opacity:.9}}
+  .stage:hover .glow{filter:drop-shadow(0 0 10px var(--gas)) drop-shadow(0 0 26px var(--gas))}
+  .stage:hover .glow,.stage:hover .core{stroke:var(--gas-bright)}
+  .stage:hover .glow.breath{animation-duration:1.4s}
+  .stage:hover .trace-lit{stroke:var(--gas-bright)}
+  .stage.off .glow,.stage.off .core{opacity:0!important}
+  .stage.off .tube{opacity:.4}
+  .stage.off .trace-lit{opacity:0}
+
+  .hint{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);margin-top:clamp(16px,3vh,26px);transition:opacity .4s}
+  .hint b{color:var(--ink-dim);font-weight:400}
+
+  /* ---------- Panel ---------- */
+  .panel{display:grid;grid-template-columns:1.35fr .95fr;gap:clamp(18px,3vw,34px);padding:clamp(26px,5vh,48px) 0 20px;border-top:1px solid rgba(255,255,255,.06)}
+  .panel h2{font-size:clamp(15px,1.8vw,18px);font-weight:600;letter-spacing:.02em;margin-bottom:6px}
+  .panel .sub{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:18px}
+  .phase{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .phase:last-child{border-bottom:0}
+  .phase .idx{font-family:var(--mono);font-size:11px;color:var(--gas);letter-spacing:.1em;min-width:34px;text-shadow:0 0 6px var(--gas-soft);transition:color .5s,text-shadow .5s}
+  .phase .bar{flex:1;height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
+  .phase .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gas),var(--gas-core));box-shadow:0 0 8px var(--gas);transition:width .5s ease,background .5s}
+  .phase .name{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim);min-width:118px;text-align:right}
+  .phase .name.active{color:var(--ink)}
+
+  .readout{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.08);padding:18px}
+  .readout .row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+  .readout .row:last-child{border-bottom:0}
+  .readout .k{color:var(--ink-faint);letter-spacing:.14em;text-transform:uppercase}
+  .readout .v{color:var(--ink);letter-spacing:.06em}
+  .readout .v.hot{color:var(--gas);text-shadow:0 0 8px var(--gas-soft);transition:color .5s,text-shadow .5s}
+
+  .gas-row{display:flex;gap:10px;margin-top:16px}
+  .gas-btn{
+    flex:1;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--ink-dim);
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:11px 8px;
+    display:flex;align-items:center;gap:8px;justify-content:center;transition:.25s;
+  }
+  .gas-btn .swatch{width:9px;height:9px;border-radius:50%;box-shadow:0 0 8px currentColor}
+  .gas-btn[data-gas="red"]{color:#ff6b6b}
+  .gas-btn[data-gas="blue"]{color:#4fb0ff}
+  .gas-btn[data-gas="white"]{color:#eef2ff}
+  .gas-btn:hover{border-color:rgba(255,255,255,.3);color:var(--ink)}
+  .gas-btn.on{border-color:var(--gas);color:var(--ink);background:rgba(var(--gas-rgb),.08);box-shadow:0 0 0 1px var(--gas) inset,0 0 14px rgba(var(--gas-rgb),.2)}
+  .gas-btn .swatch{color:inherit}
+
+  .foot{padding:22px 0 40px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  @media (max-width:760px){
+    .panel{grid-template-columns:1fr}
+    .phase .name{min-width:96px}
+    .status .txt{display:none}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .neon .glow,.neon .core{opacity:1}
+    .neon .tube{opacity:.35}
+    .neon .trace-lit{stroke-dashoffset:0;opacity:.85}
+    .bg-glow{opacity:.7}
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-scan"></div>
+    <div class="bg-noise"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">NEON<span class="dot">·</span>TUBE</div>
+      <div class="status"><span class="led"></span><span class="txt" id="statusTxt">STANDBY</span></div>
+    </header>
+
+    <main class="hero">
+      <p class="kicker">High-Voltage Kinetic Typography // <b>Gas-Ionization Sequence</b></p>
+
+      <div class="stage" id="stage" role="button" tabindex="0" aria-label="Neon sign — click to power off or ignite">
+        <svg class="neon" id="neon" viewBox="0 0 860 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#000" stop-opacity="0"/>
+              <stop offset="0.14" stop-color="#fff"/>
+              <stop offset="0.86" stop-color="#fff"/>
+              <stop offset="1" stop-color="#000" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="fadeMask"><rect x="0" y="0" width="860" height="200" fill="url(#fade)"/></mask>
+          </defs>
+          <g mask="url(#fadeMask)">
+            <path class="trace" d="M 16 100 H 844"/>
+            <path class="trace-lit" id="traceLit" d="M 16 100 H 844"/>
+            <circle class="spark" id="spark" r="5" cx="16" cy="100"/>
+            <g id="tubes"></g>
+          </g>
+        </svg>
+      </div>
+
+      <p class="hint" id="hint">CLICK SIGN TO <b>POWER OFF</b> · HOVER TO <b>OVERDRIVE</b></p>
+    </main>
+
+    <section class="panel">
+      <div>
+        <h2>Ignition Logic</h2>
+        <p class="sub">Sequential circuit-driven reveal</p>
+        <div class="phase"><span class="idx">01</span><span class="bar"><i id="bar0"></i></span><span class="name" id="nm0">Spark · Trace</span></div>
+        <div class="phase"><span class="idx">02</span><span class="bar"><i id="bar1"></i></span><span class="name" id="nm1">Gas Ionize</span></div>
+        <div class="phase"><span class="idx">03</span><span class="bar"><i id="bar2"></i></span><span class="name" id="nm2">Stable Glow</span></div>
+        <div class="phase"><span class="idx">04</span><span class="bar"><i id="bar3"></i></span><span class="name" id="nm3">Ambient Buzz</span></div>
+      </div>
+
+      <aside class="readout">
+        <div class="row"><span class="k">Signal</span><span class="v hot" id="rSignal">OFFLINE</span></div>
+        <div class="row"><span class="k">Gas Type</span><span class="v hot" id="rGas">NEON · RED</span></div>
+        <div class="row"><span class="k">Ignited</span><span class="v" id="rIgn">0 / 5</span></div>
+        <div class="row"><span class="k">Ionize</span><span class="v" id="rIon">—</span></div>
+        <div class="gas-row">
+          <button class="gas-btn on" data-gas="red"><span class="swatch"></span>Neon</button>
+          <button class="gas-btn" data-gas="blue"><span class="swatch"></span>Argon</button>
+          <button class="gas-btn" data-gas="white"><span class="swatch"></span>Xenon</button>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="foot">
+      <span>NEON TUBE IGNITION LOGIC</span>
+      <span>SVG PATH · CSS FILTER · 60FPS</span>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const stage = document.getElementById('stage');
+  const svg = document.getElementById('neon');
+  const tubesG = document.getElementById('tubes');
+  const traceLit = document.getElementById('traceLit');
+  const spark = document.getElementById('spark');
+  const statusTxt = document.getElementById('statusTxt');
+  const rSignal = document.getElementById('rSignal');
+  const rGas = document.getElementById('rGas');
+  const rIgn = document.getElementById('rIgn');
+  const rIon = document.getElementById('rIon');
+
+  const GAS = {
+    red:   {label:'NEON · RED',   c:'#ff6b6b', core:'#ffffff', bright:'#ff9a9a', rgb:'255,107,107'},
+    blue:  {label:'ARGON · BLUE', c:'#4fb0ff', core:'#eaf6ff', bright:'#8fd0ff', rgb:'79,176,255'},
+    white: {label:'XENON · WHITE',c:'#eef2ff', core:'#ffffff', bright:'#ffffff', rgb:'238,242,255'}
+  };
+  let gas = 'red';
+
+  // --- Letter geometry (uniform-width strokes, rounded caps = glass tube) ---
+  const H = 110, W = 56, R = 26, cx = 36;
+  const letters = [
+    {name:'P', paths:[`M ${cx} ${H} L ${cx} 0`,`M ${cx} 0 H 66 A ${R} ${R} 0 0 1 66 ${H-2*R} H ${cx}`]},
+    {name:'O', paths:[`M ${cx} 0 A ${cx} ${H/2} 0 1 1 ${cx} ${H} A ${cx} ${H/2} 0 1 1 ${cx} 0`]},
+    {name:'W', paths:[`M 2 0 L 16 ${H} L ${cx} ${H*0.4} L 56 ${H} L 70 0`]},
+    {name:'E', paths:[`M ${W} 0 H 4 V ${H} H ${W}`,`M 4 ${H/2} H ${W-14}`]},
+    {name:'R', paths:[`M ${cx} ${H} L ${cx} 0`,`M ${cx} 0 H 66 A ${R} ${R} 0 0 1 66 ${H-2*R} H ${cx}`,`M ${cx} ${H-2*R} L ${W} ${H}`]}
+  ];
+  const GAP = 22;
+  let x = 0;
+  letters.forEach(L=>{ L.x = x; x += L.paths.reduce((m,d)=>Math.max(m,pathMaxX(d)),0) + GAP; });
+  const totalW = x - GAP;
+  const offX = (860 - totalW) / 2;
+
+  function pathMaxX(d){
+    let max = 0; const re=/-?\d+(?:\.\d+)?/g; let m,i=0;
+    while((m=re.exec(d))){ if(i%2===0) max=Math.max(max,parseFloat(m[0])); i++; }
+    return max;
+  }
+
+  // Build tube / glow / core layers per letter
+  const groups = [];
+  letters.forEach(L=>{
+    const g = document.createElementNS(SVGNS,'g');
+    g.setAttribute('transform',`translate(${offX+L.x},45)`);
+    const tube = document.createElementNS(SVGNS,'path'); tube.setAttribute('class','tube');
+    const glow = document.createElementNS(SVGNS,'path'); glow.setAttribute('class','glow');
+    const core = document.createElementNS(SVGNS,'path'); core.setAttribute('class','core');
+    const d = L.paths.join(' ');
+    [tube,glow,core].forEach(p=>p.setAttribute('d',d));
+    g.append(tube,glow,core);
+    tubesG.appendChild(g);
+    groups.push({tube,glow,core,lit:false,letter:L});
+  });
+
+  // Trace metrics
+  const traceLen = traceLit.getTotalLength();
+  traceLit.style.strokeDasharray = traceLen;
+  traceLit.style.strokeDashoffset = traceLen;
+
+  const setOff = g => { g.tube.classList.remove('lit'); g.glow.classList.remove('lit'); g.core.classList.remove('lit'); g.glow.classList.remove('breath'); g.lit=false; };
+  const setOn  = g => { g.tube.classList.add('lit'); g.glow.classList.add('lit'); g.core.classList.add('lit'); g.lit=true; };
+
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  const rand = (a,b)=>a+Math.random()*(b-a);
+
+  let phaseTimer=null;
+  function setPhase(p){
+    for(let i=0;i<4;i++){
+      const bar=document.getElementById('bar'+i), nm=document.getElementById('nm'+i);
+      bar.style.width = i<p?'100%':(i===p?'50%':'0%');
+      nm.classList.toggle('active', i<=p);
+    }
+  }
+  function updateIgn(){ rIgn.textContent = groups.filter(g=>g.lit).length + ' / 5'; }
+
+  function setGas(k){
+    gas = k; const G = GAS[k], s = document.documentElement.style;
+    s.setProperty('--gas',G.c); s.setProperty('--gas-core',G.core); s.setProperty('--gas-bright',G.bright);
+    s.setProperty('--gas-rgb',G.rgb); s.setProperty('--gas-soft',`rgba(${G.rgb},.5)`);
+    s.setProperty('--gas-halo',`rgba(${G.rgb},.16)`);
+    rGas.textContent = G.label;
+    document.querySelectorAll('.gas-btn').forEach(b=>b.classList.toggle('on', b.dataset.gas===k));
+  }
+
+  function powerOff(){
+    clearTimeout(phaseTimer);
+    groups.forEach(setOff);
+    traceLit.style.transition='stroke-dashoffset 1s ease';
+    traceLit.style.strokeDashoffset = traceLen;
+    spark.style.opacity=0;
+    document.body.classList.remove('lit');
+    stage.classList.add('off');
+    statusTxt.textContent='POWER OFF'; rSignal.textContent='OFFLINE';
+    rIon.textContent='—'; updateIgn(); setPhase(0);
+    for(let i=0;i<4;i++) document.getElementById('bar'+i).style.width='0%';
+  }
+
+  async function ignite(){
+    clearTimeout(phaseTimer);
+    groups.forEach(setOff);
+    stage.classList.remove('off');
+    document.body.classList.add('lit');
+    statusTxt.textContent='IGNITING'; rSignal.textContent='IGNITING';
+    updateIgn(); setPhase(0);
+
+    // 1) Spark travels the trace
+    traceLit.style.transition='none'; traceLit.style.strokeDashoffset=traceLen;
+    spark.style.opacity=1;
+    const T = reduce ? 0 : 1400;
+    if(T>0){
+      await new Promise(res=>{
+        const start = performance.now();
+        (function step(now){
+          const t = Math.min(1,(now-start)/T);
+          traceLit.style.strokeDashoffset = traceLen*(1-t);
+          const p = traceLit.getPointAtLength(traceLen*t);
+          spark.setAttribute('cx',p.x); spark.setAttribute('cy',p.y);
+          if(t<1) requestAnimationFrame(step); else res();
+        })(start);
+      });
+    } else {
+      traceLit.style.transition='stroke-dashoffset .4s ease';
+      traceLit.style.strokeDashoffset=0;
+    }
+    spark.style.transition='opacity .5s ease'; spark.style.opacity=0;
+    setPhase(1);
+
+    // 2) Sequential ignition of each letter
+    for(let i=0;i<groups.length;i++){
+      const g = groups[i];
+      setPhase(1);
+      if(reduce){ setOn(g); g.glow.classList.add('breath'); g.glow.style.animationDelay=(i*0.35)+'s'; updateIgn(); continue; }
+      rIon.textContent = 'L'+(i+1)+' · FLICKER';
+      await sleep(50); // dark settle
+      const seq = [0.12,0.8,0.1,0.55,0.2,0.9,0.35];
+      for(const v of seq){ g.glow.style.opacity=v; g.core.style.opacity=v*0.9; await sleep(60); }
+      g.glow.style.opacity=''; g.core.style.opacity='';
+      setOn(g); g.glow.classList.add('breath'); g.glow.style.animationDelay=(i*0.35)+'s';
+      updateIgn();
+      await sleep(150); // delay before next
+    }
+    rIon.textContent='STABLE'; setPhase(2);
+    phaseTimer = setTimeout(()=>{ setPhase(3); statusTxt.textContent='ONLINE'; rSignal.textContent='ONLINE'; }, 1500);
+    startAmbient();
+  }
+
+  let ambientTimer=null;
+  function startAmbient(){
+    clearTimeout(ambientTimer);
+    if(reduce) return;
+    const tick = ()=>{
+      const lit = groups.filter(g=>g.lit);
+      if(lit.length){
+        const g = lit[Math.floor(Math.random()*lit.length)];
+        const orig = g.glow.style.animationDuration;
+        g.glow.style.animationDuration='0s';
+        g.glow.style.opacity='0.25';
+        setTimeout(()=>{ g.glow.style.opacity=''; g.glow.style.animationDuration=orig||''; }, 70);
+      }
+      ambientTimer = setTimeout(tick, rand(4000,8000));
+    };
+    ambientTimer = setTimeout(tick, rand(4000,7000));
+  }
+
+  // --- Interaction ---
+  let on = false;
+  function toggle(){ if(on) powerOff(); else ignite(); on = !on; }
+  stage.addEventListener('click', toggle);
+  stage.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+  document.querySelectorAll('.gas-btn').forEach(b=>b.addEventListener('click', ()=>setGas(b.dataset.gas)));
+
+  // --- Boot ---
+  setGas('red');
+  if(reduce){
+    traceLit.style.strokeDashoffset=0;
+    groups.forEach((g,i)=>{ setOn(g); g.glow.classList.add('breath'); g.glow.style.animationDelay=(i*0.35)+'s'; });
+    document.body.classList.add('lit'); on=true;
+    statusTxt.textContent='ONLINE'; rSignal.textContent='ONLINE';
+    setPhase(3); for(let i=0;i<4;i++) document.getElementById('bar'+i).style.width='100%';
+    updateIgn(); rIon.textContent='STABLE';
+  } else {
+    setTimeout(ignite, 400); on=true;
+  }
+})();
+</script>
+</body>
+</html>

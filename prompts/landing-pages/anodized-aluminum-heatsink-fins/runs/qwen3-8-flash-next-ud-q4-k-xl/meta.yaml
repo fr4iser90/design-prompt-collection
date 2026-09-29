@@ -1,0 +1,31 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 248464
+gen_ms: 248464
+ttft_ms: 372
+queue_wait_ms: 105
+wall_ms: 249005
+rejected_at: "2026-09-29T04:24:31.168Z"
+last_review_score: 4
+last_review_summary: "Clean typography and layout, but completely missing the required full-bleed macro heatsink image, resulting in a flat, empty hero."
+last_reject_reason: "score_4_below_5"
+review_score: 6
+review_summary: "Strong industrial aesthetic and layout, but the background lacks material realism and body text suffers from poor contrast."
+reviewed_at: "2026-09-29T04:29:58.348Z"
+review_issues:
+  - "Background is a flat 2D pattern rather than a macro photo of aluminum"
+  - "Body copy is illegible against the striped background"
+  - "Typography is generic sans-serif rather than the requested technical style"

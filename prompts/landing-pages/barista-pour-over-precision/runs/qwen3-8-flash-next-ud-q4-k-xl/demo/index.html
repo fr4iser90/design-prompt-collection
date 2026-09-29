@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vessel & Flow — The Perfect Pour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#1A1A1A;
+    --ink:#111111;
+    --white:#FFFFFF;
+    --brass:#D4AF37;
+    --brass-soft:rgba(212,175,55,.55);
+    --brass-dim:rgba(212,175,55,.16);
+    --water:#8FA9B4;
+    --water-soft:rgba(143,169,180,.35);
+    --line:rgba(255,255,255,.10);
+    --muted:rgba(255,255,255,.55);
+    --f-disp:'Montserrat',sans-serif;
+    --f-mono:'JetBrains Mono',monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--charcoal);
+    color:var(--white);
+    font-family:var(--f-disp);
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+
+  ::selection{background:var(--brass);color:var(--charcoal);}
+
+  /* ---------- Ambient background ---------- */
+  .ambient{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(212,175,55,.06), transparent 55%),
+      radial-gradient(90% 60% at 50% 110%, rgba(143,169,180,.07), transparent 60%),
+      var(--charcoal);
+  }
+  .ambient::after{
+    content:"";position:absolute;inset:0;opacity:.5;
+    background-image:
+      linear-gradient(var(--line) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(120% 90% at 50% 30%,#000 20%,transparent 78%);
+    mask-image:radial-gradient(120% 90% at 50% 30%,#000 20%,transparent 78%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,5vw,64px);
+    transition:background .4s ease,border-color .4s ease,padding .4s ease;
+    border-bottom:1px solid transparent;
+  }
+  header.nav.scrolled{
+    background:rgba(18,18,18,.82);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding-top:16px;padding-bottom:16px;
+  }
+  .brand{
+    font-family:var(--f-disp);font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;font-size:clamp(15px,1.6vw,18px);
+    display:flex;align-items:center;gap:.55em;
+  }
+  .brand .amp{color:var(--brass);font-weight:400;}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--brass);box-shadow:0 0 12px var(--brass-soft);}
+  nav.links{display:flex;gap:clamp(20px,3vw,42px);align-items:center;}
+  nav.links a{
+    font-family:var(--f-mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);text-decoration:none;position:relative;padding:4px 0;transition:color .3s;
+  }
+  nav.links a::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:0;background:var(--brass);transition:width .35s ease;}
+  nav.links a:hover{color:var(--white);}
+  nav.links a:hover::after{width:100%;}
+  .nav-cta{
+    font-family:var(--f-mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--charcoal);background:var(--brass);padding:9px 18px;text-decoration:none;
+    transition:transform .3s ease,box-shadow .3s ease;
+  }
+  .nav-cta:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(212,175,55,.28);}
+
+  /* ---------- Layout ---------- */
+  main{position:relative;z-index:2;}
+  section{padding:clamp(80px,12vh,150px) clamp(20px,5vw,64px);position:relative;}
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  .eyebrow{
+    font-family:var(--f-mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--brass);display:inline-flex;align-items:center;gap:12px;margin-bottom:26px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--brass);opacity:.7;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding-top:110px;
+  }
+  .hero-stage{position:relative;width:min(420px,72vw);margin-bottom:8px;}
+  .dripper{width:100%;height:auto;display:block;overflow:visible;}
+  .dripper .stroke{fill:none;stroke:var(--white);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+  .dripper .stroke.dim{stroke:rgba(255,255,255,.35);}
+  .dripper .brass-stroke{fill:none;stroke:var(--brass);stroke-width:2.2;stroke-linecap:round;}
+  .dripper .fill-water{fill:url(#waterGrad);opacity:0;}
+  .dripper .filter{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.25);stroke-width:1.4;}
+  .dripper .ground{fill:rgba(212,175,55,.18);}
+
+  .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s ease forwards;}
+  .d1{animation-delay:.15s}.d2{animation-delay:.35s}.d3{animation-delay:.55s}
+  .d4{animation-delay:.75s}.d5{animation-delay:.9s}.d6{animation-delay:1.05s}.d7{animation-delay:1.2s}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+
+  .fill-water{animation:fill 2.2s ease 1.6s forwards;}
+  @keyframes fill{0%{opacity:0;}12%{opacity:.9;}100%{opacity:.85;}}
+  .drip{opacity:0;animation:drip 1.5s ease-in infinite;}
+  @keyframes drip{0%{opacity:0;transform:translateY(0) scale(.6);}15%{opacity:1;}70%{opacity:.9;}100%{opacity:0;transform:translateY(70px) scale(.35);}}
+
+  .hero h1{
+    font-weight:600;letter-spacing:-.01em;line-height:.98;
+    font-size:clamp(38px,8.5vw,92px);margin-top:6px;
+  }
+  .hero h1 .line{display:block;overflow:hidden;}
+  .hero h1 .line span{display:inline-block;transform:translateY(110%);opacity:0;}
+  .hero.ready h1 .line span{animation:rise .9s cubic-bezier(.2,.8,.2,1) forwards;}
+  .hero h1 .line:nth-child(2) span{animation-delay:.12s;}
+  @keyframes rise{to{transform:translateY(0);opacity:1;}}
+
+  .hero .sub{
+    font-family:var(--f-mono);font-size:clamp(12px,1.4vw,14px);letter-spacing:.28em;
+    text-transform:uppercase;color:var(--muted);margin-top:26px;
+    opacity:0;transition:opacity 1s ease .5s;
+  }
+  .hero.ready .sub{opacity:1;}
+
+  .hero-readout{
+    display:flex;flex-wrap:wrap;gap:clamp(18px,4vw,52px);justify-content:center;
+    margin-top:40px;opacity:0;transform:translateY(16px);transition:opacity 1s ease .7s,transform 1s ease .7s;
+  }
+  .hero.ready .hero-readout{opacity:1;transform:none;}
+  .readout{font-family:var(--f-mono);text-align:center;}
+  .readout .k{font-size:10px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;}
+  .readout .v{font-size:clamp(18px,2.4vw,26px);color:var(--white);margin-top:6px;font-weight:400;}
+  .readout .v b{color:var(--brass);font-weight:500;}
+
+  .scroll-hint{
+    position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    font-family:var(--f-mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .scroll-hint .bar{width:1px;height:44px;background:linear-gradient(var(--brass),transparent);position:relative;overflow:hidden;}
+  .scroll-hint .bar::after{content:"";position:absolute;top:0;left:0;width:100%;height:40%;background:var(--brass);animation:trickle 2s ease-in-out infinite;}
+  @keyframes trickle{0%{transform:translateY(-100%);}100%{transform:translateY(280%);}}
+
+  /* ---------- Section headers ---------- */
+  .sec-head{max-width:760px;margin-bottom:clamp(40px,6vw,72px);}
+  .sec-head h2{font-weight:600;font-size:clamp(30px,5vw,58px);line-height:1.02;letter-spacing:-.01em;}
+  .sec-head p{color:var(--muted);margin-top:20px;font-size:clamp(15px,1.6vw,18px);max-width:560px;font-weight:300;}
+
+  /* ---------- Interactive spec diagram ---------- */
+  .spec-grid{
+    display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(30px,5vw,72px);align-items:center;
+  }
+  .diagram-panel{
+    position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);background:
+      radial-gradient(80% 80% at 50% 45%,rgba(143,169,180,.06),transparent 70%);
+  }
+  .diagram-panel::before{
+    content:"";position:absolute;inset:0;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:40px 40px;opacity:.6;
+    -webkit-mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent);
+    mask-image:radial-gradient(70% 70% at 50% 50%,#000,transparent);
+  }
+  .diagram{width:82%;height:82%;position:relative;z-index:1;}
+  .part{
+    fill:none;stroke:rgba(255,255,255,.45);stroke-width:2;stroke-linejoin:round;stroke-linecap:round;
+    transition:stroke .45s ease,filter .45s ease,stroke-width .45s ease;
+  }
+  .part.filled{fill:rgba(255,255,255,.04);}
+  .part.active{
+    stroke:var(--brass);stroke-width:2.6;
+    filter:drop-shadow(0 0 6px var(--brass-soft)) drop-shadow(0 0 16px rgba(212,175,55,.35));
+  }
+  .part-label{
+    font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;fill:rgba(255,255,255,.4);
+    transition:fill .4s ease;
+  }
+  .part-label.active{fill:var(--brass);}
+
+  .spec-list{list-style:none;}
+  .spec-item{
+    border-top:1px solid var(--line);padding:22px 0;cursor:pointer;
+    display:grid;grid-template-columns:auto 1fr auto;gap:20px;align-items:baseline;
+    transition:padding-left .4s ease;
+  }
+  .spec-item:last-child{border-bottom:1px solid var(--line);}
+  .spec-item .idx{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.1em;}
+  .spec-item .name{font-family:var(--f-disp);font-weight:500;font-size:clamp(17px,2vw,22px);transition:color .3s;}
+  .spec-item .name small{display:block;font-family:var(--f-mono);font-weight:300;font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-top:6px;}
+  .spec-item .val{font-family:var(--f-mono);font-size:14px;color:var(--brass);letter-spacing:.05em;text-align:right;white-space:nowrap;}
+  .spec-item:hover,.spec-item.active{padding-left:14px;}
+  .spec-item:hover .name,.spec-item.active .name{color:var(--brass);}
+  .spec-item.active{border-color:var(--brass-dim);}
+
+  .tip{
+    position:absolute;z-index:5;pointer-events:none;opacity:0;transform:translate(-50%,-140%) scale(.96);
+    transition:opacity .3s ease,transform .3s ease;
+    background:rgba(12,12,12,.94);border:1px solid var(--brass);
+    padding:12px 16px;min-width:180px;backdrop-filter:blur(6px);
+  }
+  .tip.show{opacity:1;transform:translate(-50%,-160%) scale(1);}
+  .tip .t-name{font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:var(--brass);text-transform:uppercase;}
+  .tip .t-val{font-family:var(--f-disp);font-weight:500;font-size:15px;margin-top:5px;color:var(--white);}
+  .tip .t-note{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:.04em;}
+
+  /* ---------- Recipe ---------- */
+  .recipe{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(14px,2vw,26px);
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+  .step{padding:clamp(24px,3vw,38px) 0;display:flex;flex-direction:column;gap:16px;min-height:230px;}
+  .step .s-idx{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;color:var(--brass);}
+  .step h3{font-weight:500;font-size:clamp(15px,1.6vw,19px);letter-spacing:-.01em;}
+  .step p{font-family:var(--f-mono);font-size:12px;color:var(--muted);letter-spacing:.03em;line-height:1.7;}
+  .step .bar{margin-top:auto;height:3px;background:rgba(255,255,255,.1);position:relative;overflow:hidden;}
+  .step .bar i{position:absolute;inset:0 100% 0 0;background:linear-gradient(90deg,var(--brass),rgba(212,175,55,.4));transition:right 1.4s cubic-bezier(.2,.8,.2,1);}
+  .step.in .bar i{right:0;}
+  .step .s-time{font-family:var(--f-mono);font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
+
+  /* ---------- Stats band ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(20px,3vw,40px);text-align:center;}
+  .stat .num{font-family:var(--f-mono);font-weight:400;font-size:clamp(34px,5vw,60px);color:var(--white);letter-spacing:-.02em;}
+  .stat .num b{color:var(--brass);font-weight:400;}
+  .stat .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:12px;}
+
+  /* ---------- CTA ---------- */
+  .cta{
+    text-align:center;position:relative;overflow:hidden;
+    border:1px solid var(--line);padding:clamp(60px,9vw,110px) clamp(20px,5vw,64px);
+    background:radial-gradient(80% 120% at 50% 0%,rgba(212,175,55,.08),transparent 60%);
+  }
+  .cta h2{font-weight:600;font-size:clamp(30px,5.5vw,64px);letter-spacing:-.01em;line-height:1.02;}
+  .cta p{color:var(--muted);margin:22px auto 40px;max-width:520px;font-weight:300;font-size:clamp(15px,1.6vw,18px);}
+  .cta-btn{
+    display:inline-flex;align-items:center;gap:14px;font-family:var(--f-mono);font-size:13px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--charcoal);background:var(--brass);padding:16px 34px;text-decoration:none;
+    transition:transform .3s ease,box-shadow .3s ease;
+  }
+  .cta-btn:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(212,175,55,.3);}
+  .cta-btn svg{width:16px;height:16px;}
+
+  footer{
+    border-top:1px solid var(--line);padding:clamp(40px,6vw,64px) clamp(20px,5vw,64px);
+    display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center;
+    font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;
+  }
+  footer .brand{font-size:14px;color:var(--white);}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity .9s cubic-bezier(.2,.8,.2,1),transform .9s cubic-bezier(.2,.8,.2,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    nav.links{display:none;}
+    .spec-grid{grid-template-columns:1fr;gap:40px;}
+    .recipe{grid-template-columns:repeat(2,1fr);}
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:560px){
+    .recipe{grid-template-columns:1fr;}
+    .spec-item{grid-template-columns:auto 1fr;gap:12px;}
+    .spec-item .val{grid-column:2;text-align:left;margin-top:4px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .hero h1 .line span{transform:none;opacity:1;}
+    .hero .sub,.hero-readout{opacity:1;transform:none;}
+    .fill-water{opacity:.85;}
+    .drip{opacity:.6;}
+    .reveal{opacity:1;transform:none;}
+    .step .bar i{right:0;}
+    html{scroll-behavior:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<div class="grain"></div>
+
+<header class="nav" id="nav">
+  <div class="brand"><span class="dot"></span>Vessel <span class="amp">&amp;</span> Flow</div>
+  <nav class="links">
+    <a href="#system">System</a>
+    <a href="#recipe">Recipe</a>
+    <a href="#specs">Specs</a>
+    <a href="#reserve" class="nav-cta">Reserve</a>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-stage">
+      <svg class="dripper" viewBox="0 0 300 340" aria-hidden="true">
+        <defs>
+          <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#B7CBD4" stop-opacity=".9"/>
+            <stop offset="1" stop-color="#6E8893" stop-opacity=".9"/>
+          </linearGradient>
+        </defs>
+
+        <!-- water body inside cone -->
+        <polygon class="fill-water" points="95,150 205,150 178,235 122,235"/>
+        <!-- ground bed -->
+        <polygon class="ground" points="122,235 178,235 168,252 132,252"/>
+
+        <!-- filter paper (inner) -->
+        <polygon class="filter draw d2" points="88,140 212,140 172,262 128,262"/>
+        <!-- dripper cone (outer) -->
+        <polygon class="stroke draw d1" points="70,120 230,120 168,290 132,290"/>
+        <!-- rim -->
+        <line class="stroke draw d3" x1="60" y1="118" x2="240" y2="118"/>
+        <line class="stroke dim draw d3" x1="60" y1="128" x2="240" y2="128"/>
+        <!-- server / carafe -->
+        <path class="stroke draw d4" d="M118,296 L112,330 Q112,336 118,336 L182,336 Q188,336 188,330 L182,296"/>
+        <line class="stroke dim draw d5" x1="118" y1="296" x2="182" y2="296"/>
+        <!-- measurement ticks -->
+        <line class="brass-stroke draw d6" x1="188" y1="308" x2="198" y2="308"/>
+        <line class="brass-stroke draw d6" x1="188" y1="322" x2="198" y2="322"/>
+        <!-- drips -->
+        <circle class="brass-stroke drip" cx="150" cy="292" r="3" style="animation-delay:1.7s"/>
+        <circle class="brass-stroke drip" cx="150" cy="292" r="3" style="animation-delay:2.45s"/>
+      </svg>
+    </div>
+
+    <h1>
+      <span class="line"><span>The Perfect</span></span>
+      <span class="line"><span>Pour.</span></span>
+    </h1>
+
+    <p class="sub">Precision pour-over · Engineered for flow</p>
+
+    <div class="hero-readout">
+      <div class="readout"><div class="k">Water Temp</div><div class="v"><b>92</b>°C</div></div>
+      <div class="readout"><div class="k">Ratio</div><div class="v"><b>1</b>:16</div></div>
+      <div class="readout"><div class="k">Bloom</div><div class="v"><b>45</b>s</div></div>
+      <div class="readout"><div class="k">Total</div><div class="v"><b>3</b>:15</div></div>
+    </div>
+
+    <div class="scroll-hint"><span>Scroll</span><span class="bar"></span></div>
+  </section>
+
+  <!-- SYSTEM / INTERACTIVE SPEC -->
+  <section id="system">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">01 — Anatomy</span>
+        <h2>Every component,<br>calibrated.</h2>
+        <p>A pour-over is only as good as its weakest part. Hover a specification to isolate it in the assembly and read its material grade.</p>
+      </div>
+
+      <div class="spec-grid reveal" id="specs">
+        <div class="diagram-panel" id="diagramPanel">
+          <svg class="diagram" viewBox="0 0 300 340" aria-hidden="true">
+            <polygon class="part filled" data-part="filter" points="88,140 212,140 172,262 128,262"/>
+            <polygon class="part" data-part="dripper" points="70,120 230,120 168,290 132,290"/>
+            <line class="part" data-part="rim" x1="60" y1="118" x2="240" y2="118"/>
+            <path class="part" data-part="server" d="M118,296 L112,330 Q112,336 118,336 L182,336 Q188,336 188,330 L182,296"/>
+            <line class="part" data-part="scale" x1="188" y1="308" x2="206" y2="308"/>
+            <line class="part" data-part="scale" x1="188" y1="322" x2="206" y2="322"/>
+            <text class="part-label" data-part="rim" x="150" y="106" text-anchor="middle">RIM</text>
+            <text class="part-label" data-part="dripper" x="248" y="200">CONE</text>
+            <text class="part-label" data-part="filter" x="150" y="212" text-anchor="middle">FILTER</text>
+            <text class="part-label" data-part="server" x="150" y="352" text-anchor="middle">SERVER</text>
+          </svg>
+          <div class="tip" id="tip">
+            <div class="t-name">—</div>
+            <div class="t-val">—</div>
+            <div class="t-note">—</div>
+          </div>
+        </div>
+
+        <ul class="spec-list" id="specList">
+          <li class="spec-item" data-part="dripper" data-name="Conical Dripper" data-val="Borosilicate Glass" data-note="Ø 90mm · 60° slope">
+            <span class="idx">01</span>
+            <span class="name">Conical Dripper<small>Borosilicate Glass</small></span>
+            <span class="val">Ø 90mm</span>
+          </li>
+          <li class="spec-item" data-part="rim" data-name="Rim &amp; Handle" data-val="Cast Brass" data-note="PVD · anti-slip">
+            <span class="idx">02</span>
+            <span class="name">Rim &amp; Handle<small>Cast Brass</small></span>
+            <span class="val">148g</span>
+          </li>
+          <li class="spec-item" data-part="filter" data-name="Micro-Filter" data-val="Bonded Cellulose" data-note="0.4mm · taste-neutral">
+            <span class="idx">03</span>
+            <span class="name">Micro-Filter<small>Bonded Cellulose</small></span>
+            <span class="val">0.4mm</span>
+          </li>
+          <li class="spec-item" data-part="server" data-name="Decanter" data-val="Borosilicate Glass" data-note="600ml · thermal-safe">
+            <span class="idx">04</span>
+            <span class="name">Decanter<small>Borosilicate Glass</small></span>
+            <span class="val">600ml</span>
+          </li>
+          <li class="spec-item" data-part="scale" data-name="Precision Scale" data-val="0.1g Resolution" data-note="±0.1g · 3000g max">
+            <span class="idx">05</span>
+            <span class="name">Precision Scale<small>0.1g Resolution</small></span>
+            <span class="val">±0.1g</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECIPE -->
+  <section id="recipe">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="eyebrow">02 — Protocol</span>
+        <h2>The brew, timed.</h2>
+        <p>A reproducible sequence. Follow the flow from bloom to drawdown — every second measured, nothing left to chance.</p>
+      </div>
+
+      <div class="recipe reveal">
+        <div class="step" data-bar="22">
+          <span class="s-idx">STEP 01</span>
+          <h3>Rinse &amp; Bloom</h3>
+          <p>45g water<br>at 92°C<br>over grounds</p>
+          <span class="s-time">0:00 — 0:45</span>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="step" data-bar="55">
+          <span class="s-idx">STEP 02</span>
+          <h3>First Pour</h3>
+          <p>200g water<br>spiral from<br>center outward</p>
+          <span class="s-time">0:45 — 1:15</span>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="step" data-bar="80">
+          <span class="s-idx">STEP 03</span>
+          <h3>Second Pour</h3>
+          <p>300g water<br>steady stream<br>maintain level</p>
+          <span class="s-time">1:15 — 2:00</span>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="step" data-bar="92">
+          <span class="s-idx">STEP 04</span>
+          <h3>Drawdown</h3>
+          <p>Bed settles<br>evenly<br>no channeling</p>
+          <span class="s-time">2:00 — 2:45</span>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="step" data-bar="100">
+          <span class="s-idx">STEP 05</span>
+          <h3>Complete</h3>
+          <p>Swirl decanter<br>total 3:15<br>serve</p>
+          <span class="s-time">2:45 — 3:15</span>
+          <div class="bar"><i></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section>
+    <div class="wrap">
+      <div class="stats reveal">
+        <div class="stat"><div class="num"><b>92</b>°C</div><div class="lbl">Optimal Extraction</div></div>
+        <div class="stat"><div class="num"><b>1</b>:16</div><div class="lbl">Golden Ratio</div></div>
+        <div class="stat"><div class="num"><b>0.1</b>g</div><div class="lbl">Scale Precision</div></div>
+        <div class="stat"><div class="num"><b>3</b>:15</div><div class="lbl">Total Brew Time</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="reserve">
+    <div class="wrap">
+      <div class="cta reveal">
+        <span class="eyebrow" style="justify-content:center;">03 — Reserve</span>
+        <h2>Brew with intention.</h2>
+        <p>The Vessel &amp; Flow system ships as a complete, calibrated set. Reserve your unit for the next production run.</p>
+        <a href="#" class="cta-btn">
+          Reserve the System
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="brand"><span class="dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brass);margin-right:8px;"></span>Vessel &amp; Flow</div>
+  <div>Precision Pour-Over · Est. 2024</div>
+  <div>© All systems calibrated</div>
+</footer>
+
+<script>
+  (function(){
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* Nav scroll state */
+    var nav = document.getElementById('nav');
+    function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 40); }
+    onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+    /* Hero entrance */
+    var hero = document.getElementById('hero');
+    requestAnimationFrame(function(){ setTimeout(function(){ hero.classList.add('ready'); }, 200); });
+
+    /* Reveal on scroll */
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('in');
+          if(e.target.classList.contains('recipe')){
+            var steps = e.target.querySelectorAll('.step');
+            steps.forEach(function(s,i){ setTimeout(function(){ s.classList.add('in'); }, i*160); });
+          }
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:.18});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+    /* Interactive spec diagram */
+    var items = document.querySelectorAll('.spec-item');
+    var parts = document.querySelectorAll('.part');
+    var labels = document.querySelectorAll('.part-label');
+    var tip = document.getElementById('tip');
+    var panel = document.getElementById('diagramPanel');
+
+    function clearActive(){
+      parts.forEach(function(p){ p.classList.remove('active'); });
+      labels.forEach(function(l){ l.classList.remove('active'); });
+      items.forEach(function(i){ i.classList.remove('active'); });
+    }
+
+    function activate(item){
+      clearActive();
+      var part = item.getAttribute('data-part');
+      parts.forEach(function(p){ if(p.getAttribute('data-part')===part) p.classList.add('active'); });
+      labels.forEach(function(l){ if(l.getAttribute('data-part')===part) l.classList.add('active'); });
+      item.classList.add('active');
+
+      // tooltip content
+      tip.querySelector('.t-name').textContent = item.getAttribute('data-name');
+      tip.querySelector('.t-val').textContent = item.getAttribute('data-val');
+      tip.querySelector('.t-note').textContent = item.getAttribute('data-note');
+
+      // position near the active part (use first matching part's bbox center)
+      var active = panel.querySelector('.part.active');
+      if(active){
+        var svg = active.ownerSVGElement;
+        var b = active.getBBox();
+        var pt = svg.createSVGPoint();
+        pt.x = b.x + b.width/2;
+        pt.y = b.y;
+        var ctm = svg.getScreenCTM();
+        var screen = pt.matrixTransform(ctm);
+        var pr = panel.getBoundingClientRect();
+        tip.style.left = (screen.x - pr.left) + 'px';
+        tip.style.top = (screen.y - pr.top) + 'px';
+        tip.classList.add('show');
+      }
+    }
+
+    items.forEach(function(item){
+      item.addEventListener('mouseenter', function(){ activate(item); });
+      item.addEventListener('click', function(){ activate(item); });
+      item.addEventListener('focus', function(){ activate(item); });
+      item.setAttribute('tabindex','0');
+    });
+
+    panel.addEventListener('mouseleave', function(){
+      clearActive();
+      tip.classList.remove('show');
+    });
+
+    // hover on diagram parts highlights list too
+    parts.forEach(function(p){
+      p.addEventListener('mouseenter', function(){
+        var part = p.getAttribute('data-part');
+        var match = document.querySelector('.spec-item[data-part="'+part+'"]');
+        if(match) activate(match);
+      });
+    });
+  })();
+</script>
+</body>
+</html>

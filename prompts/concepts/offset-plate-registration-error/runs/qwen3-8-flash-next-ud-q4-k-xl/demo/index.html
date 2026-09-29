@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offset Plate Registration Error — CMYK Misregistration Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,800;0,900;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F5F0;
+    --cyan:#00AEEF;
+    --magenta:#EC008C;
+    --yellow:#FFED00;
+    --key:#1A1A1A;
+    --ink:rgba(26,26,26,.72);
+    --ink-soft:rgba(26,26,26,.5);
+    --ink-faint:rgba(26,26,26,.28);
+    --ease:cubic-bezier(.25,.1,.25,1);
+    --ease-snap:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--paper);
+    color:var(--key);
+    font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+    min-height:100vh;
+    cursor:crosshair;
+  }
+
+  /* ---------- ATMOSPHERE / PAPER STOCK ---------- */
+  .paper-grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.055;mix-blend-mode:multiply;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 42%, transparent 55%, rgba(26,26,26,.07) 100%);
+  }
+
+  /* ---------- REGISTRATION MARKS ---------- */
+  .reg{
+    position:fixed;z-index:6;pointer-events:none;
+    width:46px;height:46px;opacity:0;
+    animation:regIn 1.1s var(--ease) forwards;
+    color:var(--key);
+  }
+  .reg svg{width:100%;height:100%;display:block;}
+  .reg .rm-c{fill:var(--cyan);mix-blend-mode:multiply;}
+  .reg .rm-m{fill:var(--magenta);mix-blend-mode:multiply;}
+  .reg .rm-y{fill:var(--yellow);mix-blend-mode:multiply;}
+  .reg .rm-k{fill:none;stroke:var(--key);stroke-width:1.3;}
+  .reg-tl{top:22px;left:22px;animation-delay:.15s;}
+  .reg-tr{top:22px;right:22px;animation-delay:.28s;}
+  .reg-bl{bottom:22px;left:22px;animation-delay:.41s;}
+  .reg-br{bottom:22px;right:22px;animation-delay:.54s;}
+  @keyframes regIn{to{opacity:.92;}}
+
+  /* ---------- HEADER ---------- */
+  .masthead{
+    position:fixed;top:0;left:0;right:0;z-index:7;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:26px clamp(24px,5vw,64px);
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:500;
+    color:var(--ink);
+  }
+  .masthead .brand{font-weight:700;letter-spacing:.34em;}
+  .masthead .meta{display:flex;gap:26px;color:var(--ink-soft);}
+  .masthead .meta b{color:var(--key);font-weight:700;}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;z-index:5;
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:120px clamp(20px,5vw,64px) 150px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:14px;
+    font-size:12px;letter-spacing:.34em;text-transform:uppercase;font-weight:500;
+    color:var(--ink-soft);margin-bottom:clamp(20px,4vh,40px);
+    opacity:0;animation:fadeUp .9s var(--ease) .1s forwards;
+  }
+  .eyebrow::before,.eyebrow::after{
+    content:"";width:34px;height:1px;background:var(--ink-faint);
+  }
+
+  /* ---------- THE CMYK HEADLINE ---------- */
+  .word{
+    position:relative;
+    display:inline-block;
+    font-family:'Playfair Display',Georgia,serif;
+    font-weight:900;font-style:italic;
+    font-size:clamp(3.1rem,15.5vw,13.5rem);
+    line-height:.86;
+    letter-spacing:-.015em;
+    text-transform:uppercase;
+    padding:0 .04em;
+    will-change:transform;
+  }
+
+  .plate{
+    position:absolute;top:0;left:0;right:0;
+    white-space:nowrap;
+    transform:translate3d(var(--dx,0),var(--dy,0),0);
+    transition:transform .95s var(--ease);
+    will-change:transform;
+    pointer-events:none;
+  }
+  .plate.c{color:var(--cyan);mix-blend-mode:multiply;}
+  .plate.m{color:var(--magenta);mix-blend-mode:multiply;}
+  .plate.y{color:var(--yellow);mix-blend-mode:multiply;}
+  .plate.k{position:relative;color:var(--key);mix-blend-mode:multiply;}
+
+  /* ink wetness gloss on the key layer */
+  .plate.k::after{
+    content:"";position:absolute;inset:-6% -3%;pointer-events:none;
+    background:radial-gradient(60% 45% at 34% 26%, rgba(255,255,255,.16), transparent 62%);
+    mix-blend-mode:overlay;opacity:0;transition:opacity .9s var(--ease);
+  }
+  .word.aligned .plate.k::after{opacity:1;}
+
+  /* dot-gain halftone over final aligned ink */
+  .word .dotgain{
+    position:absolute;inset:0;pointer-events:none;opacity:0;
+    transition:opacity .9s var(--ease);
+    background-image:radial-gradient(circle at center, rgba(26,26,26,.5) 26%, transparent 27%);
+    background-size:3px 3px;
+    mix-blend-mode:multiply;
+    -webkit-mask-image:linear-gradient(#000,#000);
+    mask-image:linear-gradient(#000,#000);
+  }
+  .word.aligned .dotgain{opacity:.16;}
+
+  /* entrance: plates fly in from edges */
+  @keyframes flyC{0%{transform:translate3d(-42vw,0,0);opacity:0}100%{opacity:1}}
+  @keyframes flyM{0%{transform:translate3d(0,-46vh,0);opacity:0}100%{opacity:1}}
+  @keyframes flyY{0%{transform:translate3d(42vw,0,0);opacity:0}100%{opacity:1}}
+  @keyframes flyK{0%{transform:translate3d(0,42vh,0);opacity:0}100%{opacity:1}}
+  .word.anim .plate.c{animation:flyC 1s var(--ease-snap) both;}
+  .word.anim .plate.m{animation:flyM 1s var(--ease-snap) .08s both;}
+  .word.anim .plate.y{animation:flyY 1s var(--ease-snap) .16s both;}
+  .word.anim .plate.k{animation:flyK 1s var(--ease-snap) .24s both;}
+
+  /* ambient drift when misregistered */
+  .word.drift .plate.c{animation:driftC 6.5s ease-in-out infinite;}
+  .word.drift .plate.m{animation:driftM 7.4s ease-in-out infinite;}
+  .word.drift .plate.y{animation:driftY 8.1s ease-in-out infinite;}
+  .word.drift .plate.k{animation:driftK 9s ease-in-out infinite;}
+  @keyframes driftC{0%,100%{transform:translate3d(calc(var(--dx)*1),var(--dy),0)}50%{transform:translate3d(calc(var(--dx)*1 + 2px),calc(var(--dy) - 1.5px),0)}}
+  @keyframes driftM{0%,100%{transform:translate3d(calc(var(--dx)*1),var(--dy),0)}50%{transform:translate3d(calc(var(--dx)*1 - 1.5px),calc(var(--dy) + 2px),0)}}
+  @keyframes driftY{0%,100%{transform:translate3d(calc(var(--dx)*1),var(--dy),0)}50%{transform:translate3d(calc(var(--dx)*1 + 1px),calc(var(--dy) + 2px),0)}}
+  @keyframes driftK{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-1px,.5px,0)}}
+
+  /* snap pulse */
+  .word.snap .plate.k{animation:snapPulse .5s var(--ease-snap);}
+  @keyframes snapPulse{0%{filter:none}35%{filter:brightness(.72) contrast(1.35)}100%{filter:none}}
+
+  /* ---------- SUBHEAD ---------- */
+  .subhead{
+    margin-top:clamp(26px,5vh,52px);
+    max-width:44ch;
+    font-size:clamp(1rem,1.6vw,1.22rem);
+    line-height:1.62;font-weight:400;color:var(--ink);
+    opacity:0;animation:fadeUp 1s var(--ease) .55s forwards;
+  }
+  .subhead .lead{
+    display:block;margin-bottom:10px;
+    font-family:'Playfair Display',serif;font-style:italic;font-weight:800;
+    font-size:clamp(1.15rem,2vw,1.5rem);color:var(--key);letter-spacing:.01em;
+  }
+
+  /* ---------- CONTROL PANEL ---------- */
+  .panel{
+    margin-top:clamp(30px,5vh,54px);
+    display:flex;flex-direction:column;align-items:center;gap:22px;
+    opacity:0;animation:fadeUp 1s var(--ease) .8s forwards;
+  }
+  .gauge-wrap{display:flex;align-items:center;gap:16px;}
+  .gauge-label{
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);
+    width:118px;text-align:right;
+  }
+  .gauge{
+    position:relative;width:clamp(200px,34vw,360px);height:6px;
+    background:repeating-linear-gradient(90deg,var(--ink-faint) 0 1px,transparent 1px 12px);
+    border-bottom:1px solid var(--ink-faint);
+  }
+  .gauge .fill{
+    position:absolute;left:0;top:-2px;bottom:-2px;width:0%;
+    background:linear-gradient(90deg,var(--cyan),var(--magenta),var(--yellow));
+    mix-blend-mode:multiply;transition:width .12s linear;
+  }
+  .gauge .needle{
+    position:absolute;top:-7px;bottom:-7px;width:2px;background:var(--key);left:0%;
+    transition:left .12s linear;
+  }
+  .gauge .needle::after{
+    content:"";position:absolute;top:-6px;left:-4px;width:10px;height:10px;
+    background:var(--key);transform:rotate(45deg);
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:12px;
+    padding:14px 26px;background:var(--key);color:var(--paper);
+    border:none;font-family:'DM Sans',sans-serif;font-weight:700;
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;
+    transition:transform .3s var(--ease),background .3s var(--ease);
+    box-shadow:0 2px 0 rgba(26,26,26,.25);
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn:active{transform:translateY(0);}
+  .btn .dot{width:7px;height:7px;border-radius:50%;background:var(--paper);transition:background .3s;}
+  .btn.on .dot{background:var(--yellow);box-shadow:0 0 0 3px rgba(255,237,0,.35);}
+
+  .hint{
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);
+  }
+
+  /* ---------- SPEC SHEET ---------- */
+  .sheet{
+    position:relative;z-index:5;
+    max-width:1120px;margin:0 auto;
+    padding:clamp(60px,10vh,120px) clamp(24px,5vw,64px) clamp(80px,12vh,140px);
+    border-top:1px solid var(--ink-faint);
+  }
+  .sheet-head{
+    display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:16px;
+    margin-bottom:clamp(40px,6vh,64px);
+  }
+  .sheet-head h2{
+    font-family:'Playfair Display',serif;font-weight:900;
+    font-size:clamp(1.6rem,3.4vw,2.6rem);letter-spacing:-.01em;
+  }
+  .sheet-head .num{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    border:1px solid var(--ink-faint);
+  }
+  .cell{
+    padding:22px;border-right:1px solid var(--ink-faint);
+    transition:background .4s var(--ease);
+  }
+  .cell:last-child{border-right:none;}
+  .cell:hover{background:rgba(26,26,26,.03);}
+  .cell .swatch{
+    width:100%;height:64px;margin-bottom:16px;
+    mix-blend-mode:multiply;position:relative;overflow:hidden;
+  }
+  .cell .swatch::after{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle,rgba(26,26,26,.4) 24%,transparent 25%);
+    background-size:3px 3px;opacity:.18;
+  }
+  .cell.c .swatch{background:var(--cyan);}
+  .cell.m .swatch{background:var(--magenta);}
+  .cell.y .swatch{background:var(--yellow);}
+  .cell.k .swatch{background:var(--key);}
+  .cell .name{font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase;}
+  .cell .hex{font-size:12px;color:var(--ink-soft);margin-top:4px;font-variant-numeric:tabular-nums;}
+  .cell .role{font-size:12px;color:var(--ink-faint);margin-top:10px;line-height:1.5;}
+
+  .notes{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(28px,4vw,56px);
+    margin-top:clamp(48px,7vh,80px);
+  }
+  .note .k{
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);
+    padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--ink-faint);
+  }
+  .note p{font-size:clamp(.95rem,1.4vw,1.05rem);line-height:1.7;color:var(--ink);}
+  .note p b{color:var(--key);font-weight:700;}
+
+  .foot{
+    position:relative;z-index:5;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    padding:26px clamp(24px,5vw,64px);
+    border-top:1px solid var(--ink-faint);
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);
+  }
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:760px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+    .cell:nth-child(2){border-right:none;}
+    .cell:nth-child(1),.cell:nth-child(2){border-bottom:1px solid var(--ink-faint);}
+    .notes{grid-template-columns:1fr;}
+    .masthead .meta{gap:14px;}
+    .masthead .meta span:nth-child(2){display:none;}
+    .gauge-label{display:none;}
+    .reg{width:34px;height:34px;}
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media(prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+    .eyebrow,.subhead,.panel{opacity:1 !important;}
+    .reg{opacity:.92 !important;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="paper-grain"></div>
+  <div class="vignette"></div>
+
+  <!-- Registration marks -->
+  <div class="reg reg-tl"><svg viewBox="0 0 46 46"><circle class="rm-c" cx="18" cy="23" r="7"/><circle class="rm-m" cx="28" cy="23" r="7"/><circle class="rm-y" cx="23" cy="18" r="7"/><circle class="rm-k" cx="23" cy="23" r="11"/><line class="rm-k" x1="23" y1="2" x2="23" y2="44"/><line class="rm-k" x1="2" y1="23" x2="44" y2="23"/></svg></div>
+  <div class="reg reg-tr"><svg viewBox="0 0 46 46"><circle class="rm-c" cx="18" cy="23" r="7"/><circle class="rm-m" cx="28" cy="23" r="7"/><circle class="rm-y" cx="23" cy="18" r="7"/><circle class="rm-k" cx="23" cy="23" r="11"/><line class="rm-k" x1="23" y1="2" x2="23" y2="44"/><line class="rm-k" x1="2" y1="23" x2="44" y2="23"/></svg></div>
+  <div class="reg reg-bl"><svg viewBox="0 0 46 46"><circle class="rm-c" cx="18" cy="23" r="7"/><circle class="rm-m" cx="28" cy="23" r="7"/><circle class="rm-y" cx="23" cy="18" r="7"/><circle class="rm-k" cx="23" cy="23" r="11"/><line class="rm-k" x1="23" y1="2" x2="23" y2="44"/><line class="rm-k" x1="2" y1="23" x2="44" y2="23"/></svg></div>
+  <div class="reg reg-br"><svg viewBox="0 0 46 46"><circle class="rm-c" cx="18" cy="23" r="7"/><circle class="rm-m" cx="28" cy="23" r="7"/><circle class="rm-y" cx="23" cy="18" r="7"/><circle class="rm-k" cx="23" cy="23" r="11"/><line class="rm-k" x1="23" y1="2" x2="23" y2="44"/><line class="rm-k" x1="2" y1="23" x2="44" y2="23"/></svg></div>
+
+  <!-- Masthead -->
+  <header class="masthead">
+    <span class="brand">OFFSET · PLATE REGISTRATION ERROR</span>
+    <div class="meta">
+      <span>Sheet <b>04 / CMYK</b></span>
+      <span>Plate <b>105 LPI</b></span>
+      <span>Stock <b>Uncoated 120gsm</b></span>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="eyebrow">Process Colour Study · No. 04</span>
+
+    <div class="word" id="word" aria-label="Registration">
+      <div class="plate c" aria-hidden="true">Registration</div>
+      <div class="plate m" aria-hidden="true">Registration</div>
+      <div class="plate y" aria-hidden="true">Registration</div>
+      <div class="plate k">Registration</div>
+      <div class="dotgain" aria-hidden="true"></div>
+    </div>
+
+    <p class="subhead">
+      <span class="lead">The error is the aesthetic. Precision is the reward.</span>
+      Four plates — Cyan, Magenta, Yellow and Key — drift out of true registration, then lock into a single, decisive impression.
+    </p>
+
+    <div class="panel">
+      <div class="gauge-wrap">
+        <span class="gauge-label">Registration</span>
+        <div class="gauge">
+          <div class="fill" id="fill"></div>
+          <div class="needle" id="needle"></div>
+        </div>
+      </div>
+      <button class="btn" id="btn" aria-pressed="false">
+        <span class="dot"></span><span id="btnLabel">Align Plates</span>
+      </button>
+      <span class="hint">Scroll or click to register the plates</span>
+    </div>
+  </section>
+
+  <!-- SPEC SHEET -->
+  <section class="sheet">
+    <div class="sheet-head">
+      <h2>Plate Specification</h2>
+      <span class="num">Subtractive · 4-Colour Process</span>
+    </div>
+
+    <div class="grid">
+      <div class="cell c">
+        <div class="swatch"></div>
+        <div class="name">Cyan</div>
+        <div class="hex">#00AEEF</div>
+        <div class="role">Absorbs red. First impression on the cylinder.</div>
+      </div>
+      <div class="cell m">
+        <div class="swatch"></div>
+        <div class="name">Magenta</div>
+        <div class="hex">#EC008C</div>
+        <div class="role">Absorbs green. Overlaps cyan to yield true blue.</div>
+      </div>
+      <div class="cell y">
+        <div class="swatch"></div>
+        <div class="name">Yellow</div>
+        <div class="hex">#FFED00</div>
+        <div class="role">Absorbs blue. The lightest, most translucent plate.</div>
+      </div>
+      <div class="cell k">
+        <div class="swatch"></div>
+        <div class="name">Key</div>
+        <div class="hex">#1A1A1A</div>
+        <div class="role">Defines detail. The plate the others register to.</div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <div class="k">On Registration</div>
+        <p>In offset lithography, four separate plates must print in perfect <b>register</b>. A drift of a few microns blurs the edge into a vibrating halo — the <b>misregistration</b> that once ruined a run. Here the ghost is the opening state; alignment is the payoff.</p>
+      </div>
+      <div class="note">
+        <div class="k">On Subtractive Mixing</div>
+        <p>No colour is faked. Cyan, Magenta and Yellow are laid down as <b>multiply</b> layers, so overlap produces genuine secondaries — <b>C+M=Blue</b>, <b>M+Y=Red</b>, <b>C+Y=Green</b> — exactly as the ink would on the sheet.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Offset Plate Registration Error</span>
+    <span>Playfair Display · DM Sans</span>
+    <span>© Print Study</span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var word   = document.getElementById('word');
+  var plates = {
+    c: word.querySelector('.plate.c'),
+    m: word.querySelector('.plate.m'),
+    y: word.querySelector('.plate.y')
+  };
+  var btn      = document.getElementById('btn');
+  var btnLabel = document.getElementById('btnLabel');
+  var fill     = document.getElementById('fill');
+  var needle   = document.getElementById('needle');
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Misregistration offsets (px). Mobile gets a more pronounced ghost.
+  var mobile = window.matchMedia('(max-width:760px)').matches;
+  var mag = mobile ? 1.7 : 1;
+  var OFF = {
+    c:{x:-3.4*mag, y: 2.2*mag},
+    m:{x: 3.1*mag, y:-2.6*mag},
+    y:{x: 1.4*mag, y: 3.0*mag}
+  };
+
+  function applyOffsets(){
+    for(var k in plates){
+      plates[k].style.setProperty('--dx', OFF[k].x + 'px');
+      plates[k].style.setProperty('--dy', OFF[k].y + 'px');
+    }
+  }
+  applyOffsets();
+
+  // Entrance fly-in, then settle into the misregistered state.
+  requestAnimationFrame(function(){
+    word.classList.add('anim');
+    word.addEventListener('animationend', function(e){
+      if(e.target.classList.contains('plate')){
+        word.classList.remove('anim');
+        if(!reduce) word.classList.add('drift');
+      }
+    });
+    // safety fallback
+    setTimeout(function(){
+      word.classList.remove('anim');
+      if(!reduce) word.classList.add('drift');
+    }, 1600);
+  });
+
+  // Registration progress 0..1
+  var progress = 0, target = 0, raf = null;
+
+  function render(){
+    var t = reduce ? 1 : progress;
+    for(var k in plates){
+      var dx = (OFF[k].x * (1 - t)).toFixed(2) + 'px';
+      var dy = (OFF[k].y * (1 - t)).toFixed(2) + 'px';
+      plates[k].style.setProperty('--dx', dx);
+      plates[k].style.setProperty('--dy', dy);
+    }
+    var pct = (t * 100).toFixed(1) + '%';
+    fill.style.width = pct;
+    needle.style.left = pct;
+
+    var aligned = t > 0.985;
+    word.classList.toggle('aligned', aligned);
+    if(aligned){ word.classList.remove('drift'); }
+    else if(!reduce && !word.classList.contains('anim')){ word.classList.add('drift'); }
+  }
+
+  function tick(){
+    progress += (target - progress) * 0.12;
+    if(Math.abs(target - progress) < 0.001){ progress = target; }
+    render();
+    if(progress !== target){ raf = requestAnimationFrame(tick); }
+    else { raf = null; }
+  }
+  function setTarget(v){
+    target = v;
+    if(raf === null) raf = requestAnimationFrame(tick);
+  }
+
+  // Scroll-driven registration
+  function onScroll(){
+    var max = Math.max(window.innerHeight * 0.55, 1);
+    var p = Math.min(1, Math.max(0, window.scrollY / max));
+    setTarget(p);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // Click / button toggle
+  function toggle(){
+    var on = target > 0.5 ? false : true;
+    setTarget(on ? 1 : 0);
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btnLabel.textContent = on ? 'Release Plates' : 'Align Plates';
+    if(on){
+      word.classList.remove('snap');
+      void word.offsetWidth;
+      word.classList.add('snap');
+    }
+  }
+  btn.addEventListener('click', toggle);
+  word.addEventListener('click', toggle);
+  word.style.pointerEvents = 'auto';
+
+  // Keep button label in sync when scroll drives it fully on/off
+  window.addEventListener('scroll', function(){
+    var on = target > 0.5;
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btnLabel.textContent = on ? 'Release Plates' : 'Align Plates';
+  }, {passive:true});
+
+  render();
+})();
+</script>
+</body>
+</html>

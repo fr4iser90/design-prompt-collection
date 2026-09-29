@@ -1,0 +1,26 @@
+id: card-catalog-drawer-slide
+title: "Card Catalog Drawer Slide"
+category: animations
+tags:
+  - library-science
+  - drawer
+  - indexing
+  - wood-grain
+  - mechanical
+  - loop
+  - archival
+status: polished
+summary: "A wooden library card catalog drawer slides out smoothly. Inside, hundreds of index cards are visible, slightly fanned. A single card glows faintly, indicating the active record, before the drawer slides back shut."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

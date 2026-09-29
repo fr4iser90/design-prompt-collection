@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 226246
+gen_ms: 226246
+ttft_ms: 1590
+queue_wait_ms: 103
+wall_ms: 227993
+review_score: 6
+review_summary: "Strong typography and brand presence, but the hero visual is a broken/empty placeholder and the layout feels sparse rather than richly textured."
+reviewed_at: "2026-09-28T22:48:51.166Z"
+review_issues:
+  - "Hero image area is a blank beige gradient (broken asset)"
+  - "Background lacks the requested atmospheric macro texture"
+  - "Typography is functional but lacks the specific 'Playfair' elegance requested (looks like generic serif)"
+  - "Right-side content block feels isolated rather than integrated into an asymmetric grid"

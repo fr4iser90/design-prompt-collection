@@ -1,0 +1,26 @@
+id: dewey-decimal-orbit
+title: "Dewey Decimal Orbit"
+category: animations
+tags:
+  - classification
+  - library
+  - orbit
+  - data-viz
+  - minimalist
+  - archival
+  - interaction
+status: polished
+summary: "Numerical classification codes orbit a central void in concentric rings, representing the hierarchical structure of knowledge. Hovering a ring expands its metadata in a clean, north-light interface."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

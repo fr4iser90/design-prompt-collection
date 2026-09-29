@@ -1,0 +1,26 @@
+id: conveyor-gate-scan-sync
+title: "Conveyor Gate Scan Sync"
+category: animations
+tags:
+  - logistics
+  - barcode
+  - scanning-line
+  - mechanical-timing
+  - industrial-green
+  - monospace
+  - data-feed
+status: polished
+summary: "A rhythmic animation of a green laser scan line moving over a package barcode, triggering a digital status update. Features precise timing, mechanical shutter sounds, and a clean utility UI."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

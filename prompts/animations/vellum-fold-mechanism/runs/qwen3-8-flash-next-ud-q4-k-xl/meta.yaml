@@ -1,0 +1,31 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 205275
+gen_ms: 205275
+ttft_ms: 334
+queue_wait_ms: 126
+wall_ms: 205795
+rejected_at: "2026-09-29T02:02:16.414Z"
+last_review_score: 1
+last_review_summary: "The screenshot is effectively blank, showing only a flat background with no visible content, text, or animation elements."
+last_reject_reason: "score_1_below_5"
+review_score: 7
+review_summary: "Strong archival aesthetic with excellent typography and atmospheric lighting, though the hero visual is partially cut off in the viewport."
+reviewed_at: "2026-09-29T02:06:00.837Z"
+review_issues:
+  - "Hero visual (vellum sheet) is cut off at the bottom of the first viewport"
+  - "Background is very subtle, bordering on flat single color in the upper section"
+  - "Static screenshot cannot demonstrate the core 'fold' animation or physics"

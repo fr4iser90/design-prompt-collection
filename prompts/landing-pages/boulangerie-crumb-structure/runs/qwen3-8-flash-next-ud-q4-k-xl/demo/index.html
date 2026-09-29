@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Levain & Air — Artisanal Sourdough Bakery</title>
+<meta name="description" content="Levain & Air bakes slow-fermented sourdough in small batches. Air. Time. Flour.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --flour:#F5F5DC;
+    --crust:#D2B48C;
+    --rye:#8B4513;
+    --rye-deep:#5A2E0F;
+    --ink:#3B2412;
+    --air:rgba(245,245,220,.55);
+    --ease-rise:cubic-bezier(.16,1,.3,1);
+    --maxw:1280px;
+    --pad:clamp(1.25rem,4vw,4rem);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Lato",system-ui,sans-serif;
+    font-weight:300;
+    color:var(--ink);
+    background:var(--flour);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+  body::before{ /* ambient grain */
+    content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.05;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  ::selection{background:var(--crust);color:var(--rye-deep)}
+
+  h1,h2,h3,.display{font-family:"Playfair Display",Georgia,serif;font-weight:500;line-height:1.02;letter-spacing:-.01em}
+  .eyebrow{
+    font-family:"Lato",sans-serif;font-weight:400;font-size:.72rem;
+    letter-spacing:.34em;text-transform:uppercase;color:var(--rye);
+    display:inline-flex;align-items:center;gap:.7em;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--rye);opacity:.6}
+
+  /* ---------- NAV ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1.1rem var(--pad);
+    transition:background .5s var(--ease-rise),box-shadow .5s,padding .5s;
+  }
+  .nav.scrolled{background:rgba(245,245,220,.82);backdrop-filter:blur(10px);box-shadow:0 1px 0 rgba(139,69,19,.12);padding:.75rem var(--pad)}
+  .brand{font-family:"Playfair Display",serif;font-size:1.35rem;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:.55rem}
+  .brand .amp{color:var(--crust);font-style:italic;font-weight:400}
+  .nav-links{display:flex;gap:2rem;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;font-weight:400}
+  .nav-links a{position:relative;padding:.2rem 0;opacity:.75;transition:opacity .3s}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--rye);transition:width .35s var(--ease-rise)}
+  .nav-links a:hover{opacity:1}
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;font-weight:400;
+    border:1px solid var(--rye);padding:.6rem 1.15rem;border-radius:2px;color:var(--rye);
+    transition:background .35s,color .35s;white-space:nowrap;
+  }
+  .nav-cta:hover{background:var(--rye);color:var(--flour)}
+  .nav-toggle{display:none;background:none;border:0;cursor:pointer;flex-direction:column;gap:5px;padding:6px}
+  .nav-toggle span{width:24px;height:1.5px;background:var(--rye);transition:.3s}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100svh;position:relative;display:grid;
+    grid-template-columns:1.15fr .85fr;align-items:center;
+    gap:clamp(1rem,4vw,3rem);padding:clamp(6rem,12vh,8rem) var(--pad) 3rem;
+    background:radial-gradient(120% 90% at 8% 20%,#fbfbf0 0%,var(--flour) 55%,#efe9d2 100%);
+  }
+  .hero-copy{max-width:34ch}
+  .hero h1{
+    font-size:clamp(3.4rem,9vw,7.2rem);font-weight:500;color:var(--rye-deep);
+    margin:1.6rem 0 1.7rem;letter-spacing:-.025em;
+  }
+  .hero h1 em{font-style:italic;font-weight:400;color:var(--rye)}
+  .hero-lead{font-size:clamp(1rem,1.4vw,1.18rem);max-width:42ch;color:#5b432b;font-weight:300}
+  .hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem;margin-top:2.4rem}
+  .btn{
+    font-family:"Lato",sans-serif;font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;font-weight:400;
+    background:var(--rye);color:var(--flour);border:1px solid var(--rye);
+    padding:1.05rem 2rem;border-radius:2px;cursor:pointer;
+    transition:transform .4s var(--ease-rise),background .4s,box-shadow .4s;
+    box-shadow:0 10px 24px -14px rgba(90,46,15,.9);
+  }
+  .btn:hover{transform:translateY(-3px);background:var(--rye-deep);box-shadow:0 16px 30px -14px rgba(90,46,15,.95)}
+  .btn-ghost{background:transparent;color:var(--rye);box-shadow:none}
+  .btn-ghost:hover{background:var(--crust);border-color:var(--crust);color:var(--rye-deep)}
+  .hero-meta{margin-top:2.6rem;display:flex;gap:2.2rem;flex-wrap:wrap;font-size:.8rem;letter-spacing:.06em;color:#6b5236}
+  .hero-meta b{display:block;font-family:"Playfair Display",serif;font-size:1.7rem;font-weight:500;color:var(--rye-deep);letter-spacing:0}
+
+  .hero-visual{position:relative;height:min(78vh,640px);border-radius:3px;overflow:hidden;box-shadow:0 40px 80px -40px rgba(90,46,15,.55)}
+  .hero-visual .pan{position:absolute;inset:-8% -22%;width:144%;height:116%;
+    background:url("https://picsum.photos/seed/sourdough-crumb-slice-macro/1200/1600") center/cover;
+    animation:pan 46s ease-in-out infinite alternate;}
+  .hero-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(90,46,15,.05),rgba(90,46,15,.35));mix-blend-mode:multiply}
+  .hero-visual .vlabel{position:absolute;left:1.4rem;bottom:1.4rem;z-index:2;color:var(--flour);font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;text-shadow:0 1px 8px rgba(0,0,0,.4)}
+  .hero-visual .vlabel b{display:block;font-family:"Playfair Display",serif;font-size:1.4rem;letter-spacing:.02em;text-transform:none;margin-top:.35rem}
+  .float-note{position:absolute;top:8%;right:-2%;z-index:5;background:var(--flour);border:1px solid var(--crust);padding:.9rem 1.1rem;border-radius:2px;max-width:190px;box-shadow:0 18px 40px -22px rgba(90,46,15,.6)}
+  .float-note span{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--rye)}
+  .float-note p{font-family:"Playfair Display",serif;font-size:1.05rem;font-style:italic;line-height:1.3;margin-top:.35rem;color:var(--rye-deep)}
+
+  .scrollcue{position:absolute;left:var(--pad);bottom:1.4rem;font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--rye);opacity:.7;display:flex;align-items:center;gap:.6rem}
+  .scrollcue i{display:block;width:1px;height:34px;background:var(--rye);position:relative;overflow:hidden}
+  .scrollcue i::after{content:"";position:absolute;inset:0;background:var(--flour);animation:cue 2.4s var(--ease-rise) infinite}
+
+  /* ---------- MARQUEE ---------- */
+  .marquee{background:var(--rye-deep);color:var(--flour);overflow:hidden;padding:1.15rem 0;border-top:1px solid rgba(245,245,220,.15);border-bottom:1px solid rgba(245,245,220,.15)}
+  .marquee-track{display:flex;gap:3rem;white-space:nowrap;width:max-content;animation:marquee 34s linear infinite}
+  .marquee-track span{font-family:"Playfair Display",serif;font-size:clamp(1.4rem,3vw,2.4rem);font-style:italic;font-weight:400;display:flex;align-items:center;gap:3rem;opacity:.9}
+  .marquee-track span::after{content:"✳";font-style:normal;font-size:.7em;color:var(--crust)}
+
+  /* ---------- SECTION SHELL ---------- */
+  section{padding:clamp(4.5rem,10vw,8rem) var(--pad)}
+  .wrap{max-width:var(--maxw);margin:0 auto}
+  .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap;margin-bottom:clamp(2.5rem,5vw,4rem)}
+  .sec-head h2{font-size:clamp(2.4rem,5.5vw,4.4rem);color:var(--rye-deep);max-width:16ch}
+  .sec-head h2 em{font-style:italic;color:var(--rye)}
+  .sec-head p{max-width:34ch;color:#5b432b;font-size:1.02rem}
+
+  /* ---------- BAKES (crumb grid) ---------- */
+  .crumb{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(1rem,2.4vw,2rem);align-items:end}
+  .bake{position:relative;overflow:hidden;border-radius:3px;background:var(--crust);isolation:isolate}
+  .bake:nth-child(1){grid-column:1/6;aspect-ratio:4/5}
+  .bake:nth-child(2){grid-column:6/13;aspect-ratio:16/10}
+  .bake:nth-child(3){grid-column:1/8;aspect-ratio:16/9}
+  .bake:nth-child(4){grid-column:8/13;aspect-ratio:3/4}
+  .bake:nth-child(5){grid-column:1/5;aspect-ratio:1/1}
+  .bake:nth-child(6){grid-column:5/13;aspect-ratio:16/8}
+  .bake img{width:100%;height:100%;object-fit:cover;transform:scale(1.02);transition:transform 1.1s var(--ease-rise),filter .6s}
+  .bake:hover img{transform:scale(1.09);filter:saturate(1.15) contrast(1.06)}
+  .bake .grain{position:absolute;inset:0;opacity:0;transition:opacity .6s;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E")}
+  .bake:hover .grain{opacity:.5}
+  .bake .info{position:absolute;left:0;right:0;bottom:0;padding:1.4rem 1.5rem;z-index:2;color:var(--flour);
+    background:linear-gradient(0deg,rgba(58,29,10,.86),rgba(58,29,10,.35) 55%,transparent)}
+  .bake .info .price{position:absolute;top:1.3rem;right:1.5rem;font-family:"Playfair Display",serif;font-size:1.15rem}
+  .bake h3{font-size:clamp(1.4rem,2.4vw,2rem);font-weight:500}
+  .bake .info p{font-size:.86rem;opacity:.85;max-width:30ch;margin-top:.25rem;font-weight:300}
+  .bake .tag{display:inline-block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--crust);margin-bottom:.5rem}
+
+  /* ---------- METHOD (sticky two-col) ---------- */
+  .method{background:linear-gradient(180deg,var(--flour),#efe7cf)}
+  .method-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(2rem,6vw,6rem);align-items:start}
+  .method-sticky{position:sticky;top:120px}
+  .method-sticky h2{font-size:clamp(2.4rem,5vw,4rem);color:var(--rye-deep)}
+  .method-sticky h2 em{font-style:italic;color:var(--rye)}
+  .method-sticky .lead{margin-top:1.5rem;color:#5b432b;max-width:36ch}
+  .method-sticky .stamp{margin-top:2.2rem;display:inline-block;border:1px solid var(--crust);border-radius:50%;width:120px;height:120px;display:grid;place-items:center;text-align:center;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rye);line-height:1.5}
+  .steps{display:flex;flex-direction:column;gap:clamp(1.5rem,3vw,2.5rem)}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:1.6rem;padding-bottom:clamp(1.5rem,3vw,2.5rem);border-bottom:1px solid rgba(139,69,19,.18)}
+  .step:last-child{border-bottom:0}
+  .step .num{font-family:"Playfair Display",serif;font-size:clamp(2.2rem,4vw,3.4rem);color:var(--crust);line-height:1;font-style:italic}
+  .step h3{font-size:clamp(1.3rem,2.2vw,1.7rem);color:var(--rye-deep);margin-bottom:.5rem}
+  .step p{color:#5b432b;max-width:46ch}
+
+  /* ---------- GALLERY (postcards) ---------- */
+  .gallery{background:var(--rye-deep);color:var(--flour);position:relative;overflow:hidden}
+  .gallery .eyebrow{color:var(--crust)}
+  .gallery .eyebrow::before{background:var(--crust)}
+  .gallery .sec-head h2{color:var(--flour)}
+  .gallery .sec-head h2 em{color:var(--crust)}
+  .gallery .sec-head p{color:rgba(245,245,220,.7)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+  .card{position:relative;border-radius:3px;overflow:hidden;transform:rotate(var(--r,0deg));transition:transform .5s var(--ease-rise),box-shadow .5s;box-shadow:0 20px 40px -25px rgba(0,0,0,.7)}
+  .card:nth-child(1){--r:-3deg;margin-top:1.5rem}
+  .card:nth-child(2){--r:2deg}
+  .card:nth-child(3){--r:-1.5deg;margin-top:2.5rem}
+  .card:nth-child(4){--r:3deg}
+  .card:hover{transform:rotate(0) translateY(-8px);box-shadow:0 34px 50px -22px rgba(0,0,0,.8);z-index:3}
+  .card .pan2{position:absolute;inset:0;background-size:cover;background-position:center;animation:pan 40s ease-in-out infinite alternate}
+  .card:nth-child(2) .pan2{animation-duration:52s}
+  .card:nth-child(3) .pan2{animation-duration:44s;animation-direction:alternate-reverse}
+  .card:nth-child(4) .pan2{animation-duration:58s}
+  .card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(40,20,6,.85))}
+  .card .cap{position:absolute;left:1rem;bottom:1rem;right:1rem;z-index:2}
+  .card .cap b{font-family:"Playfair Display",serif;font-size:1.15rem;font-weight:500}
+  .card .cap span{display:block;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--crust);margin-top:.2rem}
+
+  /* ---------- STATS ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
+  .stat b{display:block;font-family:"Playfair Display",serif;font-size:clamp(2.6rem,6vw,4.6rem);color:var(--rye-deep);font-weight:500;line-height:1}
+  .stat span{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--rye);margin-top:.6rem;display:block}
+
+  /* ---------- QUOTE ---------- */
+  .quote{background:radial-gradient(120% 120% at 50% 0%,#fbfbf0,var(--flour));text-align:center}
+  .quote blockquote{font-family:"Playfair Display",serif;font-style:italic;font-weight:400;font-size:clamp(1.7rem,4.2vw,3.2rem);line-height:1.28;color:var(--rye-deep);max-width:20ch;margin:1.5rem auto;letter-spacing:-.01em}
+  .quote .mark{font-family:"Playfair Display",serif;font-size:5rem;color:var(--crust);line-height:.4;display:block}
+  .quote cite{font-style:normal;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rye)}
+
+  /* ---------- ORDER ---------- */
+  .order{background:linear-gradient(180deg,#efe7cf,var(--flour))}
+  .order-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(2rem,5vw,4.5rem);align-items:center}
+  .order h2{font-size:clamp(2.6rem,6vw,4.8rem);color:var(--rye-deep)}
+  .order h2 em{font-style:italic;color:var(--rye)}
+  .order p{margin:1.4rem 0 2rem;color:#5b432b;max-width:40ch}
+  .order-form{display:flex;flex-wrap:wrap;gap:.8rem}
+  .order-form input{flex:1;min-width:200px;font-family:"Lato",sans-serif;font-size:.95rem;padding:1rem 1.1rem;border:1px solid var(--crust);border-radius:2px;background:var(--flour);color:var(--ink)}
+  .order-form input:focus{outline:none;border-color:var(--rye);box-shadow:0 0 0 3px rgba(139,69,19,.12)}
+  .order-note{margin-top:1rem;font-size:.82rem;color:#6b5236}
+  .order-note.ok{color:var(--rye);font-weight:400}
+  .order-img{position:relative;border-radius:3px;overflow:hidden;aspect-ratio:4/5;box-shadow:0 40px 70px -40px rgba(90,46,15,.6)}
+  .order-img .pan{animation-duration:50s}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--rye-deep);color:var(--flour);padding:clamp(3.5rem,7vw,6rem) var(--pad) 2.5rem}
+  .foot-grid{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:2.5rem}
+  .foot-brand{font-family:"Playfair Display",serif;font-size:2rem;font-weight:500}
+  .foot-brand .amp{color:var(--crust);font-style:italic}
+  .foot-brand p{font-family:"Lato",sans-serif;font-size:.9rem;font-weight:300;opacity:.7;margin-top:1rem;max-width:30ch}
+  .foot-col h4{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--crust);margin-bottom:1.1rem;font-weight:400}
+  .foot-col a,.foot-col p{display:block;font-size:.92rem;opacity:.8;margin-bottom:.6rem;transition:opacity .3s}
+  .foot-col a:hover{opacity:1}
+  .foot-bottom{max-width:var(--maxw);margin:3rem auto 0;padding-top:1.8rem;border-top:1px solid rgba(245,245,220,.15);display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.78rem;opacity:.6;letter-spacing:.04em}
+
+  /* ---------- REVEAL ---------- */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity 1s var(--ease-rise),transform 1s var(--ease-rise)}
+  .reveal.in{opacity:1;transform:none}
+  .rise{opacity:0;transform:translateY(40px) scale(.96);transition:opacity 1.1s var(--ease-rise),transform 1.1s var(--ease-rise)}
+  .rise.in{opacity:1;transform:none}
+  .d1{transition-delay:.1s}.d2{transition-delay:.22s}.d3{transition-delay:.34s}.d4{transition-delay:.46s}.d5{transition-delay:.58s}
+
+  /* ---------- KEYFRAMES ---------- */
+  @keyframes pan{0%{transform:translateX(0) scale(1.05)}100%{transform:translateX(-16%) scale(1.12)}}
+  @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  @keyframes cue{0%{transform:translateY(-100%)}50%{transform:translateY(100%)}100%{transform:translateY(100%)}}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:960px){
+    .nav-links{display:none}
+    .nav-toggle{display:flex}
+    .nav.open .nav-links{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:1.2rem;background:rgba(245,245,220,.97);backdrop-filter:blur(10px);padding:1.5rem var(--pad);box-shadow:0 20px 30px -20px rgba(90,46,15,.5)}
+    .hero{grid-template-columns:1fr;padding-top:7rem}
+    .hero-visual{order:-1;height:52vh}
+    .float-note{right:1rem;top:auto;bottom:1rem}
+    .method-grid,.order-grid{grid-template-columns:1fr}
+    .method-sticky{position:static}
+    .cards{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:repeat(2,1fr);gap:2.5rem 1rem}
+    .foot-grid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:640px){
+    .crumb{display:flex;flex-direction:column}
+    .crumb .bake{grid-column:auto !important;aspect-ratio:4/3 !important}
+    .crumb .bake:nth-child(1){aspect-ratio:3/4 !important}
+    .cards{grid-template-columns:1fr}
+    .card{--r:0deg !important;margin-top:0 !important}
+    .foot-grid{grid-template-columns:1fr}
+    .hero-meta{gap:1.4rem}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important;transition-duration:.001s !important;scroll-behavior:auto}
+    .reveal,.rise{opacity:1 !important;transform:none !important}
+    .pan,.pan2{transform:none !important}
+    .scrollcue i::after{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top">Levain <span class="amp">&amp;</span> Air</a>
+  <nav class="nav-links">
+    <a href="#bakes">Today's Bakes</a>
+    <a href="#method">The Method</a>
+    <a href="#gallery">Crumb</a>
+    <a href="#order">Visit</a>
+  </nav>
+  <a class="nav-cta" href="#order">Order Today's Bake</a>
+  <button class="nav-toggle" id="toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-copy">
+    <span class="eyebrow rise">Sourdough · Baked daily at dawn</span>
+    <h1 class="rise d1">Air.<br>Time.<br><em>Flour.</em></h1>
+    <p class="hero-lead rise d2">A single levain, coaxed over thirty hours, becomes the open, custardy crumb you see here. No shortcuts, no additives — just grain, water, salt, and patience.</p>
+    <div class="hero-actions rise d3">
+      <a class="btn" href="#order">Order Today's Bake</a>
+      <a class="btn btn-ghost" href="#method">See the method</a>
+    </div>
+    <div class="hero-meta rise d4">
+      <div><b>36h</b>fermentation</div>
+      <div><b>100%</b>naturally leavened</div>
+      <div><b>40</b>loaves per bake</div>
+    </div>
+  </div>
+
+  <div class="hero-visual rise d2">
+    <div class="pan"></div>
+    <div class="float-note"><span>Crumb №07</span><p>Alveoli like a cathedral ceiling.</p></div>
+    <div class="vlabel">Today's crumb<b>Country White, 48% hydration</b></div>
+  </div>
+
+  <div class="scrollcue"><i></i>Scroll</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Country White</span><span>Dark Rye</span><span>Seeded Miche</span><span>Baguette Tradition</span><span>Einkorn Sourdough</span><span>Olive &amp; Rosemary</span>
+    <span>Country White</span><span>Dark Rye</span><span>Seeded Miche</span><span>Baguette Tradition</span><span>Einkorn Sourdough</span><span>Olive &amp; Rosemary</span>
+  </div>
+</div>
+
+<!-- BAKES -->
+<section id="bakes">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="reveal">Today's <em>bakes</em>, sliced open.</h2>
+      <p class="reveal d1">We photograph every loaf from the inside out — because the crumb tells you more than the crust ever will. Hover to feel the grain.</p>
+    </div>
+
+    <div class="crumb">
+      <article class="bake reveal">
+        <img src="https://picsum.photos/seed/country-white-crumb/800/1000" alt="Country white sourdough crumb, open and airy">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£7</span><span class="tag">Signature</span><h3>Country White</h3><p>Open, glossy crumb with a faintly sweet, lactic finish.</p></div>
+      </article>
+      <article class="bake reveal d1">
+        <img src="https://picsum.photos/seed/dark-rye-bread-texture/1200/750" alt="Dark rye loaf interior texture">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£8</span><span class="tag">Rye</span><h3>Dark Rye</h3><p>Dense, malty, deeply savoury — built for butter and salt.</p></div>
+      </article>
+      <article class="bake reveal">
+        <img src="https://picsum.photos/seed/seeded-miche-crumb/1000/560" alt="Seeded miche crumb with sunflower seeds">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£9</span><span class="tag">Seeded</span><h3>Seeded Miche</h3><p>Linseed, sunflower &amp; poppy folded into a two-kilo wheel.</p></div>
+      </article>
+      <article class="bake reveal d1">
+        <img src="https://picsum.photos/seed/baguette-tradition-crumb/700/940" alt="Baguette tradition crumb structure">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£4</span><span class="tag">Crackling</span><h3>Baguette Tradition</h3><p>Thin, shattering crust; wild, irregular alveoli within.</p></div>
+      </article>
+      <article class="bake reveal">
+        <img src="https://picsum.photos/seed/einkorn-sourdough-crumb/800/800" alt="Einkorn sourdough crumb">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£8</span><span class="tag">Heritage</span><h3>Einkorn</h3><p>Ancient grain, honeyed and tender-crumbed.</p></div>
+      </article>
+      <article class="bake reveal d1">
+        <img src="https://picsum.photos/seed/olive-rosemary-bread/1200/600" alt="Olive and rosemary sourdough crumb">
+        <div class="grain"></div>
+        <div class="info"><span class="price">£9</span><span class="tag">Seasonal</span><h3>Olive &amp; Rosemary</h3><p>Cured olives and garden rosemary through an airy crumb.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section class="method" id="method">
+  <div class="wrap method-grid">
+    <div class="method-sticky">
+      <span class="eyebrow reveal">The Method</span>
+      <h2 class="reveal d1">Nothing rushed, <em>nothing wasted.</em></h2>
+      <p class="lead reveal d2">Our starter — a living culture we've kept for nine years — does the slow work. We simply give it time, cool air, and a hot stone.</p>
+      <div class="stamp reveal d3">Baked<br>fresh<br>daily</div>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">01</div>
+        <div><h3>Levain</h3><p>A small culture is fed the night before, left to bloom overnight until it doubles and smells of green apple and yoghurt.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="num">02</div>
+        <div><h3>Autolyse</h3><p>Flour and water rest together, hydrating fully so gluten develops gently — no heavy kneading, just patience.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="num">03</div>
+        <div><h3>Fermentation</h3><p>Thirty-six hours in a cool room. Wild yeast and bacteria build the open holes and the deep, complex flavour.</p></div>
+      </div>
+      <div class="step reveal">
+        <div class="num">04</div>
+        <div><h3>Shape &amp; Bake</h3><p>Hand-shaped, proofed in baskets, then launched onto a blazing hearth where steam lifts the crumb and blisters the crust.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery" id="gallery">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="reveal">Inside the <em>crumb.</em></h2>
+      <p class="reveal d1">Macro studies of the interior — the translucent walls, the open alveoli, the way light passes through a well-fermented loaf.</p>
+    </div>
+    <div class="cards">
+      <figure class="card reveal"><div class="pan2" style="background-image:url('https://picsum.photos/seed/crumb-macro-alveoli/600/750')"></div><figcaption class="cap"><b>Alveoli</b><span>Open fermentation</span></figcaption></figure>
+      <figure class="card reveal d1"><div class="pan2" style="background-image:url('https://picsum.photos/seed/bread-crumb-translucent/600/750')"></div><figcaption class="cap"><b>Translucency</b><span>Light through crumb</span></figcaption></figure>
+      <figure class="card reveal d2"><div class="pan2" style="background-image:url('https://picsum.photos/seed/sourdough-interior-texture/600/750')"></div><figcaption class="cap"><b>Texture</b><span>Custardy &amp; soft</span></figcaption></figure>
+      <figure class="card reveal d3"><div class="pan2" style="background-image:url('https://picsum.photos/seed/rye-crumb-dark/600/750')"></div><figcaption class="cap"><b>Rye interior</b><span>Dense &amp; malty</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section>
+  <div class="wrap stats">
+    <div class="stat reveal"><b data-count="9">0</b><span>Years of levain</span></div>
+    <div class="stat reveal d1"><b data-count="36" data-suffix="h">0</b><span>Cold ferment</span></div>
+    <div class="stat reveal d2"><b data-count="100" data-suffix="%">0</b><span>Naturally leavened</span></div>
+    <div class="stat reveal d3"><b data-count="40">0</b><span>Loaves per bake</span></div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+  <span class="mark reveal">"</span>
+  <blockquote class="reveal d1">The crumb is the signature. Everything else is just the crust.</blockquote>
+  <cite class="reveal d2">— Maren Holt, Head Baker</cite>
+</section>
+
+<!-- ORDER -->
+<section class="order" id="order">
+  <div class="wrap order-grid">
+    <div>
+      <span class="eyebrow reveal">Order</span>
+      <h2 class="reveal d1">Reserve <em>today's bake.</em></h2>
+      <p class="reveal d2">Leave your email and we'll hold a loaf for you, ready for pickup at the counter. Bakes are limited — when the oven's empty, they're gone.</p>
+      <form class="order-form reveal d3" id="orderForm">
+        <input type="email" id="email" placeholder="your@email.com" aria-label="Email address" required>
+        <button class="btn" type="submit">Order Today's Bake</button>
+      </form>
+      <p class="order-note reveal d4" id="orderNote">Pickup window · 08:00 – 14:00 · 14 Kiln Lane</p>
+    </div>
+    <div class="order-img reveal d2">
+      <div class="pan" style="background:url('https://picsum.photos/seed/sourdough-crumb-order/900/1120') center/cover"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      Levain <span class="amp">&amp;</span> Air
+      <p>Small-batch sourdough, baked from a nine-year-old levain. Air, time, and flour — nothing else.</p>
+    </div>
+    <div class="foot-col">
+      <h4>Visit</h4>
+      <p>14 Kiln Lane</p>
+      <p>Old Town, SE1</p>
+      <p>Wed – Sun · 08:00 – 14:00</p>
+    </div>
+    <div class="foot-col">
+      <h4>Bakes</h4>
+      <a href="#bakes">Country White</a>
+      <a href="#bakes">Dark Rye</a>
+      <a href="#bakes">Seeded Miche</a>
+      <a href="#bakes">Baguette Tradition</a>
+    </div>
+    <div class="foot-col">
+      <h4>Follow</h4>
+      <a href="#">Instagram</a>
+      <a href="#">Newsletter</a>
+      <a href="#">Wholesale</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2024 Levain &amp; Air. All crumb reserved.</span>
+    <span>Air. Time. Flour.</span>
+  </div>
+</footer>
+
+<script>
+  // Nav scroll state
+  const nav=document.getElementById('nav');
+  const onScroll=()=>nav.classList.toggle('scrolled',window.scrollY>40);
+  onScroll();window.addEventListener('scroll',onScroll,{passive:true});
+
+  // Mobile menu
+  const toggle=document.getElementById('toggle');
+  toggle.addEventListener('click',()=>nav.classList.toggle('open'));
+  nav.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Reveal on scroll
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.16,rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal,.rise').forEach(el=>io.observe(el));
+
+  // Count-up stats
+  const countIO=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const el=e.target,target=+el.dataset.count,suf=el.dataset.suffix||'';
+      if(reduce){el.textContent=target+suf;countIO.unobserve(el);return;}
+      const dur=1400,start=performance.now();
+      const tick=(now)=>{
+        const p=Math.min((now-start)/dur,1);
+        const eased=1-Math.pow(1-p,3);
+        el.textContent=Math.round(target*eased)+suf;
+        if(p<1)requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);countIO.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('[data-count]').forEach(el=>countIO.observe(el));
+
+  // Order form
+  const form=document.getElementById('orderForm');
+  const note=document.getElementById('orderNote');
+  form.addEventListener('submit',(ev)=>{
+    ev.preventDefault();
+    const val=document.getElementById('email').value.trim();
+    if(val){note.textContent='✓ Held for you — we\'ll email when it\'s out of the oven.';note.classList.add('ok');form.reset();}
+  });
+</script>
+</body>
+</html>

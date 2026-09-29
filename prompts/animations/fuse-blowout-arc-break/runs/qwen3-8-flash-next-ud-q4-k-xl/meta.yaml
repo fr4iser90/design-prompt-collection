@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 426999
+gen_ms: 426999
+ttft_ms: 1685
+queue_wait_ms: 133
+wall_ms: 428886
+review_score: 8
+review_summary: "Excellent industrial aesthetic with strong typography and a clear, high-fidelity representation of the fuse subject."
+reviewed_at: "2026-09-29T06:16:24.896Z"
+review_issues:
+  - "The fuse filament is extremely thin and subtle, potentially lacking the visual weight needed for a 'hero' element in a static view."
+  - "The background grid is very faint, bordering on flat black rather than atmospheric."

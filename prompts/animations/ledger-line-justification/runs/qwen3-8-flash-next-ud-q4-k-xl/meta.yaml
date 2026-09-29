@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-28"
+updated: "2026-09-28"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 176436
+gen_ms: 176436
+ttft_ms: 234
+queue_wait_ms: 129
+wall_ms: 176866
+rejected_at: "2026-09-28T23:39:59.376Z"
+last_reject_reason: "build_fail:HTML contains planning/thinking prose — refusing to save"
+review_score: 6
+review_summary: "Strong archival aesthetic and typography, but the core 'justification' visual is broken by severe text overlap/clipping."
+reviewed_at: "2026-09-28T23:53:29.558Z"
+review_issues:
+  - "Text rendering is broken: characters are overlapping and squashed, making the ledger lines illegible."
+  - "The 'justified' state looks like a glitch rather than a precise alignment."
+  - "Left margin 'INDEX' column is empty (interaction state not visible)."

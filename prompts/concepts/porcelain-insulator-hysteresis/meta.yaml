@@ -1,0 +1,26 @@
+id: porcelain-insulator-hysteresis
+title: "Porcelain Insulator Hysteresis"
+category: concepts
+tags:
+  - ceramic
+  - electrical-engineering
+  - hysteresis-loop
+  - data-viz
+  - calm
+  - industrial
+  - insulation
+status: polished
+summary: "A visualization of electrical hysteresis in porcelain insulators, where the loop is drawn as a smooth, white ceramic curve against a dark, quiet background."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

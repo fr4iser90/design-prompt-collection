@@ -1,0 +1,32 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 456698
+gen_ms: 456698
+ttft_ms: 349
+queue_wait_ms: 99
+wall_ms: 457198
+rejected_at: "2026-09-29T00:39:58.810Z"
+last_review_score: 4
+last_review_summary: "The interface is functional but visually flat, failing to render the requested 'sharp, faceted' crystal structures, appearing instead as a generic dashboard."
+last_reject_reason: "score_4_below_5"
+review_score: 6
+review_summary: "Clean, on-brand layout with strong typography, but the hero visual is a flat gradient blob rather than the required sharp, faceted crystal growth."
+reviewed_at: "2026-09-29T00:48:49.079Z"
+review_issues:
+  - "Hero visual lacks the specified sharp, faceted geometry (looks like a soft glow/blob)"
+  - "No visible crystal structures growing from edges inward"
+  - "Background is a flat grid pattern rather than atmospheric"
+  - "Liquid pool color is too pale/washed out compared to brief"

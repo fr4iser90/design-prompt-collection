@@ -1,0 +1,27 @@
+id: woven-copper-heat-exchanger
+title: "Woven Copper Heat Exchanger"
+category: landing-pages
+tags:
+  - copper
+  - weave
+  - heat
+  - engineering
+  - textile
+  - industrial
+  - warm
+  - complex-geometry
+status: polished
+summary: "A landing page for 'WeaveWorks', a heat exchanger manufacturer. The hero is a complex, animated SVG of woven copper pipes that pulse with heat (orange glow) and tighten/loosen to demonstrate efficiency."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

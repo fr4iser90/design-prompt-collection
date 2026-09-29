@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asphalt Lane Marking Reveal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#4A4A4A;
+    --shadow:#2B2B2B;
+    --yellow:#FCC419;
+    --white:#FFFFFF;
+    --ease:cubic-bezier(.45,.05,.2,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{height:100%;}
+
+  body{
+    font-family:'Montserrat','Helvetica Neue',Arial,sans-serif;
+    background:var(--shadow);
+    color:var(--white);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .scene{
+    position:relative;
+    min-height:100vh;
+    min-height:100svh;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    background:var(--asphalt);
+    isolation:isolate;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .scene__bg{
+    position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(140% 100% at 50% -20%, rgba(255,255,255,.07), transparent 55%),
+      radial-gradient(120% 120% at 50% 120%, rgba(0,0,0,.5), transparent 60%),
+      var(--asphalt);
+  }
+  /* grainy asphalt grit */
+  .scene__bg::after{
+    content:""; position:absolute; inset:-20%;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.5;
+    mix-blend-mode:soft-light;
+    pointer-events:none;
+  }
+  /* vignette to keep it dark enough for contrast */
+  .scene__vignette{
+    position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%);
+  }
+
+  /* ---------- HEADER ---------- */
+  .top{
+    position:relative; z-index:6;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem;
+    padding:clamp(1rem,2.4vw,1.9rem) clamp(1.1rem,4vw,3rem);
+    font-size:clamp(.62rem,1.3vw,.78rem);
+    letter-spacing:.24em; text-transform:uppercase; font-weight:800;
+    color:rgba(255,255,255,.62);
+  }
+  .top__brand{display:flex; align-items:center; gap:.6rem;}
+  .top__brand .dot{
+    width:12px;height:12px;border-radius:2px;background:var(--yellow);
+    box-shadow:0 0 0 2px rgba(0,0,0,.35) inset;
+  }
+  .top__meta{display:flex; gap:clamp(.8rem,2.4vw,2rem); color:rgba(255,255,255,.42);}
+  .top__meta b{color:rgba(255,255,255,.85); font-weight:800;}
+  @media(max-width:640px){ .top__meta span:nth-child(3){display:none;} }
+
+  /* ---------- STAGE / SVG ---------- */
+  .stage{
+    position:relative; z-index:3;
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    padding:clamp(1rem,4vw,3rem);
+  }
+  .stage svg{ width:100%; height:auto; display:block; }
+
+  .brand{
+    font-family:'Montserrat','Arial Black',sans-serif;
+    font-weight:900;
+    letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+
+  /* hidden white text — revealed by the mask + ink-soak */
+  .paint-text{
+    fill:var(--white);
+    filter:url(#soak);
+    transition:opacity .55s ease;
+  }
+
+  /* the yellow lane line */
+  .lane{
+    fill:none;
+    stroke:var(--yellow);
+    stroke-width:12;
+    stroke-linecap:round;
+    filter:url(#rough);
+    transition:stroke-dashoffset 2s var(--ease);
+  }
+
+  /* the traveling paint head */
+  .head{
+    fill:var(--yellow);
+    filter:url(#rough);
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .head__core{ fill:#fff; opacity:.85; }
+
+  /* ---------- FOOTER ---------- */
+  .bottom{
+    position:relative; z-index:6;
+    display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+    padding:clamp(1rem,2.4vw,1.7rem) clamp(1.1rem,4vw,3rem);
+    font-size:clamp(.6rem,1.2vw,.74rem);
+    letter-spacing:.22em; text-transform:uppercase; font-weight:800;
+    color:rgba(255,255,255,.5);
+  }
+  .bottom__left{display:flex; align-items:center; gap:.7rem;}
+  .bottom__left .led{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--yellow);
+    box-shadow:0 0 10px rgba(252,196,25,.8);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.35;} 50%{opacity:1;} }
+
+  .replay{
+    display:inline-flex; align-items:center; gap:.55rem;
+    background:transparent; color:var(--white);
+    border:1.5px solid rgba(255,255,255,.35);
+    padding:.6rem 1.1rem; border-radius:3px;
+    font:inherit; font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; font-weight:800;
+    cursor:pointer; transition:border-color .25s, background .25s, color .25s, transform .2s;
+  }
+  .replay:hover{ border-color:var(--yellow); background:rgba(252,196,25,.12); color:var(--yellow); }
+  .replay:active{ transform:translateY(1px); }
+  .replay:focus-visible{ outline:2px solid var(--yellow); outline-offset:3px; }
+  .replay svg{ width:14px;height:14px; }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .lane{ transition:none !important; }
+    .paint-text{ transition:none !important; }
+    .head{ display:none; }
+    .bottom__left .led{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <main class="scene" aria-label="Asphalt lane marking reveal animation">
+
+    <!-- atmosphere -->
+    <div class="scene__bg" aria-hidden="true"></div>
+    <div class="scene__vignette" aria-hidden="true"></div>
+
+    <!-- header -->
+    <header class="top">
+      <div class="top__brand"><span class="dot"></span> Asphalt&nbsp;Lab</div>
+      <div class="top__meta">
+        <span>Wayfinding / Type</span>
+        <span>Surface <b>04A</b></span>
+        <span>Paint <b>#FCC419</b></span>
+      </div>
+    </header>
+
+    <!-- stage -->
+    <section class="stage">
+      <svg id="svg" viewBox="0 0 1200 500" role="img" aria-label="The words TRAFFIC FLOW revealed by a yellow road line painted across asphalt">
+        <defs>
+          <!-- rough, bonded paint edge -->
+          <filter id="rough" x="-15%" y="-40%" width="130%" height="180%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="4" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+
+          <!-- heat haze shimmer over the paint -->
+          <filter id="haze" x="-20%" y="-60%" width="140%" height="220%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.009 0.02" numOctaves="2" seed="1" result="h">
+              <animate attributeName="baseFrequency" dur="9s" values="0.009 0.02;0.013 0.028;0.009 0.02" repeatCount="indefinite"/>
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" in2="h" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+
+          <!-- ink-soak: blur -> sharp reveal -->
+          <filter id="soak" x="-20%" y="-40%" width="140%" height="180%" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b">
+              <animate attributeName="stdDeviation" begin="indefinite" dur="0.75s" from="7" to="0" fill="freeze"/>
+            </feGaussianBlur>
+            <feComponentTransfer in="b" result="a">
+              <feFuncA type="linear" slope="0" result="t">
+                <animate attributeName="slope" begin="indefinite" dur="0.55s" from="0" to="1" fill="freeze"/>
+              </feFuncA>
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode in="a"/>
+              <feMergeNode in="b"/>
+            </feMerge>
+          </filter>
+
+          <!-- expanding mask that follows the paint head -->
+          <mask id="reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="500">
+            <rect id="maskRect" x="0" y="0" width="0" height="500" fill="#fff"/>
+          </mask>
+        </defs>
+
+        <!-- hidden white text revealed by mask + soak -->
+        <g mask="url(#reveal)">
+          <text class="paint-text" x="600" y="258" text-anchor="middle" font-size="150" fill="#FFFFFF">TRAFFIC FLOW</text>
+        </g>
+
+        <!-- yellow lane line + haze + paint head -->
+        <g filter="url(#haze)">
+          <path id="lane" class="lane" d="M 60 320 H 1140"/>
+          <g id="head" class="head" transform="translate(60 320)">
+            <circle class="head__core" cx="0" cy="0" r="10"/>
+            <circle cx="0" cy="0" r="7" fill="#FCC419"/>
+          </g>
+        </g>
+      </svg>
+    </section>
+
+    <!-- footer -->
+    <footer class="bottom">
+      <div class="bottom__left"><span class="led"></span> Painting robot — steady pass</div>
+      <button class="replay" id="replay" type="button" aria-label="Replay the paint reveal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        Replay
+      </button>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  const lane   = document.getElementById('lane');
+  const head   = document.getElementById('head');
+  const mask   = document.getElementById('maskRect');
+  const soakB  = document.querySelector('#soak feGaussianBlur animate');
+  const soakA  = document.querySelector('#soak feFuncA animate');
+  const replay = document.getElementById('replay');
+  const X0 = 60, X1 = 1140, LEN = X1 - X0, DUR = 2000;
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // measure once so dash math is exact
+  let total = LEN;
+  try { total = lane.getTotalLength(); } catch(e){}
+
+  function ease(t){ // slight acceleration at the start
+    return t<0 ? 0 : t>1 ? 1 : t*t*(3-2*t);
+  }
+
+  function placeHead(p){
+    head.setAttribute('transform','translate(' + (X0 + LEN*p) + ' 320)');
+  }
+
+  function setFinal(){
+    lane.style.strokeDasharray = total;
+    lane.style.strokeDashoffset = 0;
+    mask.setAttribute('width', 1200);
+    placeHead(1);
+    head.style.opacity = 0;
+  }
+
+  function run(){
+    // reset
+    lane.style.transition = 'none';
+    lane.style.strokeDasharray = total;
+    lane.style.strokeDashoffset = total;
+    mask.setAttribute('width', 0);
+    head.style.transition = 'none';
+    head.style.opacity = 0;
+    placeHead(0);
+    void lane.getBoundingClientRect(); // flush
+
+    if(reduce){
+      lane.style.transition = 'none';
+      lane.style.strokeDashoffset = 0;
+      mask.setAttribute('width', 1200);
+      return;
+    }
+
+    // start the paint head + soak filter
+    head.style.transition = 'opacity .25s ease';
+    head.style.opacity = 1;
+    try{ soakB.beginElement(); }catch(e){}
+    try{ soakA.beginElement(); }catch(e){}
+
+    // drive the line + mask + head together
+    const start = performance.now();
+    function tick(now){
+      const t = Math.min((now - start)/DUR, 1);
+      const p = ease(t);
+      lane.style.strokeDashoffset = total * (1 - p);
+      mask.setAttribute('width', X0 + LEN*p);
+      placeHead(p);
+      if(t < 1){ requestAnimationFrame(tick); }
+      else { head.style.opacity = 0; }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // initial state
+  lane.style.strokeDasharray = total;
+  lane.style.strokeDashoffset = total;
+
+  if(reduce){
+    setFinal();
+  } else {
+    setTimeout(run, 450);
+  }
+
+  replay.addEventListener('click', function(){
+    if(reduce){ setFinal(); return; }
+    run();
+  });
+})();
+</script>
+</body>
+</html>

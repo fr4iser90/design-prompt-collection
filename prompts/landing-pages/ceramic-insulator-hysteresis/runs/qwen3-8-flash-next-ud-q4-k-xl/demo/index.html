@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porcelain & Flux — High-Voltage Ceramic Insulators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FDFBF7;
+    --bg-2:#F7F2EA;
+    --sand:#E8E2D9;
+    --beige:#D4C9BA;
+    --taupe:#8A8177;
+    --ink:#5C534A;
+    --ink-soft:#867C71;
+    --line:rgba(92,83,74,.16);
+    --line-soft:rgba(92,83,74,.08);
+    --glow:rgba(138,129,119,.16);
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+    --sans:'IBM Plex Sans',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --maxw:1240px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ---- ambient background layers ---- */
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .glow{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1100px 620px at 82% -8%, var(--glow), transparent 62%),
+      radial-gradient(880px 520px at -6% 108%, rgba(212,201,186,.55), transparent 60%);
+    animation:drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-2%,2%,0) scale(1.06)}}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(20px,5vw,56px);position:relative;z-index:3}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:.72rem;font-weight:500;
+    letter-spacing:.26em;text-transform:uppercase;color:var(--taupe);
+    display:inline-flex;align-items:center;gap:.7em;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--taupe);opacity:.6}
+
+  .display{
+    font-family:var(--serif);font-weight:400;font-optical-sizing:auto;
+    line-height:.98;letter-spacing:-.022em;color:var(--ink);
+    font-size:clamp(2.7rem,6.6vw,5.7rem);
+  }
+  .display em{font-style:italic;font-weight:300;color:var(--taupe)}
+
+  .lead{font-size:clamp(1.02rem,1.5vw,1.18rem);color:var(--ink-soft);max-width:46ch;font-weight:300}
+
+  /* ---- nav ---- */
+  header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(253,251,247,.72);
+    backdrop-filter:saturate(120%) blur(10px);
+    border-bottom:1px solid var(--line-soft);
+    transition:box-shadow .4s var(--ease),background .4s var(--ease);
+  }
+  header.scrolled{box-shadow:0 14px 40px -30px rgba(92,83,74,.55)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:72px}
+  .brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
+  .brand svg{width:26px;height:26px;flex:none}
+  .brand b{font-family:var(--serif);font-weight:500;font-size:1.18rem;letter-spacing:-.01em}
+  .brand b span{color:var(--taupe);font-style:italic;font-weight:400}
+  .nav-links{display:flex;align-items:center;gap:2rem}
+  .nav-links a{
+    font-family:var(--mono);font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-soft);text-decoration:none;position:relative;padding:4px 0;transition:color .3s
+  }
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--taupe);transition:width .35s var(--ease)}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-links a:hover::after{width:100%}
+  .cta{
+    font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--bg);background:var(--ink);border:none;cursor:pointer;
+    padding:.72em 1.25em;border-radius:999px;text-decoration:none;
+    display:inline-flex;align-items:center;gap:.55em;transition:transform .35s var(--ease),background .35s
+  }
+  .cta:hover{transform:translateY(-2px);background:var(--taupe)}
+  .cta svg{width:14px;height:14px}
+
+  /* ---- hero ---- */
+  .hero{padding:clamp(48px,8vh,96px) 0 clamp(60px,9vh,110px)}
+  .hero-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(30px,5vw,72px);align-items:center}
+  .hero-copy>*+*{margin-top:1.5rem}
+  .hero-copy .display{margin-top:1.1rem}
+  .hero-meta{
+    display:flex;flex-wrap:wrap;gap:1.4rem 2.4rem;margin-top:2.4rem;
+    padding-top:1.8rem;border-top:1px solid var(--line);
+  }
+  .hero-meta div{min-width:120px}
+  .hero-meta .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--taupe);display:block;margin-bottom:.35rem}
+  .hero-meta .v{font-family:var(--serif);font-size:1.55rem;font-weight:400;color:var(--ink)}
+  .hero-meta .v small{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);letter-spacing:.04em}
+
+  .hero-actions{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:2rem}
+  .cta.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .cta.ghost:hover{background:var(--sand);transform:translateY(-2px)}
+
+  /* ---- the loop ---- */
+  .loop-figure{position:relative}
+  .loop-frame{
+    position:relative;background:linear-gradient(180deg,#fff 0%,var(--bg-2) 100%);
+    border:1px solid var(--line);border-radius:20px;padding:clamp(14px,2vw,22px);
+    box-shadow:0 40px 80px -60px rgba(92,83,74,.6);
+  }
+  .loop-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;padding:0 6px}
+  .loop-head .t{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe)}
+  .loop-head .r{font-family:var(--mono);font-size:.66rem;color:var(--ink-soft)}
+
+  svg.loop{width:100%;height:auto;display:block;overflow:visible}
+  .loop .grid line{stroke:var(--line-soft);stroke-width:1}
+  .loop .axis{stroke:var(--taupe);stroke-width:1.1;opacity:.55}
+  .loop .axis-arrow{fill:var(--taupe);opacity:.6}
+  .loop .tick{font-family:var(--mono);font-size:9px;fill:var(--ink-soft);letter-spacing:.04em}
+  .loop .axlabel{font-family:var(--mono);font-size:10px;fill:var(--taupe);letter-spacing:.14em;text-transform:uppercase}
+
+  .loop .zone{fill:var(--taupe);opacity:0;transition:opacity .55s var(--ease)}
+  .loop .zone.active{opacity:.09}
+  .loop .zone-label{font-family:var(--mono);font-size:9.5px;fill:var(--taupe);letter-spacing:.1em;text-transform:uppercase;opacity:0;transition:opacity .5s var(--ease)}
+  .loop .zone-label.active{opacity:.85}
+
+  .loop .halo{fill:none;stroke:var(--taupe);stroke-width:9;opacity:0;stroke-linecap:round;transition:opacity .5s var(--ease)}
+  .loop .halo.on{opacity:.16}
+  .loop .curve{
+    fill:none;stroke:var(--taupe);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+    transition:stroke-width .4s var(--ease);
+  }
+  .loop .curve.thick{stroke-width:3}
+  .loop .marker{fill:var(--bg);stroke:var(--taupe);stroke-width:2;transition:opacity .4s var(--ease)}
+  .loop .marker-label{font-family:var(--mono);font-size:9px;fill:var(--ink-soft);letter-spacing:.06em}
+  .loop .dot{fill:var(--ink);opacity:0;transition:opacity .3s}
+  .loop .dot.on{opacity:1}
+  .loop .dot-halo{fill:var(--taupe);opacity:0;transition:opacity .3s}
+  .loop .dot-halo.on{opacity:.22}
+
+  .loop-foot{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:8px;padding:10px 6px 2px;border-top:1px solid var(--line-soft)}
+  .legend{display:flex;gap:1.2rem;flex-wrap:wrap}
+  .legend span{font-family:var(--mono);font-size:.66rem;color:var(--ink-soft);display:flex;align-items:center;gap:.5em}
+  .legend i{width:16px;height:3px;border-radius:2px;background:var(--taupe);display:inline-block}
+  .legend i.dash{background:repeating-linear-gradient(90deg,var(--taupe) 0 4px,transparent 4px 7px)}
+
+  /* ---- ticker ---- */
+  .ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg-2);overflow:hidden;padding:14px 0}
+  .ticker-track{display:flex;gap:0;width:max-content;animation:marq 34s linear infinite}
+  .ticker:hover .ticker-track{animation-play-state:paused}
+  .ticker-item{display:flex;align-items:center;gap:2.6rem;padding:0 2.6rem;font-family:var(--mono);font-size:.82rem;letter-spacing:.06em;color:var(--ink);white-space:nowrap}
+  .ticker-item b{font-family:var(--serif);font-weight:500;font-size:1.15rem;color:var(--taupe);font-style:italic}
+  .ticker-item::after{content:"◆";color:var(--beige);font-size:.6rem}
+  @keyframes marq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---- section shell ---- */
+  section{position:relative}
+  .band{padding:clamp(64px,10vh,120px) 0}
+  .sec-head{max-width:640px;margin-bottom:clamp(38px,5vw,64px)}
+  .sec-head h2{font-family:var(--serif);font-weight:400;font-optical-sizing:auto;font-size:clamp(2rem,4.2vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin-top:1.1rem}
+  .sec-head h2 em{font-style:italic;font-weight:300;color:var(--taupe)}
+  .sec-head p{margin-top:1.2rem;color:var(--ink-soft);font-weight:300;max-width:52ch}
+
+  /* ---- products (insulator discs) ---- */
+  .disc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3vw,40px)}
+  .disc{
+    position:relative;background:linear-gradient(180deg,#fff,var(--bg-2));
+    border:1px solid var(--line);border-radius:34px;padding:clamp(24px,3vw,34px);
+    overflow:hidden;transition:transform .5s var(--ease),box-shadow .5s var(--ease),border-color .5s;
+    min-height:340px;display:flex;flex-direction:column;
+  }
+  .disc::before{
+    content:"";position:absolute;inset:14px;border-radius:26px;border:1px solid var(--line-soft);
+    pointer-events:none;transition:inset .5s var(--ease),border-color .5s;
+  }
+  .disc:hover{transform:translateY(-6px);box-shadow:0 50px 90px -60px rgba(92,83,74,.7);border-color:var(--beige)}
+  .disc:hover::before{inset:10px;border-color:var(--beige)}
+  .disc .code{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--taupe);text-transform:uppercase}
+  .disc h3{font-family:var(--serif);font-weight:500;font-size:1.7rem;margin:.7rem 0 .3rem;letter-spacing:-.01em}
+  .disc .sub{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);letter-spacing:.04em}
+  .disc .ins{position:absolute;top:-18px;right:-18px;width:150px;height:150px;opacity:.9;transition:transform .6s var(--ease)}
+  .disc:hover .ins{transform:rotate(-8deg) scale(1.05)}
+  .disc .ins path,.disc .ins ellipse{fill:none;stroke:var(--beige);stroke-width:2}
+  .disc .ins .core{fill:var(--sand)}
+  .spec{list-style:none;margin-top:auto;padding-top:1.4rem;display:grid;gap:.15rem}
+  .spec li{display:flex;justify-content:space-between;align-items:baseline;padding:.5rem 0;border-top:1px dashed var(--line);font-family:var(--mono);font-size:.76rem}
+  .spec li span{color:var(--ink-soft)}
+  .spec li b{color:var(--ink);font-weight:500}
+  .disc .disc-tag{position:absolute;bottom:clamp(24px,3vw,34px);right:clamp(24px,3vw,34px)}
+
+  /* ---- properties (sticky two-column) ---- */
+  .props{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(30px,5vw,80px);align-items:start}
+  .props .stick{position:sticky;top:110px}
+  .props .stick .display{font-size:clamp(2rem,3.6vw,3rem)}
+  .prop-list{display:grid;gap:0}
+  .prop{display:grid;grid-template-columns:auto 1fr auto;gap:1.4rem;align-items:baseline;padding:1.6rem 0;border-top:1px solid var(--line);transition:padding-left .4s var(--ease)}
+  .prop:last-child{border-bottom:1px solid var(--line)}
+  .prop:hover{padding-left:12px}
+  .prop .n{font-family:var(--mono);font-size:.72rem;color:var(--taupe);letter-spacing:.1em}
+  .prop .name{font-family:var(--serif);font-size:1.35rem;font-weight:400}
+  .prop .name small{display:block;font-family:var(--sans);font-size:.86rem;color:var(--ink-soft);font-weight:300;margin-top:.3rem;max-width:34ch}
+  .prop .val{font-family:var(--mono);font-size:.95rem;color:var(--ink);text-align:right;white-space:nowrap}
+  .prop .val b{color:var(--taupe);font-weight:600}
+
+  /* ---- process (stacked cards) ---- */
+  .stack{display:flex;flex-direction:column;gap:22px}
+  .step{
+    position:sticky;top:calc(96px + var(--i)*16px);
+    background:linear-gradient(180deg,#fff,var(--bg-2));
+    border:1px solid var(--line);border-radius:22px;
+    padding:clamp(26px,4vw,44px);
+    display:grid;grid-template-columns:auto 1fr auto;gap:clamp(20px,4vw,56px);align-items:center;
+    box-shadow:0 30px 60px -50px rgba(92,83,74,.6);
+  }
+  .step .idx{font-family:var(--serif);font-size:clamp(3rem,7vw,5.5rem);font-weight:300;color:var(--beige);line-height:1;font-style:italic}
+  .step h3{font-family:var(--serif);font-weight:500;font-size:clamp(1.4rem,2.6vw,2rem);letter-spacing:-.01em}
+  .step p{margin-top:.7rem;color:var(--ink-soft);font-weight:300;max-width:44ch}
+  .step .temp{font-family:var(--mono);font-size:.78rem;color:var(--taupe);letter-spacing:.08em;text-align:right;white-space:nowrap}
+  .step .temp b{display:block;font-family:var(--serif);font-size:1.9rem;color:var(--ink);font-weight:400;font-style:normal}
+
+  /* ---- data table ---- */
+  .table-wrap{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--taupe);
+    text-align:left;padding:16px 22px;background:var(--bg-2);border-bottom:1px solid var(--line);font-weight:500
+  }
+  tbody td{padding:16px 22px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);font-size:.82rem;color:var(--ink)}
+  tbody tr{transition:background .3s}
+  tbody tr:hover{background:var(--bg-2)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody td:first-child{color:var(--ink-soft)}
+  tbody td b{font-weight:600;color:var(--ink)}
+  .badge{display:inline-block;font-size:.66rem;padding:.2em .6em;border-radius:999px;background:var(--sand);color:var(--ink)}
+
+  /* ---- quote ---- */
+  .quote{text-align:center;padding:clamp(60px,10vh,120px) 0}
+  .quote blockquote{font-family:var(--serif);font-weight:300;font-style:italic;font-size:clamp(1.6rem,3.6vw,2.9rem);line-height:1.25;letter-spacing:-.01em;max-width:20ch;margin:0 auto;color:var(--ink)}
+  .quote blockquote em{color:var(--taupe)}
+  .quote cite{display:block;margin-top:2rem;font-family:var(--mono);font-style:normal;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe)}
+
+  /* ---- footer ---- */
+  footer{border-top:1px solid var(--line);background:var(--bg-2);padding:clamp(56px,8vh,90px) 0 40px;position:relative;overflow:hidden}
+  footer .pattern{position:absolute;inset:0;opacity:.5;pointer-events:none;
+    background-image:radial-gradient(circle at center,var(--beige) 1.4px,transparent 1.6px);background-size:26px 26px;mask-image:linear-gradient(180deg,transparent,#000 60%,transparent)}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;position:relative;z-index:2}
+  .foot-brand .brand b{font-size:1.5rem}
+  .foot-brand p{margin-top:1rem;color:var(--ink-soft);font-weight:300;max-width:34ch;font-size:.95rem}
+  .foot-col h4{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--taupe);margin-bottom:1.1rem}
+  .foot-col a,.foot-col p{display:block;color:var(--ink);text-decoration:none;font-size:.92rem;margin-bottom:.6rem;transition:color .3s}
+  .foot-col a:hover{color:var(--taupe)}
+  .foot-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-top:clamp(40px,6vh,70px);padding-top:26px;border-top:1px solid var(--line);position:relative;z-index:2}
+  .foot-bottom span{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);letter-spacing:.06em}
+
+  /* ---- reveal ---- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}
+
+  /* ---- responsive ---- */
+  @media(max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:44px}
+    .props{grid-template-columns:1fr}
+    .props .stick{position:static}
+    .disc-grid{grid-template-columns:1fr 1fr}
+    .foot-grid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:680px){
+    .nav-links{display:none}
+    .disc-grid{grid-template-columns:1fr}
+    .step{grid-template-columns:1fr;gap:14px;position:static;top:auto}
+    .step .temp{text-align:left}
+    .prop{grid-template-columns:auto 1fr;gap:.9rem}
+    .prop .val{grid-column:2;text-align:left}
+    .foot-grid{grid-template-columns:1fr}
+    .hero-meta div{min-width:calc(50% - 12px)}
+    table{font-size:.72rem}
+    thead th,tbody td{padding:12px 12px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+    .ticker-track{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="glow"></div>
+
+<!-- NAV -->
+<header id="top">
+  <div class="wrap nav">
+    <a class="brand" href="#top" aria-label="Porcelain and Flux home">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 5.5c3.2 0 3.2 13 0 13M20 5.5c-3.2 0-3.2 13 0 13" fill="none" stroke="#8A8177" stroke-width="1.6"/>
+        <path d="M4 9h16M4 12h16M4 15h16" stroke="#D4C9BA" stroke-width="1.2"/>
+      </svg>
+      <b>Porcelain <span>&amp;</span> Flux</b>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#insulators">Insulators</a>
+      <a href="#properties">Properties</a>
+      <a href="#process">Process</a>
+      <a href="#data">Datasheet</a>
+    </nav>
+    <a class="cta" href="#contact">Request sample
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow reveal">High-Voltage Ceramic Insulation · Est. 1968</span>
+      <h1 class="display reveal d1">The curve of <em>withstanding</em> the current.</h1>
+      <p class="lead reveal d2">Porcelain &amp; Flux fires precision insulators that hold the line between a grid and a storm. Every disc is measured against its own hysteresis — the memory of the field it has survived.</p>
+      <div class="hero-actions reveal d2">
+        <a class="cta" href="#insulators">Explore the catalogue</a>
+        <a class="cta ghost" href="#process">How it's fired</a>
+      </div>
+      <div class="hero-meta reveal d3">
+        <div><span class="k">Rated Voltage</span><span class="v">550 <small>kV AC</small></span></div>
+        <div><span class="k">Dielectric Strength</span><span class="v">14 <small>kV/mm</small></span></div>
+        <div><span class="k">Firing Temp</span><span class="v">1380 <small>°C</small></span></div>
+      </div>
+    </div>
+
+    <figure class="loop-figure reveal d1">
+      <div class="loop-frame">
+        <div class="loop-head">
+          <span class="t">Fig. 01 — Dielectric Hysteresis</span>
+          <span class="r">Class PF-1 · 23 °C</span>
+        </div>
+        <svg class="loop" viewBox="0 0 560 470" role="img" aria-label="Animated hysteresis loop of ceramic dielectric polarisation versus applied electric field">
+          <!-- grid -->
+          <g class="grid">
+            <line x1="70" y1="60" x2="70" y2="410"/><line x1="180" y1="60" x2="180" y2="410"/>
+            <line x1="290" y1="60" x2="290" y2="410"/><line x1="400" y1="60" x2="400" y2="410"/>
+            <line x1="510" y1="60" x2="510" y2="410"/>
+            <line x1="70" y1="60" x2="510" y2="60"/><line x1="70" y1="147" x2="510" y2="147"/>
+            <line x1="70" y1="235" x2="510" y2="235"/><line x1="70" y1="322" x2="510" y2="322"/>
+            <line x1="70" y1="410" x2="510" y2="410"/>
+          </g>
+          <!-- axes -->
+          <line class="axis" x1="70" y1="235" x2="510" y2="235"/>
+          <line class="axis" x1="290" y1="60" x2="290" y2="410"/>
+          <polygon class="axis-arrow" points="510,235 500,231 500,239"/>
+          <polygon class="axis-arrow" points="290,60 286,70 294,70"/>
+          <text class="axlabel" x="512" y="239" text-anchor="end" dx="-2" dy="18">Field E →</text>
+          <text class="axlabel" x="290" y="52" text-anchor="middle">Polarisation P</text>
+          <!-- ticks -->
+          <text class="tick" x="70" y="424" text-anchor="middle">−E</text>
+          <text class="tick" x="510" y="424" text-anchor="middle">+E</text>
+          <text class="tick" x="284" y="64" text-anchor="end">+P</text>
+          <text class="tick" x="284" y="414" text-anchor="end">−P</text>
+
+          <!-- zones -->
+          <rect class="zone" id="zoneR" x="300" y="60" width="210" height="350" rx="14"/>
+          <rect class="zone" id="zoneC" x="80" y="60" width="210" height="350" rx="14"/>
+          <text class="zone-label" id="zoneRl" x="405" y="80" text-anchor="middle">Resistance Zone</text>
+          <text class="zone-label" id="zoneCl" x="185" y="80" text-anchor="middle">Capacity Zone</text>
+
+          <!-- curve -->
+          <path id="halo" class="halo" d="M 480 90 C 410 105 380 165 330 200 C 300 222 300 248 270 270 C 220 305 190 365 120 380 C 190 365 220 305 270 270 C 300 248 300 222 330 200 C 380 165 410 105 480 90 Z"/>
+          <path id="curve" class="curve" d="M 480 90 C 410 105 380 165 330 200 C 300 222 300 248 270 270 C 220 305 190 365 120 380 C 190 365 220 305 270 270 C 300 248 300 222 330 200 C 380 165 410 105 480 90 Z"/>
+
+          <!-- markers -->
+          <circle class="marker" cx="480" cy="90" r="4"/>
+          <text class="marker-label" x="486" y="86">Saturation</text>
+          <circle class="marker" cx="120" cy="380" r="4"/>
+          <text class="marker-label" x="114" y="398" text-anchor="end">Reverse Sat.</text>
+          <circle class="marker" cx="330" cy="200" r="4"/>
+          <circle class="marker" cx="270" cy="270" r="4"/>
+
+          <!-- moving dot -->
+          <circle id="dotHalo" class="dot-halo" cx="480" cy="90" r="10"/>
+          <circle id="dot" class="dot" cx="480" cy="90" r="4.5"/>
+        </svg>
+        <div class="loop-foot">
+          <div class="legend">
+            <span><i></i> Polarisation path</span>
+            <span><i class="dash"></i> Sweep direction</span>
+          </div>
+          <span class="r" id="readout" style="font-family:var(--mono);font-size:.68rem;color:var(--ink-soft)">Hover the loop</span>
+        </div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<!-- INSULATORS -->
+<section class="band" id="insulators">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Product Line</span>
+      <h2>Discs, bells &amp; <em>long-rods</em> for the hardest conditions.</h2>
+      <p>Each form is thrown, glazed and kiln-tested as a single body of porcelain — no seams where the field can gather.</p>
+    </div>
+
+    <div class="disc-grid">
+      <article class="disc reveal">
+        <svg class="ins" viewBox="0 0 100 100"><ellipse class="core" cx="50" cy="50" rx="9" ry="9"/><path d="M50 12c16 6 16 20 0 26s-16 20 0 26"/><path d="M50 12c-16 6-16 20 0 26s16 20 0 26"/><ellipse cx="50" cy="50" rx="30" ry="30"/></svg>
+        <span class="code">Series PF-1 · Cap &amp; Pin</span>
+        <h3>Cap &amp; Pin Disc</h3>
+        <span class="sub">C-160 · 160 kN mechanical</span>
+        <ul class="spec">
+          <li><span>Rated voltage</span><b>146 kV</b></li>
+          <li><span>Creepage</span><b>340 mm</b></li>
+          <li><span>Glaze</span><b>Lead-free</b></li>
+        </ul>
+      </article>
+
+      <article class="disc reveal d1">
+        <svg class="ins" viewBox="0 0 100 100"><ellipse class="core" cx="50" cy="50" rx="8" ry="8"/><path d="M50 10c20 8 20 22 0 30s-20 22 0 30 20 20 0 28"/><path d="M50 10c-20 8-20 22 0 30s20 22 0 30-20 20 0 28"/></svg>
+        <span class="code">Series PF-2 · Long-Rod</span>
+        <h3>Long-Rod Insulator</h3>
+        <span class="sub">LR-420 · 420 kV class</span>
+        <ul class="spec">
+          <li><span>Rated voltage</span><b>420 kV</b></li>
+          <li><span>Creepage</span><b>10,640 mm</b></li>
+          <li><span>Body</span><b>Single-fired</b></li>
+        </ul>
+      </article>
+
+      <article class="disc reveal d2">
+        <svg class="ins" viewBox="0 0 100 100"><ellipse class="core" cx="50" cy="46" rx="7" ry="7"/><path d="M50 8c18 6 18 18 0 24s-18 18 0 24"/><path d="M50 8c-18 6-18 18 0 24s18 18 0 24"/><path d="M34 66h32M40 74h20" /></svg>
+        <span class="code">Series PF-3 · Bell</span>
+        <h3>Station Bell</h3>
+        <span class="sub">B-245 · 245 kV class</span>
+        <ul class="spec">
+          <li><span>Rated voltage</span><b>245 kV</b></li>
+          <li><span>Creepage</span><b>6,300 mm</b></li>
+          <li><span>Mount</span><b>Post / pin</b></li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- PROPERTIES -->
+<section class="band" id="properties">
+  <div class="wrap props">
+    <div class="stick reveal">
+      <span class="eyebrow">Material Science</span>
+      <h2 class="display" style="margin-top:1.1rem">Porcelain, <em>measured</em> to the micron.</h2>
+      <p class="lead" style="margin-top:1.4rem">We characterise every batch the way a capacitor is characterised — by how it stores, holds and releases charge. The numbers below are typical for our Class-1 stoneware body.</p>
+    </div>
+    <div class="prop-list">
+      <div class="prop reveal"><span class="n">01</span><span class="name">Dielectric Constant<small>Relative permittivity at 1 MHz, room temperature.</small></span><span class="val">ε<sub>r</sub> <b>6.8</b></span></div>
+      <div class="prop reveal"><span class="n">02</span><span class="name">Dielectric Strength<small>Breakdown field before flashover across the body.</small></span><span class="val"><b>14</b> kV/mm</span></div>
+      <div class="prop reveal"><span class="n">03</span><span class="name">Volume Resistivity<small>At 23 °C, after 60 s of applied field.</small></span><span class="val"><b>10<sup>14</sup></b> Ω·cm</span></div>
+      <div class="prop reveal"><span class="n">04</span><span class="name">Loss Tangent<small>Dielectric dissipation factor tan δ.</small></span><span class="val"><b>0.0012</b></span></div>
+      <div class="prop reveal"><span class="n">05</span><span class="name">Thermal Expansion<small>Linear coefficient, 20–500 °C range.</small></span><span class="val"><b>6.5</b> ×10⁻⁶/K</span></div>
+      <div class="prop reveal"><span class="n">06</span><span class="name">Water Absorption<small>Per ASTM C473, glazed body.</small></span><span class="val"><b>&lt; 0.1</b> %</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="band" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">From Clay to Grid</span>
+      <h2>Four firings, one <em>unbroken</em> body.</h2>
+    </div>
+    <div class="stack">
+      <article class="step reveal" style="--i:0">
+        <span class="idx">01</span>
+        <div><h3>Slip-Cast the Form</h3><p>Porcelain slip is poured into plaster moulds that pull moisture evenly, leaving a dense, pore-free green body.</p></div>
+        <span class="temp"><b>18%</b>Moisture out</span>
+      </article>
+      <article class="step reveal" style="--i:1">
+        <span class="idx">02</span>
+        <div><h3>Glaze &amp; Flux</h3><p>A lead-free feldspathic flux is sprayed on — the same chemistry that fuses glass to clay at peak temperature.</p></div>
+        <span class="temp"><b>300µ</b>Glaze coat</span>
+      </article>
+      <article class="step reveal" style="--i:2">
+        <span class="idx">03</span>
+        <div><h3>Single-Fire Kiln</h3><p>The body and glaze vitrify together in one long climb, bonding without a seam where the field could concentrate.</p></div>
+        <span class="temp"><b>1380°C</b>Peak</span>
+      </article>
+      <article class="step reveal" style="--i:3">
+        <span class="idx">04</span>
+        <div><h3>Hi-Pot &amp; Hysteresis Test</h3><p>Every unit is swept to breakdown and traced against its own loop before it earns a serial number.</p></div>
+        <span class="temp"><b>100%</b>Tested</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- DATA -->
+<section class="band" id="data">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Datasheet</span>
+      <h2>Electrical <em>profile</em>, at a glance.</h2>
+    </div>
+    <div class="table-wrap reveal">
+      <table>
+        <thead><tr><th>Parameter</th><th>PF-1 Disc</th><th>PF-2 Long-Rod</th><th>PF-3 Bell</th><th>Method</th></tr></thead>
+        <tbody>
+          <tr><td>Rated voltage</td><td><b>146 kV</b></td><td><b>420 kV</b></td><td><b>245 kV</b></td><td>IEC 60383</td></tr>
+          <tr><td>Min. puncture voltage</td><td>385 kV</td><td>1,040 kV</td><td>640 kV</td><td>IEC 60383</td></tr>
+          <tr><td>Creepage distance</td><td>340 mm</td><td>10,640 mm</td><td>6,300 mm</td><td>IEC 60815</td></tr>
+          <tr><td>Dielectric constant εr</td><td>6.8</td><td>6.9</td><td>6.7</td><td>ASTM D150</td></tr>
+          <tr><td>Loss tangent tan δ</td><td>0.0012</td><td>0.0011</td><td>0.0013</td><td>ASTM D150</td></tr>
+          <tr><td>Pollution class</td><td><span class="badge">a–d</span></td><td><span class="badge">a–d</span></td><td><span class="badge">a–c</span></td><td>IEC 60815</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote">
+  <div class="wrap reveal">
+    <blockquote>A good insulator remembers the storm and <em>refuses</em> to repeat it.</blockquote>
+    <cite>— The Kiln Log, Porcelain &amp; Flux Works</cite>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="pattern"></footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5c3.2 0 3.2 13 0 13M20 5.5c-3.2 0-3.2 13 0 13" fill="none" stroke="#8A8177" stroke-width="1.6"/><path d="M4 9h16M4 12h16M4 15h16" stroke="#D4C9BA" stroke-width="1.2"/></svg>
+          <b>Porcelain <span>&amp;</span> Flux</b>
+        </a>
+        <p>High-voltage ceramic insulators, fired and tested under one roof since 1968.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Products</h4>
+        <a href="#insulators">Cap &amp; Pin Discs</a>
+        <a href="#insulators">Long-Rod Insulators</a>
+        <a href="#insulators">Station Bells</a>
+        <a href="#data">Datasheets</a>
+      </div>
+      <div class="foot-col">
+        <h4>Company</h4>
+        <a href="#process">The Kiln</a>
+        <a href="#properties">Material Science</a>
+        <a href="#">Certifications</a>
+        <a href="#">Careers</a>
+      </div>
+      <div class="foot-col">
+        <h4>Contact</h4>
+        <p>Works &amp; Kiln<br>44 Stoneware Lane</p>
+        <a href="mailto:hello@porcelainflux.co">hello@porcelainflux.co</a>
+        <a href="tel:+10000000000">+1 (000) 000-0000</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 1968–2024 Porcelain &amp; Flux Ceramics Ltd.</span>
+      <span>ISO 9001 · IEC 60383 · Fired at 1380°C</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* header shadow */
+  var header = document.getElementById('top');
+  addEventListener('scroll', function(){
+    header.classList.toggle('scrolled', scrollY > 8);
+  }, {passive:true});
+
+  /* reveal on scroll */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.14, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ticker build */
+  var items = ['550 kV Rated','1380 °C Single-Fire','14 kV/mm Dielectric','εr 6.8','10⁻⁶/K Expansion','< 0.1% Absorption','IEC 60383','Lead-Free Glaze'];
+  var track = document.getElementById('ticker');
+  var html = '';
+  for(var r=0;r<2;r++){ items.forEach(function(t){ html += '<span class="ticker-item">'+t+'</span>'; }); }
+  track.innerHTML = html;
+
+  /* hysteresis loop */
+  var curve = document.getElementById('curve');
+  var halo  = document.getElementById('halo');
+  var dot   = document.getElementById('dot');
+  var dotH  = document.getElementById('dotHalo');
+  var readout = document.getElementById('readout');
+  var zoneR = document.getElementById('zoneR'), zoneC = document.getElementById('zoneC');
+  var zoneRl= document.getElementById('zoneRl'), zoneCl= document.getElementById('zoneCl');
+
+  var len = curve.getTotalLength();
+  curve.style.strokeDasharray = len;
+  halo.style.strokeDasharray = len;
+
+  function setProgress(p){
+    var pt = curve.getPointAtLength(p*len);
+    dot.setAttribute('cx', pt.x); dot.setAttribute('cy', pt.y);
+    dotH.setAttribute('cx', pt.x); dotH.setAttribute('cy', pt.y);
+  }
+
+  if(reduce){
+    curve.style.strokeDashoffset = 0;
+    halo.style.strokeDashoffset = 0;
+    dot.classList.add('on'); dotH.classList.add('on');
+    setProgress(0);
+  } else {
+    curve.style.strokeDashoffset = len;
+    halo.style.strokeDashoffset = len;
+
+    /* draw-in */
+    var drawStart = null, drawDur = 2600;
+    function draw(ts){
+      if(!drawStart) drawStart = ts;
+      var t = Math.min((ts-drawStart)/drawDur, 1);
+      var e = 1 - Math.pow(1-t, 3);
+      curve.style.strokeDashoffset = len*(1-e);
+      halo.style.strokeDashoffset = len*(1-e);
+      setProgress(e);
+      if(t<1){ requestAnimationFrame(draw); }
+      else {
+        dot.classList.add('on'); dotH.classList.add('on');
+        requestAnimationFrame(sweep);
+      }
+    }
+    setTimeout(function(){ requestAnimationFrame(draw); }, 350);
+
+    /* continuous ambient sweep */
+    var sweepStart = null, sweepDur = 9000;
+    function sweep(ts){
+      if(!sweepStart) sweepStart = ts;
+      var t = ((ts-sweepStart)/sweepDur) % 1;
+      setProgress(t);
+      requestAnimationFrame(sweep);
+    }
+  }
+
+  /* hover zones + readout */
+  function activate(side){
+    curve.classList.add('thick'); halo.classList.add('on');
+    if(side==='R'){ zoneR.classList.add('active'); zoneRl.classList.add('active'); zoneC.classList.remove('active'); zoneCl.classList.remove('active');
+      readout.textContent = 'Resistance · high E · low P'; }
+    else { zoneC.classList.add('active'); zoneCl.classList.add('active'); zoneR.classList.remove('active'); zoneRl.classList.remove('active');
+      readout.textContent = 'Capacity · remanent P · low E'; }
+  }
+  function deactivate(){
+    curve.classList.remove('thick'); halo.classList.remove('on');
+    zoneR.classList.remove('active'); zoneC.classList.remove('active');
+    zoneRl.classList.remove('active'); zoneCl.classList.remove('active');
+    readout.textContent = 'Hover the loop';
+  }
+  document.querySelector('.loop').addEventListener('mousemove', function(ev){
+    var r = this.getBoundingClientRect();
+    var x = (ev.clientX - r.left)/r.width;
+    activate(x >= 0.5 ? 'R' : 'C');
+  });
+  document.querySelector('.loop').addEventListener('mouseleave', deactivate);
+})();
+</script>
+</body>
+</html>

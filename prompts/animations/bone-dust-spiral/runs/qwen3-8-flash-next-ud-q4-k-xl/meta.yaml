@@ -7,10 +7,18 @@ engine_link: "https://github.com/gufo-org/gufo"
 built_at: "2026-09-28"
 updated: "2026-09-28"
 demo: demo/index.html
-preview: null
-status: built
+preview: preview.png
+status: ok
 build_attempts: 0
 thinking_enabled: false
 stream: true
 temperature: 0.65
 duration_ms: 149362
+gen_ms: 149362
+review_score: 6
+review_summary: "The background gradient and color palette are accurate, but the particle effect is too sparse and lacks the 'thousands' or 'vortex' density described in the brief."
+reviewed_at: "2026-09-28T22:36:25.426Z"
+review_issues:
+  - "Particle count is far too low (brief requested thousands)"
+  - "Vortex/spiral structure is not visible in the static frame"
+  - "Particles appear as a flat cluster rather than a rising column"

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concrete Pour — Vibration Settle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2b2b2b; --bg2:#232323;
+  --wood:#d4c5a9; --wood-dark:#b8a887; --wood-edge:#8f7f5f;
+  --ink:#f2efe8; --muted:#8f8f8f; --faint:#5c5c5c; --line:#3c3c3c;
+  --accent:#c8b48a; --accent2:#9fb0b6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"JetBrains Mono",ui-monospace,monospace;
+  overflow:hidden;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+/* atmospheric layers */
+#bg{position:fixed;inset:0;z-index:0;display:block}
+.grain{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 42%,transparent 45%,rgba(0,0,0,.55) 100%);
+}
+.scan{
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);
+}
+
+/* frame */
+.wrap{position:relative;z-index:2;height:100%;display:grid;grid-template-rows:auto 1fr auto}
+.top{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:clamp(14px,2.4vw,30px) clamp(16px,3vw,42px);
+}
+.wordmark{display:flex;align-items:baseline;gap:10px}
+.wordmark .mk{
+  font-family:"Oswald",sans-serif;font-weight:700;font-size:clamp(15px,2vw,20px);
+  letter-spacing:.02em;color:var(--ink);
+}
+.wordmark .sub{font-size:10px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase}
+.hud{display:flex;align-items:center;gap:14px;font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+.dot{width:8px;height:8px;border-radius:50%;background:#7a7a7a;box-shadow:0 0 0 0 rgba(200,180,138,.5)}
+.dot.live{background:var(--accent);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,180,138,.55)}70%{box-shadow:0 0 0 9px rgba(200,180,138,0)}100%{box-shadow:0 0 0 0 rgba(200,180,138,0)}}
+
+/* stage */
+.stage{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  padding:0 clamp(10px,2vw,24px);
+}
+canvas#scene{display:block;max-width:100%;height:auto;touch-action:none;cursor:pointer}
+canvas#scene:focus-visible{outline:1px solid var(--accent);outline-offset:8px}
+
+/* side labels */
+.sidelabel{
+  position:absolute;left:clamp(14px,3vw,40px);top:50%;transform:translateY(-50%) rotate(180deg);
+  writing-mode:vertical-rl;font-size:10px;letter-spacing:.34em;color:var(--faint);text-transform:uppercase;
+  pointer-events:none;
+}
+.sidelabel.right{left:auto;right:clamp(14px,3vw,40px);transform:translateY(-50%)}
+@media(max-width:640px){.sidelabel{display:none}}
+
+/* bottom console */
+.bottom{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
+  padding:clamp(14px,2.4vw,30px) clamp(16px,3vw,42px);
+}
+.phase-block{max-width:min(560px,60%)}
+.phase-name{
+  font-family:"Oswald",sans-serif;font-weight:600;
+  font-size:clamp(26px,4.4vw,46px);line-height:.95;letter-spacing:.01em;
+  color:var(--ink);transition:opacity .35s ease;
+}
+.phase-desc{
+  margin-top:8px;font-size:clamp(10px,1.4vw,12px);letter-spacing:.06em;color:var(--muted);
+  max-width:46ch;transition:opacity .35s ease;
+}
+.controls{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.btn{
+  font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink);background:transparent;border:1px solid var(--line);
+  padding:10px 16px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:8px;
+}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,180,138,.06)}
+.btn .ic{font-size:9px}
+.meter{width:min(300px,42vw)}
+.meter .lbl{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.2em;color:var(--faint);margin-bottom:6px}
+.meter .track{height:2px;background:var(--line);position:relative;overflow:hidden}
+.meter .fill{position:absolute;inset:0 auto 0 0;width:0%;background:var(--accent)}
+.ticks{display:flex;justify-content:space-between;margin-top:7px}
+.tick{font-size:9px;letter-spacing:.14em;color:var(--faint);transition:.3s;text-transform:uppercase}
+.tick.on{color:var(--accent)}
+@media(max-width:720px){
+  .bottom{flex-direction:column;align-items:stretch;gap:18px}
+  .controls{align-items:stretch}
+  .meter{width:100%}
+  .btn{justify-content:center}
+}
+.hint{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;letter-spacing:.24em;color:var(--faint);text-transform:uppercase;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="scan"></div>
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<div class="wrap">
+  <header class="top">
+    <div class="wordmark">
+      <span class="mk">CONCRETE&nbsp;POUR</span>
+      <span class="sub">Vibration&nbsp;Settle</span>
+    </div>
+    <div class="hud">
+      <span class="dot live" id="led"></span>
+      <span id="clock">--:--:--</span>
+      <span>·</span>
+      <span id="fps">60 FPS</span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <span class="sidelabel">Formwork · Pine 2×6 · 1200×600</span>
+    <span class="sidelabel right">Specimen&nbsp;#07 · C30/37</span>
+    <canvas id="scene" tabindex="0" aria-label="Concrete pour vibration settle simulation. Click to replay."></canvas>
+    <span class="hint">click / tap the pour to replay</span>
+  </main>
+
+  <footer class="bottom">
+    <div class="phase-block">
+      <div class="phase-name" id="phaseName">AGITATION</div>
+      <div class="phase-desc" id="phaseDesc">Two steel rods drive high-frequency vibration. Aggregate liquefies; trapped air begins to migrate.</div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="replay"><span class="ic">▶</span> Replay Pour</button>
+      <div class="meter">
+        <div class="lbl"><span>PROCESS</span><span id="timeRead">0.00s</span></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+        <div class="ticks">
+          <span class="tick" data-i="0">Agitate</span>
+          <span class="tick" data-i="1">Settle</span>
+          <span class="tick" data-i="2">Cure</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- palette ---------- */
+const COL = {
+  bg:'#2b2b2b', wood:'#d4c5a9', woodDark:'#b8a887', woodEdge:'#8f7f5f',
+  wetLo:'#7c7c7c', wetHi:'#a2a2a2', dryLo:'#9a9a9a', dryHi:'#bcbcbc',
+  lump:'#565656', lumpHi:'#6f6f6f',
+  steel:'#191919', steelHi:'#6a6a6a', steelLo:'#050505',
+  bubble:'rgba(245,245,245,', dust:'rgba(226,226,226,'
+};
+
+/* ---------- geometry (logical units) ---------- */
+const L = {
+  W:1120, H:640,
+  formX:120, formY:92, formW:880, formH:456,
+  barTopY:24, barBottomY:560, barW:24,
+  rodLX:360, rodRX:760,
+  topY:150, botY:490,
+  restTop:168, restBot:472,
+  finalTop:184, finalBot:456
+};
+const N = 26;
+const x0=L.formX+10, x1=L.formX+L.formW-10;
+const xs=[]; for(let i=0;i<N;i++) xs.push(x0+(x1-x0)*i/(N-1));
+
+/* ---------- canvas ---------- */
+const scene = document.getElementById('scene');
+const ctx = scene.getContext('2d');
+let dpr = Math.min(window.devicePixelRatio||1, 2);
+function fit(){
+  const stage = scene.parentElement;
+  const availW = stage.clientWidth;
+  const availH = stage.clientHeight;
+  const s = Math.min(availW/L.W, availH/L.H, 1.25);
+  scene.style.width = (L.W*s)+'px';
+  scene.style.height = (L.H*s)+'px';
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  scene.width = Math.round(L.W*s*dpr);
+  scene.height = Math.round(L.H*s*dpr);
+  ctx.setTransform(L.W*s*dpr/L.W,0,0,L.H*s*dpr/L.H,0,0); // scale to logical units
+}
+window.addEventListener('resize', fit);
+
+/* ---------- noise texture for aggregate ---------- */
+let noisePat=null;
+(function buildNoise(){
+  const c=document.createElement('canvas'); c.width=c.height=160;
+  const g=c.getContext('2d'); const id=g.createImageData(160,160);
+  for(let i=0;i<id.data.length;i+=4){
+    const v = 110 + Math.random()*90;
+    id.data[i]=v; id.data[i+1]=v; id.data[i+2]=v; id.data[i+3]=255;
+  }
+  g.putImageData(id,0,0);
+  noisePat = ctx.createPattern(c,'repeat');
+})();
+
+/* ---------- state ---------- */
+const PH = {
+  0:{name:'AGITATION', desc:'Two steel rods drive high-frequency vibration. Aggregate liquefies; trapped air begins to migrate.'},
+  1:{name:'SETTLING',  desc:'Vibration decays. The surface levels viscously; bubbles crest, pop and vanish toward the plane.'},
+  2:{name:'CURING',    desc:'Specular sheen fades to matte. Dust drifts down and settles as the slab compacts its final millimetres.'}
+};
+const HOLD_END = 4.6;
+const LOOP_END = 6.2;
+
+let t=0, last=performance.now(), paused=false;
+let bubbles=[], dust=[];
+let topArr=[], botArr=[];
+for(let i=0;i<N;i++){ topArr.push(L.restTop); botArr.push(L.restBot); }
+
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function lerp(a,b,f){return a+(b-a)*f}
+
+/* ---------- bubble pool ---------- */
+function spawnBubble(){
+  const nearRod = Math.random()<0.55;
+  let bx;
+  if(nearRod) bx = (Math.random()<0.5?L.rodLX:L.rodRX)+(Math.random()*46-23);
+  else bx = x0+Math.random()*(x1-x0);
+  bx = clamp(bx,x0+4,x1-4);
+  const depth = (L.botY-topArr[Math.round((bx-x0)/(x1-x0)*(N-1))]) || 200;
+  bubbles.push({
+    x:bx, y:L.botY-6,
+    r:2.2+Math.random()*3.4,
+    vy:0.5+Math.random()*0.9,
+    wob:Math.random()*Math.PI*2,
+    wobA:0.3+Math.random()*0.6,
+    popped:false, popT:0, life:0
+  });
+}
+function spawnDust(){
+  dust.push({
+    x:x0+Math.random()*(x1-x0),
+    y:L.formY-40-Math.random()*120,
+    vy:0.35+Math.random()*0.5,
+    r:0.6+Math.random()*1.4,
+    a:0.15+Math.random()*0.4,
+    landed:false, landY:0
+  });
+}
+
+/* ---------- physics step ---------- */
+function step(dt){
+  // vibration envelope
+  let vib;
+  if(t<0.05) vib=0;
+  else if(t<0.12) vib=(t-0.05)/0.07;
+  else if(t<1.5) vib=1;
+  else if(t<2.5) vib=1-(t-1.5)/1.0;
+  else vib=0;
+  const freq = 26; // Hz -> fast, mechanical
+  const vibVal = Math.sin(t*freq*Math.PI*2)*vib; // -1..1
+
+  // bubbles spawn
+  if(vib>0.05 && Math.random()<vib*0.9 && bubbles.length<160) spawnBubble();
+  // dust spawn during cure
+  if(t>2.6 && t<4.0 && Math.random()<0.6 && dust.length<220) spawnDust();
+
+  // update bubbles
+  for(let i=bubbles.length-1;i>=0;i--){
+    const b=bubbles[i];
+    if(!b.popped){
+      b.life+=dt;
+      b.wob+=dt*8;
+      b.y -= (b.vy + vib*1.4)*dt*60;
+      b.x += Math.sin(b.wob)*b.wobA*dt*60*0.4;
+      const idx = clamp(Math.round((b.x-x0)/(x1-x0)*(N-1)),0,N-1);
+      if(b.y <= topArr[idx]+b.r*0.4){ b.popped=true; b.popT=0; }
+    } else {
+      b.popT += dt;
+      if(b.popT>0.28) bubbles.splice(i,1);
+    }
+  }
+
+  // surface settle (viscous spring toward level)
+  const settle = t<1.5?0 : t<2.5? (t-1.5)/1.0 : 1;
+  const stiff = lerp(0.06,0.34,settle);
+  const damp = lerp(0.86,0.72,settle);
+  const amp = lerp(1,0,settle);
+  const targetTop = lerp(L.restTop, L.finalTop, t<2.5?0:(t-2.5)/1.5);
+  const targetBot = lerp(L.restBot, L.finalBot, t<2.5?0:(t-2.5)/1.5);
+
+  for(let i=0;i<N;i++){
+    let tgt = targetTop;
+    if(amp>0.001){
+      const dL = Math.abs(xs[i]-L.rodLX), dR=Math.abs(xs[i]-L.rodRX);
+      const wave = Math.sin(t*freq*Math.PI*2 - dL*0.03)*amp*vib*10
+                 + Math.sin(t*freq*Math.PI*2 - dR*0.03)*amp*vib*10;
+      tgt += wave;
+    }
+    topArr[i] = damp*topArr[i] + (1-damp)*tgt + (tgt-topArr[i])*stiff;
+    let tb = targetBot + (amp>0.001? Math.sin(t*freq*Math.PI*2 - Math.abs(xs[i]-L.rodLX)*0.03)*amp*vib*6 : 0);
+    botArr[i] = damp*botArr[i] + (1-damp)*tb + (tb-botArr[i])*stiff;
+  }
+
+  // dust fall / land
+  for(let i=dust.length-1;i>=0;i--){
+    const d=dust[i];
+    if(!d.landed){
+      d.y += d.vy*dt*60;
+      const idx = clamp(Math.round((d.x-x0)/(x1-x0)*(N-1)),0,N-1);
+      if(d.y >= topArr[idx]){ d.landed=true; d.landY=topArr[idx]; }
+    } else if(t>4.0 && Math.random()<0.01){ dust.splice(i,1); }
+  }
+
+  // loop
+  if(t>=LOOP_END){ t=0; reset(); }
+}
+
+function reset(){
+  bubbles=[]; dust=[];
+  for(let i=0;i<N;i++){ topArr[i]=L.restTop; botArr[i]=L.restBot; }
+}
+
+/* ---------- easing helpers ---------- */
+function wetness(){ // 1 wet -> 0 matte
+  if(t<2.5) return 1;
+  if(t<4.0) return 1-(t-2.5)/1.5;
+  return 0;
+}
+function dustAmt(){
+  if(t<2.6) return 0;
+  if(t<4.0) return (t-2.6)/1.4;
+  return 1;
+}
+
+/* ---------- render ---------- */
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y);
+  c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r);
+  c.arcTo(x,y,x+w,y,r);
+  c.closePath();
+}
+
+function render(){
+  ctx.clearRect(0,0,L.W,L.H);
+  const wet = wetness();
+
+  /* ---- formwork outer (back walls) ---- */
+  // subtle contact shadow
+  ctx.save();
+  ctx.filter='blur(14px)';
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  roundRect(ctx,L.formX+6,L.formY+16,L.formW,L.formH,10); ctx.fill();
+  ctx.restore();
+
+  // top & left & right back planks (behind concrete)
+  drawPlank(L.formX, L.formY, L.formW, 22, 'h');
+  drawPlank(L.formX, L.formY, 22, L.formH, 'v');
+  drawPlank(L.formX+L.formW-22, L.formY, 22, L.formH, 'v');
+
+  /* ---- concrete body ---- */
+  const topY = Math.min.apply(null,topArr);
+  const botY = Math.max.apply(null,botArr);
+
+  // base fill
+  const bodyGrad = ctx.createLinearGradient(0,topY,0,botY);
+  bodyGrad.addColorStop(0, wet>0.5?COL.wetHi:COL.dryHi);
+  bodyGrad.addColorStop(1, wet>0.5?COL.wetLo:COL.dryLo);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(xs[0],topArr[0]);
+  for(let i=1;i<N;i++) ctx.lineTo(xs[i],topArr[i]);
+  for(let i=N-1;i>=0;i--) ctx.lineTo(xs[i],botArr[i]);
+  ctx.closePath();
+  ctx.clip();
+
+  ctx.fillStyle=bodyGrad;
+  ctx.fillRect(x0,topY-30,(x1-x0),(botY-topY+60));
+
+  // aggregate noise (stronger when rough)
+  const rough = t<1.5?1 : t<2.5? 1-(t-1.5)/1.0 : 0;
+  if(noisePat){
+    ctx.globalAlpha = 0.10 + rough*0.16;
+    ctx.fillStyle=noisePat;
+    ctx.fillRect(x0,topY-30,(x1-x0),(botY-topY+60));
+    ctx.globalAlpha=1;
+  }
+
+  // lumps (dissolve as it settles)
+  if(rough>0.02){
+    for(let i=0;i<N;i+=2){
+      const lumpH = (18+Math.sin(i*3.1)*10+Math.cos(i*1.7)*8)*rough;
+      if(lumpH<1) continue;
+      const lg=ctx.createLinearGradient(0,topArr[i],0,topArr[i]+lumpH);
+      lg.addColorStop(0,COL.lumpHi); lg.addColorStop(1,COL.lump);
+      ctx.fillStyle=lg;
+      ctx.beginPath();
+      ctx.ellipse(xs[i], topArr[i]+lumpH*0.4, 26+Math.sin(i)*8, lumpH*0.6+4, 0,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // wet specular sheen (bands) fades to matte
+  if(wet>0.02){
+    ctx.globalCompositeOperation='screen';
+    // broad sheen
+    const sh=ctx.createLinearGradient(0,topY,0,topY+(botY-topY)*0.5);
+    sh.addColorStop(0,'rgba(255,255,255,'+(0.16*wet)+')');
+    sh.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=sh; ctx.fillRect(x0,topY,(x1-x0),(botY-topY)*0.5);
+    // moving highlight streaks while wet
+    for(let k=0;k<3;k++){
+      const sx = x0 + ((t*140 + k*300) % (x1-x0));
+      const g=ctx.createLinearGradient(sx-40,0,sx+40,0);
+      g.addColorStop(0,'rgba(255,255,255,0)');
+      g.addColorStop(0.5,'rgba(255,255,255,'+(0.10*wet)+')');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=g; ctx.fillRect(sx-40,topY,80,botY-topY);
+    }
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  // dust layer on surface
+  const da = dustAmt();
+  if(da>0){
+    ctx.globalCompositeOperation='screen';
+    const dg=ctx.createLinearGradient(0,topY-2,0,topY+10);
+    dg.addColorStop(0,'rgba(230,230,230,'+(0.28*da)+')');
+    dg.addColorStop(1,'rgba(230,230,230,0)');
+    ctx.fillStyle=dg;
+    ctx.beginPath();
+    ctx.moveTo(xs[0],topArr[0]);
+    for(let i=1;i<N;i++) ctx.lineTo(xs[i],topArr[i]);
+    for(let i=N-1;i>=0;i--) ctx.lineTo(xs[i],topArr[i]+8);
+    ctx.closePath(); ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+  }
+
+  /* ---- bubbles (inside clip) ---- */
+  for(const b of bubbles){
+    if(!b.popped){
+      const idx=clamp(Math.round((b.x-x0)/(x1-x0)*(N-1)),0,N-1);
+      const surf=topArr[idx];
+      if(b.y>surf) continue;
+      const a = clamp((surf-b.y)/40,0.25,1);
+      const g=ctx.createRadialGradient(b.x-b.r*0.3,b.y-b.r*0.3,0.5,b.x,b.y,b.r);
+      g.addColorStop(0,COL.bubble+'0.95)');
+      g.addColorStop(0.6,COL.bubble+'0.5)');
+      g.addColorStop(1,COL.bubble+'0)');
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+    } else {
+      const p=b.popT/0.28;
+      const rr=b.r*(1+p*2.2);
+      ctx.strokeStyle=COL.bubble+((1-p)*0.7)+')';
+      ctx.lineWidth=1.2*(1-p);
+      ctx.beginPath(); ctx.arc(b.x,b.y,rr,0,Math.PI*2); ctx.stroke();
+    }
+  }
+
+  /* ---- dust particles (falling, inside clip) ---- */
+  if(da>0){
+    for(const d of dust){
+      if(d.landed) continue;
+      ctx.fillStyle=COL.dust+(d.a*da)+')';
+      ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore(); // end concrete clip
+
+  /* ---- rebar rods ---- */
+  drawRod(L.rodLX);
+  drawRod(L.rodRX);
+
+  /* ---- front planks (bottom) ---- */
+  drawPlank(L.formX, L.formY+L.formH-22, L.formW, 22, 'h');
+
+  /* ---- corner bolts ---- */
+  bolt(L.formX+11,L.formY+11);
+  bolt(L.formX+L.formW-11,L.formY+11);
+  bolt(L.formX+11,L.formY+L.formH-11);
+  bolt(L.formX+L.formW-11,L.formY+L.formH-11);
+
+  /* ---- dimension marks ---- */
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.10)';
+  ctx.fillStyle='rgba(255,255,255,0.16)';
+  ctx.lineWidth=1;
+  ctx.font='10px "JetBrains Mono",monospace';
+  ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.moveTo(L.formX, L.formY-14); ctx.lineTo(L.formX+L.formW, L.formY-14); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.textAlign='center';
+  ctx.fillText('1200', L.formX+L.formW/2, L.formY-18);
+  ctx.restore();
+}
+
+function drawPlank(x,y,w,h,orient){
+  const g = orient==='h'
+    ? ctx.createLinearGradient(0,y,0,y+h)
+    : ctx.createLinearGradient(x,0,x+w,0);
+  g.addColorStop(0,COL.wood);
+  g.addColorStop(0.5,COL.woodDark);
+  g.addColorStop(1,COL.woodEdge);
+  ctx.fillStyle=g;
+  roundRect(ctx,x,y,w,h,3); ctx.fill();
+  // grain lines
+  ctx.save();
+  ctx.clip();
+  ctx.strokeStyle='rgba(90,72,45,0.25)';
+  ctx.lineWidth=1;
+  const n = orient==='h'? Math.floor(w/14) : Math.floor(h/14);
+  for(let i=0;i<n;i++){
+    ctx.beginPath();
+    if(orient==='h'){ const gx=x+i*14+ (i%3); ctx.moveTo(gx,y); ctx.bezierCurveTo(gx+3,y+h*0.4,gx-3,y+h*0.7,gx+ (i%2),y+h); }
+    else { const gy=y+i*14+(i%3); ctx.moveTo(x,gy); ctx.bezierCurveTo(x+w*0.4,gy+3,x+w*0.7,gy-3,x+w,gy+(i%2)); }
+    ctx.stroke();
+  }
+  // inner highlight edge
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
+  roundRect(ctx,x+0.5,y+0.5,w-1,h-1,3); ctx.stroke();
+  ctx.restore();
+}
+
+function drawRod(cx){
+  const vib = (()=>{
+    if(t<0.05) return 0;
+    if(t<0.12) return (t-0.05)/0.07;
+    if(t<1.5) return 1;
+    if(t<2.5) return 1-(t-1.5)/1.0;
+    return 0;
+  })();
+  const off = Math.sin(t*26*Math.PI*2)*vib*4.5;
+  const bx = cx+off;
+
+  // motion blur ghosts when vibrating
+  if(vib>0.05){
+    for(let k=-2;k<=2;k++){
+      if(k===0) continue;
+      const gx = cx + off + k*3*vib;
+      ctx.fillStyle='rgba(20,20,20,'+(0.12*vib)+')';
+      roundRect(ctx,gx-L.barW/2, L.barTopY, L.barW, L.barBottomY-L.barTopY, 4); ctx.fill();
+    }
+  }
+
+  const g=ctx.createLinearGradient(bx-L.barW/2,0,bx+L.barW/2,0);
+  g.addColorStop(0,COL.steelLo);
+  g.addColorStop(0.28,COL.steel);
+  g.addColorStop(0.5,COL.steelHi);
+  g.addColorStop(0.72,COL.steel);
+  g.addColorStop(1,COL.steelLo);
+  ctx.fillStyle=g;
+  roundRect(ctx,bx-L.barW/2, L.barTopY, L.barW, L.barBottomY-L.barTopY, 4); ctx.fill();
+
+  // ribs
+  ctx.save();
+  roundRect(ctx,bx-L.barW/2, L.barTopY, L.barW, L.barBottomY-L.barTopY, 4); ctx.clip();
+  ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=2;
+  for(let yy=L.barTopY+10; yy<L.barBottomY; yy+=16){
+    ctx.beginPath(); ctx.moveTo(bx-L.barW/2, yy); ctx.lineTo(bx+L.barW/2, yy-6); ctx.stroke();
+  }
+  ctx.strokeStyle='rgba(150,150,150,0.25)'; ctx.lineWidth=1;
+  for(let yy=L.barTopY+12; yy<L.barBottomY; yy+=16){
+    ctx.beginPath(); ctx.moveTo(bx-L.barW/2, yy+1); ctx.lineTo(bx+L.barW/2, yy-5); ctx.stroke();
+  }
+  ctx.restore();
+
+  // top cap
+  ctx.fillStyle='#3a3a3a';
+  roundRect(ctx,bx-L.barW/2-2, L.barTopY-4, L.barW+4, 10, 3); ctx.fill();
+}
+
+function bolt(x,y){
+  const g=ctx.createRadialGradient(x-1,y-1,0,x,y,7);
+  g.addColorStop(0,'#5a5a5a'); g.addColorStop(1,'#222');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x-3,y); ctx.lineTo(x+3,y); ctx.stroke();
+}
+
+/* ---------- ambient background ---------- */
+const bg=document.getElementById('bg'); const bctx=bg.getContext('2d');
+let motes=[];
+function fitBg(){
+  bg.width=innerWidth*dpr; bg.height=innerHeight*dpr;
+  bg.style.width=innerWidth+'px'; bg.style.height=innerHeight+'px';
+  bctx.setTransform(dpr,0,0,dpr,0,0);
+  motes=[];
+  const n=Math.floor(innerWidth*innerHeight/26000);
+  for(let i=0;i<n;i++) motes.push({
+    x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+    r:0.4+Math.random()*1.4, vy:-(0.1+Math.random()*0.3), vx:(Math.random()-0.5)*0.15,
+    a:0.04+Math.random()*0.12
+  });
+}
+function drawBg(){
+  bctx.clearRect(0,0,innerWidth,innerHeight);
+  // overhead factory glow
+  const g=bctx.createRadialGradient(innerWidth/2,innerHeight*0.32,40,innerWidth/2,innerHeight*0.5,Math.max(innerWidth,innerHeight)*0.75);
+  g.addColorStop(0,'rgba(70,70,70,0.55)');
+  g.addColorStop(0.5,'rgba(43,43,43,0)');
+  bctx.fillStyle=g; bctx.fillRect(0,0,innerWidth,innerHeight);
+  for(const m of motes){
+    m.x+=m.vx; m.y+=m.vy;
+    if(m.y<-4){ m.y=innerHeight+4; m.x=Math.random()*innerWidth; }
+    bctx.fillStyle='rgba(200,200,200,'+m.a+')';
+    bctx.beginPath(); bctx.arc(m.x,m.y,m.r,0,Math.PI*2); bctx.fill();
+  }
+}
+
+/* ---------- HUD ---------- */
+const phaseName=document.getElementById('phaseName');
+const phaseDesc=document.getElementById('phaseDesc');
+const fill=document.getElementById('fill');
+const timeRead=document.getElementById('timeRead');
+const ticks=[...document.querySelectorAll('.tick')];
+const clock=document.getElementById('clock');
+const fpsEl=document.getElementById('fps');
+let curPhase=-1, fpsAcc=0, fpsFrames=0, fpsTimer=0;
+
+function updateHUD(){
+  let p = t<1.5?0 : t<2.5?1 : 2;
+  if(p!==curPhase){
+    curPhase=p;
+    phaseName.style.opacity=0; phaseDesc.style.opacity=0;
+    setTimeout(()=>{ phaseName.textContent=PH[p].name; phaseDesc.textContent=PH[p].desc; phaseName.style.opacity=1; phaseDesc.style.opacity=1; },160);
+    ticks.forEach(tk=>tk.classList.toggle('on', +tk.dataset.i===p));
+  }
+  fill.style.width = clamp(t/HOLD_END,0,1)*100+'%';
+  timeRead.textContent = t.toFixed(2)+'s';
+}
+function tickClock(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  clock.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+}
+setInterval(tickClock,1000); tickClock();
+
+/* ---------- main loop ---------- */
+function frame(now){
+  let dt=(now-last)/1000; last=now;
+  if(dt>0.05) dt=0.05;
+  fpsAcc+=dt; fpsFrames++; fpsTimer+=dt;
+  if(fpsTimer>=0.5){ fpsEl.textContent=Math.round(fpsFrames/fpsAcc)+' FPS'; fpsAcc=0; fpsFrames=0; fpsTimer=0; }
+
+  if(!paused){ t+=dt; step(dt); }
+  drawBg();
+  render();
+  updateHUD();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- controls ---------- */
+function replay(){ t=0; reset(); paused=false; }
+document.getElementById('replay').addEventListener('click',replay);
+scene.addEventListener('click',replay);
+scene.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); replay(); }});
+
+/* ---------- init ---------- */
+function init(){
+  fit(); fitBg();
+  if(reduce){
+    t=3.4; paused=true; // freeze at cured state
+    // prefill a few bubbles popped / dust landed look
+    for(let i=0;i<N;i++){ topArr[i]=L.finalTop; botArr[i]=L.finalBot; }
+    for(let i=0;i<120;i++) spawnDust(), dust[dust.length-1].landed=true, dust[dust.length-1].landY=L.finalTop;
+  }
+  requestAnimationFrame(frame);
+}
+window.addEventListener('resize',()=>{ fit(); fitBg(); });
+init();
+})();
+</script>
+</body>
+</html>

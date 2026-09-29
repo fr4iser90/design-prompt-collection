@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glass Blown Syllable Expansion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0a0a0a;
+  --molten:#ff4500;
+  --cool:#87ceeb;
+  --base:#ffffff;
+  --faint:rgba(255,255,255,.42);
+  --faint2:rgba(255,255,255,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--void);
+  color:var(--base);
+  font-family:"Space Mono",monospace;
+  overflow:hidden;
+  cursor:none;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
+  position:relative;
+}
+/* ambient atmosphere */
+.ambient{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% 42%, rgba(255,69,0,.06), transparent 55%),
+    radial-gradient(90% 70% at 50% 120%, rgba(135,206,235,.05), transparent 60%),
+    radial-gradient(140% 120% at 50% 50%, #0c0c0c 0%, #050505 70%, #000 100%);
+}
+.grain{
+  position:fixed;inset:0;z-index:6;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* refracted light streaks (revealed by heat) */
+.streaks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.streak{
+  position:absolute;height:2px;width:26vw;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--cool),transparent);
+  opacity:0;filter:blur(1px);
+  animation:drift 14s linear infinite;
+}
+.streak:nth-child(1){top:26%;left:-30%;animation-duration:16s;}
+.streak:nth-child(2){top:62%;left:-40%;width:34vw;background:linear-gradient(90deg,transparent,#ffd9b0,transparent);animation-duration:20s;animation-delay:-6s;}
+.streak:nth-child(3){top:44%;left:-25%;width:20vw;animation-duration:12s;animation-delay:-3s;}
+@keyframes drift{from{transform:translateX(0) rotate(-4deg);}to{transform:translateX(160vw) rotate(-4deg);}}
+
+/* HUD */
+.hud{
+  position:fixed;inset:0;z-index:4;pointer-events:none;
+  padding:clamp(18px,3vw,40px);
+  display:flex;flex-direction:column;justify-content:space-between;
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);
+}
+.hud .row{display:flex;justify-content:space-between;gap:16px;}
+.hud .brand{color:var(--base);letter-spacing:.34em;}
+.hud .brand b{color:var(--molten);font-weight:700;}
+.hud .right{text-align:right;}
+.hud .temp{font-size:clamp(28px,4vw,46px);letter-spacing:0;line-height:1;
+  font-family:"Playfair Display",serif;font-style:italic;text-transform:none;color:var(--base);
+  display:block;margin-top:6px;}
+.hud .temp .u{font-size:.4em;letter-spacing:.2em;color:var(--faint);font-style:normal;}
+.hud .k{color:var(--faint2);}
+.hud .foot .row{align-items:flex-end;}
+.hud .legend{display:flex;gap:26px;flex-wrap:wrap;}
+.hud .legend span b{color:var(--base);font-weight:400;}
+.hint{color:var(--molten);}
+
+/* stage */
+.stage{
+  position:relative;z-index:3;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 4vw;
+}
+.eyebrow{
+  font-size:12px;letter-spacing:.5em;text-transform:uppercase;color:var(--faint);
+  margin-bottom:clamp(20px,4vh,42px);opacity:0;transform:translateY(14px);
+  animation:fadeUp 1s ease .2s forwards;
+}
+.word{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
+  font-family:"Playfair Display",serif;font-weight:400;
+  font-size:clamp(64px,17vw,230px);line-height:.9;
+  perspective:1200px;
+}
+.letter{
+  display:inline-block;position:relative;will-change:transform,filter,color;
+  transform-origin:center 58%;
+  transition:none;
+  opacity:0;transform:translateY(30px) scale(.9);
+  animation:letterIn .9s cubic-bezier(.2,.7,.2,1) forwards;
+}
+@keyframes letterIn{to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+.sub{
+  margin-top:clamp(26px,5vh,52px);max-width:520px;text-align:center;
+  font-size:13px;line-height:1.9;letter-spacing:.06em;color:var(--faint);
+  opacity:0;transform:translateY(14px);animation:fadeUp 1s ease .5s forwards;
+}
+.sub b{color:var(--base);font-weight:700;}
+
+/* cursor furnace */
+.furnace{
+  position:fixed;top:0;left:0;z-index:5;pointer-events:none;
+  width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;
+  background:radial-gradient(circle, rgba(255,120,40,.28) 0%, rgba(255,69,0,.10) 30%, transparent 62%);
+  mix-blend-mode:screen;opacity:0;transition:opacity .4s;
+}
+.furnace.on{opacity:1;}
+.furnace .ring{
+  position:absolute;top:50%;left:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.7);
+}
+.furnace .dot{position:absolute;top:50%;left:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--molten);box-shadow:0 0 12px 2px var(--molten);}
+
+/* corner ticks */
+.tick{position:fixed;z-index:4;width:26px;height:26px;border:1px solid rgba(255,255,255,.14);pointer-events:none;}
+.tick.tl{top:18px;left:18px;border-right:0;border-bottom:0;}
+.tick.tr{top:18px;right:18px;border-left:0;border-bottom:0;}
+.tick.bl{bottom:18px;left:18px;border-right:0;border-top:0;}
+.tick.br{bottom:18px;right:18px;border-left:0;border-top:0;}
+
+@media (max-width:640px){
+  .hud{font-size:9px;letter-spacing:.16em;}
+  .hud .legend{gap:14px;}
+  .sub{font-size:12px;}
+}
+@media (prefers-reduced-motion: reduce){
+  .streak,.letter,.eyebrow,.sub{animation:none !important;}
+  .letter{opacity:1;transform:none;}
+  .eyebrow,.sub{opacity:1;transform:none;}
+  .furnace{transition:none;}
+  *{transition:none !important;}
+}
+</style>
+</head>
+<body>
+  <div class="ambient"></div>
+  <div class="streaks"><span class="streak"></span><span class="streak"></span><span class="streak"></span></div>
+  <div class="grain"></div>
+
+  <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+
+  <div class="hud">
+    <div class="row">
+      <div class="brand">GLASS&nbsp;<b>·</b>&nbsp;BLOWN&nbsp;SYLLABLE&nbsp;EXPANSION</div>
+      <div class="right"><span class="k">Furnace&nbsp;Core</span><span class="temp" id="temp">24<span class="u">°C</span></span></div>
+    </div>
+    <div class="row foot">
+      <div class="legend">
+        <span><b>Cool</b> · solid</span>
+        <span><b>Warm</b> · amber</span>
+        <span><b>Molten</b> · refractive</span>
+      </div>
+      <div class="hint" id="hint">move the cursor — heat the glass</div>
+    </div>
+  </div>
+
+  <main class="stage">
+    <div class="eyebrow">Thermal&nbsp;Kinetic&nbsp;Type&nbsp;Study</div>
+    <h1 class="word" id="word" aria-label="Molten">Molten</h1>
+    <p class="sub">Typography as a physical material. The cursor is the <b>furnace</b> — proximity raises each glyph's heat, swelling it with air pressure and light until it turns <b>transparent and refractive</b>. Move away and watch it slowly set.</p>
+  </main>
+
+  <div class="furnace" id="furnace"><span class="ring"></span><span class="dot"></span></div>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const word = document.getElementById('word');
+  const tempEl = document.getElementById('temp');
+  const furnace = document.getElementById('furnace');
+  const text = word.textContent.trim();
+  word.textContent = '';
+
+  const letters = [];
+  [...text].forEach((ch,i)=>{
+    const s = document.createElement('span');
+    s.className = 'letter';
+    s.textContent = ch;
+    s.style.animationDelay = (0.35 + i*0.08) + 's';
+    word.appendChild(s);
+    letters.push({el:s, heat:0, vel:0, sx:1, sy:1});
+  });
+
+  const mouse = {x:innerWidth/2, y:innerHeight/2, active:false};
+  let maxHeat = 0;
+
+  // color lerp helpers
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  function mix(c1,c2,t){return [lerp(c1[0],c2[0],t),lerp(c1[1],c2[1],t),lerp(c1[2],c2[2],t)];}
+  const WHITE=[255,255,255], AMBER=[255,190,90], ORANGE=[255,69,0], HOT=[255,238,214];
+  function heatColor(h){
+    let c;
+    if(h<0.4) c=mix(WHITE,AMBER,h/0.4);
+    else if(h<0.75) c=mix(AMBER,ORANGE,(h-0.4)/0.35);
+    else c=mix(ORANGE,HOT,(h-0.75)/0.25);
+    return `rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+  }
+
+  function onMove(e){
+    const p = e.touches? e.touches[0] : e;
+    mouse.x=p.clientX; mouse.y=p.clientY; mouse.active=true;
+    furnace.classList.add('on');
+  }
+  window.addEventListener('mousemove',onMove);
+  window.addEventListener('touchmove',onMove,{passive:true});
+  window.addEventListener('touchstart',onMove,{passive:true});
+  window.addEventListener('mouseleave',()=>{mouse.active=false; furnace.classList.remove('on');});
+
+  let last=performance.now();
+  function frame(now){
+    const dt=Math.min((now-last)/16.67,3); last=now;
+    const R = Math.min(innerWidth,innerHeight)*0.55; // heat field radius
+    let peak=0;
+
+    letters.forEach(L=>{
+      const r=L.el.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      const d=Math.hypot(mouse.x-cx, mouse.y-cy);
+      let target = mouse.active ? Math.max(0, 1 - d/R) : 0;
+      target = Math.pow(target, 1.4); // sharper falloff
+
+      // heat dynamics: fast to heat, slow to cool (glass lag)
+      const rate = target>L.heat ? 0.28 : 0.05;
+      L.heat += (target - L.heat)*rate*dt;
+      if(L.heat<0.001 && target===0) L.heat=0;
+
+      // non-uniform spring scale (bulging with overshoot)
+      const tSx = 1 + L.heat*0.34;
+      const tSy = 1 + L.heat*0.22 + Math.sin(now/300 + cx)*0.012*L.heat;
+      const k=0.18, damp=0.72;
+      L.vel += (tSx - L.sx)*k*dt;
+      L.vel *= Math.pow(damp,dt);
+      L.sx += L.vel*dt;
+      L.sy += (tSy - L.sy)*0.2*dt;
+
+      const h=L.heat;
+      const col=heatColor(h);
+      const blur = h>0.85 ? (h-0.85)*8 : 0;
+      const glowA = h*0.9;
+      const glowCol = h<0.5 ? '255,190,90' : '255,69,0';
+      const refract = h>0.55 ? `drop-shadow(0 0 ${(h-0.55)*14}px rgba(135,206,235,${(h-0.55)*0.7}))` : '';
+
+      L.el.style.color = col;
+      L.el.style.transform = `scale(${L.sx.toFixed(3)},${L.sy.toFixed(3)})`;
+      L.el.style.filter =
+        `drop-shadow(0 0 ${(h*22).toFixed(1)}px rgba(${glowCol},${glowA.toFixed(2)})) ` +
+        `drop-shadow(0 0 ${(h*46).toFixed(1)}px rgba(${glowCol},${(glowA*0.5).toFixed(2)})) ` +
+        refract +
+        (blur? ` blur(${blur.toFixed(1)}px)` : '');
+      L.el.style.opacity = 1 - h*0.12; // slight transparency at peak heat
+
+      if(h>peak) peak=h;
+    });
+
+    // HUD temperature readout
+    const temp = Math.round(24 + peak*1176);
+    tempEl.innerHTML = temp + '<span class="u">°C</span>';
+    tempEl.style.color = heatColor(peak);
+    maxHeat = peak;
+
+    requestAnimationFrame(frame);
+  }
+
+  if(reduce){
+    // static hot preview for reduced motion
+    letters.forEach((L,i)=>{
+      const h = 0.5 + 0.5*Math.abs(Math.sin(i));
+      L.el.style.color=heatColor(h);
+      L.el.style.transform=`scale(${1+h*0.3},${1+h*0.2})`;
+      L.el.style.filter=`drop-shadow(0 0 ${h*22}px rgba(255,69,0,${h}))`;
+    });
+    tempEl.innerHTML='612<span class="u">°C</span>';
+    document.getElementById('hint').textContent='reduced motion · static';
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

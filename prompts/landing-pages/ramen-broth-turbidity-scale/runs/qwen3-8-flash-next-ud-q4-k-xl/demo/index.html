@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Patience in a Bowl — a high-end instant ramen brand where turbidity is the measure of time.">
+<title>Ramen Broth Turbidity Scale — Patience in a Bowl</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bone:#F5F5F0;
+  --broth:#D4A373;
+  --broth-deep:#B98A57;
+  --tare:#5C4033;
+  --charcoal:#2C2C2C;
+  --ink:#1B1712;
+  --muted:#8b8177;
+  --line:rgba(44,44,44,.14);
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
+  --pad:clamp(1.25rem,5vw,5rem);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);font-weight:300;color:var(--charcoal);background:var(--bone);
+  line-height:1.65;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden;
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+::selection{background:var(--broth);color:var(--ink)}
+
+/* ---------- fixed atmospheric layers ---------- */
+.grain{position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px}
+
+#steam{position:fixed;inset:0;z-index:2;pointer-events:none}
+
+.turbidity{position:fixed;inset:0;z-index:3;pointer-events:none;
+  background:linear-gradient(180deg,rgba(212,163,115,.10),rgba(185,138,87,.30));
+  opacity:var(--turb,0);will-change:opacity}
+.turbidity::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 90% at 50% 118%,rgba(212,163,115,.55),transparent 62%);opacity:var(--turb,0)}
+
+.vignette{position:fixed;inset:0;z-index:4;pointer-events:none;
+  background:radial-gradient(125% 120% at 50% 42%,transparent 55%,rgba(92,64,51,calc(var(--turb,0)*.14)))}
+
+.progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:120;
+  background:linear-gradient(90deg,var(--tare),var(--broth));transition:width .08s linear}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+  padding:1.05rem var(--pad);transition:background .5s ease,box-shadow .5s ease,padding .5s ease}
+.nav.scrolled{background:rgba(245,245,240,.82);backdrop-filter:blur(14px) saturate(1.1);box-shadow:0 1px 0 var(--line);padding-top:.7rem;padding-bottom:.7rem}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:500;letter-spacing:.14em;font-size:.72rem;text-transform:uppercase}
+.brand .mk{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--tare);position:relative;flex:none}
+.brand .mk::after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--broth);opacity:.75}
+.brand b{font-weight:500}
+.nav-links{display:flex;gap:2rem;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase}
+.nav-links a{position:relative;padding:.2rem 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--tare);transition:width .4s cubic-bezier(.2,.8,.2,1)}
+.nav-links a:hover{color:var(--tare)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{border:1px solid var(--tare);border-radius:999px;padding:.5rem 1.05rem;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;transition:background .4s,color .4s}
+.nav-cta:hover{background:var(--tare);color:var(--bone)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:var(--pad);padding-bottom:clamp(2rem,7vh,4.5rem);overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;
+  background:url("https://picsum.photos/seed/ramen-noodle-bowl-steam/1700/2100") center/cover no-repeat;
+  filter:sepia(.22) saturate(.92) contrast(.95) brightness(1.04)}
+.hero-bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(245,245,240,.78) 0%,rgba(245,245,240,.55) 42%,rgba(245,245,240,.9) 100%)}
+.hero::before{content:"";position:absolute;inset:0;z-index:1;
+  background:radial-gradient(90% 70% at 50% 100%,rgba(212,163,115,.35),transparent 60%)}
+
+.hero-inner{position:relative;z-index:5;max-width:1180px}
+.eyebrow{display:inline-flex;align-items:center;gap:.6rem;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--tare);margin-bottom:1.6rem}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--broth);box-shadow:0 0 0 4px rgba(212,163,115,.25)}
+.hero-title{font-family:var(--serif);font-weight:400;line-height:.92;letter-spacing:-.01em;color:var(--ink);
+  font-size:clamp(3.4rem,11.5vw,9.5rem)}
+.hero-title .line{display:block;overflow:hidden}
+.hero-title .line>span{display:block;transform:translateY(112%);opacity:0;
+  transition:transform 1.2s cubic-bezier(.16,1,.3,1),opacity 1s ease}
+.hero-title.in .line>span{transform:none;opacity:1}
+.hero-title.in .line:nth-child(2)>span{transition-delay:.12s}
+.hero-title .it{font-style:italic;color:var(--tare)}
+.hero-sub{max-width:46ch;margin-top:1.8rem;font-size:clamp(1rem,1.5vw,1.18rem);font-weight:300;color:#4a4038;
+  opacity:0;transform:translateY(20px);transition:opacity 1s ease .5s,transform 1s cubic-bezier(.16,1,.3,1) .5s}
+.hero.in .hero-sub{opacity:1;transform:none}
+.hero-meta{display:flex;flex-wrap:wrap;gap:clamp(1.4rem,4vw,3.2rem);margin-top:2.4rem;
+  opacity:0;transform:translateY(20px);transition:opacity 1s ease .7s,transform 1s cubic-bezier(.16,1,.3,1) .7s}
+.hero.in .hero-meta{opacity:1;transform:none}
+.hero-meta .m{display:flex;flex-direction:column;gap:.3rem}
+.hero-meta .k{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.hero-meta .v{font-family:var(--serif);font-size:1.5rem;color:var(--tare)}
+.hero-meta .v small{font-size:.8rem;font-family:var(--sans);color:var(--muted)}
+
+.scrollcue{position:absolute;right:var(--pad);bottom:clamp(2rem,7vh,4.5rem);z-index:5;display:flex;flex-direction:column;align-items:center;gap:.8rem;
+  font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--tare);writing-mode:vertical-rl}
+.scrollcue .rail{width:1px;height:64px;background:linear-gradient(var(--tare),transparent);position:relative;overflow:hidden}
+.scrollcue .rail::after{content:"";position:absolute;left:-1px;width:3px;height:16px;background:var(--tare);animation:drip 2.6s cubic-bezier(.7,0,.3,1) infinite}
+@keyframes drip{0%{top:-16px;opacity:0}30%{opacity:1}100%{top:64px;opacity:0}}
+
+/* ---------- generic section ---------- */
+.section{position:relative;z-index:5;padding:clamp(4.5rem,12vh,9rem) var(--pad)}
+.wrap{max-width:1180px;margin:0 auto}
+.kicker{font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;color:var(--tare);display:flex;align-items:center;gap:.9rem}
+.kicker::before{content:"";width:34px;height:1px;background:var(--tare);opacity:.5}
+.h2{font-family:var(--serif);font-weight:400;line-height:1.02;letter-spacing:-.01em;color:var(--ink);
+  font-size:clamp(2.2rem,5.4vw,4.3rem);margin:1.1rem 0 1.6rem}
+.lead{max-width:56ch;font-size:clamp(1.02rem,1.4vw,1.2rem);font-weight:300;color:#4a4038}
+.lead em{font-family:var(--serif);font-style:italic;font-size:1.15em;color:var(--tare)}
+
+/* ---------- manifesto ---------- */
+.manifesto .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(2rem,6vw,5rem);align-items:end}
+.manifesto .quote{font-family:var(--serif);font-weight:300;font-style:italic;line-height:1.28;color:var(--tare);
+  font-size:clamp(1.7rem,3.4vw,2.9rem)}
+.manifesto .quote b{font-style:normal;font-weight:400;color:var(--ink)}
+.facts{display:grid;gap:1.3rem}
+.fact{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:baseline;padding-bottom:1.3rem;border-bottom:1px solid var(--line)}
+.fact .n{font-family:var(--serif);font-size:2.4rem;color:var(--tare);line-height:1}
+.fact .t{font-size:.92rem;color:#4a4038}
+.fact .t b{font-weight:400;color:var(--ink);display:block;letter-spacing:.02em}
+
+/* ---------- scale ---------- */
+.scale-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:clamp(2rem,6vw,5rem);align-items:start;margin-top:2.6rem}
+.scale{position:relative;padding-left:3.2rem}
+.scale .axis{position:absolute;left:1.1rem;top:6px;bottom:6px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,var(--bone),var(--broth) 55%,var(--tare))}
+.scale .axis::after{content:"";position:absolute;left:-3px;bottom:0;width:8px;height:8px;border-radius:50%;background:var(--tare)}
+.scale .axis::before{content:"";position:absolute;left:-3px;top:0;width:8px;height:8px;border-radius:50%;background:var(--bone);border:1px solid var(--line)}
+.scale-item{position:relative;padding:1.15rem 0 1.15rem 0;border-bottom:1px solid var(--line)}
+.scale-item:first-child{padding-top:0}
+.scale-item .row{display:flex;align-items:baseline;justify-content:space-between;gap:1rem}
+.scale-item .name{font-family:var(--serif);font-size:clamp(1.35rem,2.6vw,2rem);color:var(--ink)}
+.scale-item .name .idx{font-family:var(--sans);font-size:.7rem;letter-spacing:.18em;color:var(--muted);margin-right:.7rem;vertical-align:middle}
+.scale-item .ntu{font-size:.72rem;letter-spacing:.16em;color:var(--tare);white-space:nowrap}
+.scale-item .desc{font-size:.9rem;color:#5a5048;margin-top:.35rem;max-width:52ch}
+.scale-item .knob{position:absolute;left:calc(1.1rem + 1px);top:1.55rem;width:14px;height:14px;border-radius:50%;
+  transform:translate(-50%,0);background:var(--bone);border:2px solid var(--tare);box-shadow:0 0 0 5px rgba(245,245,240,.85)}
+.scale-item:first-child .knob{top:.35rem}
+
+.gauge{position:sticky;top:110px;background:var(--bone);border:1px solid var(--line);border-radius:4px;padding:1.8rem 1.6rem;
+  box-shadow:0 24px 60px -40px rgba(92,64,51,.6)}
+.gauge .lbl{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.gauge .big{font-family:var(--serif);font-weight:500;font-size:clamp(4rem,9vw,6rem);line-height:.9;color:var(--tare);margin:.4rem 0 .1rem}
+.gauge .state{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--ink)}
+.gauge .bar{margin-top:1.6rem;height:8px;border-radius:6px;background:rgba(44,44,44,.08);overflow:hidden}
+.gauge .bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--broth),var(--tare));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.gauge .cap{margin-top:1.1rem;font-size:.82rem;color:#5a5048}
+.gauge .cap b{font-weight:400;color:var(--tare)}
+
+/* ---------- flavors ---------- */
+.flavors .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.4rem;margin-top:3rem}
+.flavor{position:relative;background:var(--bone);border:1px solid var(--line);border-radius:4px;padding:1.5rem;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1),box-shadow .6s ease}
+.flavor .swatch{height:150px;border-radius:3px;position:relative;overflow:hidden;
+  background:linear-gradient(160deg,var(--c1),var(--c2));box-shadow:inset 0 0 30px rgba(92,64,51,.18)}
+.flavor .swatch::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(80% 60% at 30% 20%,rgba(255,255,255,.5),transparent 55%);mix-blend-mode:screen;opacity:.6}
+.flavor .swatch .drop{position:absolute;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.35);filter:blur(6px);
+  left:20%;top:30%;animation:float 7s ease-in-out infinite}
+.flavor .swatch .drop:nth-child(2){left:62%;top:58%;width:34px;height:34px;animation-duration:9s;animation-delay:-3s}
+@keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(10px,-14px)}}
+.flavor h3{font-family:var(--serif);font-weight:400;font-size:1.7rem;color:var(--ink);margin-top:1.2rem;display:flex;justify-content:space-between;align-items:baseline}
+.flavor h3 span{font-family:var(--sans);font-size:.66rem;letter-spacing:.14em;color:var(--tare)}
+.flavor .note{font-family:var(--serif);font-style:italic;font-size:1.1rem;color:var(--tare);margin-top:.1rem}
+.flavor .specs{display:flex;gap:1.4rem;margin-top:1.1rem;font-size:.72rem;letter-spacing:.08em;color:#5a5048}
+.flavor .specs b{font-weight:400;color:var(--ink)}
+.flavor .buy{margin-top:1.3rem;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--tare);border-top:1px solid var(--line);padding-top:1rem;display:flex;justify-content:space-between}
+.flavor:hover{transform:translateY(-8px);box-shadow:0 34px 70px -42px rgba(92,64,51,.75)}
+
+/* ---------- process ---------- */
+.process .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:3rem;border-top:1px solid var(--line)}
+.step{padding:2rem 1.4rem 2rem 0;border-right:1px solid var(--line);position:relative}
+.step:last-child{border-right:none}
+.step .num{font-family:var(--serif);font-size:1rem;color:var(--tare);letter-spacing:.1em}
+.step .time{font-family:var(--serif);font-size:clamp(2rem,4vw,3.1rem);color:var(--ink);line-height:1;margin:.6rem 0 .3rem}
+.step .time small{font-size:1rem;font-family:var(--sans);color:var(--muted)}
+.step h4{font-weight:400;font-size:.95rem;color:var(--tare);letter-spacing:.02em}
+.step p{font-size:.85rem;color:#5a5048;margin-top:.5rem}
+.step .turb{margin-top:1.1rem;height:6px;border-radius:4px;background:rgba(44,44,44,.08);overflow:hidden}
+.step .turb i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--broth),var(--tare));width:var(--w)}
+
+/* ---------- stats ---------- */
+.stats{background:var(--tare);color:var(--bone);border-radius:0}
+.stats .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:2.6rem}
+.stat .v{font-family:var(--serif);font-weight:400;font-size:clamp(3rem,7vw,5.4rem);line-height:.9;color:var(--bone)}
+.stat .v .u{font-size:1.4rem;color:var(--broth);margin-left:.2rem}
+.stat .k{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(245,245,240,.6);margin-top:.7rem}
+.stats .h2{color:var(--bone)}
+.stats .kicker{color:var(--broth)}
+.stats .kicker::before{background:var(--broth)}
+
+/* ---------- press ---------- */
+.press{overflow:hidden;padding-block:clamp(3rem,7vh,5rem)}
+.press .track{display:flex;gap:clamp(2.5rem,7vw,6rem);white-space:nowrap;width:max-content;animation:marq 34s linear infinite}
+.press:hover .track{animation-play-state:paused}
+.press .q{font-family:var(--serif);font-style:italic;font-size:clamp(1.3rem,2.6vw,2rem);color:var(--tare)}
+.press .q b{font-style:normal;font-weight:400;font-family:var(--sans);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:block;margin-top:.4rem}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- order ---------- */
+.order .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(2rem,6vw,5rem);align-items:center}
+.order .cta{display:inline-flex;align-items:center;gap:.8rem;margin-top:2rem;background:var(--tare);color:var(--bone);
+  padding:1rem 1.8rem;border-radius:999px;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1),background .4s}
+.order .cta:hover{transform:translateY(-3px);background:var(--ink)}
+.order .cta .arw{transition:transform .5s}
+.order .cta:hover .arw{transform:translateX(5px)}
+.order .fine{margin-top:1.1rem;font-size:.78rem;color:var(--muted);letter-spacing:.02em}
+.order .panel{border:1px solid var(--line);border-radius:4px;padding:2rem;background:rgba(245,245,240,.6)}
+.order .panel .row{display:flex;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--line);font-size:.86rem}
+.order .panel .row:last-child{border-bottom:none}
+.order .panel .row b{font-weight:400;color:var(--tare)}
+.order .panel .total{font-family:var(--serif);font-size:1.5rem;color:var(--ink)}
+
+/* ---------- footer ---------- */
+.footer{background:var(--ink);color:rgba(245,245,240,.75);padding:clamp(3.5rem,8vh,6rem) var(--pad) 2.5rem;position:relative;z-index:5}
+.footer .cols{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:2rem;max-width:1180px;margin:0 auto}
+.footer .word{font-family:var(--serif);font-size:clamp(2rem,5vw,3.4rem);color:var(--bone);line-height:1}
+.footer .word .it{font-style:italic;color:var(--broth)}
+.footer .tag{font-size:.85rem;color:rgba(245,245,240,.55);margin-top:1rem;max-width:34ch}
+.footer h5{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--broth);margin-bottom:1rem}
+.footer li{margin-bottom:.6rem;font-size:.88rem}
+.footer li a{transition:color .3s}
+.footer li a:hover{color:var(--bone)}
+.footer .base{max-width:1180px;margin:3rem auto 0;padding-top:1.5rem;border-top:1px solid rgba(245,245,240,.12);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-size:.72rem;letter-spacing:.08em;color:rgba(245,245,240,.45)}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .9s ease,transform 1s cubic-bezier(.16,1,.3,1)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+
+/* ---------- responsive ---------- */
+@media(max-width:960px){
+  .manifesto .wrap,.order .wrap{grid-template-columns:1fr}
+  .scale-grid{grid-template-columns:1fr}
+  .gauge{position:static}
+  .process .steps{grid-template-columns:1fr 1fr}
+  .step{border-right:none;border-bottom:1px solid var(--line);padding-right:0}
+  .stats .grid{grid-template-columns:1fr 1fr}
+  .footer .cols{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .nav-links{display:none}
+  .process .steps{grid-template-columns:1fr}
+  .stats .grid{grid-template-columns:1fr 1fr;gap:2rem}
+  .footer .cols{grid-template-columns:1fr}
+  .scrollcue{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1!important;transform:none!important}
+  .hero-title .line>span,.hero-sub,.hero-meta{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<canvas id="steam"></canvas>
+<div class="turbidity"></div>
+<div class="vignette"></div>
+<div class="progress" id="progress"></div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><span class="mk"></span><b>RAMEN</b>&nbsp;BROTH&nbsp;TURBIDITY&nbsp;SCALE</a>
+  <nav class="nav-links">
+    <a href="#scale">The Scale</a>
+    <a href="#flavors">Flavors</a>
+    <a href="#process">Process</a>
+    <a href="#order">Order</a>
+  </nav>
+  <a class="nav-cta" href="#order">Reserve a Bowl</a>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero-bg"></div>
+    <div class="hero-inner">
+      <span class="eyebrow"><span class="dot"></span>Turbidity Scale № 00 — Clear to Opaque</span>
+      <h1 class="hero-title">
+        <span class="line"><span>Patience</span></span>
+        <span class="line"><span>in a <em class="it">Bowl</em>.</span></span>
+      </h1>
+      <p class="hero-sub">We measure ramen the way a brewer measures time — by the <em>opacity of its broth</em>. From the first clear draw of water to the last clouded ladle of tonkotsu, every second is a degree of depth.</p>
+      <div class="hero-meta">
+        <div class="m"><span class="k">Broth</span><span class="v">18<small> hrs</small></span></div>
+        <div class="m"><span class="k">Turbidity</span><span class="v">0 → 320<small> NTU</small></span></div>
+        <div class="m"><span class="k">Batch</span><span class="v">№ 0047</span></div>
+        <div class="m"><span class="k">Steam</span><span class="v">98<small> °C</small></span></div>
+      </div>
+    </div>
+    <div class="scrollcue"><span>Scroll to reduce</span><span class="rail"></span></div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="section manifesto">
+    <div class="wrap">
+      <div>
+        <div class="kicker reveal">The philosophy</div>
+        <h2 class="h2 reveal d1">Clarity is a<br>starting point, not<br>a destination.</h2>
+        <p class="lead reveal d2">A bowl of ramen is a suspension of time. Collagen, fat and mineral slowly leave the bone and enter the water until the light can no longer pass through it. We don't hide this process — <em>we chart it</em>, ladle by ladle, so you can taste exactly how long you've waited.</p>
+      </div>
+      <div class="facts">
+        <div class="fact reveal"><span class="n">01</span><span class="t"><b>Emulsion, not seasoning</b>Depth comes from suspended fat, not salt. We chase the cloud.</span></div>
+        <div class="fact reveal d1"><span class="n">02</span><span class="t"><b>Read the broth</b>Every cup carries its own turbidity index, printed on the sleeve.</span></div>
+        <div class="fact reveal d2"><span class="n">03</span><span class="t"><b>No shortcuts</b>Nothing is thickened. If it isn't cloudy from the bone, it isn't ours.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCALE -->
+  <section class="section" id="scale">
+    <div class="wrap">
+      <div class="kicker reveal">The Turbidity Scale</div>
+      <h2 class="h2 reveal d1">Five states of<br>the same water.</h2>
+      <div class="scale-grid">
+        <div class="scale reveal d1">
+          <span class="axis"></span>
+          <div class="scale-item"><span class="knob"></span>
+            <div class="row"><div class="name"><span class="idx">01</span>Clear</div><div class="ntu">0–20 NTU</div></div>
+            <p class="desc">Filtered water. The blank canvas — bright, weightless, ready to receive.</p>
+          </div>
+          <div class="scale-item"><span class="knob"></span>
+            <div class="row"><div class="name"><span class="idx">02</span>Light</div><div class="ntu">20–80 NTU</div></div>
+            <p class="desc">First draw. A whisper of gelatin; the broth begins to hold its own shape.</p>
+          </div>
+          <div class="scale-item"><span class="knob"></span>
+            <div class="row"><div class="name"><span class="idx">03</span>Milky</div><div class="ntu">80–160 NTU</div></div>
+            <p class="desc">Fat and collagen emulsify. Light scatters. The spoon begins to feel coated.</p>
+          </div>
+          <div class="scale-item"><span class="knob"></span>
+            <div class="row"><div class="name"><span class="idx">04</span>Opaque</div><div class="ntu">160–260 NTU</div></div>
+            <p class="desc">Rich and heavy. The bowl is now a body, not a liquid — you can taste the hours.</p>
+          </div>
+          <div class="scale-item"><span class="knob"></span>
+            <div class="row"><div class="name"><span class="idx">05</span>Saturated</div><div class="ntu">260–320 NTU</div></div>
+            <p class="desc">Full tonkotsu. Creamy, clinging, near-solid at the edges. The end of the line.</p>
+          </div>
+        </div>
+        <aside class="gauge reveal d2">
+          <div class="lbl">Live Turbidity</div>
+          <div class="big"><span id="gaugeVal">0</span></div>
+          <div class="state" id="gaugeState">Clear</div>
+          <div class="bar"><i id="gaugeBar"></i></div>
+          <p class="cap">You are <b id="gaugePct">0%</b> through the reduction. Scroll to thicken the broth and watch the reading climb.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLAVORS -->
+  <section class="section flavors" id="flavors">
+    <div class="wrap">
+      <div class="kicker reveal">The Collection</div>
+      <h2 class="h2 reveal d1">Each flavor is a<br>turbidity, not a label.</h2>
+      <p class="lead reveal d2">Hover to warm a bowl. The swatch shows the exact cloud of its broth — from the amber transparency of shoyu to the opaque gold of tonkotsu.</p>
+      <div class="grid">
+        <article class="flavor reveal" style="--c1:#F3E4C8;--c2:#E4C79A">
+          <div class="swatch"><span class="drop"></span><span class="drop"></span></div>
+          <h3>Shio <span>01</span></h3>
+          <div class="note">Sea-salt clarity</div>
+          <div class="specs"><span>Turbidity <b>38 NTU</b></span><span>Simmer <b>6 hrs</b></span></div>
+          <div class="buy"><span>Light &amp; bright</span><span>Reserve →</span></div>
+        </article>
+        <article class="flavor reveal d1" style="--c1:#B77A3C;--c2:#7C4A22">
+          <div class="swatch"><span class="drop"></span><span class="drop"></span></div>
+          <h3>Shoyu <span>02</span></h3>
+          <div class="note">Transparent amber</div>
+          <div class="specs"><span>Turbidity <b>64 NTU</b></span><span>Simmer <b>9 hrs</b></span></div>
+          <div class="buy"><span>Clear &amp; deep</span><span>Reserve →</span></div>
+        </article>
+        <article class="flavor reveal d2" style="--c1:#D69A55;--c2:#A8642A">
+          <div class="swatch"><span class="drop"></span><span class="drop"></span></div>
+          <h3>Miso <span>03</span></h3>
+          <div class="note">Cloudy orange</div>
+          <div class="specs"><span>Turbidity <b>142 NTU</b></span><span>Simmer <b>12 hrs</b></span></div>
+          <div class="buy"><span>Warm &amp; round</span><span>Reserve →</span></div>
+        </article>
+        <article class="flavor reveal d3" style="--c1:#C9925A;--c2:#8A5A34">
+          <div class="swatch"><span class="drop"></span><span class="drop"></span></div>
+          <h3>Tonkotsu <span>04</span></h3>
+          <div class="note">Opaque gold</div>
+          <div class="specs"><span>Turbidity <b>268 NTU</b></span><span>Simmer <b>18 hrs</b></span></div>
+          <div class="buy"><span>Heavy &amp; clinging</span><span>Reserve →</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="section process" id="process">
+    <div class="wrap">
+      <div class="kicker reveal">The Reduction</div>
+      <h2 class="h2 reveal d1">How a clear pot<br>becomes a cloud.</h2>
+      <div class="steps">
+        <div class="step reveal"><div class="num">Step 01</div><div class="time">0<small> hrs</small></div><h4>Draw</h4><p>Cold water meets bone. Nothing yet to see.</p><div class="turb"><i style="--w:4%"></i></div></div>
+        <div class="step reveal d1"><div class="num">Step 02</div><div class="time">6<small> hrs</small></div><h4>Roll</h4><p>Gelatin releases; the surface turns glassy.</p><div class="turb"><i style="--w:26%"></i></div></div>
+        <div class="step reveal d2"><div class="num">Step 03</div><div class="time">12<small> hrs</small></div><h4>Emulsify</h4><p>Fat shears into the water. Light begins to scatter.</p><div class="turb"><i style="--w:62%"></i></div></div>
+        <div class="step reveal d3"><div class="num">Step 04</div><div class="time">18<small> hrs</small></div><h4>Saturate</h4><p>The broth holds its own weight. Turbidity peaks.</p><div class="turb"><i style="--w:100%"></i></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="section stats">
+    <div class="wrap">
+      <div class="kicker reveal">By the numbers</div>
+      <h2 class="h2 reveal d1">Time, measured in<br>degrees of cloud.</h2>
+      <div class="grid">
+        <div class="stat reveal"><div class="v"><span data-count="18">0</span><span class="u">hrs</span></div><div class="k">Longest simmer</div></div>
+        <div class="stat reveal d1"><div class="v"><span data-count="320">0</span><span class="u">NTU</span></div><div class="k">Peak turbidity</div></div>
+        <div class="stat reveal d2"><div class="v"><span data-count="47">0</span><span class="u">batches</span></div><div class="k">Charted to date</div></div>
+        <div class="stat reveal d3"><div class="v"><span data-count="98">0</span><span class="u">°C</span></div><div class="k">Serving steam</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRESS -->
+  <section class="press">
+    <div class="track">
+      <div class="q">"The most scientific bowl of ramen I've ever held."<b>Culinary Quarterly</b></div>
+      <div class="q">"Turbidity as a tasting menu — quietly obsessive."<b>The Broth Review</b></div>
+      <div class="q">"Patience finally has a printed number."<b>Table &amp; Time</b></div>
+      <div class="q">"The most scientific bowl of ramen I've ever held."<b>Culinary Quarterly</b></div>
+      <div class="q">"Turbidity as a tasting menu — quietly obsessive."<b>The Broth Review</b></div>
+      <div class="q">"Patience finally has a printed number."<b>Table &amp; Time</b></div>
+    </div>
+  </section>
+
+  <!-- ORDER -->
+  <section class="section order" id="order">
+    <div class="wrap">
+      <div>
+        <div class="kicker reveal">Reserve</div>
+        <h2 class="h2 reveal d1">Start your own<br>reduction.</h2>
+        <p class="lead reveal d2">Each box ships with four bowls spanning the scale — clear to opaque — and a printed turbidity index so you can taste the progression yourself.</p>
+        <a class="cta reveal d2" href="#">Reserve a Box <span class="arw">→</span></a>
+        <p class="fine reveal d3">Limited to 200 boxes per batch · Ships within the reduction window.</p>
+      </div>
+      <div class="panel reveal d2">
+        <div class="row"><span>Shio — 38 NTU</span><b>×1</b></div>
+        <div class="row"><span>Shoyu — 64 NTU</span><b>×1</b></div>
+        <div class="row"><span>Miso — 142 NTU</span><b>×1</b></div>
+        <div class="row"><span>Tonkotsu — 268 NTU</span><b>×1</b></div>
+        <div class="row"><span>Turbidity index card</span><b>×1</b></div>
+        <div class="row"><span>Total</span><span class="total">$64</span></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="cols">
+    <div>
+      <div class="word">Ramen Broth<br><span class="it">Turbidity Scale</span></div>
+      <p class="tag">Patience in a bowl — measured, charted and poured from the first clear draw to the last clouded ladle.</p>
+    </div>
+    <div><h5>Explore</h5><ul><li><a href="#scale">The Scale</a></li><li><a href="#flavors">Flavors</a></li><li><a href="#process">Process</a></li><li><a href="#order">Reserve</a></li></ul></div>
+    <div><h5>Studio</h5><ul><li><a href="#">Our method</a></li><li><a href="#">Batch log</a></li><li><a href="#">Stockists</a></li></ul></div>
+    <div><h5>Contact</h5><ul><li><a href="#">hello@turbidity.jp</a></li><li><a href="#">Instagram</a></li><li><a href="#">Newsletter</a></li></ul></div>
+  </div>
+  <div class="base"><span>© 2024 Ramen Broth Turbidity Scale — № 0047</span><span>0 NTU → 320 NTU · Clear to Opaque</span></div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- scroll-driven turbidity ---------- */
+  var turb = document.querySelector('.turbidity');
+  var prog = document.getElementById('progress');
+  var nav  = document.getElementById('nav');
+  var gVal = document.getElementById('gaugeVal');
+  var gState = document.getElementById('gaugeState');
+  var gBar = document.getElementById('gaugeBar');
+  var gPct = document.getElementById('gaugePct');
+  var states = [
+    [0,'Clear'],[12,'Light'],[38,'Milky'],[62,'Opaque'],[86,'Saturated']
+  ];
+  var ticking = false;
+  function onScroll(){
+    if(!ticking){ requestAnimationFrame(update); ticking = true; }
+  }
+  function update(){
+    ticking = false;
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    turb.style.setProperty('--turb', (p * 0.9).toFixed(3));
+    prog.style.width = (p * 100).toFixed(2) + '%';
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+
+    // gauge
+    var ntu = Math.round(p * 320);
+    gVal.textContent = ntu;
+    gBar.style.width = (p * 100).toFixed(1) + '%';
+    gPct.textContent = Math.round(p * 100) + '%';
+    var s = 'Clear';
+    for(var i=0;i<states.length;i++){ if(p*100 >= states[i][0]) s = states[i][1]; }
+    gState.textContent = s;
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  update();
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.16, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // hero title + sub entrance
+  window.addEventListener('load', function(){
+    document.querySelector('.hero').classList.add('in');
+    document.querySelector('.hero-title').classList.add('in');
+  });
+
+  /* ---------- stat counters ---------- */
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target, target = +el.getAttribute('data-count'), t0 = null, dur = 1400;
+      function step(ts){
+        if(!t0) t0 = ts;
+        var k = Math.min(1,(ts-t0)/dur);
+        var eased = 1 - Math.pow(1-k,3);
+        el.textContent = Math.round(target*eased);
+        if(k<1) requestAnimationFrame(step);
+      }
+      if(reduce){ el.textContent = target; } else { requestAnimationFrame(step); }
+      cio.unobserve(el);
+    });
+  }, {threshold:0.5});
+  document.querySelectorAll('[data-count]').forEach(function(el){ cio.observe(el); });
+
+  /* ---------- steam particle system ---------- */
+  var canvas = document.getElementById('steam');
+  var ctx = canvas.getContext('2d');
+  var W, H, dpr, particles = [];
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function spawn(){
+    var spread = W * 0.42;
+    return {
+      x: W/2 + (Math.random()-0.5) * spread,
+      y: H + 30 + Math.random()*40,
+      r: 26 + Math.random()*70,
+      vy: 0.22 + Math.random()*0.5,
+      vx: (Math.random()-0.5)*0.14,
+      wob: Math.random()*Math.PI*2,
+      wobSpd: 0.006 + Math.random()*0.012,
+      a: 0.05 + Math.random()*0.10,
+      life: 0, max: 520 + Math.random()*360
+    };
+  }
+  function init(){
+    resize();
+    var count = W < 640 ? 16 : 30;
+    particles = [];
+    for(var i=0;i<count;i++){
+      var p = spawn();
+      p.y = Math.random()*H;      // pre-fill the column
+      p.life = Math.random()*p.max;
+      particles.push(p);
+    }
+  }
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation = 'lighter';
+    for(var i=0;i<particles.length;i++){
+      var p = particles[i];
+      p.wob += p.wobSpd;
+      p.y -= p.vy;
+      p.x += p.vx + Math.sin(p.wob)*0.35;
+      p.r += 0.06;
+      p.life++;
+      var t = p.life / p.max;
+      var fade = Math.sin(Math.min(1,t) * Math.PI); // rise & fall
+      var alpha = p.a * fade;
+      if(p.y < -p.r || p.life > p.max){
+        particles[i] = spawn();
+        continue;
+      }
+      var g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      g.addColorStop(0,'rgba(255,255,255,'+alpha.toFixed(3)+')');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    requestAnimationFrame(frame);
+  }
+  init();
+  window.addEventListener('resize', function(){ resize(); });
+  if(reduce){
+    // draw one soft static haze instead of animating
+    ctx.clearRect(0,0,W,H);
+    var g = ctx.createRadialGradient(W/2,H,0,W/2,H,H*0.7);
+    g.addColorStop(0,'rgba(255,255,255,0.10)');
+    g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

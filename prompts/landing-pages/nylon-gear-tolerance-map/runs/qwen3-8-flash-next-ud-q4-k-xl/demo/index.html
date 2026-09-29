@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polymer &amp; Pitch — Precision Nylon Gears</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F5F5;
+    --bg-2:#EDEDEB;
+    --paper:#FAFAF9;
+    --gear-1:#E0E0E0;
+    --gear-2:#D1D1D1;
+    --gear-3:#C6C6C6;
+    --good:#A3B18A;
+    --caution:#E0C9A6;
+    --ink:#333333;
+    --ink-2:#555555;
+    --ink-3:#8A8A8A;
+    --grid:#888888;
+    --line:rgba(51,51,51,.12);
+    --line-2:rgba(51,51,51,.07);
+    --mono:'Space Mono', ui-monospace, monospace;
+    --sans:'DM Sans', system-ui, sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+
+  /* ---- Atmospheric dot grid ---- */
+  .dotgrid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:radial-gradient(var(--grid) 1px, transparent 1.4px);
+    background-size:26px 26px;
+    opacity:.16;
+  }
+  .dotgrid::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 0%, transparent 55%, rgba(245,245,245,.9) 100%);
+  }
+
+  .wrap{position:relative; z-index:2; max-width:1240px; margin:0 auto; padding:0 28px;}
+
+  /* ---- Ticker ---- */
+  .ticker{
+    position:relative; z-index:5;
+    background:var(--ink); color:#EDEDEB;
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    overflow:hidden; white-space:nowrap;
+  }
+  .ticker__track{display:inline-flex; gap:0; will-change:transform; animation:marquee 34s linear infinite;}
+  .ticker__track span{padding:9px 0;}
+  .ticker__track b{color:var(--good); font-weight:400; padding:0 14px;}
+  @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* ---- Nav ---- */
+  header.nav{
+    position:relative; z-index:5;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 28px; max-width:1240px; margin:0 auto;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px; font-family:var(--sans); font-weight:700; font-size:19px; letter-spacing:-.01em;}
+  .brand .amp{color:var(--good);}
+  .brand small{font-family:var(--mono); font-size:9px; letter-spacing:.22em; color:var(--ink-3); text-transform:uppercase; align-self:center;}
+  nav.links{display:flex; gap:30px; align-items:center;}
+  nav.links a{
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-2); text-decoration:none; position:relative; padding:4px 0;
+    transition:color .25s ease;
+  }
+  nav.links a::after{content:""; position:absolute; left:0; bottom:0; height:1px; width:0; background:var(--ink); transition:width .3s ease;}
+  nav.links a:hover{color:var(--ink);}
+  nav.links a:hover::after{width:100%;}
+  .nav-cta{
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    background:var(--gear-2); color:var(--ink); border:none; padding:11px 18px; cursor:pointer;
+    border-radius:2px; transition:background .25s ease, transform .25s ease;
+  }
+  .nav-cta:hover{background:var(--gear-1); transform:translateY(-1px);}
+
+  /* ---- Hero ---- */
+  .hero{
+    position:relative; z-index:2;
+    display:grid; grid-template-columns:1.05fr .95fr; gap:20px;
+    align-items:center; padding:40px 0 70px; min-height:66vh;
+  }
+  .hero__copy{max-width:560px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--ink-3); display:flex; align-items:center; gap:10px; margin-bottom:26px;
+  }
+  .eyebrow .dot{width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 0 4px rgba(163,177,138,.22);}
+  h1{
+    font-size:clamp(2.6rem, 6.2vw, 5.4rem); font-weight:700; line-height:.98; letter-spacing:-.035em;
+    margin-bottom:26px;
+  }
+  h1 .light{font-weight:400; color:var(--ink-2);}
+  h1 .mark{position:relative; white-space:nowrap;}
+  h1 .mark::after{
+    content:""; position:absolute; left:-2px; right:-2px; bottom:.08em; height:.16em;
+    background:var(--good); opacity:.5; z-index:-1;
+  }
+  .lede{font-size:clamp(1rem,1.4vw,1.18rem); color:var(--ink-2); max-width:460px; margin-bottom:34px; font-weight:400;}
+  .hero__actions{display:flex; gap:14px; flex-wrap:wrap; align-items:center;}
+  .btn{
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    padding:15px 26px; border-radius:2px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:10px;
+    transition:transform .25s ease, background .25s ease, box-shadow .25s ease;
+  }
+  .btn--solid{background:var(--ink); color:var(--bg); border:1px solid var(--ink);}
+  .btn--solid:hover{transform:translateY(-2px); box-shadow:0 12px 26px rgba(51,51,51,.16);}
+  .btn--ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
+  .btn--ghost:hover{background:var(--bg-2); transform:translateY(-2px);}
+  .btn .arw{transition:transform .3s ease;}
+  .btn:hover .arw{transform:translateX(4px);}
+
+  .hero__stats{display:flex; gap:34px; margin-top:44px; flex-wrap:wrap;}
+  .stat .num{font-family:var(--sans); font-weight:700; font-size:1.7rem; letter-spacing:-.02em;}
+  .stat .num em{font-style:normal; font-size:.9rem; color:var(--ink-3); font-weight:400;}
+  .stat .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-top:4px;}
+
+  /* ---- Gear stage ---- */
+  .stage{position:relative; height:520px; display:flex; align-items:center; justify-content:center; cursor:zoom-in;}
+  .stage__frame{position:relative; width:100%; height:100%;}
+  /* corner ticks */
+  .tick{position:absolute; width:16px; height:16px; border:1px solid var(--grid); opacity:.5;}
+  .tick.tl{top:6px; left:6px; border-right:none; border-bottom:none;}
+  .tick.tr{top:6px; right:6px; border-left:none; border-bottom:none;}
+  .tick.bl{bottom:6px; left:6px; border-right:none; border-top:none;}
+  .tick.br{bottom:6px; right:6px; border-left:none; border-top:none;}
+
+  .gears{
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%) scale(1);
+    transition:transform .7s cubic-bezier(.22,1,.36,1);
+    will-change:transform;
+  }
+  .stage:hover .gears{transform:translate(-50%,-50%) scale(1.09);}
+  .gears svg{display:block; width:auto; height:440px; max-width:100%; overflow:visible;}
+
+  .gear-a{transform-box:fill-box; transform-origin:center; animation:spinA 22s linear infinite;}
+  .gear-b{transform-box:fill-box; transform-origin:center; animation:spinB 15.4s linear infinite;}
+  .stage:hover .gear-a, .stage:hover .gear-b{animation-play-state:paused;}
+  @keyframes spinA{to{transform:rotate(360deg)}}
+  @keyframes spinB{to{transform:rotate(-360deg)}}
+
+  /* tolerance overlay */
+  .tol{opacity:0; transition:opacity .55s ease; pointer-events:none;}
+  .stage:hover .tol{opacity:1;}
+
+  /* callout tags */
+  .tag{
+    position:absolute; font-family:var(--mono); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase;
+    background:var(--paper); border:1px solid var(--line); color:var(--ink-2);
+    padding:4px 8px; border-radius:2px; opacity:0; transform:translateY(6px);
+    transition:opacity .5s ease .1s, transform .5s ease .1s; white-space:nowrap;
+    box-shadow:0 4px 14px rgba(51,51,51,.06);
+  }
+  .tag::before{content:""; position:absolute; width:6px; height:6px; border-radius:50%;}
+  .tag--good::before{background:var(--good);}
+  .tag--caution::before{background:var(--caution);}
+  .stage:hover .tag{opacity:1; transform:translateY(0);}
+  .tag.t1{top:14%; left:2%;}
+  .tag.t2{top:6%; right:4%;}
+  .tag.t3{bottom:16%; left:6%;}
+  .tag.t4{bottom:8%; right:2%;}
+
+  .stage__hint{
+    position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+    display:flex; align-items:center; gap:8px;
+  }
+  .stage__hint .pulse{width:6px; height:6px; border-radius:50%; background:var(--grid); animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.3; transform:scale(1)}50%{opacity:1; transform:scale(1.5)}}
+
+  /* ---- Spec strip ---- */
+  .specstrip{
+    position:relative; z-index:2; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .specstrip .wrap{display:flex; flex-wrap:wrap; gap:0;}
+  .spec{flex:1 1 180px; padding:22px 24px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:6px;}
+  .spec:last-child{border-right:none;}
+  .spec .k{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);}
+  .spec .v{font-family:var(--sans); font-weight:700; font-size:1.35rem; letter-spacing:-.02em;}
+  .spec .v em{font-style:normal; font-size:.85rem; color:var(--ink-3); font-weight:400;}
+
+  /* ---- Section head ---- */
+  section{position:relative; z-index:2;}
+  .sec-head{max-width:720px; margin:0 auto; text-align:center; padding:90px 0 46px;}
+  .sec-head .eyebrow{justify-content:center;}
+  .sec-head h2{font-size:clamp(1.9rem,3.6vw,3rem); font-weight:700; letter-spacing:-.03em; line-height:1.04;}
+  .sec-head p{color:var(--ink-2); margin-top:16px; font-size:1.05rem;}
+
+  /* ---- Features ---- */
+  .features{padding-bottom:40px;}
+  .feat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+  .feat{
+    background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:34px 30px;
+    transition:transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease, border-color .4s ease;
+    position:relative; overflow:hidden;
+  }
+  .feat::before{content:""; position:absolute; top:0; left:0; height:2px; width:0; background:var(--good); transition:width .5s ease;}
+  .feat:hover{transform:translateY(-5px); box-shadow:0 18px 40px rgba(51,51,51,.09); border-color:rgba(51,51,51,.18);}
+  .feat:hover::before{width:100%;}
+  .feat .idx{font-family:var(--mono); font-size:10px; letter-spacing:.16em; color:var(--ink-3);}
+  .feat .ico{width:46px; height:46px; margin:18px 0 22px; color:var(--ink);}
+  .feat .ico svg{width:100%; height:100%; stroke:var(--ink); fill:none; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;}
+  .feat h3{font-size:1.3rem; font-weight:700; letter-spacing:-.02em; margin-bottom:12px;}
+  .feat p{color:var(--ink-2); font-size:.96rem;}
+  .feat .meta{margin-top:22px; font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--good); border-top:1px solid var(--line); padding-top:16px;}
+
+  /* ---- Tolerance section ---- */
+  .tolerance{padding:70px 0 90px;}
+  .tol-wrap{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center;}
+  .tol-copy h2{font-size:clamp(1.8rem,3.2vw,2.7rem); font-weight:700; letter-spacing:-.03em; line-height:1.05; margin-bottom:20px;}
+  .tol-copy p{color:var(--ink-2); margin-bottom:26px;}
+  .legend{display:flex; flex-direction:column; gap:14px;}
+  .legend .row{display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--paper); border:1px solid var(--line); border-radius:3px;}
+  .legend .swatch{width:16px; height:16px; border-radius:3px; flex-shrink:0;}
+  .legend .swatch.g{background:var(--good);}
+  .legend .swatch.c{background:var(--caution);}
+  .legend .txt .t{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;}
+  .legend .txt .d{font-size:.86rem; color:var(--ink-3); margin-top:2px;}
+  .legend .rng{margin-left:auto; font-family:var(--mono); font-size:12px; color:var(--ink-2);}
+
+  .tol-viz{
+    background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:26px;
+    box-shadow:0 20px 50px rgba(51,51,51,.06);
+  }
+  .tol-viz .viz-head{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-bottom:22px;}
+  .tol-viz svg{width:100%; height:auto;}
+  .zone{transition:transform .3s ease;}
+  .tol-viz .zone:hover{transform:translateY(-3px);}
+
+  /* ---- Contact ---- */
+  .contact{padding:0 0 90px;}
+  .contact-card{
+    background:var(--ink); color:var(--bg); border-radius:5px; padding:clamp(30px,5vw,60px);
+    display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center;
+    position:relative; overflow:hidden;
+  }
+  .contact-card::before{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1.4px);
+    background-size:24px 24px; opacity:.5;
+  }
+  .contact-card .c-copy{position:relative;}
+  .contact-card .eyebrow{color:#9a9a9a;}
+  .contact-card .eyebrow .dot{background:var(--good); box-shadow:0 0 0 4px rgba(163,177,138,.25);}
+  .contact-card h2{font-size:clamp(1.8rem,3.2vw,2.6rem); font-weight:700; letter-spacing:-.03em; line-height:1.05; margin-bottom:18px;}
+  .contact-card p{color:#c4c4c4; max-width:380px;}
+  .contact-card .c-contact{margin-top:30px; font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:#dcdcdc;}
+  .contact-card .c-contact a{color:var(--good); text-decoration:none;}
+  form{position:relative; display:flex; flex-direction:column; gap:14px;}
+  .field label{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#9a9a9a; display:block; margin-bottom:7px;}
+  .field input, .field select, .field textarea{
+    width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.14); color:var(--bg);
+    padding:13px 15px; border-radius:2px; font-family:var(--sans); font-size:.95rem; transition:border-color .25s ease, background .25s ease;
+  }
+  .field textarea{resize:vertical; min-height:80px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--good); background:rgba(255,255,255,.07);}
+  .field select{appearance:none; cursor:pointer;}
+  .submit{
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    background:var(--gear-2); color:var(--ink); border:none; padding:16px; border-radius:2px; cursor:pointer;
+    transition:background .25s ease, transform .25s ease; margin-top:4px;
+  }
+  .submit:hover{background:var(--gear-1); transform:translateY(-2px);}
+  .form-note{font-family:var(--mono); font-size:10px; letter-spacing:.06em; color:#8a8a8a; text-align:center;}
+  .form-ok{display:none; font-family:var(--mono); font-size:12px; color:var(--good); text-align:center; padding:16px; border:1px dashed var(--good); border-radius:3px;}
+
+  /* ---- Footer ---- */
+  footer{border-top:1px solid var(--line); padding:44px 0 60px; position:relative; z-index:2;}
+  .foot{display:flex; justify-content:space-between; align-items:flex-start; gap:30px; flex-wrap:wrap;}
+  .foot .brand{font-size:16px;}
+  .foot .cols{display:flex; gap:60px; flex-wrap:wrap;}
+  .foot .col h4{font-family:var(--mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-bottom:14px;}
+  .foot .col a{display:block; color:var(--ink-2); text-decoration:none; font-size:.92rem; margin-bottom:8px; transition:color .2s ease;}
+  .foot .col a:hover{color:var(--ink);}
+  .foot .legal{width:100%; margin-top:34px; padding-top:22px; border-top:1px solid var(--line-2); font-family:var(--mono); font-size:10px; letter-spacing:.1em; color:var(--ink-3); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px;}
+
+  /* ---- Reveal ---- */
+  .reveal{opacity:0; transform:translateY(26px); transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);}
+  .reveal.in{opacity:1; transform:none;}
+
+  /* ---- Responsive ---- */
+  @media(max-width:960px){
+    .hero{grid-template-columns:1fr; gap:10px; padding-top:20px;}
+    .stage{height:400px; order:-1;}
+    .gears svg{height:360px;}
+    .tol-wrap{grid-template-columns:1fr; gap:36px;}
+    .contact-card{grid-template-columns:1fr; gap:34px;}
+    nav.links{display:none;}
+  }
+  @media(max-width:640px){
+    .feat-grid{grid-template-columns:1fr;}
+    .hero__stats{gap:24px;}
+    .foot .cols{gap:34px;}
+    .spec{flex-basis:50%;}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important; scroll-behavior:auto !important;}
+    .reveal{opacity:1; transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="dotgrid" aria-hidden="true"></div>
+
+<!-- Ticker -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track">
+    <span>Quiet operation<b>◆</b>PA66 + glass filled<b>◆</b>Tolerance ±0.02&nbsp;mm<b>◆</b>Self-lubricating<b>◆</b>Low-noise profile<b>◆</b>Injection-moulded<b>◆</b></span>
+    <span>Quiet operation<b>◆</b>PA66 + glass filled<b>◆</b>Tolerance ±0.02&nbsp;mm<b>◆</b>Self-lubricating<b>◆</b>Low-noise profile<b>◆</b>Injection-moulded<b>◆</b></span>
+  </div>
+</div>
+
+<!-- Nav -->
+<header class="nav">
+  <div class="brand">Polymer <span class="amp">&amp;</span> Pitch <small>Est. 2009</small></div>
+  <nav class="links">
+    <a href="#features">Capabilities</a>
+    <a href="#tolerance">Tolerance</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView()">Request a quote</button>
+</header>
+
+<!-- Hero -->
+<div class="wrap">
+  <section class="hero">
+    <div class="hero__copy reveal">
+      <div class="eyebrow"><span class="dot"></span>Precision nylon gearing</div>
+      <h1>Gears that<br><span class="mark">whisper</span><br><span class="light">into motion.</span></h1>
+      <p class="lede">Polymer &amp; Pitch machines self-lubricating nylon gears held to a tolerance of ±0.02&nbsp;mm — engineered for quiet, smooth, near-silent operation in the world's most sensitive machines.</p>
+      <div class="hero__actions">
+        <a href="#contact" class="btn btn--solid">Request a quote <span class="arw">→</span></a>
+        <a href="#tolerance" class="btn btn--ghost">View tolerance map</a>
+      </div>
+      <div class="hero__stats">
+        <div class="stat"><div class="num">±0.02<em> mm</em></div><div class="lbl">Tooth tolerance</div></div>
+        <div class="stat"><div class="num">&lt;42<em> dB</em></div><div class="lbl">Operating noise</div></div>
+        <div class="stat"><div class="num">0<em> ml</em></div><div class="lbl">Lubricant needed</div></div>
+      </div>
+    </div>
+
+    <div class="stage" aria-label="Macro view of two interlocking nylon gears with a manufacturing tolerance map">
+      <div class="stage__frame">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+
+        <div class="gears">
+          <svg viewBox="0 0 400 400" role="img" aria-hidden="true">
+            <defs>
+              <radialGradient id="mat" cx="42%" cy="38%" r="72%">
+                <stop offset="0%" stop-color="#EAEAEA"/>
+                <stop offset="55%" stop-color="#E0E0E0"/>
+                <stop offset="100%" stop-color="#CFCFCF"/>
+              </radialGradient>
+              <radialGradient id="mat2" cx="42%" cy="38%" r="72%">
+                <stop offset="0%" stop-color="#E4E4E4"/>
+                <stop offset="55%" stop-color="#D8D8D8"/>
+                <stop offset="100%" stop-color="#C4C4C4"/>
+              </radialGradient>
+            </defs>
+
+            <!-- Gear A (large) -->
+            <g class="gear-a">
+              <g fill="url(#mat)" stroke="#BFBFBF" stroke-width="0.6">
+                <rect x="146" y="34" width="18" height="22" rx="3"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(20 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(40 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(60 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(80 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(100 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(120 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(140 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(160 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(180 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(200 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(220 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(240 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(260 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(280 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(300 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(320 155 155)"/>
+                <rect x="146" y="34" width="18" height="22" rx="3" transform="rotate(340 155 155)"/>
+              </g>
+              <circle cx="155" cy="155" r="108" fill="url(#mat)" stroke="#BFBFBF" stroke-width="0.6"/>
+              <circle cx="155" cy="155" r="86" fill="none" stroke="#C9C9C9" stroke-width="1.2"/>
+              <circle cx="155" cy="155" r="70" fill="none" stroke="#D6D6D6" stroke-width="0.8"/>
+              <circle cx="155" cy="155" r="34" fill="#D1D1D1" stroke="#BDBDBD" stroke-width="1"/>
+              <circle cx="155" cy="155" r="16" fill="#C4C4C4" stroke="#B4B4B4" stroke-width="1"/>
+              <!-- tolerance ring -->
+              <g class="tol">
+                <circle cx="155" cy="155" r="101" fill="none" stroke="#A3B18A" stroke-width="6" stroke-dasharray="18 6" opacity="0.9"/>
+                <circle cx="155" cy="155" r="93" fill="none" stroke="#E0C9A6" stroke-width="4" stroke-dasharray="10 24" opacity="0.95"/>
+              </g>
+            </g>
+
+            <!-- Gear B (small) -->
+            <g class="gear-b">
+              <g fill="url(#mat2)" stroke="#BFBFBF" stroke-width="0.6">
+                <rect x="288" y="228" width="14" height="16" rx="2.5"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(30 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(60 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(90 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(120 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(150 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(180 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(210 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(240 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(270 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(300 295 265)"/>
+                <rect x="288" y="228" width="14" height="16" rx="2.5" transform="rotate(330 295 265)"/>
+              </g>
+              <circle cx="295" cy="265" r="42" fill="url(#mat2)" stroke="#BFBFBF" stroke-width="0.6"/>
+              <circle cx="295" cy="265" r="30" fill="none" stroke="#C6C6C6" stroke-width="1"/>
+              <circle cx="295" cy="265" r="13" fill="#C6C6C6" stroke="#B4B4B4" stroke-width="1"/>
+              <g class="tol">
+                <circle cx="295" cy="265" r="37" fill="none" stroke="#A3B18A" stroke-width="4" stroke-dasharray="9 5" opacity="0.9"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <span class="tag tag--good t1">Root · in spec</span>
+        <span class="tag tag--caution t2">Flank · caution</span>
+        <span class="tag tag--good t3">Pitch Ø · nominal</span>
+        <span class="tag tag--good t4">Bore · ±0.01</span>
+
+        <div class="stage__hint"><span class="pulse"></span>Hover to halt &amp; inspect tolerance</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Spec strip -->
+<div class="specstrip">
+  <div class="wrap">
+    <div class="spec"><span class="k">Material</span><span class="v">PA66 <em>+ 30% GF</em></span></div>
+    <div class="spec"><span class="k">Module range</span><span class="v">0.4 – 2.0</span></div>
+    <div class="spec"><span class="k">Tooth tolerance</span><span class="v">±0.02 <em>mm</em></span></div>
+    <div class="spec"><span class="k">Surface finish</span><span class="v">Ra 0.8 <em>µm</em></span></div>
+    <div class="spec"><span class="k">Lead time</span><span class="v">14 <em>days</em></span></div>
+  </div>
+</div>
+
+<!-- Features -->
+<section class="features" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow"><span class="dot"></span>Capabilities</div>
+      <h2>Engineered for the quietest machines.</h2>
+      <p>Every gear is designed, moulded and measured in-house — so smoothness is a specification, not a hope.</p>
+    </div>
+    <div class="feat-grid">
+      <article class="feat reveal">
+        <span class="idx">01 / Acoustics</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 8c1.5 1.5 1.5 6.5 0 8"/><path d="M19 5c3 3 3 11 0 14"/></svg></div>
+        <h3>Low-noise profile</h3>
+        <p>Optimised tooth geometry and a self-lubricating nylon matrix cut meshing noise to under 42&nbsp;dB — quieter than a library.</p>
+        <div class="meta">Sound pressure · &lt;42 dB(A)</div>
+      </article>
+      <article class="feat reveal">
+        <span class="idx">02 / Longevity</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>High durability</h3>
+        <p>Glass-filled PA66 resists fatigue, creep and wear across 10⁸ cycles — holding its tolerance long after metal gears have worn.</p>
+        <div class="meta">Rated life · 10⁸ cycles</div>
+      </article>
+      <article class="feat reveal">
+        <span class="idx">03 / Precision</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <h3>±0.02 mm tolerance</h3>
+        <p>In-mould cooling and post-process metrology keep every tooth flank, root and pitch circle inside a 20-micron window.</p>
+        <div class="meta">Measured · CMM, 100%</div>
+      </article>
+      <article class="feat reveal">
+        <span class="idx">04 / Friction</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/><path d="M9.5 14a2.5 2.5 0 0 0 5 0"/></svg></div>
+        <h3>Self-lubricating</h3>
+        <p>Nylon runs dry and clean — no grease, no contamination, no maintenance windows. Ideal for food, medical and optics.</p>
+        <div class="meta">Lubricant · 0 ml</div>
+      </article>
+      <article class="feat reveal">
+        <span class="idx">05 / Environment</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg></div>
+        <h3>Corrosion-proof</h3>
+        <p>Chemically inert and immune to rust, our gears thrive in humid, saline and washdown environments where steel simply fails.</p>
+        <div class="meta">IP-rated · washdown safe</div>
+      </article>
+      <article class="feat reveal">
+        <span class="idx">06 / Weight</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 4v16M7 8h10M6 12h12M8 16h8"/></svg></div>
+        <h3>Lightweight</h3>
+        <p>At roughly one-sixth the density of steel, polymer gearing slashes rotating mass — improving acceleration and efficiency.</p>
+        <div class="meta">Mass · ~⅙ of steel</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Tolerance section -->
+<section class="tolerance" id="tolerance">
+  <div class="wrap tol-wrap">
+    <div class="tol-copy reveal">
+      <div class="eyebrow"><span class="dot"></span>The tolerance map</div>
+      <h2>Read the precision, tooth by tooth.</h2>
+      <p>Hover the gears above and the manufacturing tolerance map fades in. Muted green marks zones inside spec; soft beige flags features running close to the limit — never neon, always honest.</p>
+      <div class="legend">
+        <div class="row"><span class="swatch g"></span><div class="txt"><div class="t">In spec</div><div class="d">Feature within design tolerance</div></div><span class="rng">≤ 0.02</span></div>
+        <div class="row"><span class="swatch c"></span><div class="txt"><div class="t">Caution</div><div class="d">Approaching limit — monitored</div></div><span class="rng">0.02 – 0.05</span></div>
+      </div>
+    </div>
+
+    <div class="tol-viz reveal">
+      <div class="viz-head"><span>Feature deviation · µm</span><span>Lot #4471-A</span></div>
+      <svg viewBox="0 0 420 240" role="img" aria-label="Bar chart of gear feature deviations">
+        <!-- baseline grid -->
+        <g stroke="#E4E4E4" stroke-width="1">
+          <line x1="40" y1="40" x2="400" y2="40"/>
+          <line x1="40" y1="100" x2="400" y2="100"/>
+          <line x1="40" y1="160" x2="400" y2="160"/>
+          <line x1="40" y1="200" x2="400" y2="200"/>
+        </g>
+        <!-- caution band -->
+        <rect x="40" y="60" width="360" height="40" fill="#E0C9A6" opacity="0.18"/>
+        <!-- limit line -->
+        <line x1="40" y1="60" x2="400" y2="60" stroke="#A3B18A" stroke-width="1.5" stroke-dasharray="5 4"/>
+        <text x="404" y="64" font-family="Space Mono" font-size="9" fill="#8A8A8A">0.02</text>
+
+        <!-- bars -->
+        <g class="zone"><rect x="60" y="150" width="34" height="50" rx="2" fill="#A3B18A"/></g>
+        <g class="zone"><rect x="118" y="72" width="34" height="128" rx="2" fill="#A3B18A"/></g>
+        <g class="zone"><rect x="176" y="96" width="34" height="104" rx="2" fill="#E0C9A6"/></g>
+        <g class="zone"><rect x="234" y="132" width="34" height="68" rx="2" fill="#A3B18A"/></g>
+        <g class="zone"><rect x="292" y="52" width="34" height="148" rx="2" fill="#E0C9A6"/></g>
+        <g class="zone"><rect x="350" y="118" width="34" height="82" rx="2" fill="#A3B18A"/></g>
+
+        <!-- axis labels -->
+        <g font-family="Space Mono" font-size="8" fill="#8A8A8A" text-anchor="middle">
+          <text x="77" y="216">Root</text>
+          <text x="135" y="216">Flank</text>
+          <text x="193" y="216">Pitch</text>
+          <text x="251" y="216">Bore</text>
+          <text x="309" y="216">Face</text>
+          <text x="367" y="216">Tip</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="contact" id="contact">
+  <div class="wrap">
+    <div class="contact-card reveal">
+      <div class="c-copy">
+        <div class="eyebrow"><span class="dot"></span>Start a project</div>
+        <h2>Send us a drawing. We'll send back a gear.</h2>
+        <p>Tell us about your application — load, speed, environment — and our engineers will return a manufacturability review and quote within two working days.</p>
+        <div class="c-contact">
+          studio@polymerandpitch.co<br>
+          <a href="tel:+10000000000">+1 (000) 000-0000</a> · Mon–Fri
+        </div>
+      </div>
+      <form id="quoteForm" novalidate>
+        <div class="field"><label for="name">Name</label><input id="name" name="name" type="text" placeholder="Jane Doe" required></div>
+        <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" placeholder="you@company.com" required></div>
+        <div class="field"><label for="app">Application</label>
+          <select id="app" name="app">
+            <option>Consumer appliance</option>
+            <option>Medical / lab equipment</option>
+            <option>Optics / cameras</option>
+            <option>Automotive</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label for="msg">Notes</label><textarea id="msg" name="msg" placeholder="Module, quantity, target noise…"></textarea></div>
+        <button class="submit" type="submit">Request quote →</button>
+        <div class="form-ok" id="formOk">✓ Received. We'll reply within two working days.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="brand">Polymer <span class="amp">&amp;</span> Pitch</div>
+      <div class="cols">
+        <div class="col"><h4>Company</h4><a href="#features">Capabilities</a><a href="#tolerance">Tolerance map</a><a href="#contact">Contact</a></div>
+        <div class="col"><h4>Materials</h4><a href="#">PA66 + GF</a><a href="#">POM</a><a href="#">PA12</a></div>
+        <div class="col"><h4>Standards</h4><a href="#">ISO 1328</a><a href="#">AGMA Q10</a><a href="#">ISO 9001</a></div>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© 2024 Polymer &amp; Pitch — Precision nylon gearing.</span>
+      <span>Quiet operation · Smooth motion · ±0.02 mm</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach((e,i)=>{
+      if(e.isIntersecting){
+        const el = e.target;
+        const delay = (el.dataset.d || (i%6)*70);
+        setTimeout(()=>el.classList.add('in'), delay);
+        io.unobserve(el);
+      }
+    });
+  }, {threshold:.15, rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.dataset.d = (i%3)*90; io.observe(el); });
+
+  // Form
+  const form = document.getElementById('quoteForm');
+  form.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(!form.checkValidity()){ form.reportValidity(); return; }
+    document.getElementById('formOk').style.display='block';
+    form.querySelector('.submit').textContent='Sent ✓';
+    form.querySelector('.submit').disabled=true;
+  });
+</script>
+</body>
+</html>

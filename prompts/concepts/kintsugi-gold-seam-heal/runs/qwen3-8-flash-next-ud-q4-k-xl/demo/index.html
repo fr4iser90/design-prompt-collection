@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kintsugi — Gold Seam Heal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#1a1a1a;
+    --void-deep:#101010;
+    --clay:#f5f5f5;
+    --clay-shade:#dcd9d1;
+    --gold:#d4af37;
+    --gold-hi:#f7e29a;
+    --gold-deep:#8a6a12;
+    --lacquer:#8b4513;
+    --ink:#c9c6bd;
+    --ink-dim:#6f6c64;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  html,body{height:100%}
+
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:'Lato',system-ui,sans-serif;
+    overflow:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- atmospheric layers ---------- */
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+  .vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse 70% 60% at 50% 46%, rgba(60,52,34,.28), rgba(16,16,16,0) 60%),
+               radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,.55) 100%);
+  }
+
+  .grain{
+    position:absolute;inset:-50%;
+    width:200%;height:200%;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity:.045;
+    mix-blend-mode:overlay;
+    animation:grain 7s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}20%{transform:translate(-4%,3%)}
+    40%{transform:translate(3%,-2%)}60%{transform:translate(-2%,-3%)}
+    80%{transform:translate(4%,2%)}100%{transform:translate(0,0)}
+  }
+
+  .motes{position:absolute;inset:0}
+  .mote{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle,rgba(212,175,55,.9),rgba(212,175,55,0) 70%);
+    filter:blur(.4px);opacity:0;
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translateY(20px) translateX(0);opacity:0}
+    15%{opacity:.5}
+    85%{opacity:.4}
+    100%{transform:translateY(-120px) translateX(18px);opacity:0}
+  }
+
+  /* ---------- layout ---------- */
+  .stage{
+    position:relative;z-index:1;
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:space-between;
+    padding:clamp(18px,3vw,40px) clamp(20px,4vw,64px);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    width:100%;max-width:1240px;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  }
+  .brand{display:flex;flex-direction:column;gap:6px}
+  .brand__row{display:flex;align-items:baseline;gap:14px}
+  .wordmark{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:300;
+    font-size:clamp(2.1rem,5.4vw,3.7rem);
+    letter-spacing:.16em;
+    line-height:.9;
+    color:var(--clay);
+    text-transform:uppercase;
+  }
+  .wordmark .dot{color:var(--gold);font-size:.55em;vertical-align:.35em}
+  .jp{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(.95rem,1.8vw,1.25rem);
+    letter-spacing:.35em;color:var(--gold);
+    padding-top:.5em;
+  }
+  .tagline{
+    font-size:clamp(.62rem,.9vw,.72rem);
+    letter-spacing:.42em;text-transform:uppercase;
+    color:var(--ink-dim);
+    max-width:34ch;
+  }
+  .status{
+    text-align:right;
+    display:flex;flex-direction:column;gap:5px;
+    font-size:clamp(.58rem,.85vw,.68rem);
+    letter-spacing:.32em;text-transform:uppercase;
+    color:var(--ink-dim);
+    min-width:130px;
+  }
+  .status b{color:var(--gold);font-weight:700;letter-spacing:.28em}
+  .seal{
+    margin-top:8px;
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-size:1rem;letter-spacing:.05em;
+    color:var(--gold);opacity:.85;
+    transition:opacity .8s ease;
+  }
+  .seal.on{opacity:1;text-shadow:0 0 18px rgba(212,175,55,.5)}
+
+  /* ---------- bowl ---------- */
+  .bowl-wrap{
+    flex:1 1 auto;
+    width:100%;max-width:660px;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .bowl-wrap::before{ /* soft pedestal glow */
+    content:"";position:absolute;left:50%;bottom:6%;
+    width:60%;height:26%;transform:translateX(-50%);
+    background:radial-gradient(ellipse at center,rgba(212,175,55,.10),rgba(212,175,55,0) 70%);
+    filter:blur(14px);
+    transition:opacity 1.2s ease;opacity:.6;
+  }
+  .bowl-wrap.healed::before{opacity:1}
+
+  svg#vessel{
+    width:min(78vw,540px);
+    height:auto;
+    overflow:visible;
+    touch-action:manipulation;
+    user-select:none;
+  }
+  .shard{
+    cursor:pointer;
+    transform-box:fill-box;transform-origin:center;
+    transition:transform .55s cubic-bezier(.22,.61,.36,1), filter .45s ease, opacity .5s ease;
+    will-change:transform;
+  }
+  .shard.enter{opacity:0;transform:translateY(-46px) rotate(-3deg)}
+  .shard:hover{filter:brightness(1.05) drop-shadow(0 0 10px rgba(212,175,55,.35))}
+  .shard.lift{filter:brightness(1.07) drop-shadow(0 6px 16px rgba(0,0,0,.55))}
+  .shard.joined{cursor:default}
+  .shard.joined:hover{filter:brightness(1.03)}
+
+  .crackline{
+    fill:none;stroke:var(--gold);
+    stroke-width:3;stroke-linecap:round;stroke-linejoin:round;
+    filter:url(#seamGlow);
+    stroke-dasharray:1;stroke-dashoffset:1;
+    transition:stroke-dashoffset .95s cubic-bezier(.6,0,.35,1);
+  }
+  .crackline.sealed{stroke-dashoffset:0}
+  .crackline.shimmer{animation:shimmer 3.6s ease-in-out infinite}
+  @keyframes shimmer{
+    0%,100%{filter:url(#seamGlow) brightness(1)}
+    50%{filter:url(#seamGlow) brightness(1.5)}
+  }
+
+  /* ---------- footer / instructions ---------- */
+  .foot{
+    width:100%;max-width:1240px;margin:0 auto;
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+  }
+  .hint{
+    font-size:clamp(.66rem,1vw,.78rem);
+    letter-spacing:.22em;text-transform:uppercase;
+    color:var(--ink-dim);
+    display:flex;align-items:center;gap:12px;
+    transition:opacity .8s ease;
+  }
+  .hint .pulse{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 0 0 rgba(212,175,55,.6);
+    animation:pulse 2.4s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(212,175,55,.55)}
+    70%{box-shadow:0 0 0 12px rgba(212,175,55,0)}
+    100%{box-shadow:0 0 0 0 rgba(212,175,55,0)}
+  }
+  .legend{display:flex;gap:26px;flex-wrap:wrap}
+  .legend span{
+    font-size:clamp(.58rem,.85vw,.66rem);letter-spacing:.28em;
+    text-transform:uppercase;color:var(--ink-dim);
+    display:flex;align-items:center;gap:9px;
+  }
+  .legend i{width:16px;height:1px;background:var(--gold);display:inline-block;opacity:.7}
+  .legend i.broken{background:transparent;border-top:1px dashed var(--ink-dim);height:0}
+
+  .quote{
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    font-size:clamp(1rem,1.7vw,1.35rem);
+    color:var(--ink);opacity:.55;line-height:1.4;
+    max-width:30ch;text-align:right;
+    transition:opacity 1s ease,color 1s ease;
+  }
+  .quote.on{opacity:.9;color:var(--gold-hi)}
+
+  /* ---------- tooltip ---------- */
+  .tip{
+    position:fixed;z-index:5;pointer-events:none;
+    font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--gold);background:rgba(20,20,20,.82);
+    border:1px solid rgba(212,175,55,.35);
+    padding:6px 11px;border-radius:2px;
+    opacity:0;transform:translate(-50%,-160%) scale(.9);
+    transition:opacity .25s ease,transform .25s ease;
+    white-space:nowrap;backdrop-filter:blur(3px);
+  }
+  .tip.show{opacity:1;transform:translate(-50%,-150%) scale(1)}
+
+  @media (max-width:720px){
+    .status{min-width:0}
+    .tagline{max-width:22ch}
+    .foot{flex-direction:column;align-items:flex-start}
+    .quote{text-align:left;max-width:none}
+    .legend{gap:16px}
+  }
+  @media (max-height:560px){
+    .masthead .tagline{display:none}
+    .quote{display:none}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .grain,.mote,.hint .pulse,.crackline.shimmer{animation:none!important}
+    .shard{transition:transform .1s ease}
+    .crackline{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos">
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div class="motes" id="motes"></div>
+  </div>
+
+  <main class="stage">
+    <header class="masthead">
+      <div class="brand">
+        <div class="brand__row">
+          <h1 class="wordmark">Kintsugi<span class="dot">.</span></h1>
+          <span class="jp">金継ぎ</span>
+        </div>
+        <p class="tagline">The art of golden joinery — repair made visible</p>
+      </div>
+      <div class="status">
+        <span>Seams sealed</span>
+        <b id="count">0 / 4</b>
+        <span class="seal" id="seal">— whole, and more beautiful</span>
+      </div>
+    </header>
+
+    <section class="bowl-wrap" id="bowlWrap">
+      <svg id="vessel" viewBox="0 0 640 600" role="img" aria-label="A ceramic bowl broken into shards, being repaired with gold seams.">
+        <defs>
+          <radialGradient id="clayGrad" cx="42%" cy="30%" r="82%">
+            <stop offset="0%" stop-color="#fbfaf7"/>
+            <stop offset="46%" stop-color="#ecebe6"/>
+            <stop offset="100%" stop-color="#cfcabf"/>
+          </radialGradient>
+          <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#8a6a12"/>
+            <stop offset="35%" stop-color="#e9c766"/>
+            <stop offset="55%" stop-color="#f7e29a"/>
+            <stop offset="78%" stop-color="#d4af37"/>
+            <stop offset="100%" stop-color="#9c7a1c"/>
+          </linearGradient>
+          <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="seamGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.6" flood-color="#000" flood-opacity="0.55"/>
+            <feDropShadow dx="0" dy="0" stdDeviation="3.2" flood-color="#d4af37" flood-opacity="0.85"/>
+          </filter>
+          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#000" flood-opacity="0.5"/>
+          </filter>
+        </defs>
+
+        <!-- ground shadow -->
+        <ellipse cx="320" cy="512" rx="196" ry="30" fill="#000" opacity="0.5" filter="url(#softShadow)"/>
+
+        <!-- shards -->
+        <g id="shards" filter="url(#softShadow)">
+          <g class="shard enter" data-id="0" data-dx="-30" data-dy="-26" data-rot="-7" data-neighbor="1">
+            <path d="M320,192 L350,192 L318,300 L282,300 L292,192 Z"/>
+          </g>
+          <g class="shard enter" data-id="1" data-dx="34" data-dy="-16" data-rot="8" data-neighbor="2">
+            <path d="M350,192 L410,192 L440,300 L400,300 L318,300 Z"/>
+          </g>
+          <g class="shard enter" data-id="2" data-dx="26" data-dy="30" data-rot="6" data-neighbor="3">
+            <path d="M440,300 L400,300 L360,432 L320,432 L320,476 L436,476 L480,380 Z"/>
+          </g>
+          <g class="shard enter" data-id="3" data-dx="-24" data-dy="26" data-rot="-6" data-neighbor="4">
+            <path d="M320,432 L360,432 L320,476 L204,476 L240,380 L280,300 L320,300 Z"/>
+          </g>
+          <g class="shard enter" data-id="4" data-dx="-36" data-dy="-10" data-rot="-9" data-neighbor="0">
+            <path d="M230,192 L292,192 L282,300 L240,380 L160,380 L200,300 Z"/>
+          </g>
+        </g>
+
+        <!-- gloss highlight (non-interactive) -->
+        <ellipse cx="272" cy="250" rx="70" ry="46" fill="url(#gloss)" opacity="0.5" pointer-events="none"/>
+
+        <!-- gold seams -->
+        <g id="seams" pointer-events="none">
+          <path class="crackline" data-seam="0" pathLength="1" d="M282,300 L318,300"/>
+          <path class="crackline" data-seam="1" pathLength="1" d="M318,300 L400,300"/>
+          <path class="crackline" data-seam="2" pathLength="1" d="M320,432 L360,432"/>
+          <path class="crackline" data-seam="3" pathLength="1" d="M280,300 L320,300"/>
+          <path class="crackline" data-seam="4" pathLength="1" d="M292,192 L350,192"/>
+        </g>
+      </svg>
+    </section>
+
+    <footer class="foot">
+      <div class="hint" id="hint"><span class="pulse"></span><span id="hintText">Hover a shard · tap to seal the seam</span></div>
+      <div class="legend">
+        <span><i class="broken"></i>fracture</span>
+        <span><i></i>gold seam</span>
+      </div>
+      <p class="quote" id="quote">Nothing is broken beyond repair — only waiting to be made more beautiful.</p>
+    </footer>
+  </main>
+
+  <div class="tip" id="tip">seal seam</div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const svg = document.getElementById('vessel');
+  const shards = Array.from(svg.querySelectorAll('.shard'));
+  const seams = Array.from(svg.querySelectorAll('.crackline'));
+  const countEl = document.getElementById('count');
+  const sealEl = document.getElementById('seal');
+  const quoteEl = document.getElementById('quote');
+  const bowlWrap = document.getElementById('bowlWrap');
+  const hintEl = document.getElementById('hint');
+  const hintText = document.getElementById('hintText');
+  const tip = document.getElementById('tip');
+
+  const TOTAL = 5;
+  let sealed = 0;
+
+  // paint clay + ceramic shading on each shard
+  shards.forEach(g=>{
+    const p = g.querySelector('path');
+    p.setAttribute('fill','url(#clayGrad)');
+    p.setAttribute('stroke','rgba(120,110,95,0.22)');
+    p.setAttribute('stroke-width','1');
+  });
+
+  const state = shards.map(g=>({
+    g,
+    dx: parseFloat(g.dataset.dx),
+    dy: parseFloat(g.dataset.dy),
+    rot: parseFloat(g.dataset.rot),
+    neighbor: parseInt(g.dataset.neighbor,10),
+    sealed: false
+  }));
+
+  function applyState(s, pull){
+    let x=s.dx, y=s.dy, r=s.rot;
+    if(pull){ x+=pull.x; y+=pull.y; r*=0.6; }
+    s.g.style.transform = `translate(${x}px,${y}px) rotate(${r}deg)`;
+  }
+
+  // entrance: shards settle into broken arrangement
+  shards.forEach((g,i)=>{
+    const s = state[i];
+    g.style.transitionDelay = (i*90)+'ms';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      g.classList.remove('enter');
+      applyState(s);
+    }));
+    setTimeout(()=>{ g.style.transitionDelay='0ms'; }, 1200+i*90);
+  });
+
+  // hover pull toward neighbour + magnetic cursor glow
+  let pointer = {x:0,y:0};
+  function svgPoint(e){
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const ctm = svg.getScreenCTM();
+    return ctm ? pt.matrixTransform(ctm.inverse()) : {x:0,y:0};
+  }
+  function centroid(g){
+    const b = g.getBBox();
+    return {x:b.x+b.width/2, y:b.y+b.height/2};
+  }
+
+  shards.forEach((g,i)=>{
+    const s = state[i];
+    g.addEventListener('pointerenter', ()=>{
+      if(s.sealed) return;
+      g.classList.add('lift');
+      // tooltip
+      tip.textContent = s.neighbor===null ? 'seal' : 'seal seam';
+      tip.classList.add('show');
+    });
+    g.addEventListener('pointermove', (e)=>{
+      if(s.sealed) return;
+      const p = svgPoint(e);
+      const c = centroid(g);
+      const vx = p.x-c.x, vy = p.y-c.y;
+      const len = Math.hypot(vx,vy)||1;
+      const mag = Math.min(6, len*0.05);
+      applyState(s, {x:(vx/len)*mag, y:(vy/len)*mag});
+      tip.style.left = e.clientX+'px';
+      tip.style.top  = e.clientY+'px';
+    });
+    g.addEventListener('pointerleave', ()=>{
+      g.classList.remove('lift');
+      tip.classList.remove('show');
+      applyState(s);
+    });
+    g.addEventListener('click', ()=> heal(i));
+  });
+
+  function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms);}catch(e){} }
+
+  function heal(i){
+    const s = state[i];
+    if(s.sealed) return;
+    s.sealed = true;
+    sealed++;
+    s.g.classList.add('joined');
+    s.g.classList.remove('lift');
+    tip.classList.remove('show');
+
+    // snap shard home toward neighbour (viscous settle)
+    applyState(s);
+
+    // seal the seam with flowing gold
+    const seam = seams.find(el=>el.dataset.seam===String(i));
+    if(seam){
+      // draw order: gold flows from one end
+      seam.style.transitionDuration = reduce ? '0ms' : '950ms';
+      requestAnimationFrame(()=> seam.classList.add('sealed'));
+    }
+
+    vibrate(18);
+
+    // after this seam, also seal the neighbour seam if its shard is sealed
+    const nb = s.neighbor;
+    if(nb!==null && state[nb] && state[nb].sealed){
+      const nbSeam = seams.find(el=>el.dataset.seam===String(nb));
+      if(nbSeam) requestAnimationFrame(()=> nbSeam.classList.add('sealed'));
+    }
+
+    updateStatus();
+  }
+
+  function updateStatus(){
+    countEl.textContent = sealed + ' / ' + TOTAL;
+    if(sealed>=TOTAL){
+      sealEl.classList.add('on');
+      quoteEl.classList.add('on');
+      bowlWrap.classList.add('healed');
+      hintText.textContent = 'The vessel is whole — its history now wears gold';
+      hintEl.style.opacity = '.9';
+      // gentle shimmer across all seams
+      seams.forEach((el,k)=>{
+        setTimeout(()=>el.classList.add('shimmer'), k*160);
+      });
+    } else {
+      hintText.textContent = sealed===0
+        ? 'Hover a shard · tap to seal the seam'
+        : sealed+' of '+TOTAL+' seams sealed';
+    }
+  }
+
+  // ambient gold motes
+  const motes = document.getElementById('motes');
+  const N = reduce ? 0 : 16;
+  for(let i=0;i<N;i++){
+    const m = document.createElement('div');
+    m.className='mote';
+    const sz = 1.5 + Math.random()*3;
+    m.style.width = m.style.height = sz+'px';
+    m.style.left = (Math.random()*100)+'%';
+    m.style.top = (55 + Math.random()*45)+'%';
+    m.style.animationDuration = (7+Math.random()*9)+'s';
+    m.style.animationDelay = (-Math.random()*10)+'s';
+    motes.appendChild(m);
+  }
+})();
+</script>
+</body>
+</html>

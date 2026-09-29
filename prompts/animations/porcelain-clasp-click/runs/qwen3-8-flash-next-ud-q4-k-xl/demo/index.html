@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porcelain Clasp Click — Soft-Machine Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f0f0f0;
+    --shadow:#d4d4d4;
+    --white:#ffffff;
+    --silver:#a0a0a0;
+    --ink:#4a4a4a;
+    --ink-soft:#8a8a8a;
+    --line:#dcdcdc;
+    --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+    --mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---- atmospheric background: soft studio light pool ---- */
+  .stage-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 22% 12%, #ffffff 0%, rgba(255,255,255,0) 46%),
+      radial-gradient(140% 120% at 85% 95%, rgba(200,200,200,0.55) 0%, rgba(240,240,240,0) 55%),
+      var(--bg);
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    min-height:100vh;
+    display:grid;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr);
+    gap:clamp(2rem,5vw,5rem);
+    align-items:center;
+    padding:clamp(2rem,5vw,5.5rem);
+    max-width:1400px;
+    margin:0 auto;
+  }
+
+  /* ============ LEFT: editorial ============ */
+  .editorial{ max-width:520px; }
+
+  .kicker{
+    font-size:0.72rem;
+    letter-spacing:0.34em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex; align-items:center; gap:0.85rem;
+    margin-bottom:1.6rem;
+  }
+  .kicker::before{
+    content:""; width:34px; height:1px; background:var(--silver);
+  }
+
+  .brand{
+    font-family:var(--serif);
+    font-weight:300;
+    font-size:clamp(2.9rem, 6.6vw, 5.4rem);
+    line-height:0.94;
+    letter-spacing:-0.015em;
+    color:var(--ink);
+    margin-bottom:1.7rem;
+  }
+  .brand .accent{
+    font-style:italic;
+    font-weight:400;
+    color:#5a5a5a;
+    display:inline-block;
+  }
+  .brand .dot{ color:var(--silver); }
+
+  .lede{
+    font-family:var(--serif);
+    font-weight:300;
+    font-size:clamp(1.05rem,1.6vw,1.28rem);
+    line-height:1.55;
+    color:#6a6a6a;
+    max-width:44ch;
+    margin-bottom:2.4rem;
+  }
+  .lede b{ font-weight:500; color:var(--ink); }
+
+  .spec{
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:1.1rem 0;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:0.9rem 1.4rem;
+    margin-bottom:1.9rem;
+  }
+  .spec div{ display:flex; flex-direction:column; gap:0.28rem; }
+  .spec dt{
+    font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .spec dd{
+    font-size:0.82rem; color:var(--ink); letter-spacing:0.02em;
+  }
+  .spec dd .u{ color:var(--ink-soft); }
+
+  .controls{
+    display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  }
+  .btn{
+    font-family:var(--mono);
+    font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ink);
+    background:transparent;
+    border:1px solid var(--silver);
+    padding:0.72rem 1.15rem;
+    cursor:pointer;
+    display:inline-flex; align-items:center; gap:0.6rem;
+    transition:background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .btn:hover{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .btn:focus-visible{ outline:2px solid var(--silver); outline-offset:3px; }
+  .btn .ico{
+    width:12px; height:12px; display:inline-block; position:relative;
+  }
+  .btn .ico::before{
+    content:""; position:absolute; inset:0; border:1.4px solid currentColor;
+    border-radius:50%;
+  }
+  .btn.muted .ico::after{
+    content:""; position:absolute; left:-3px; top:50%; width:18px; height:1.4px;
+    background:currentColor; transform:rotate(-45deg);
+  }
+
+  .hint{
+    font-size:0.66rem; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex; align-items:center; gap:0.5rem;
+  }
+  .hint .pulse{
+    width:6px; height:6px; border-radius:50%; background:var(--silver);
+    animation:hintPulse 1.7s ease-in-out infinite;
+  }
+  @keyframes hintPulse{ 0%,100%{opacity:.35; transform:scale(1);} 50%{opacity:1; transform:scale(1.5);} }
+
+  /* ============ RIGHT: the object ============ */
+  .object{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    min-height:min(72vh, 560px);
+  }
+
+  .ground{
+    position:absolute;
+    width:62%; height:34px;
+    bottom:11%;
+    border-radius:50%;
+    background:radial-gradient(closest-side, rgba(150,150,150,0.55), rgba(150,150,150,0));
+    filter:blur(3px);
+    animation:groundPulse 3.4s ease-in-out infinite;
+  }
+  @keyframes groundPulse{
+    0%,100%{ transform:scale(0.9); opacity:0.55; }
+    42%{ transform:scale(1.05); opacity:0.9; }
+    50%{ transform:scale(1.12); opacity:1; }
+    58%{ transform:scale(0.96); opacity:0.7; }
+  }
+
+  .clasp{
+    width:min(78vw, 420px);
+    height:auto;
+    display:block;
+    cursor:pointer;
+    position:relative;
+    z-index:2;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  .clasp:focus-visible{ outline:2px solid var(--silver); outline-offset:14px; border-radius:8px; }
+
+  /* the two porcelain lugs rotate about the central pin */
+  .lug{ transform-box:view-box; transform-origin:200px 200px; }
+  .lug-l{ transform:rotate(-26deg); }
+  .lug-r{ transform:rotate(26deg); }
+
+  .clasp{ animation:claspLoop 3.4s linear infinite; }
+
+  @keyframes claspLoop{
+    0%   { transform:scale(1); }
+    42%  { transform:scale(1); }
+    47%  { transform:scale(0.98); }   /* snap — tiny high-tension compression */
+    52%  { transform:scale(1.008); }  /* elastic recoil, overshoot < 2% */
+    58%  { transform:scale(1); }
+    84%  { transform:scale(1); }
+    100% { transform:scale(1); }
+  }
+  .lug-l{ animation:closeL 3.4s cubic-bezier(0.4,0,0.2,1) infinite; }
+  .lug-r{ animation:closeR 3.4s cubic-bezier(0.4,0,0.2,1) infinite; }
+
+  @keyframes closeL{
+    0%   { transform:rotate(-26deg); }
+    42%  { transform:rotate(0deg); }
+    47%  { transform:rotate(1.4deg); }
+    52%  { transform:rotate(-0.7deg); }
+    58%  { transform:rotate(0deg); }
+    84%  { transform:rotate(0deg); }
+    100% { transform:rotate(-26deg); }
+  }
+  @keyframes closeR{
+    0%   { transform:rotate(26deg); }
+    42%  { transform:rotate(0deg); }
+    47%  { transform:rotate(-1.4deg); }
+    52%  { transform:rotate(0.7deg); }
+    58%  { transform:rotate(0deg); }
+    84%  { transform:rotate(0deg); }
+    100% { transform:rotate(26deg); }
+  }
+
+  .clasp.paused,
+  .clasp.paused .lug-l,
+  .clasp.paused .lug-r{ animation-play-state:paused; }
+
+  .clasp.paused .lug-l{ transform:rotate(0deg); }
+  .clasp.paused .lug-r{ transform:rotate(0deg); }
+
+  /* engagement flash at the seam */
+  .seam{
+    transform-box:view-box; transform-origin:200px 200px;
+    opacity:0;
+    animation:seamFlash 3.4s linear infinite;
+  }
+  @keyframes seamFlash{
+    0%,44%{ opacity:0; }
+    48%{ opacity:0.9; }
+    56%{ opacity:0; }
+    100%{ opacity:0; }
+  }
+  .clasp.paused .seam{ opacity:0; animation:none; }
+
+  .object-label{
+    position:absolute;
+    bottom:2%;
+    font-size:0.6rem; letter-spacing:0.24em; text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .object-label .tick{ width:22px; height:1px; background:var(--silver); }
+
+  /* footer strip */
+  .foot{
+    position:fixed; left:0; right:0; bottom:0; z-index:3;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0.85rem clamp(2rem,5vw,5.5rem);
+    font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--ink-soft);
+    border-top:1px solid var(--line);
+    background:linear-gradient(to top, rgba(240,240,240,0.9), rgba(240,240,240,0));
+    backdrop-filter:blur(2px);
+  }
+  .foot .state{ display:flex; align-items:center; gap:0.5rem; }
+  .foot .state .led{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--silver);
+    box-shadow:0 0 0 0 rgba(160,160,160,0.6);
+    animation:ledPulse 3.4s ease-in-out infinite;
+  }
+  @keyframes ledPulse{
+    0%,40%{ box-shadow:0 0 0 0 rgba(160,160,160,0.55); background:var(--silver); }
+    47%{ box-shadow:0 0 0 6px rgba(160,160,160,0); background:#6f6f6f; }
+    60%,100%{ box-shadow:0 0 0 0 rgba(160,160,160,0); background:var(--silver); }
+  }
+
+  /* ============ responsive ============ */
+  @media (max-width:900px){
+    .wrap{
+      grid-template-columns:1fr;
+      gap:2.6rem;
+      padding:2rem 1.4rem 4.5rem;
+      align-content:start;
+    }
+    .object{ order:-1; min-height:46vh; }
+    .editorial{ max-width:none; }
+    .spec{ grid-template-columns:repeat(2,1fr); }
+  }
+  @media (max-width:420px){
+    .spec{ grid-template-columns:1fr 1fr; }
+    .brand{ font-size:2.6rem; }
+  }
+
+  /* ============ reduced motion: static engaged state ============ */
+  @media (prefers-reduced-motion: reduce){
+    .clasp, .clasp .lug-l, .clasp .lug-r, .seam,
+    .ground, .hint .pulse, .foot .state .led{
+      animation:none !important;
+    }
+    .lug-l{ transform:rotate(0deg) !important; }
+    .lug-r{ transform:rotate(0deg) !important; }
+    .clasp{ transform:scale(1) !important; }
+    .seam{ opacity:0.55 !important; }
+    .ground{ transform:scale(1); opacity:0.8; }
+    .hint .pulse{ opacity:0.6; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage-bg" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <!-- LEFT: editorial -->
+    <section class="editorial">
+      <p class="kicker">Soft-Machine Study · No.07</p>
+
+      <h1 class="brand">Porcelain<br><span class="accent">Clasp</span> Click<span class="dot">.</span></h1>
+
+      <p class="lede">Two high-fired lugs rotate on a single fixed pin and <b>snap flush</b> — a dry, high-tension ceramic click. No gears. No metal. Only bone-china meeting bone-china.</p>
+
+      <dl class="spec">
+        <div><dt>Material</dt><dd>Matte porcelain</dd></div>
+        <div><dt>Axis</dt><dd>Fixed central pin</dd></div>
+        <div><dt>Engage</dt><dd>0.5s <span class="u">ease-in</span></dd></div>
+        <div><dt>Recoil</dt><dd>&lt; 2% <span class="u">elastic</span></dd></div>
+      </dl>
+
+      <div class="controls">
+        <button class="btn" id="soundBtn" aria-pressed="true">
+          <span class="ico" aria-hidden="true"></span>
+          <span id="soundLabel">Sound On</span>
+        </button>
+        <button class="btn" id="pauseBtn" aria-pressed="false">
+          <span class="ico" aria-hidden="true"></span>
+          <span id="pauseLabel">Pause</span>
+        </button>
+        <span class="hint"><span class="pulse" aria-hidden="true"></span> Tap the clasp to click</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: the object -->
+    <section class="object">
+      <div class="ground" aria-hidden="true"></div>
+
+      <svg class="clasp" id="clasp" viewBox="0 0 400 400" role="button" tabindex="0"
+           aria-label="Porcelain clasp — two lugs that snap shut with a ceramic click. Activate to click.">
+        <defs>
+          <!-- soft studio drop shadow -->
+          <filter id="drop" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="16" stdDeviation="14" flood-color="#b4b4b4" flood-opacity="0.5"/>
+          </filter>
+
+          <!-- matte porcelain body: cool top-left light, warm bounce bottom -->
+          <linearGradient id="porc" x1="0.15" y1="0.05" x2="0.85" y2="1">
+            <stop offset="0"    stop-color="#ffffff"/>
+            <stop offset="0.42" stop-color="#f6f5f3"/>
+            <stop offset="0.72" stop-color="#eceae7"/>
+            <stop offset="1"    stop-color="#e1dfdb"/>
+          </linearGradient>
+
+          <!-- subsurface scattering: soft inner glow -->
+          <radialGradient id="sss" cx="0.4" cy="0.34" r="0.72">
+            <stop offset="0"   stop-color="#ffffff" stop-opacity="0.9"/>
+            <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.12"/>
+            <stop offset="1"   stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+
+          <!-- central pin: muted silver, no metal gloss -->
+          <radialGradient id="pin" cx="0.38" cy="0.34" r="0.75">
+            <stop offset="0"   stop-color="#c8c8c8"/>
+            <stop offset="0.5" stop-color="#a0a0a0"/>
+            <stop offset="1"   stop-color="#888888"/>
+          </radialGradient>
+
+          <!-- seam flash -->
+          <radialGradient id="flash" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0"   stop-color="#ffffff" stop-opacity="0.95"/>
+            <stop offset="0.6" stop-color="#ffffff" stop-opacity="0.25"/>
+            <stop offset="1"   stop-color="#ffffff" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- LEFT LUG -->
+        <g class="lug lug-l">
+          <g filter="url(#drop)">
+            <path d="M200 105 A95 95 0 0 0 200 295 Z" fill="url(#porc)"/>
+            <path d="M200 105 A95 95 0 0 0 200 295 Z" fill="url(#sss)"/>
+            <!-- inner rim -->
+            <path d="M200 122 A78 78 0 0 0 200 278" fill="none" stroke="#e6e4e0" stroke-width="1.4" opacity="0.8"/>
+            <!-- beveled edge highlight -->
+            <path d="M200 118 A82 82 0 0 0 200 282" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.55"/>
+            <!-- soft contact shadow along the seam -->
+            <path d="M200 120 A80 80 0 0 0 200 280" fill="none" stroke="#d7d5d2" stroke-width="3" opacity="0.5"/>
+          </g>
+        </g>
+
+        <!-- RIGHT LUG -->
+        <g class="lug lug-r">
+          <g filter="url(#drop)">
+            <path d="M200 105 A95 95 0 0 1 200 295 Z" fill="url(#porc)"/>
+            <path d="M200 105 A95 95 0 0 1 200 295 Z" fill="url(#sss)"/>
+            <path d="M200 122 A78 78 0 0 1 200 278" fill="none" stroke="#e6e4e0" stroke-width="1.4" opacity="0.8"/>
+            <path d="M200 118 A82 82 0 0 1 200 282" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.55"/>
+            <path d="M200 120 A80 80 0 0 1 200 280" fill="none" stroke="#d7d5d2" stroke-width="3" opacity="0.5"/>
+          </g>
+        </g>
+
+        <!-- engagement flash at the seam -->
+        <circle class="seam" cx="200" cy="200" r="34" fill="url(#flash)"/>
+
+        <!-- fixed central pin -->
+        <circle cx="200" cy="200" r="13" fill="url(#pin)"/>
+        <circle cx="200" cy="200" r="13" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+        <circle cx="196" cy="196" r="4" fill="#ffffff" opacity="0.55"/>
+      </svg>
+
+      <span class="object-label"><span class="tick" aria-hidden="true"></span> Ceramic-on-ceramic latch</span>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Porcelain Clasp Click · Loop ∞</span>
+    <span class="state"><span class="led" aria-hidden="true"></span> <span id="footState">Engaging</span></span>
+  </footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var clasp      = document.getElementById('clasp');
+  var soundBtn   = document.getElementById('soundBtn');
+  var soundLabel = document.getElementById('soundLabel');
+  var pauseBtn   = document.getElementById('pauseBtn');
+  var pauseLabel = document.getElementById('pauseLabel');
+  var footState  = document.getElementById('footState');
+
+  var soundOn = true;
+  var audioCtx = null;
+
+  function ensureCtx(){
+    if(!audioCtx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) audioCtx = new AC();
+    }
+    if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  // crisp, dry ceramic 'clink' — high-frequency, no reverb
+  function playClink(){
+    if(!soundOn) return;
+    var ctx = ensureCtx();
+    if(!ctx) return;
+    var t = ctx.currentTime;
+
+    // two short high partials for a hard, glassy tick
+    [3200, 5100].forEach(function(freq, i){
+      var osc = ctx.createOscillator();
+      var g   = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.7, t + 0.06);
+      var peak = i === 0 ? 0.16 : 0.07;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      osc.connect(g).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.09);
+    });
+
+    // tiny transient 'attack' for the snap
+    var dur = 0.02;
+    var buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    var data = buf.getChannelData(0);
+    for(var i=0;i<data.length;i++){
+      data[i] = (Math.random()*2-1) * Math.pow(1 - i/data.length, 3);
+    }
+    var noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    var bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 4200; bp.Q.value = 1.2;
+    var ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.10, t);
+    ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.02);
+    noise.connect(bp).connect(ng).connect(ctx.destination);
+    noise.start(t);
+  }
+
+  // schedule the clink to land exactly on the snap (47% of 3.4s)
+  var LOOP = 3400;
+  var SNAP_OFFSET = LOOP * 0.47;
+  var timer = null;
+
+  function scheduleLoop(){
+    clearTimeout(timer);
+    if(reduce) return;
+    var cycle = function(){
+      playClink();
+      footState.textContent = 'Locked';
+      // release phase
+      setTimeout(function(){ footState.textContent = 'Engaging'; }, 1200);
+      timer = setTimeout(cycle, LOOP);
+    };
+    timer = setTimeout(cycle, SNAP_OFFSET);
+  }
+
+  // ---- sound toggle ----
+  soundBtn.addEventListener('click', function(){
+    soundOn = !soundOn;
+    soundBtn.classList.toggle('muted', !soundOn);
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundLabel.textContent = soundOn ? 'Sound On' : 'Sound Off';
+    if(soundOn) ensureCtx();
+  });
+
+  // ---- pause toggle ----
+  pauseBtn.addEventListener('click', function(){
+    var paused = clasp.classList.toggle('paused');
+    pauseBtn.setAttribute('aria-pressed', String(paused));
+    pauseLabel.textContent = paused ? 'Resume' : 'Pause';
+    if(paused){
+      clearTimeout(timer);
+      footState.textContent = 'Paused';
+    } else {
+      scheduleLoop();
+    }
+  });
+
+  // ---- manual click (tap the clasp) ----
+  function manualClick(){
+    ensureCtx();
+    playClink();
+    footState.textContent = 'Locked';
+    setTimeout(function(){
+      if(!clasp.classList.contains('paused') && !reduce) footState.textContent = 'Engaging';
+    }, 900);
+  }
+  clasp.addEventListener('click', manualClick);
+  clasp.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); manualClick(); }
+  });
+
+  // resume audio on first user gesture anywhere
+  window.addEventListener('pointerdown', function once(){
+    ensureCtx();
+    window.removeEventListener('pointerdown', once);
+  }, { once:true });
+
+  // start the loop
+  scheduleLoop();
+})();
+</script>
+</body>
+</html>

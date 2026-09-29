@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Press &amp; Bite — Traditional Letterpress Studio</title>
+<meta name="description" content="Press & Bite — a traditional letterpress studio. Ink that bites deep into heavy cotton paper.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=EB+Garamond:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#e0dcd3;
+  --paper-hi:#eeeae0;
+  --paper-lo:#cdc7ba;
+  --ink:#333333;
+  --ink-soft:#5a554d;
+  --ink-faint:#8a847a;
+  --crimson:#8b0000;
+  --crimson-deep:#5e0000;
+  --white:#f6f2ea;
+  --shadow-dark:rgba(46,40,32,.62);
+  --shadow-mid:rgba(46,40,32,.34);
+  --shadow-light:rgba(255,255,255,.78);
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --body:'EB Garamond',Georgia,'Times New Roman',serif;
+}
+
+/* ============ RESET / BASE ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background-color:var(--paper);
+  font-size:19px;
+  line-height:1.7;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--crimson);color:var(--paper-hi)}
+
+/* ============ ATMOSPHERE LAYERS ============ */
+.paper-grain{
+  position:fixed;inset:-20%;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:220px 220px;
+  mix-blend-mode:multiply;opacity:.15;
+  animation:grain 7s steps(6) infinite;
+}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 20%,transparent 55%,rgba(60,52,40,.16) 100%);
+}
+@media (prefers-reduced-motion:no-preference){
+  @keyframes grain{
+    0%{transform:translate(0,0)}
+    20%{transform:translate(-6px,4px)}
+    40%{transform:translate(5px,-5px)}
+    60%{transform:translate(-4px,-3px)}
+    80%{transform:translate(6px,5px)}
+    100%{transform:translate(0,0)}
+  }
+}
+
+/* ============ LAYOUT ============ */
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(20px,5vw,56px);position:relative;z-index:2}
+section{position:relative}
+.eyebrow{
+  font-family:var(--body);font-size:.78rem;font-weight:600;
+  letter-spacing:.42em;text-transform:uppercase;color:var(--crimson);
+  text-shadow:0 1px 0 var(--shadow-light);
+}
+.eyebrow::before{content:"";display:inline-block;width:34px;height:1px;background:var(--crimson);vertical-align:middle;margin-right:14px;opacity:.6}
+
+/* ============ NAV ============ */
+header{
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(var(--paper) 62%,rgba(224,220,211,0));
+  padding:18px 0 26px;
+}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.mark{
+  font-family:var(--serif);font-weight:900;font-size:1.35rem;letter-spacing:.02em;
+  color:var(--ink);text-shadow:0 1px 0 var(--shadow-light),0 -1px 1px rgba(0,0,0,.28);
+}
+.mark span{color:var(--crimson)}
+.nav-links{display:flex;gap:30px;align-items:center}
+.nav-links a{
+  font-size:.82rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);
+  position:relative;padding:4px 0;transition:color .3s ease;
+}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--crimson);box-shadow:0 1px 0 var(--shadow-light);transition:width .35s ease}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{width:100%}
+.nav-toggle{display:none}
+
+/* ============ HERO ============ */
+.hero{padding:clamp(30px,6vw,60px) 0 clamp(60px,9vw,110px);overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.35fr .9fr;gap:clamp(30px,5vw,70px);align-items:center}
+.hero-title{
+  font-family:var(--serif);font-weight:900;line-height:.82;
+  font-size:clamp(3.4rem,13.5vw,11rem);letter-spacing:-.02em;color:var(--ink);
+  margin:18px 0 26px;
+  text-shadow:
+    0 1px 1px var(--shadow-light),
+    0 3px 4px var(--shadow-mid),
+    0 0 1px var(--shadow-dark);
+  transform:translateY(var(--py,0));will-change:transform;
+}
+.hero-title .amp{color:var(--crimson);font-style:italic;font-weight:500}
+.hero-title .bite{display:inline-block}
+.hero-title .bite::after{
+  content:"";position:absolute;inset:auto;
+}
+.hero-lead{max-width:44ch;font-size:1.18rem;color:var(--ink-soft);margin-bottom:34px}
+.hero-lead b{color:var(--ink);font-weight:600}
+
+/* Pressed button */
+.btn{
+  display:inline-flex;align-items:center;gap:12px;
+  font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.02em;
+  color:var(--ink);background:linear-gradient(160deg,var(--paper-hi),var(--paper-lo));
+  padding:16px 30px;border:1px solid rgba(80,70,55,.28);border-radius:3px;cursor:pointer;
+  box-shadow:
+    inset 0 2px 4px var(--shadow-mid),
+    inset 0 -1px 0 var(--shadow-light),
+    0 6px 12px -6px var(--shadow-dark);
+  text-shadow:0 1px 0 var(--shadow-light);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.btn .arrow{transition:transform .25s ease}
+.btn:hover{
+  transform:translateY(2px);
+  box-shadow:
+    inset 0 5px 9px var(--shadow-dark),
+    inset 0 -1px 0 var(--shadow-light),
+    0 1px 3px -1px var(--shadow-dark);
+}
+.btn:hover .arrow{transform:translateX(5px)}
+.btn:active{animation:settle .32s ease}
+.btn.ghost{background:transparent;color:var(--crimson);box-shadow:inset 0 1px 2px var(--shadow-mid);border-color:rgba(139,0,0,.35)}
+.btn.ghost:hover{box-shadow:inset 0 4px 8px rgba(139,0,0,.28)}
+@keyframes settle{0%{transform:translateY(2px) scale(1)}30%{transform:translateY(2px) scale(.985) rotate(-.3deg)}60%{transform:translateY(2px) scale(1.005) rotate(.2deg)}100%{transform:translateY(2px) scale(1)}}
+
+/* Hero specimen — plate reveal */
+.specimen{
+  position:relative;aspect-ratio:4/5;max-width:420px;margin-left:auto;
+  box-shadow:0 22px 44px -20px var(--shadow-dark),inset 0 1px 0 var(--shadow-light);
+  border:1px solid rgba(80,70,55,.3);border-radius:2px;overflow:hidden;
+  background:var(--paper-lo);
+}
+.specimen img{width:100%;height:100%;object-fit:cover;filter:sepia(.28) contrast(1.03) saturate(.82)}
+.specimen::after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(139,0,0,.14),rgba(51,51,51,.22));mix-blend-mode:multiply}
+.plate{
+  position:absolute;inset:0;z-index:3;
+  background:linear-gradient(155deg,#3b3a38,#262523 45%,#4a4844 60%,#2c2b29);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -2px 6px rgba(0,0,0,.6);
+  transform:translateY(-103%);
+  transition:transform 1.15s cubic-bezier(.62,.02,.24,1);
+}
+.plate::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1px,transparent 1px 5px)}
+.plate::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(var(--shadow-dark),transparent)}
+.reveal.in .plate{transform:translateY(103%)}
+.specimen figcaption{
+  position:absolute;left:0;bottom:0;z-index:4;color:var(--white);
+  font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;
+  padding:12px 16px;background:linear-gradient(transparent,rgba(30,26,20,.72));width:100%;
+}
+
+/* ============ RULES ============ */
+.rule{height:3px;border:0;margin:0;
+  background:linear-gradient(90deg,transparent,var(--shadow-dark) 12%,var(--shadow-dark) 88%,transparent);
+  box-shadow:0 1px 0 var(--shadow-light);position:relative;
+}
+.rule.crimson{background:linear-gradient(90deg,transparent,var(--crimson-deep) 12%,var(--crimson) 50%,var(--crimson-deep) 88%,transparent)}
+
+/* ============ MANIFESTO ============ */
+.manifesto{padding:clamp(60px,9vw,120px) 0}
+.manifesto-inner{max-width:960px;margin:0 auto;text-align:center}
+.dropcap{
+  float:none;display:inline-block;
+  font-family:var(--serif);font-weight:900;font-size:clamp(3.6rem,7vw,6rem);line-height:.8;
+  color:var(--crimson);margin-right:.14em;vertical-align:-.06em;
+  text-shadow:0 2px 1px var(--shadow-light),0 4px 6px var(--shadow-mid),0 0 1px var(--shadow-dark);
+}
+.manifesto p.big{
+  font-family:var(--serif);font-weight:500;font-size:clamp(1.5rem,3.4vw,2.5rem);
+  line-height:1.32;color:var(--ink);margin-bottom:34px;
+  text-shadow:0 1px 0 var(--shadow-light);
+}
+.manifesto .support{max-width:60ch;margin:0 auto;color:var(--ink-soft);font-size:1.12rem}
+.pullquote{
+  margin:clamp(40px,6vw,70px) auto 0;max-width:760px;
+  font-family:var(--serif);font-style:italic;font-weight:500;
+  font-size:clamp(1.6rem,4vw,3rem);line-height:1.25;color:var(--ink);
+  text-shadow:0 1px 0 var(--shadow-light),0 2px 3px var(--shadow-mid);
+}
+.pullquote .mk{color:var(--crimson);font-style:normal}
+
+/* ============ SECTION HEAD ============ */
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:clamp(36px,5vw,60px)}
+.sec-head h2{font-family:var(--serif);font-weight:800;font-size:clamp(2.1rem,5vw,3.6rem);line-height:1;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light),0 2px 3px var(--shadow-mid)}
+.sec-head .count{font-family:var(--serif);font-size:clamp(2.4rem,6vw,4.4rem);font-weight:900;color:var(--crimson);line-height:.8;text-shadow:0 2px 0 var(--shadow-light),0 3px 5px var(--shadow-mid)}
+
+/* ============ SERVICES ============ */
+.services{padding:clamp(30px,5vw,60px) 0 clamp(60px,9vw,110px)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:26px}
+.card{
+  background:linear-gradient(160deg,var(--paper-hi),var(--paper-lo));
+  border:1px solid rgba(80,70,55,.24);border-radius:3px;padding:34px 32px;position:relative;overflow:hidden;
+  box-shadow:inset 0 1px 0 var(--shadow-light),inset 0 -2px 5px var(--shadow-mid),0 10px 22px -14px var(--shadow-dark);
+  transition:transform .25s ease,box-shadow .25s ease;
+}
+.card:hover{transform:translateY(3px);box-shadow:inset 0 4px 10px var(--shadow-mid),inset 0 -1px 0 var(--shadow-light),0 4px 10px -8px var(--shadow-dark)}
+.card .num{position:absolute;top:14px;right:20px;font-family:var(--serif);font-weight:900;font-size:2.4rem;color:transparent;-webkit-text-stroke:1px rgba(139,0,0,.35);line-height:1}
+.card h3{font-family:var(--serif);font-weight:800;font-size:1.55rem;margin-bottom:12px;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light)}
+.card p{color:var(--ink-soft);font-size:1.02rem}
+.card .tag{display:inline-block;margin-top:18px;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--crimson);font-weight:600}
+
+/* ============ GALLERY ============ */
+.gallery{padding:clamp(60px,9vw,110px) 0}
+.g-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:22px}
+.g-item{position:relative;overflow:hidden;border:1px solid rgba(80,70,55,.3);border-radius:2px;box-shadow:0 16px 30px -18px var(--shadow-dark),inset 0 1px 0 var(--shadow-light)}
+.g-item img{width:100%;height:100%;object-fit:cover;filter:sepia(.3) contrast(1.04) saturate(.8) brightness(.98);transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.g-item:hover img{transform:scale(1.05)}
+.g-item .plate{transform:translateY(-103%)}
+.g-item.reveal.in .plate{transform:translateY(103%)}
+.g-item .glabel{position:absolute;left:0;bottom:0;z-index:4;color:var(--white);font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;padding:12px 14px;width:100%;background:linear-gradient(transparent,rgba(28,24,18,.74))}
+.g-item .glabel b{color:#f0c9c9;font-weight:600}
+.g-a{grid-column:span 7;aspect-ratio:16/11}
+.g-b{grid-column:span 5;aspect-ratio:4/5}
+.g-c{grid-column:span 4;aspect-ratio:4/5}
+.g-d{grid-column:span 4;aspect-ratio:1/1}
+.g-e{grid-column:span 4;aspect-ratio:4/5}
+
+/* ============ INK / COLOR ============ */
+.inks{padding:clamp(30px,5vw,60px) 0 clamp(60px,9vw,110px)}
+.ink-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(30px,5vw,64px);align-items:center}
+.ink-swatches{display:flex;gap:20px;flex-wrap:wrap}
+.swatch{flex:1;min-width:120px}
+.swatch .chip{height:120px;border-radius:2px;box-shadow:inset 0 3px 8px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.18),0 8px 16px -10px var(--shadow-dark);position:relative;overflow:hidden}
+.swatch .chip::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 120% at 30% 20%,rgba(255,255,255,.22),transparent 40%);mix-blend-mode:overlay}
+.swatch .name{font-family:var(--serif);font-weight:700;font-size:1.1rem;margin-top:12px;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light)}
+.swatch .hex{font-size:.82rem;letter-spacing:.1em;color:var(--ink-faint)}
+.ink-text h2{font-family:var(--serif);font-weight:800;font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.05;margin-bottom:20px;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light),0 2px 3px var(--shadow-mid)}
+.ink-text p{color:var(--ink-soft);font-size:1.12rem;margin-bottom:16px}
+
+/* ============ PROCESS ============ */
+.process{padding:clamp(60px,9vw,110px) 0}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:20px}
+.step{padding:0 26px;border-left:1px solid rgba(80,70,55,.22);position:relative}
+.step:first-child{border-left:0;padding-left:0}
+.step .snum{font-family:var(--serif);font-weight:900;font-size:clamp(2.6rem,5vw,4rem);color:var(--crimson);line-height:.9;text-shadow:0 2px 0 var(--shadow-light),0 3px 5px var(--shadow-mid)}
+.step h4{font-family:var(--serif);font-weight:700;font-size:1.25rem;margin:14px 0 8px;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light)}
+.step p{color:var(--ink-soft);font-size:.98rem}
+.step::before{content:"";position:absolute;top:8px;left:-6px;width:11px;height:11px;border-radius:50%;background:var(--ink);box-shadow:inset 0 1px 2px rgba(255,255,255,.4),0 2px 3px var(--shadow-mid)}
+.step:first-child::before{display:none}
+
+/* ============ STATS ============ */
+.stats{padding:clamp(40px,6vw,70px) 0}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat .n{font-family:var(--serif);font-weight:900;font-size:clamp(2.6rem,6vw,4.6rem);line-height:.9;color:var(--ink);text-shadow:0 2px 0 var(--shadow-light),0 3px 6px var(--shadow-mid)}
+.stat .n em{color:var(--crimson);font-style:normal}
+.stat .l{margin-top:10px;font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
+
+/* ============ TESTIMONIAL ============ */
+.testi{padding:clamp(40px,6vw,80px) 0}
+.testi blockquote{max-width:840px;margin:0 auto;text-align:center;font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(1.5rem,3.6vw,2.6rem);line-height:1.32;color:var(--ink);text-shadow:0 1px 0 var(--shadow-light),0 2px 3px var(--shadow-mid)}
+.testi cite{display:block;margin-top:26px;font-style:normal;font-family:var(--body);font-size:.85rem;letter-spacing:.24em;text-transform:uppercase;color:var(--crimson);font-weight:600}
+
+/* ============ CTA ============ */
+.cta{padding:clamp(70px,10vw,130px) 0;text-align:center}
+.cta h2{font-family:var(--serif);font-weight:900;font-size:clamp(2.4rem,7vw,5.4rem);line-height:.92;color:var(--ink);margin-bottom:22px;text-shadow:0 2px 1px var(--shadow-light),0 4px 7px var(--shadow-mid),0 0 1px var(--shadow-dark)}
+.cta h2 .amp{color:var(--crimson);font-style:italic;font-weight:500}
+.cta p{max-width:52ch;margin:0 auto 34px;color:var(--ink-soft);font-size:1.16rem}
+.cta .btn-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+
+/* ============ FOOTER ============ */
+footer{padding:clamp(50px,7vw,90px) 0 40px;position:relative}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:34px;margin-bottom:44px}
+.foot-brand .mark{font-size:1.8rem;display:block;margin-bottom:16px}
+.foot-brand p{color:var(--ink-soft);max-width:34ch;font-size:1rem}
+.foot-col h5{font-size:.78rem;letter-spacing:.24em;text-transform:uppercase;color:var(--crimson);font-weight:600;margin-bottom:16px}
+.foot-col a{display:block;color:var(--ink-soft);font-size:1rem;padding:5px 0;transition:color .25s ease,transform .25s ease}
+.foot-col a:hover{color:var(--ink);transform:translateX(4px)}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:26px;border-top:1px solid rgba(80,70,55,.22);box-shadow:0 -1px 0 var(--shadow-light)}
+.foot-bottom small{color:var(--ink-faint);font-size:.85rem;letter-spacing:.04em}
+.colophon{font-family:var(--serif);font-style:italic;color:var(--ink-faint);font-size:.9rem}
+
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:920px){
+  .hero-grid{grid-template-columns:1fr}
+  .specimen{margin:20px auto 0;max-width:360px}
+  .ink-grid{grid-template-columns:1fr}
+  .steps{grid-template-columns:repeat(2,1fr);gap:34px 0}
+  .step:nth-child(3){border-left:0;padding-left:0}
+  .step:nth-child(3)::before{display:none}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:680px){
+  body{font-size:17px}
+  .nav-links{display:none}
+  .cards{grid-template-columns:1fr}
+  .g-grid{grid-template-columns:1fr}
+  .g-a,.g-b,.g-c,.g-d,.g-e{grid-column:span 1;aspect-ratio:4/3}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:34px 16px}
+  .steps{grid-template-columns:1fr}
+  .step{border-left:0;padding-left:26px}
+  .step::before{display:block;left:0}
+  .foot-grid{grid-template-columns:1fr}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+  .plate{display:none}
+  .hero-title{transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="paper-grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap nav">
+    <a href="#top" class="mark">Press <span>&amp;</span> Bite</a>
+    <nav class="nav-links">
+      <a href="#craft">The Craft</a>
+      <a href="#work">Work</a>
+      <a href="#process">Process</a>
+      <a href="#inks">Inks</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Letterpress Studio · Est. 1974</p>
+        <h1 class="hero-title" id="heroTitle">Press<br><span class="amp">&amp;</span> <span class="bite">Bite</span></h1>
+        <p class="hero-lead">A traditional press room where <b>type is set by hand</b> and ink is driven deep into heavy cotton rag — until the paper keeps the impression long after the plate is lifted.</p>
+        <div class="btn-row" style="display:flex;gap:16px;flex-wrap:wrap">
+          <a href="#work" class="btn">See the Impressions <span class="arrow">→</span></a>
+          <a href="#contact" class="btn ghost">Commission a Run</a>
+        </div>
+      </div>
+
+      <figure class="specimen reveal" data-reveal>
+        <img src="https://picsum.photos/seed/letterpress-metal-type-specimen/640/800" alt="Hand-set metal type specimen pressed into cotton paper">
+        <div class="plate" aria-hidden="true"></div>
+        <figcaption>Specimen No. 07 · Deep Impression</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- MANIFESTO -->
+  <section class="manifesto" id="craft">
+    <div class="wrap">
+      <div class="rule crimson reveal" data-reveal></div>
+      <div class="manifesto-inner" style="margin-top:clamp(40px,6vw,70px)">
+        <p class="big reveal" data-reveal><span class="dropcap">I</span>n letterpress, the type does not rest on the paper — it bites into it. Every letter is a small, deliberate wound in the fiber, and the ink that pools in that wound is what gives a printed page its weight.</p>
+        <p class="support reveal" data-reveal>We still set metal by hand, still mix our own inks, and still run each sheet through a century-old platen press one impression at a time. There is no undo. There is only the bite.</p>
+        <blockquote class="pullquote reveal" data-reveal">"A printed page should feel like something <span class="mk">you could run a finger across</span> — and feel the letters."</blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="work">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal" data-reveal>What we press</p>
+          <h2 class="reveal" data-reveal>Work set by hand,<br>pressed to hold.</h2>
+        </div>
+        <div class="count reveal" data-reveal">04</div>
+      </div>
+      <div class="cards">
+        <article class="card reveal" data-reveal>
+          <span class="num">01</span>
+          <h3>Wedding &amp; Invitations</h3>
+          <p>Deep-bite invitations, envelopes, and suites on 600gsm cotton — the kind of paper you feel in your fingertips before you read a word.</p>
+          <span class="tag">Cotton · Emboss</span>
+        </article>
+        <article class="card reveal" data-reveal>
+          <span class="num">02</span>
+          <h3>Stationery &amp; Cards</h3>
+          <p>Letterhead, business cards, and correspondence with crisp impression and hand-mixed ink. Small runs, made to be kept.</p>
+          <span class="tag">Business · Cards</span>
+        </article>
+        <article class="card reveal" data-reveal>
+          <span class="num">03</span>
+          <h3>Books &amp; Poetry</h3>
+          <p>Hand-set broadsides, chapbooks, and limited editions. We set the text, mix the ink, and bind the sheets ourselves.</p>
+          <span class="tag">Editions · Broadsides</span>
+        </article>
+        <article class="card reveal" data-reveal>
+          <span class="num">04</span>
+          <h3>Custom Ink &amp; Color</h3>
+          <p>Bespoke ink mixed to your exact color, pressed with foil or blind embossing for a tactile finish no screen can fake.</p>
+          <span class="tag">Foil · Blind Emboss</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="gallery">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal" data-reveal>The plate room</p>
+          <h2 class="reveal" data-reveal>Recent impressions.</h2>
+        </div>
+      </div>
+      <div class="g-grid">
+        <figure class="g-item g-a reveal" data-reveal>
+          <img src="https://picsum.photos/seed/letterpress-wedding-suite/900/620" alt="Letterpress wedding suite">
+          <div class="plate" aria-hidden="true"></div>
+          <figcaption class="glabel"><b>The Ashgrove Suite</b> · Crimson on cotton</figcaption>
+        </figure>
+        <figure class="g-item g-b reveal" data-reveal>
+          <img src="https://picsum.photos/seed/letterpress-business-cards/600/750" alt="Letterpress business cards">
+          <div class="plate" aria-hidden="true"></div>
+          <figcaption class="glabel"><b>Card Run</b> · Deep impression</figcaption>
+        </figure>
+        <figure class="g-item g-c reveal" data-reveal>
+          <img src="https://picsum.photos/seed/letterpress-poetry-broadside/600/750" alt="Poetry broadside">
+          <div class="plate" aria-hidden="true"></div>
+          <figcaption class="glabel"><b>Broadside</b> · Hand-set</figcaption>
+        </figure>
+        <figure class="g-item g-d reveal" data-reveal>
+          <img src="https://picsum.photos/seed/letterpress-foil-emboss/600/600" alt="Foil and emboss detail">
+          <div class="plate" aria-hidden="true"></div>
+          <figcaption class="glabel"><b>Foil &amp; Emboss</b> · Detail</figcaption>
+        </figure>
+        <figure class="g-item g-e reveal" data-reveal>
+          <img src="https://picsum.photos/seed/letterpress-chapbook/600/750" alt="Chapbook edition">
+          <div class="plate" aria-hidden="true"></div>
+          <figcaption class="glabel"><b>Chapbook</b> · Edition of 60</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- INKS -->
+  <section class="inks" id="inks">
+    <div class="wrap ink-grid">
+      <div class="ink-text">
+        <p class="eyebrow reveal" data-reveal>The ink room</p>
+        <h2 class="reveal" data-reveal>Mixed by eye, pressed by feel.</h2>
+        <p class="reveal" data-reveal>We keep a working palette of house inks — the warm charcoal that reads as black without the harshness, the deep oxblood that has been our signature since the first run, and the paper white that lives in every blind emboss.</p>
+        <p class="reveal" data-reveal>Bring a swatch, a photograph, a memory of a color. We will mix it by hand and press a test so you can feel it before you commit to the run.</p>
+      </div>
+      <div class="ink-swatches">
+        <div class="swatch reveal" data-reveal>
+          <div class="chip" style="background:linear-gradient(150deg,#3c3a37,#2a2826)"></div>
+          <div class="name">Warm Charcoal</div>
+          <div class="hex">#333333</div>
+        </div>
+        <div class="swatch reveal" data-reveal>
+          <div class="chip" style="background:linear-gradient(150deg,#a30a0a,#5e0000)"></div>
+          <div class="name">Oxblood</div>
+          <div class="hex">#8b0000</div>
+        </div>
+        <div class="swatch reveal" data-reveal>
+          <div class="chip" style="background:linear-gradient(150deg,#f6f2ea,#e0dcd3)"></div>
+          <div class="name">Cotton White</div>
+          <div class="hex">#f6f2ea</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="process" id="process">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal" data-reveal>From case to page</p>
+          <h2 class="reveal" data-reveal>How a sheet is made.</h2>
+        </div>
+        <div class="count reveal" data-reveal">04</div>
+      </div>
+      <div class="steps">
+        <div class="step reveal" data-reveal>
+          <div class="snum">1</div>
+          <h4>Set the Type</h4>
+          <p>Letters are pulled from the case and locked into a chase, one character at a time.</p>
+        </div>
+        <div class="step reveal" data-reveal>
+          <div class="snum">2</div>
+          <h4>Mix the Ink</h4>
+          <p>Color is mixed on the slab to match your swatch, then rolled onto the rollers.</p>
+        </div>
+        <div class="step reveal" data-reveal>
+          <div class="snum">3</div>
+          <h4>Make Ready</h4>
+          <p>Sheets are fed and the impression adjusted until the bite is exactly right.</p>
+        </div>
+        <div class="step reveal" data-reveal>
+          <div class="snum">4</div>
+          <h4>Run &amp; Cure</h4>
+          <p>Each sheet is pressed, dried flat, and inspected before it leaves the room.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="wrap">
+      <div class="rule reveal" data-reveal></div>
+      <div class="stat-grid" style="margin-top:44px">
+        <div class="stat reveal" data-reveal><div class="n">1974</div><div class="l">Press room opened</div></div>
+        <div class="stat reveal" data-reveal><div class="n"><em>600</em>gsm</div><div class="l">Cotton stock</div></div>
+        <div class="stat reveal" data-reveal><div class="n"><em>1</em>at a time</div><div class="l">Per impression</div></div>
+        <div class="stat reveal" data-reveal><div class="n"><em>∞</em></div><div class="l">Ways to bite</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL -->
+  <section class="testi">
+    <div class="wrap">
+      <blockquote class="reveal" data-reveal">"The invitations arrived and every guest ran their thumb over the letters before reading them. That is the whole point of letterpress."</blockquote>
+      <cite class="reveal" data-reveal">— Maren H., commissioned the Ashgrove suite</cite>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="contact">
+    <div class="wrap">
+      <h2 class="reveal" data-reveal">Bring us a page<br>worth <span class="amp">biting</span> into.</h2>
+      <p class="reveal" data-reveal">Tell us what you're making — a wedding suite, a book, a run of cards. We'll set it by hand, mix the ink, and press it to hold.</p>
+      <div class="btn-row reveal" data-reveal>
+        <a href="mailto:studio@pressandbite.com" class="btn">Commission a Run <span class="arrow">→</span></a>
+        <a href="#work" class="btn ghost">View the Work</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="rule crimson reveal" data-reveal></div>
+    <div class="foot-grid" style="margin-top:44px">
+      <div class="foot-brand">
+        <span class="mark">Press <span>&amp;</span> Bite</span>
+        <p>A traditional letterpress studio setting type by hand and pressing ink into heavy cotton rag since 1974.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Studio</h5>
+        <a href="#craft">The Craft</a>
+        <a href="#process">Process</a>
+        <a href="#inks">Inks</a>
+      </div>
+      <div class="foot-col">
+        <h5>Work</h5>
+        <a href="#work">Weddings</a>
+        <a href="#work">Stationery</a>
+        <a href="#work">Books</a>
+      </div>
+      <div class="foot-col">
+        <h5>Visit</h5>
+        <a href="#">14 Foundry Lane</a>
+        <a href="#">Press Room, Tue–Sat</a>
+        <a href="mailto:studio@pressandbite.com">studio@pressandbite.com</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <small>© 1974–2024 Press &amp; Bite Letterpress. All impressions reserved.</small>
+      <span class="colophon">Set in Playfair Display &amp; EB Garamond — pressed, not rendered.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Scroll reveal + plate lift */
+  var items = document.querySelectorAll('[data-reveal]');
+  if('IntersectionObserver' in window && !reduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          var el = e.target;
+          var delay = el.dataset.delay ? parseInt(el.dataset.delay) : 0;
+          setTimeout(function(){ el.classList.add('in'); }, delay);
+          io.unobserve(el);
+        }
+      });
+    }, {threshold:0.16, rootMargin:'0px 0px -8% 0px'});
+    items.forEach(function(el){ io.observe(el); });
+  } else {
+    items.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* Parallax on the hero headline (paper grain feel) */
+  if(!reduce){
+    var hero = document.getElementById('heroTitle');
+    var ticking = false;
+    function onScroll(){
+      if(!ticking){
+        window.requestAnimationFrame(function(){
+          var y = window.scrollY || window.pageYOffset;
+          if(hero) hero.style.setProperty('--py', (y * 0.06) + 'px');
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+  }
+})();
+</script>
+</body>
+</html>

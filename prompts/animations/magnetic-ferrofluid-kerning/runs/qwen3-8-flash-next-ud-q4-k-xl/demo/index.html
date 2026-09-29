@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>MAGNETIC — Ferrofluid Kerning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --ink:#2b2b2b;
+    --ink-lite:#3a3a3a;
+    --spec:#ffffff;
+    --depth:#444444;
+    --txt:#d8d4cc;
+    --dim:#7c766c;
+    --faint:#3a3630;
+    --disp:'Anton', 'Arial Black', system-ui, sans-serif;
+    --mono:'Space Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  /* ---------- atmospheric background ---------- */
+  .bg{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(70,64,54,0.30), transparent 55%),
+      radial-gradient(90% 70% at 50% 118%, rgba(50,44,36,0.28), transparent 60%),
+      #0a0a0a;
+  }
+  .bg::after{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.028) 1px, transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(72% 62% at 50% 46%, #000 0%, transparent 80%);
+    mask-image:radial-gradient(72% 62% at 50% 46%, #000 0%, transparent 80%);
+    opacity:.5;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    box-shadow:inset 0 0 200px 40px rgba(0,0,0,0.75);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .glow{
+    position:fixed;top:0;left:0;width:640px;height:640px;z-index:3;
+    pointer-events:none;will-change:transform;
+    background:radial-gradient(circle at center, rgba(255,255,255,0.06), rgba(255,255,255,0.02) 32%, transparent 62%);
+    transform:translate(-50%,-50%);
+    mix-blend-mode:screen;
+    opacity:0;transition:opacity .5s ease;
+  }
+  body.magnet-on .glow{opacity:1;}
+
+  /* ---------- layout ---------- */
+  .wrap{position:relative;z-index:5;min-height:100vh;display:flex;flex-direction:column;}
+
+  header.top{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:22px clamp(18px,4vw,54px);
+    font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);
+  }
+  .brand{display:flex;align-items:center;gap:10px;color:var(--txt);font-weight:700;}
+  .brand .mk{
+    width:12px;height:12px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, #555 45%, #111 80%);
+    box-shadow:0 0 10px rgba(255,255,255,.15);
+    animation:breathe 4s ease-in-out infinite;
+  }
+  .brand small{color:var(--dim);font-weight:400;letter-spacing:.24em;}
+  .top-right{display:flex;gap:26px;align-items:center;}
+  .top-right .st{display:flex;align-items:center;gap:8px;}
+  .led{width:7px;height:7px;border-radius:50%;background:#5a5a52;box-shadow:0 0 6px rgba(255,255,255,.08);}
+  .led.live{background:#c9c3b6;animation:blink 2.4s steps(1) infinite;}
+
+  main{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 16px;}
+  .stage{width:100%;max-width:1180px;position:relative;}
+
+  .eyebrow{
+    text-align:center;font-size:11px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--dim);margin:0 0 clamp(18px,4vh,42px);
+    opacity:0;transform:translateY(10px);transition:opacity 1s ease .1s, transform 1s ease .1s;
+  }
+  .eyebrow b{color:var(--txt);font-weight:700;}
+  .stage.in .eyebrow{opacity:1;transform:none;}
+
+  /* ---------- the word ---------- */
+  .word{
+    display:flex;justify-content:center;align-items:center;
+    width:100%;position:relative;
+    filter:url(#ferro);
+    will-change:filter;
+    --g:1;
+    user-select:none;-webkit-user-select:none;
+  }
+  .letter{
+    font-family:var(--disp);
+    font-weight:400;
+    color:var(--ink);
+    line-height:.8;
+    letter-spacing:-0.02em;
+    display:inline-block;
+    will-change:transform;
+    transform:translate(calc(var(--dx,0px)*var(--g)), calc(var(--dy,0px)*var(--g))) scale(calc(1 + var(--s,0)*var(--g)));
+    -webkit-mask-image:linear-gradient(155deg, rgba(0,0,0,1) 34%, rgba(0,0,0,.4) 62%, rgba(0,0,0,.16) 100%);
+    mask-image:linear-gradient(155deg, rgba(0,0,0,1) 34%, rgba(0,0,0,.4) 62%, rgba(0,0,0,.16) 100%);
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:260% 260%;mask-size:260% 260%;
+    -webkit-mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+    mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+  }
+  .letter::before{
+    content:attr(data-char);
+    position:absolute;inset:0;
+    color:var(--spec);
+    opacity:var(--glow,0);
+    pointer-events:none;
+    -webkit-mask-image:linear-gradient(155deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 42%, transparent 60%);
+    mask-image:linear-gradient(155deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.2) 42%, transparent 60%);
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:260% 260%;mask-size:260% 260%;
+    -webkit-mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+    mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+  }
+  .letter::after{
+    content:attr(data-char);
+    position:absolute;inset:0;
+    color:var(--depth);
+    opacity:var(--glow,0);
+    pointer-events:none;
+    -webkit-mask-image:linear-gradient(335deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 45%, transparent 62%);
+    mask-image:linear-gradient(335deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.1) 45%, transparent 62%);
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-size:260% 260%;mask-size:260% 260%;
+    -webkit-mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+    mask-position:calc(50% + var(--mx,0px)) calc(50% + var(--my,0px));
+  }
+
+  .hint{
+    text-align:center;margin-top:clamp(24px,5vh,54px);
+    font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);
+    opacity:0;transition:opacity 1.2s ease .35s;
+  }
+  .stage.in .hint{opacity:1;}
+  .hint .arr{color:var(--txt);animation:sway 2.2s ease-in-out infinite;display:inline-block;}
+
+  /* ---------- controls ---------- */
+  .controls{
+    display:flex;flex-wrap:wrap;gap:14px 18px;justify-content:center;align-items:center;
+    margin-top:clamp(26px,5vh,52px);
+    opacity:0;transform:translateY(10px);transition:opacity 1s ease .5s, transform 1s ease .5s;
+  }
+  .stage.in .controls{opacity:1;transform:none;}
+  .seg{display:flex;border:1px solid var(--faint);border-radius:2px;overflow:hidden;}
+  .seg button{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;color:var(--dim);border:0;padding:9px 15px;cursor:pointer;
+    transition:color .25s, background .25s;
+  }
+  .seg button + button{border-left:1px solid var(--faint);}
+  .seg button:hover{color:var(--txt);}
+  .seg button.on{background:var(--txt);color:#0a0a0a;}
+  .toggle{
+    font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;color:var(--dim);border:1px solid var(--faint);border-radius:2px;
+    padding:9px 15px;cursor:pointer;transition:color .25s, border-color .25s;
+  }
+  .toggle:hover{color:var(--txt);border-color:var(--dim);}
+
+  footer.bot{
+    display:flex;flex-wrap:wrap;justify-content:space-between;gap:14px;
+    padding:20px clamp(18px,4vw,54px);
+    font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);
+    border-top:1px solid rgba(255,255,255,0.04);
+  }
+  footer.bot .row{display:flex;gap:24px;flex-wrap:wrap;}
+  footer.bot b{color:var(--dim);font-weight:400;}
+
+  /* ---------- keyframes ---------- */
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:.85;}50%{transform:scale(1.25);opacity:1;}}
+  @keyframes blink{0%,60%{opacity:1;}61%,100%{opacity:.25;}}
+  @keyframes sway{0%,100%{transform:translateX(0);}50%{transform:translateX(6px);}}
+
+  @media (max-width:760px){
+    .top-right .st:nth-child(1){display:none;}
+    .letter::before,.letter::after{display:none;}
+    .word{filter:none;}
+    .glow{display:none;}
+    .hint{font-size:11px;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .letter{transition:transform .45s cubic-bezier(.68,-.55,.27,1.55);}
+    .brand .mk,.hint .arr,.led.live{animation:none;}
+    .glow{display:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+  <div class="glow" id="glow"></div>
+
+  <!-- SVG filter: the ferrofluid displacement + spike sharpening -->
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <defs>
+      <filter id="ferro" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+        <feTurbulence id="ferroNoise" type="fractalNoise" baseFrequency="0.012 0.022" numOctaves="2" seed="11" result="noise"/>
+        <feDisplacementMap id="ferroDisp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+        <feGaussianBlur id="ferroBlur" in="disp" stdDeviation="2.6" result="blur"/>
+        <feColorMatrix in="blur" type="matrix"
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 16 -6.6" result="sharp"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="wrap">
+    <header class="top">
+      <div class="brand"><span class="mk"></span> MAGNETIC <small>/ ferrofluid kerning</small></div>
+      <div class="top-right">
+        <div class="st"><span class="led"></span> FIELD: OFF</div>
+        <div class="st"><span class="led live"></span> 60 FPS</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="stage" id="stage">
+        <p class="eyebrow">VISCOUS MAGNETIC TYPE — <b>DRAG THE CURSOR</b> TO DISTORT THE FORM</p>
+
+        <div class="word" id="word" role="img" aria-label="MAGNETIC"></div>
+
+        <p class="hint" id="hint"><span class="arr">→</span> MOVE THE POINTER OVER THE WORD · THE FLUID REACHES FOR IT <span class="arr">←</span></p>
+
+        <div class="controls">
+          <div class="seg" role="group" aria-label="Field strength">
+            <button data-mode="off" class="on">OFF</button>
+            <button data-mode="blob">BLOB</button>
+            <button data-mode="spiky">SPIKY</button>
+          </div>
+          <button class="toggle" id="reduced" aria-pressed="false">REDUCED MOTION</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bot">
+      <div class="row"><b>SVG feDisplacementMap</b> · feTurbulence · feColorMatrix</div>
+      <div class="row"><b>Spring physics</b> · volume-conserving kerning · specular mask</div>
+      <div class="row"><b>#2b2b2b on #0a0a0a</b></div>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const WORD = "MAGNETIC";
+  const word = document.getElementById('word');
+  const glow = document.getElementById('glow');
+  const stage = document.getElementById('stage');
+  const disp = document.getElementById('ferroDisp');
+  const blur = document.getElementById('ferroBlur');
+  const noise = document.getElementById('ferroNoise');
+
+  const mq = matchMedia('(prefers-reduced-motion: reduce)');
+  let reduced = mq.matches;
+
+  // build letters
+  const letters = [];
+  for(const ch of WORD){
+    const s = document.createElement('span');
+    s.className = 'letter';
+    s.textContent = ch;
+    s.setAttribute('data-char', ch);
+    word.appendChild(s);
+    letters.push({
+      el:s, cx:0, cy:0, w:0, h:0,
+      dx:0,dy:0,s:0,glow:0,
+      vdx:0,vdy:0,vs:0,
+      offX:0,offY:0,
+      mx:0,my:0
+    });
+  }
+
+  // responsive font size
+  function sizeText(){
+    const w = word.clientWidth;
+    const n = WORD.length;
+    const size = Math.max(30, Math.min(w / (n * 0.72), 210));
+    word.style.fontSize = size + 'px';
+  }
+  sizeText();
+
+  function measure(){
+    for(const L of letters){
+      const r = L.el.getBoundingClientRect();
+      L.cx = r.left + r.width/2;
+      L.cy = r.top + r.height/2;
+      L.w = r.width; L.h = r.height;
+    }
+  }
+  measure();
+  window.addEventListener('resize', ()=>{ sizeText(); measure(); }, {passive:true});
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>{ sizeText(); measure(); }); }
+
+  // pointer
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  let active = false, hasMoved = false;
+  const magnet = {x:mx, y:my, strength:0};
+
+  function setPoint(x,y){ mx=x; my=y; if(!hasMoved){ hasMoved=true; hideHint(); } }
+  window.addEventListener('pointermove', e=>{ setPoint(e.clientX, e.clientY); active=true; }, {passive:true});
+  window.addEventListener('pointerdown', e=>{ setPoint(e.clientX, e.clientY); active=true; }, {passive:true});
+  window.addEventListener('pointerleave', ()=>{ active=false; });
+  window.addEventListener('blur', ()=>{ active=false; });
+
+  function hideHint(){
+    const h = document.getElementById('hint');
+    if(h) h.style.opacity = '0';
+  }
+
+  // modes
+  let mode = 'off';
+  const MODES = {
+    off:   {scale:0,   blur:0,   freq:'0.012 0.022', spikes:0, R:0},
+    blob:  {scale:18,  blur:3.0, freq:'0.008 0.014', spikes:0, R:190},
+    spiky: {scale:52,  blur:2.0, freq:'0.026 0.045', spikes:1, R:150}
+  };
+  document.querySelectorAll('.seg button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.seg button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+      mode = b.dataset.mode;
+    });
+  });
+  const reducedBtn = document.getElementById('reduced');
+  reducedBtn.setAttribute('aria-pressed', String(reduced));
+  reducedBtn.addEventListener('click', ()=>{
+    reduced = !reduced;
+    reducedBtn.setAttribute('aria-pressed', String(reduced));
+  });
+  mq.addEventListener && mq.addEventListener('change', e=>{ reduced = e.matches; reducedBtn.setAttribute('aria-pressed', String(reduced)); });
+
+  const isMobile = matchMedia('(max-width: 760px)').matches;
+
+  // state
+  let curScale=0, curBlur=2.6, curFreq=0.012, curFreqY=0.022;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+
+  function update(){
+    const M = MODES[mode];
+    // global field strength
+    const target = active ? 1 : 0;
+    magnet.strength = lerp(magnet.strength, target, 0.12);
+    document.body.classList.toggle('magnet-on', magnet.strength > 0.05);
+
+    // filter params
+    curScale = lerp(curScale, M.scale, 0.08);
+    curBlur  = lerp(curBlur,  M.blur,  0.08);
+    curFreq  = lerp(curFreq,  parseFloat(M.freq.split(' ')[0]), 0.06);
+    curFreqY = lerp(curFreqY, parseFloat(M.freq.split(' ')[1]), 0.06);
+    disp.setAttribute('scale', curScale.toFixed(2));
+    blur.setAttribute('stdDeviation', curBlur.toFixed(2));
+    noise.setAttribute('baseFrequency', curFreq.toFixed(4)+' '+curFreqY.toFixed(4));
+
+    // magnet position (with slight lag for organic feel)
+    magnet.x = lerp(magnet.x, mx, 0.22);
+    magnet.y = lerp(magnet.y, my, 0.22);
+
+    const R = M.R || 150;
+    const spikesOn = M.spikes === 1 && !isMobile && !reduced;
+
+    // per-letter physics
+    for(const L of letters){
+      let tx=0, ty=0, ts=0, tg=0;
+      if(magnet.strength > 0.02){
+        const dx = magnet.x - L.cx;
+        const dy = magnet.y - L.cy;
+        const dist = Math.hypot(dx, dy) + 0.001;
+        if(dist < R){
+          const prox = clamp(1 - dist/R, 0, 1);
+          const pull = prox*prox*prox;               // exponential falloff
+          const reach = spikesOn ? 0.30 : 0.12;      // how far the fluid reaches
+          tx = (dx/dist) * pull * L.w * reach;
+          ty = (dy/dist) * pull * L.w * reach;
+          ts = pull * (spikesOn ? 0.06 : 0.10);
+          tg = pull;
+        }
+      }
+      // spring integration (elastic snap-back)
+      const k=0.14, d=0.72;
+      L.vdx += (tx - L.dx)*k; L.vdx *= d; L.dx += L.vdx;
+      L.vdy += (ty - L.dy)*k; L.vdy *= d; L.dy += L.vdy;
+      L.vs  += (ts - L.s )*k; L.vs  *= d; L.s  += L.vs;
+      L.glow = lerp(L.glow, tg*magnet.strength, 0.2);
+    }
+
+    // volume-conserving kerning: deformed letter pushes neighbours apart
+    for(let i=0;i<letters.length;i++){
+      const L = letters[i];
+      let push = 0;
+      if(i>0){
+        const a = letters[i-1];
+        const rel = L.dx - a.dx;
+        if(rel > 3) push += rel*0.5;
+      }
+      if(i<letters.length-1){
+        const b = letters[i+1];
+        const rel = b.dx - L.dx;
+        if(rel > 3) push -= rel*0.5;
+      }
+      L.offX = lerp(L.offX, clamp(push, -14, 14), 0.25);
+    }
+
+    // write transforms
+    for(const L of letters){
+      const st = magnet.strength;
+      const dx = L.dx*st + L.offX;
+      const dy = L.dy*st;
+      L.el.style.setProperty('--dx', dx.toFixed(2)+'px');
+      L.el.style.setProperty('--dy', dy.toFixed(2)+'px');
+      L.el.style.setProperty('--s', L.s.toFixed(4));
+      L.el.style.setProperty('--glow', (L.glow).toFixed(3));
+      const mag = Math.hypot(dx,dy);
+      const ang = Math.atan2(dy,dx);
+      L.mx = Math.cos(ang)*mag*0.5;
+      L.my = Math.sin(ang)*mag*0.5;
+      L.el.style.setProperty('--mx', L.mx.toFixed(1)+'px');
+      L.el.style.setProperty('--my', L.my.toFixed(1)+'px');
+    }
+
+    // glow follows magnet
+    glow.style.transform = `translate(${magnet.x}px, ${magnet.y}px) translate(-50%,-50%) scale(${(0.7 + magnet.strength*0.6).toFixed(3)})`;
+
+    requestAnimationFrame(update);
+  }
+
+  // reveal
+  requestAnimationFrame(()=> stage.classList.add('in'));
+  requestAnimationFrame(update);
+})();
+</script>
+</body>
+</html>

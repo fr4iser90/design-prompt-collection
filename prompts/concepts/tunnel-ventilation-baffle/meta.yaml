@@ -1,0 +1,27 @@
+id: tunnel-ventilation-baffle
+title: "Tunnel Ventilation Baffle"
+category: concepts
+tags:
+  - civil-engineering
+  - airflow
+  - baffle
+  - industrial-design
+  - motion
+  - safety
+  - infrastructure
+  - metal
+status: polished
+summary: "An interactive visualization of a tunnel ventilation system. Airflow vectors push against metal baffles, which rotate to regulate flow. Tension between air pressure and mechanical resistance."
+preview: preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-28"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

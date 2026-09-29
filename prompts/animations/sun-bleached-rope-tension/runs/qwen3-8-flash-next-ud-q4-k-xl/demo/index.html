@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sun-Bleached Rope Tension — A Material Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,400..600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f4ef;
+    --bg2:#efe9df;
+    --fiber:#e0d6c8;
+    --deep:#a89f91;
+    --hi:#f5f0e6;
+    --ink:#3a352c;
+    --ink-soft:#7c7466;
+    --hair:rgba(90,82,66,.22);
+    --hair-strong:rgba(90,82,66,.42);
+    --display:'Fraunces',Georgia,'Times New Roman',serif;
+    --mono:'Space Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* ---------- atmospheric layers ---------- */
+  .atmos{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .atmos .glow{
+    position:absolute;top:-14%;left:50%;transform:translateX(-50%);
+    width:120vw;height:60vh;
+    background:radial-gradient(ellipse at center, rgba(255,252,246,.9), rgba(255,252,246,0) 62%);
+    mix-blend-mode:screen;
+  }
+  .atmos .grain{
+    position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size:180px 180px;
+  }
+  .atmos .vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse 120% 90% at 50% 40%, rgba(0,0,0,0) 55%, rgba(70,62,48,.10) 100%);
+  }
+
+  /* ---------- masthead ---------- */
+  header.mast{
+    position:relative;z-index:5;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:1rem;padding:clamp(1.1rem,3vw,2rem) clamp(1.1rem,4vw,3rem);
+    border-bottom:1px solid var(--hair);
+  }
+  .wordmark{font-family:var(--mono);font-weight:700;letter-spacing:.34em;font-size:.72rem;text-transform:uppercase}
+  .wordmark .dot{color:var(--deep)}
+  .mast .meta{display:flex;gap:1.4rem;flex-wrap:wrap;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft)}
+  .mast .meta b{color:var(--ink);font-weight:700}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;z-index:3;
+    min-height:calc(100svh - 4.2rem);
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:clamp(1.4rem,4vw,3rem) clamp(1.1rem,4vw,3rem) clamp(1.4rem,4vw,2.4rem);
+  }
+  .hero-top{max-width:min(56ch,92%)}
+  .kicker{
+    font-size:.62rem;letter-spacing:.4em;text-transform:uppercase;color:var(--ink-soft);
+    display:flex;align-items:center;gap:.7rem;margin-bottom:1.1rem;
+  }
+  .kicker::before{content:"";width:2.4rem;height:1px;background:var(--hair-strong)}
+  .title{
+    font-family:var(--display);
+    font-weight:300;
+    font-size:clamp(2.6rem,8.6vw,7.4rem);
+    line-height:.92;
+    letter-spacing:-.02em;
+    color:var(--ink);
+  }
+  .title em{font-style:italic;font-weight:400;color:#5c5445}
+  .title .w{display:inline-block;overflow:hidden;vertical-align:bottom}
+  .title .w>span{display:inline-block;transform:translateY(110%);animation:rise .95s cubic-bezier(.16,1,.3,1) forwards}
+  .title .w:nth-child(2)>span{animation-delay:.09s}
+  .title .w:nth-child(3)>span{animation-delay:.18s}
+  .title .w:nth-child(4)>span{animation-delay:.27s}
+  @keyframes rise{to{transform:translateY(0)}}
+  .lede{
+    margin-top:1.5rem;max-width:46ch;
+    font-size:.82rem;line-height:1.7;color:var(--ink-soft);
+    letter-spacing:.01em;
+  }
+
+  .hero-foot{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:1.4rem;flex-wrap:wrap;
+  }
+  .spec{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);line-height:2}
+  .spec b{color:var(--ink)}
+  .cue{
+    display:flex;align-items:center;gap:.8rem;
+    font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink);
+    border:1px solid var(--hair-strong);padding:.6rem .9rem;border-radius:2px;background:rgba(255,255,255,.35);
+  }
+  .cue .arrow{animation:pull 2.4s ease-in-out infinite}
+  @keyframes pull{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+
+  /* ---------- rope stage ---------- */
+  .stage{position:absolute;inset:0;z-index:1;overflow:hidden}
+  .rope-wrap{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    transform:rotate(-6deg);
+    will-change:transform;
+  }
+  .rope{
+    position:relative;
+    width:120vw;
+    height:clamp(58px,11.5vw,150px);
+    --twist:clamp(44px,7.2vw,96px);
+    --gap:clamp(16px,2.6vw,34px);
+    display:flex;align-items:stretch;
+    filter:drop-shadow(0 10px 12px rgba(70,60,44,.10));
+    will-change:transform;
+  }
+  .strand{
+    position:relative;flex:1;min-width:0;
+    background:
+      repeating-linear-gradient(122deg,
+        #f5f0e6 0 1px,
+        #e7ddcf 1px 3px,
+        #cdbfa9 3px 6px,
+        #b6ab97 6px 9px,
+        #a89f91 9px 12px,
+        #948a79 12px 15px,
+        #cdbfa9 15px 18px,
+        #e7ddcf 18px 21px,
+        #f5f0e6 21px 24px);
+    border-radius:4px;
+    clip-path:polygon(0% 20%,100% 20%,100% 80%,0% 80%);
+    -webkit-clip-path:polygon(0% 20%,100% 20%,100% 80%,0% 80%);
+    transition:clip-path .8s cubic-bezier(.2,.7,.2,1),-webkit-clip-path .8s cubic-bezier(.2,.7,.2,1);
+    box-shadow:inset 0 1px 0 rgba(255,252,246,.6), inset 0 -3px 6px rgba(70,60,44,.28);
+  }
+  .strand::before{ /* specular sheen along the crown */
+    content:"";position:absolute;left:0;right:0;top:14%;height:26%;
+    background:linear-gradient(rgba(255,253,248,.85),rgba(255,253,248,0));
+    filter:blur(1px);border-radius:4px;pointer-events:none;
+  }
+  .strand::after{ /* shadowed underside */
+    content:"";position:absolute;left:0;right:0;bottom:0;height:34%;
+    background:linear-gradient(rgba(70,60,44,0),rgba(70,60,44,.34));
+    border-radius:4px;pointer-events:none;
+  }
+  .strand:nth-child(even){filter:brightness(.985)}
+  .strand:nth-child(3n){filter:brightness(1.02)}
+  .strand:nth-child(5n){filter:brightness(.965)}
+
+  .fibre{
+    position:absolute;left:0;right:0;top:50%;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,rgba(168,159,145,0),#c9bda9 22%,#f4efe4 52%,#d7ccba 78%,rgba(168,159,145,0));
+    transform-origin:50% 50%;
+    opacity:0;
+    box-shadow:0 1px 0 rgba(70,60,44,.14);
+    will-change:transform,opacity;
+  }
+  .fibre.b{background:linear-gradient(90deg,rgba(148,138,121,0),#a89f91 30%,#c9bda9 60%,rgba(148,138,121,0))}
+
+  .dust{
+    position:absolute;left:0;right:0;top:50%;width:3px;height:3px;border-radius:50%;
+    background:rgba(120,108,88,.5);opacity:0;will-change:transform,opacity;
+  }
+
+  .stage[data-tension="0"] .rope{transform:translateY(6px) scaleY(1.04)}
+  .stage[data-tension="1"] .strand{clip-path:polygon(0% 4%,100% 4%,100% 96%,0% 96%);-webkit-clip-path:polygon(0% 4%,100% 4%,100% 96%,0% 96%)}
+  .stage[data-tension="1"] .rope{transform:translateY(0) scaleY(.92)}
+
+  /* ---------- study ---------- */
+  .study{position:relative;z-index:3;background:linear-gradient(var(--bg),var(--bg2));border-top:1px solid var(--hair)}
+  .study-inner{max-width:1180px;margin:0 auto;padding:clamp(3rem,8vw,7rem) clamp(1.1rem,4vw,3rem)}
+  .study-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:1.1rem;margin-bottom:2.6rem}
+  .study-head h2{font-family:var(--display);font-weight:300;font-size:clamp(1.5rem,4vw,2.6rem);letter-spacing:-.01em}
+  .study-head .idx{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft)}
+
+  .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(1.4rem,3vw,2.6rem)}
+  .note{border-top:2px solid var(--ink);padding-top:1rem}
+  .note .num{font-family:var(--mono);font-size:.6rem;letter-spacing:.28em;color:var(--deep);text-transform:uppercase}
+  .note h3{font-family:var(--display);font-weight:400;font-size:1.15rem;margin:.5rem 0 .6rem}
+  .note p{font-size:.74rem;line-height:1.75;color:var(--ink-soft)}
+
+  .palette{margin-top:clamp(2.6rem,6vw,4.5rem);display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair)}
+  .sw{background:var(--bg);padding:1.1rem 1rem 1.3rem}
+  .sw .chip{height:52px;border-radius:2px;margin-bottom:.8rem;box-shadow:inset 0 0 0 1px rgba(70,60,44,.12)}
+  .sw .name{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink)}
+  .sw .hex{font-size:.62rem;color:var(--ink-soft);margin-top:.2rem}
+
+  footer.foot{position:relative;z-index:3;border-top:1px solid var(--hair);padding:1.4rem clamp(1.1rem,4vw,3rem);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  footer.foot b{color:var(--ink)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (max-width:640px){
+    .mast .meta{display:none}
+    .title{font-size:clamp(2.4rem,13vw,4rem)}
+    .rope-wrap{transform:rotate(-2deg)}
+    .cue{display:none}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .title .w>span{transform:none;animation:none}
+    .reveal{opacity:1;transform:none;transition:none}
+    .cue .arrow{animation:none}
+    .rope,.strand,.fibre,.dust{transition:none !important;animation:none !important}
+  }
+</style>
+</head>
+<body>
+
+  <div class="atmos" aria-hidden="true">
+    <div class="glow"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <header class="mast">
+    <div class="wordmark">SUN&#8209;BLEACHED<span class="dot">.</span>ROPE</div>
+    <nav class="meta" aria-label="study metadata">
+      <span>Material&nbsp;Study&nbsp;<b>№&nbsp;01</b></span>
+      <span>Static&nbsp;Load&nbsp;<b>4.2&nbsp;kN</b></span>
+      <span>Exposure&nbsp;<b>Arid</b></span>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Rope tension study">
+      <div class="stage" id="stage" data-tension="0" aria-hidden="true">
+        <div class="rope-wrap" id="ropeWrap">
+          <div class="rope" id="rope"></div>
+        </div>
+      </div>
+
+      <div class="hero-top">
+        <div class="kicker">A study of friction, age &amp; strength</div>
+        <h1 class="title">
+          <span class="w"><span>Sun&#8209;</span></span><span class="w"><span>Bleached</span></span> <span class="w"><span><em>Rope</em></span></span> <span class="w"><span>Tension</span></span>
+        </h1>
+        <p class="lede">A single strand of hemp, pulled taut until its weave opens. Under hard overhead sun, the outer fibres fray and splay — bleached white where the light strikes, deep beige in the shadow of every twist.</p>
+      </div>
+
+      <div class="hero-foot">
+        <div class="spec">
+          <div>Material &nbsp;<b>Twisted Hemp</b></div>
+          <div>Lay &nbsp;<b>Right · 3&nbsp;strand</b></div>
+          <div>Condition &nbsp;<b>Dry · Dusty</b></div>
+        </div>
+        <div class="cue">Hover or drag to tension <span class="arrow">→</span></div>
+      </div>
+    </section>
+
+    <section class="study">
+      <div class="study-inner">
+        <div class="study-head reveal">
+          <h2>The material history</h2>
+          <span class="idx">Observation log</span>
+        </div>
+
+        <div class="notes">
+          <article class="note reveal">
+            <div class="num">01 — Friction</div>
+            <h3>Where the fibres bind</h3>
+            <p>Tension is not held by glue or weave alone, but by the pressure of fibre against fibre. Each twist locks the next; the strand resists because it is tight against itself.</p>
+          </article>
+          <article class="note reveal">
+            <div class="num">02 — Bleaching</div>
+            <h3>Light that erases</h3>
+            <p>Years of direct sun strip the pigment from the exposed face. What remains is chalk-pale and brittle, while the buried core keeps the warm, unweathered beige of the plant.</p>
+          </article>
+          <article class="note reveal">
+            <div class="num">03 — Settle</div>
+            <h3>The heavy moment</h3>
+            <p>Loaded rope does not bounce. It creeps, twitches, and snaps into place — a slow, resistant settling that travels the length of the strand like a held breath.</p>
+          </article>
+        </div>
+
+        <div class="palette reveal" aria-label="palette">
+          <div class="sw"><div class="chip" style="background:#e0d6c8"></div><div class="name">Bleached fibre</div><div class="hex">#e0d6c8</div></div>
+          <div class="sw"><div class="chip" style="background:#a89f91"></div><div class="name">Deep fibre</div><div class="hex">#a89f91</div></div>
+          <div class="sw"><div class="chip" style="background:#f5f0e6"></div><div class="name">Highlight</div><div class="hex">#f5f0e6</div></div>
+          <div class="sw"><div class="chip" style="background:#f7f4ef"></div><div class="name">Field</div><div class="hex">#f7f4ef</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Sun&#8209;Bleached Rope Tension &nbsp;·&nbsp; <b>Material Study № 01</b></span>
+    <span>No synthetic fibre · Harsh light · Dry</span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rope = document.getElementById('rope');
+  const stage = document.getElementById('stage');
+  const ropeWrap = document.getElementById('ropeWrap');
+
+  /* --- build strands sized to viewport --- */
+  function build(){
+    const vw = window.innerWidth;
+    const ropeW = vw * 1.2;
+    const strandW = Math.max(34, Math.min(92, vw * 0.062));
+    const gap = Math.max(14, Math.min(34, vw * 0.026));
+    const n = Math.max(8, Math.ceil(ropeW / (strandW + gap)) + 1);
+    rope.innerHTML = '';
+    for(let i=0;i<n;i++){
+      const s = document.createElement('div');
+      s.className = 'strand';
+      rope.appendChild(s);
+    }
+    return n;
+  }
+  let count = build();
+
+  /* --- splay fibres + dust --- */
+  const fibres = [];
+  const dusts = [];
+  function seedFibres(){
+    fibres.length = 0; dusts.length = 0;
+    const frag = document.createDocumentFragment();
+    for(let i=0;i<count;i++){
+      const s = rope.children[i];
+      const k = 2 + Math.floor(Math.random()*3);
+      for(let j=0;j<k;j++){
+        const f = document.createElement('span');
+        f.className = 'fibre' + (Math.random()<0.5 ? ' b':'');
+        const top = 24 + Math.random()*52;
+        f.style.top = top + '%';
+        const baseY = (Math.random()*2-1)*10;
+        const baseRot = (Math.random()*2-1)*4;
+        const len = 70 + Math.random()*70;
+        f.style.width = len + '%';
+        const up = Math.random()<0.5 ? -1 : 1;
+        const tx = (Math.random()*2-1)*26;
+        const ty = up*(20 + Math.random()*44);
+        const rot = (Math.random()*2-1)*16;
+        const dur = 0.5 + Math.random()*0.7;
+        const delay = Math.random()*0.4;
+        const amp = 0.4 + Math.random()*0.9;
+        const spd = 0.5 + Math.random()*0.7;
+        const ph = Math.random()*Math.PI*2;
+        fibres.push({el:f, baseY, baseRot, tx, ty, rot, dur, delay, amp, spd, ph});
+        frag.appendChild(f);
+      }
+      if(Math.random()<0.6){
+        const d = document.createElement('span');
+        d.className='dust';
+        d.style.top = (20+Math.random()*60)+'%';
+        const dx = (Math.random()*2-1)*30;
+        const dy = (Math.random()*2-1)*40;
+        const dur = 0.6+Math.random()*0.6;
+        const delay = Math.random()*0.5;
+        dusts.push({el:d,dx,dy,dur,delay});
+        frag.appendChild(d);
+      }
+    }
+    rope.appendChild(frag);
+  }
+  seedFibres();
+
+  /* --- tension controller --- */
+  let tension = 0, target = 0, settling = 0;
+  let pointerActive = false;
+
+  function setTarget(v){ target = Math.max(0, Math.min(1, v)); }
+
+  // hover / drag on the whole hero
+  const hero = document.querySelector('.hero');
+  hero.addEventListener('pointerenter', ()=>{ pointerActive = true; setTarget(1); });
+  hero.addEventListener('pointerleave', ()=>{ pointerActive = false; if(!scrollDriven) setTarget(0); });
+  hero.addEventListener('pointerdown', (e)=>{ pointerActive = true; setTarget(1); settle(); });
+  hero.addEventListener('pointermove', (e)=>{
+    if(!pointerActive) return;
+    const r = hero.getBoundingClientRect();
+    const p = (e.clientX - r.left) / r.width;
+    setTarget(0.25 + p*0.75);
+  });
+  window.addEventListener('pointerup', ()=>{ if(!scrollDriven) setTarget(pointerActive?1:0); });
+
+  // scroll-driven tension (desktop)
+  let scrollDriven = false;
+  function onScroll(){
+    if(window.innerWidth < 768) { scrollDriven = false; return; }
+    const max = Math.max(1, hero.offsetHeight);
+    const p = Math.min(1, Math.max(0, window.scrollY / (max*0.9)));
+    scrollDriven = true;
+    if(!pointerActive) setTarget(p);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  function settle(){ settling = 1; }
+  // tap on mobile
+  stage.addEventListener('click', ()=>{ if(window.innerWidth<768){ setTarget(1); settle(); setTimeout(()=>setTarget(0),1400);} });
+
+  /* --- animation loop --- */
+  let last = performance.now();
+  function frame(now){
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    const t = now/1000;
+
+    // smooth approach — heavy, resistant
+    tension += (target - tension) * (1 - Math.exp(-dt*3.2));
+    settling *= Math.exp(-dt*2.4);
+    if(settling < 0.001) settling = 0;
+
+    // global sway (wind) + settle jitter
+    const sway = reduce ? 0 : Math.sin(t*0.6)*0.35 + Math.sin(t*0.23)*0.2;
+    const jitter = settling * (Math.random()*2-1) * 2.4;
+    ropeWrap.style.transform = 'rotate(' + (-6 + sway + jitter*0.4) + 'deg)';
+
+    // rope body
+    const scaleY = 1.04 - tension*0.12 + (reduce?0:Math.sin(t*2.0)*0.006);
+    const taut = Math.sin(t*22 + Math.sin(t*3)*2) * tension * (reduce?0:1);
+    rope.style.transform = 'translateY(' + (6 - tension*6 + (reduce?0:Math.sin(t*1.4)*1.2) + jitter*0.3) + 'px) scaleY(' + scaleY + ') translateX(' + (taut*0.4) + 'px)';
+
+    // fibres
+    for(let i=0;i<fibres.length;i++){
+      const fb = fibres[i];
+      const w = Math.max(0, Math.min(1, (tension - fb.delay)/fb.dur));
+      const e = 1 - Math.pow(1 - w, 3);
+      const vib = reduce ? 0 : Math.sin(t*fb.spd*6 + fb.ph) * fb.amp * tension;
+      const x = fb.tx*e + vib;
+      const y = fb.baseY + fb.ty*e + (reduce?0:Math.sin(t*fb.spd*5 + fb.ph)*fb.amp*0.6*tension);
+      const r = fb.baseRot + fb.rot*e + (reduce?0:vib*0.6);
+      fb.el.style.transform = 'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px) rotate(' + r.toFixed(2) + 'deg)';
+      fb.el.style.opacity = (e*0.92).toFixed(3);
+    }
+
+    // dust
+    for(let i=0;i<dusts.length;i++){
+      const d = dusts[i];
+      const w = Math.max(0, Math.min(1, (tension - d.delay)/d.dur));
+      const e = 1 - Math.pow(1 - w, 3);
+      d.el.style.transform = 'translate(' + (d.dx*e).toFixed(1) + 'px,' + (d.dy*e).toFixed(1) + 'px)';
+      d.el.style.opacity = (e*0.55).toFixed(3);
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // entrance settle
+  setTimeout(settle, 700);
+
+  /* --- reveal on scroll --- */
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, {threshold:0.2});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* --- resize --- */
+  let rt;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(rt);
+    rt = setTimeout(()=>{ count = build(); seedFibres(); onScroll(); }, 180);
+  });
+})();
+</script>
+</body>
+</html>

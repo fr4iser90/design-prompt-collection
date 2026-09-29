@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stamped Manifest Alignment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F4F0;
+    --paper-hi:#FBFBF7;
+    --ink:#1A1A1A;
+    --ink-soft:#4A4A46;
+    --ink-faint:#8A8A84;
+    --red:#C41E3A;
+    --red-deep:#9E1730;
+    --red-light:#D8435C;
+    --desk:#2B2A26;
+    --desk-2:#211F1C;
+    --line:#CFCFC5;
+    --line-strong:#1A1A1A;
+    --mono:'Space Mono', ui-monospace, 'Courier New', monospace;
+    --disp:'Oswald', 'Arial Narrow', sans-serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--mono);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #3A3733 0%, var(--desk) 45%, var(--desk-2) 100%);
+    min-height:100vh;
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  /* desk grain */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity:.05;mix-blend-mode:overlay;
+  }
+
+  /* ---------- MASTHEAD ---------- */
+  .masthead{
+    position:relative;z-index:3;
+    max-width:1240px;margin:0 auto;
+    padding:34px 26px 22px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:26px;flex-wrap:wrap;
+  }
+  .mast-left{display:flex;flex-direction:column;gap:14px}
+  .kicker{
+    font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;
+    color:#B8B4AA;display:flex;align-items:center;gap:12px;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:var(--red);display:inline-block}
+  .brand{
+    font-family:var(--disp);font-weight:700;
+    font-size:clamp(2.6rem,7.2vw,5.4rem);
+    line-height:.86;letter-spacing:.01em;text-transform:uppercase;
+    color:#F1EEE6;
+    display:flex;align-items:flex-end;gap:.28em;flex-wrap:wrap;
+  }
+  .brand .mark{
+    font-size:.62em;line-height:1;color:var(--red);
+    transform:translateY(-.06em);
+    text-shadow:0 1px 0 rgba(0,0,0,.35);
+  }
+  .brand .thin{font-weight:400;color:#CFCBBF}
+  .mast-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:right}
+  .mast-meta .big{
+    font-family:var(--disp);font-weight:600;font-size:clamp(1.3rem,3.4vw,2.1rem);
+    color:#F1EEE6;letter-spacing:.02em;line-height:1;
+  }
+  .mast-meta .sub{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#9A968C}
+  .mast-rule{
+    max-width:1240px;margin:0 auto;height:0;border-top:2px solid #000;
+    box-shadow:0 2px 0 rgba(255,255,255,.04);
+    position:relative;z-index:3;
+  }
+  .mast-rule::after{content:"";position:absolute;left:0;top:2px;width:100%;height:1px;background:rgba(255,255,255,.06)}
+
+  /* ---------- WORKSPACE ---------- */
+  .workspace{
+    position:relative;z-index:2;
+    max-width:1240px;margin:0 auto;
+    padding:30px 26px 70px;
+    display:grid;grid-template-columns:minmax(250px,300px) 1fr;gap:30px;align-items:start;
+  }
+
+  /* ---------- TOOLBAR ---------- */
+  .toolbar{
+    position:sticky;top:24px;
+    background:linear-gradient(180deg,#34322D,#26241F);
+    border:1px solid #141310;
+    padding:22px 20px 20px;
+    box-shadow:0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .tb-head{
+    font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.24em;text-transform:uppercase;
+    color:#E7E3D9;display:flex;justify-content:space-between;align-items:center;
+    padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,.16);margin-bottom:16px;
+  }
+  .tb-head .dot{width:8px;height:8px;background:var(--red);border-radius:50%;box-shadow:0 0 8px rgba(196,30,58,.7)}
+  .stamp-well{
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    padding:18px 12px 16px;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.02) 0 8px, transparent 8px 16px),
+      radial-gradient(120% 90% at 50% 20%, #3A3732, #26241F);
+    border:1px solid #141310;
+    cursor:grab;touch-action:none;user-select:none;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .stamp-well:hover{transform:translateY(-2px)}
+  .stamp-well:active{cursor:grabbing}
+  .stamp-well.armed{outline:2px solid var(--red);outline-offset:3px}
+  .stamp-well .glyph{width:118px;height:118px;pointer-events:none}
+  .stamp-well .hint{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#9A968C;text-align:center}
+  .tb-note{font-size:11px;line-height:1.6;color:#8F8B81;margin-top:16px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.14)}
+  .tb-note b{color:#D8D4CA;font-weight:700}
+  .tb-actions{display:flex;gap:10px;margin-top:16px}
+  .btn{
+    flex:1;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:11px 8px;cursor:pointer;border:1px solid #4A473F;background:transparent;color:#CFCBBF;
+    transition:all .16s ease;
+  }
+  .btn:hover{background:#3A3732;color:#fff;border-color:#6A655B}
+  .btn.ghost:hover{border-color:var(--red);color:var(--red-light)}
+
+  /* ---------- PAPER / DOCUMENT ---------- */
+  .paper-wrap{position:relative;min-height:600px}
+  .paper{
+    position:relative;
+    background:var(--paper);
+    color:var(--ink);
+    padding:40px 44px 46px;
+    border:1px solid #D9D9CF;
+    box-shadow:0 24px 55px rgba(0,0,0,.42);
+  }
+  .paper::before{ /* fiber / noise */
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.6'/%3E%3C/svg%3E");
+    opacity:.06;mix-blend-mode:multiply;
+  }
+  .paper::after{ /* faint fibers */
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.014) 0 1px, transparent 1px 4px);
+    opacity:.5;
+  }
+  .paper > *{position:relative;z-index:1}
+
+  .doc-head{border-bottom:2px solid var(--line-strong);padding-bottom:16px;margin-bottom:6px}
+  .doc-head .row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+  .doc-title{font-family:var(--disp);font-weight:700;font-size:clamp(1.5rem,3.6vw,2.3rem);letter-spacing:.04em;text-transform:uppercase;line-height:.95}
+  .doc-title small{display:block;font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.3em;color:var(--ink-faint);margin-top:8px}
+  .doc-id{text-align:right;font-size:11px;color:var(--ink-soft);letter-spacing:.05em;line-height:1.7}
+  .doc-id b{color:var(--ink);font-weight:700}
+
+  .doc-meta{display:flex;gap:14px;flex-wrap:wrap;padding:14px 0 12px;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-soft)}
+  .doc-meta span{display:flex;gap:6px}
+  .doc-meta b{color:var(--ink)}
+  .doc-meta .sep{color:var(--line)}
+
+  .ledger-cap{
+    display:flex;justify-content:space-between;align-items:baseline;
+    margin:20px 0 4px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint);
+  }
+  .ledger-cap .live{color:var(--red);display:flex;align-items:center;gap:6px}
+  .ledger-cap .live i{width:7px;height:7px;background:var(--red);border-radius:50%;display:inline-block;animation:blink 1.4s steps(1) infinite}
+  @keyframes blink{50%{opacity:.2}}
+
+  .ledger{border-top:1px solid var(--line)}
+  .ledger-head{display:grid;grid-template-columns:52px 1fr 118px 128px;gap:10px;padding:9px 4px;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--line-strong)}
+
+  .row-item{
+    display:grid;grid-template-columns:52px 1fr 118px 128px;gap:10px;align-items:center;
+    padding:14px 4px;border-bottom:1px dashed var(--line);
+    transition:background .2s ease;
+  }
+  .row-item:hover{background:rgba(196,30,58,.03)}
+  .row-item.done{background:rgba(196,30,58,.05)}
+  .it-no{font-size:11px;color:var(--ink-faint);letter-spacing:.05em}
+  .it-main .nm{font-family:var(--disp);font-weight:500;font-size:15px;letter-spacing:.02em;text-transform:uppercase;line-height:1.05}
+  .it-main .ds{font-size:11px;color:var(--ink-soft);margin-top:3px}
+  .it-main .ds b{color:var(--ink)}
+  .it-qty{font-size:13px;letter-spacing:.04em;color:var(--ink)}
+  .it-qty small{display:block;font-size:9px;color:var(--ink-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+
+  .stamp-slot{
+    position:relative;height:66px;
+    border:1.5px dashed var(--ink-faint);
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .2s ease, background .2s ease;
+    overflow:visible;
+  }
+  .stamp-slot .ph{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);text-align:center;line-height:1.4;padding:0 6px}
+  .stamp-slot.armed{border-color:var(--red);background:rgba(196,30,58,.06);border-style:solid}
+  .stamp-slot.over{border-color:var(--red);background:rgba(196,30,58,.12)}
+  .stamp-slot.done{border:1px solid transparent}
+  .stamp-slot.done .ph{display:none}
+
+  /* the placed stamp */
+  .stamp-mark{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;
+  }
+  .stamp-mark svg{width:150px;height:64px;filter:url(#ink-bleed);will-change:transform,opacity}
+  .stamp-mark.placing svg{animation:stampHit .42s cubic-bezier(.2,.9,.25,1) forwards}
+  @keyframes stampHit{
+    0%{transform:scale(1.18) rotate(var(--rot));opacity:0}
+    45%{transform:scale(.965) rotate(var(--rot));opacity:1}
+    72%{transform:scale(1.02) rotate(var(--rot));opacity:1}
+    100%{transform:scale(1) rotate(var(--rot));opacity:1}
+  }
+
+  .doc-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line-strong);flex-wrap:wrap}
+  .sign{font-size:11px;color:var(--ink-soft);letter-spacing:.04em}
+  .sign .line{width:200px;border-bottom:1px solid var(--ink);margin-bottom:6px;height:26px}
+  .sign small{display:block;margin-top:5px;color:var(--ink-faint);letter-spacing:.14em;text-transform:uppercase;font-size:9px}
+  .foot-note{font-size:10px;color:var(--ink-faint);letter-spacing:.06em;max-width:280px;text-align:right;line-height:1.6}
+  .foot-note b{color:var(--red)}
+
+  /* ---------- FLYING STAMP (drag ghost) ---------- */
+  #fly{
+    position:fixed;left:0;top:0;width:150px;height:64px;z-index:9999;pointer-events:none;
+    display:none;will-change:transform;
+  }
+  #fly svg{width:150px;height:64px;filter:url(#ink-bleed)}
+  #fly.show{display:block}
+
+  /* ---------- FOOTER ---------- */
+  .foot{
+    position:relative;z-index:2;max-width:1240px;margin:0 auto;
+    padding:0 26px 40px;display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#7C786E;
+    border-top:1px solid rgba(255,255,255,.07);padding-top:20px;
+  }
+  .foot .legend{display:flex;gap:18px;flex-wrap:wrap}
+  .foot .legend b{color:#B8B4AA}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease, transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:920px){
+    .workspace{grid-template-columns:1fr;gap:22px}
+    .toolbar{position:static;flex-direction:row;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+    .stamp-well{flex:0 0 auto;padding:12px}
+    .stamp-well .glyph{width:88px;height:88px}
+    .tb-note{flex:1 1 100%;margin-top:0}
+    .tb-actions{flex:1 1 100%}
+  }
+  @media (max-width:640px){
+    .masthead{padding:26px 18px 18px}
+    .workspace{padding:20px 16px 50px}
+    .paper{padding:26px 18px 30px}
+    .ledger-head{display:none}
+    .row-item{grid-template-columns:40px 1fr;grid-template-areas:"no main" "qty slot";gap:8px 12px;padding:16px 2px}
+    .it-no{grid-area:no}
+    .it-main{grid-area:main}
+    .it-qty{grid-area:qty;align-self:center}
+    .stamp-slot{grid-area:slot;height:60px}
+    .doc-foot{flex-direction:column;align-items:flex-start}
+    .foot-note{text-align:left}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{transition:none;opacity:1;transform:none}
+    .stamp-mark.placing svg{animation:none}
+    .ledger-cap .live i{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== SVG FILTER DEFS ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- ink bleed: rough edges + internal grain -->
+    <filter id="ink-bleed" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.022" numOctaves="3" seed="7" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="6" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="grain"/>
+      <feColorMatrix in="grain" type="matrix"
+        values="0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                0.6 0.6 0.6 0 -0.34" result="grainA"/>
+      <feComposite in="disp" in2="grainA" operator="out" result="eroded"/>
+      <feMerge>
+        <feMergeNode in="disp"/>
+        <feMergeNode in="eroded"/>
+      </feMerge>
+    </filter>
+
+    <!-- reusable stamp glyph (rectangular seal) -->
+    <g id="seal">
+      <rect x="6" y="6" width="138" height="52" rx="4" fill="none" stroke="#C41E3A" stroke-width="4"/>
+      <rect x="12" y="12" width="126" height="40" rx="2" fill="none" stroke="#C41E3A" stroke-width="1.4"/>
+      <line x1="12" y1="20" x2="138" y2="20" stroke="#C41E3A" stroke-width="1"/>
+      <line x1="12" y1="44" x2="138" y2="44" stroke="#C41E3A" stroke-width="1"/>
+      <text x="75" y="37" text-anchor="middle" font-family="Oswald, Arial Narrow, sans-serif" font-weight="700"
+            font-size="20" letter-spacing="2" fill="#C41E3A">APPROVED</text>
+      <text x="75" y="15" text-anchor="middle" font-family="Space Mono, monospace" font-size="6" letter-spacing="2.4" fill="#C41E3A">CLERK OF RECORDS</text>
+      <text x="75" y="52" text-anchor="middle" font-family="Space Mono, monospace" font-size="6" letter-spacing="2.4" fill="#C41E3A">DEPT. 07 · BUREAU OF INTAKE</text>
+    </g>
+  </defs>
+</svg>
+
+<!-- ===== MASTHEAD ===== -->
+<header class="masthead">
+  <div class="mast-left">
+    <div class="kicker">Form 07-B · Manual Verification Protocol</div>
+    <h1 class="brand">
+      <span class="mark">✦</span>
+      <span>Stamped</span>
+      <span class="thin">Manifest</span>
+      <span>Alignment</span>
+    </h1>
+  </div>
+  <div class="mast-meta">
+    <div class="big">BUREAU&nbsp;OF&nbsp;INTAKE</div>
+    <div class="sub">Physicality is the proof of decision</div>
+  </div>
+</header>
+<div class="mast-rule"></div>
+
+<!-- ===== WORKSPACE ===== -->
+<main class="workspace">
+
+  <!-- TOOLBAR -->
+  <aside class="toolbar reveal">
+    <div class="tb-head">Verification Desk <span class="dot"></span></div>
+
+    <div class="stamp-well" id="stampWell" role="button" tabindex="0" aria-label="Rubber stamp — drag onto a field to approve">
+      <svg class="glyph" viewBox="0 0 150 64"><use href="#seal"/></svg>
+      <div class="hint" id="wellHint">Drag onto a field · or tap a field</div>
+    </div>
+
+    <div class="tb-actions">
+      <button class="btn ghost" id="armBtn">Arm Stamp</button>
+      <button class="btn" id="resetBtn">Clear Sheet</button>
+    </div>
+
+    <div class="tb-note">
+      <b>Method.</b> Grab the seal from the well and release it over any field awaiting review. The ink settles at its own imperfect angle — that wobble is the signature of a human hand, not a checkbox.
+    </div>
+  </aside>
+
+  <!-- PAPER -->
+  <section class="paper-wrap">
+    <article class="paper reveal" id="paper">
+      <div class="doc-head">
+        <div class="row">
+          <div class="doc-title">
+            Manifest of Goods
+            <small>Consignment Ledger · Inbound</small>
+          </div>
+          <div class="doc-id">
+            <div>MANIFEST No. <b>07-4471-B</b></div>
+            <div>PORT OF ENTRY · <b>SECTOR 12</b></div>
+            <div>DATE <b id="docDate">—</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-meta">
+        <span>SHIPPER <b>MERIDIAN FREIGHT CO.</b></span>
+        <span class="sep">|</span>
+        <span>CONSIGNEE <b>NORTHGATE DEPOT</b></span>
+        <span class="sep">|</span>
+        <span>CLASS <b>GENERAL CARGO</b></span>
+      </div>
+
+      <div class="ledger-cap">
+        <span>Line Items Requiring Approval</span>
+        <span class="live"><i></i> <span id="statusTxt">AWAITING STAMP</span></span>
+      </div>
+
+      <div class="ledger">
+        <div class="ledger-head">
+          <span>Item</span><span>Description</span><span>Quantity</span><span>Disposition</span>
+        </div>
+        <div id="rows"></div>
+      </div>
+
+      <div class="doc-foot">
+        <div class="sign">
+          <div class="line"></div>
+          Authorized Clerk · Signature
+          <small>Seal required per §14.2</small>
+        </div>
+        <div class="foot-note">
+          A stamp is a physical act. Each impression lands at a random angle and bleeds into the fibre. <b>Imperfection is the feature.</b>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="legend">
+    <span><b>Paper</b> #F4F4F0</span>
+    <span><b>Ink</b> #1A1A1A</span>
+    <span><b>Seal</b> #C41E3A</span>
+  </div>
+  <div>Stamped Manifest Alignment · Concept Study</div>
+</footer>
+
+<!-- flying drag ghost -->
+<div id="fly" aria-hidden="true"><svg viewBox="0 0 150 64"><use href="#seal"/></svg></div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- data ----
+  var ITEMS = [
+    {no:'01', name:'Textile Bales · Raw Cotton', ds:'Lot <b>CT-221</b> · Origin Gujarat', qty:'1,240', unit:'BALES'},
+    {no:'02', name:'Steel Billets · Grade A', ds:'Lot <b>SB-089</b> · Origin Ruhr', qty:'86', unit:'TONNES'},
+    {no:'03', name:'Ceramic Ware · Assorted', ds:'Lot <b>CW-410</b> · Origin Jingdezhen', qty:'3,900', unit:'CRATES'},
+    {no:'04', name:'Timber · Kiln-Dried Oak', ds:'Lot <b>TK-077</b> · Origin Bavaria', qty:'512', unit:'CUBIC M'},
+    {no:'05', name:'Grain · Hard Red Wheat', ds:'Lot <b>GW-330</b> · Origin Kansas', qty:'22,000', unit:'KG'}
+  ];
+
+  var rowsEl = document.getElementById('rows');
+  var statusTxt = document.getElementById('statusTxt');
+  var well = document.getElementById('stampWell');
+  var wellHint = document.getElementById('wellHint');
+  var fly = document.getElementById('fly');
+  var armBtn = document.getElementById('armBtn');
+  var resetBtn = document.getElementById('resetBtn');
+
+  // date
+  var d = new Date();
+  document.getElementById('docDate').textContent =
+    d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+
+  // ---- build rows ----
+  function svgStamp(){
+    return '<svg viewBox="0 0 150 64" aria-label="Approved stamp"><use href="#seal"/></svg>';
+  }
+  ITEMS.forEach(function(it){
+    var el = document.createElement('div');
+    el.className = 'row-item';
+    el.innerHTML =
+      '<div class="it-no">No. '+it.no+'</div>'+
+      '<div class="it-main"><div class="nm">'+it.name+'</div><div class="ds">'+it.ds+'</div></div>'+
+      '<div class="it-qty">'+it.qty+'<small>'+it.unit+'</small></div>'+
+      '<div class="stamp-slot"><span class="ph">Awaiting<br>seal</span></div>';
+    rowsEl.appendChild(el);
+  });
+
+  var slots = Array.prototype.slice.call(document.querySelectorAll('.stamp-slot'));
+
+  function updateStatus(){
+    var done = document.querySelectorAll('.stamp-slot.done').length;
+    if(done === 0) statusTxt.textContent = 'AWAITING STAMP';
+    else if(done < slots.length) statusTxt.textContent = done + ' / ' + slots.length + ' APPROVED';
+    else statusTxt.textContent = 'MANIFEST CLEARED';
+  }
+
+  // ---- stamp placement ----
+  function placeStamp(slot){
+    if(slot.classList.contains('done')) return;
+    var rot = (Math.random()*10 - 5).toFixed(2); // ±5deg
+    var mark = document.createElement('div');
+    mark.className = 'stamp-mark placing';
+    mark.style.setProperty('--rot', rot + 'deg');
+    mark.innerHTML = svgStamp();
+    slot.appendChild(mark);
+    slot.classList.add('done');
+    updateStatus();
+    // remove placing class after animation so it stays settled
+    if(!reduce){
+      var s = mark.querySelector('svg');
+      s.addEventListener('animationend', function(){ mark.classList.remove('placing'); }, {once:true});
+    }
+  }
+
+  // ---- drag mechanics (pointer events) ----
+  var dragging = false, armed = false, startX=0, startY=0;
+  var targetX=0, targetY=0, curX=0, curY=0, rafId=null;
+  var hoverSlot = null;
+
+  function showFly(x,y){
+    fly.style.transform = 'translate('+(x-75)+'px,'+(y-32)+'px)';
+  }
+  function loop(){
+    // inertia lag
+    curX += (targetX - curX) * 0.28;
+    curY += (targetY - curY) * 0.28;
+    showFly(curX, curY);
+    if(dragging) rafId = requestAnimationFrame(loop);
+  }
+
+  function slotAt(x,y){
+    var el = document.elementFromPoint(x,y);
+    if(!el) return null;
+    return el.closest('.stamp-slot');
+  }
+
+  function beginDrag(x,y){
+    dragging = true;
+    startX = x; startY = y;
+    targetX = curX = x; targetY = curY = y;
+    fly.classList.add('show');
+    showFly(x,y);
+    if(!reduce) rafId = requestAnimationFrame(loop);
+    document.body.style.cursor = 'grabbing';
+    highlightArmed(true);
+  }
+
+  function moveDrag(x,y){
+    targetX = x; targetY = y;
+    if(reduce) showFly(x,y);
+    var s = slotAt(x,y);
+    if(s !== hoverSlot){
+      if(hoverSlot) hoverSlot.classList.remove('over');
+      hoverSlot = s;
+      if(hoverSlot && !hoverSlot.classList.contains('done')) hoverSlot.classList.add('over');
+    }
+  }
+
+  function endDrag(x,y){
+    if(!dragging) return;
+    dragging = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    fly.classList.remove('show');
+    document.body.style.cursor = '';
+    if(hoverSlot){ hoverSlot.classList.remove('over'); }
+    var s = slotAt(x,y);
+    if(s && !s.classList.contains('done')) placeStamp(s);
+    hoverSlot = null;
+  }
+
+  function highlightArmed(on){
+    slots.forEach(function(s){ if(!s.classList.contains('done')) s.classList.toggle('armed', on); });
+  }
+
+  // pointerdown on the stamp well
+  well.addEventListener('pointerdown', function(e){
+    e.preventDefault();
+    well.setPointerCapture && well.setPointerCapture(e.pointerId);
+    beginDrag(e.clientX, e.clientY);
+    well.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+  });
+  function onMove(e){ moveDrag(e.clientX, e.clientY); }
+  function onUp(e){
+    endDrag(e.clientX, e.clientY);
+    well.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+  }
+
+  // keyboard on well
+  well.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      toggleArm();
+    }
+  });
+
+  // ---- arm mode (tap to place, mobile friendly) ----
+  function toggleArm(){
+    armed = !armed;
+    armBtn.textContent = armed ? 'Cancel' : 'Arm Stamp';
+    armBtn.classList.toggle('ghost', true);
+    well.classList.toggle('armed', armed);
+    highlightArmed(armed);
+    wellHint.textContent = armed ? 'Tap a field to seal' : 'Drag onto a field · or tap a field';
+  }
+  armBtn.addEventListener('click', toggleArm);
+
+  // tap a slot when armed
+  slots.forEach(function(s){
+    s.addEventListener('click', function(){
+      if(armed && !s.classList.contains('done')){
+        placeStamp(s);
+        if(document.querySelectorAll('.stamp-slot:not(.done)').length === 0) toggleArm();
+      }
+    });
+  });
+
+  // ---- reset ----
+  resetBtn.addEventListener('click', function(){
+    document.querySelectorAll('.stamp-slot.done').forEach(function(s){
+      s.classList.remove('done');
+      var m = s.querySelector('.stamp-mark');
+      if(m) m.remove();
+    });
+    if(armed) toggleArm();
+    updateStatus();
+  });
+
+  // ---- ambient paper grain shift on scroll ----
+  var paper = document.getElementById('paper');
+  if(!reduce){
+    var ticking = false;
+    window.addEventListener('scroll', function(){
+      if(ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var y = window.scrollY || 0;
+        paper.style.backgroundPosition = (y*0.03)+'px '+(y*0.05)+'px';
+        ticking = false;
+      });
+    }, {passive:true});
+  }
+
+  // ---- scroll reveal ----
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target);} });
+    }, {threshold:0.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  updateStatus();
+})();
+</script>
+</body>
+</html>

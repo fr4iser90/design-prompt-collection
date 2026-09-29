@@ -1,0 +1,25 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 326850
+gen_ms: 326850
+ttft_ms: 1534
+queue_wait_ms: 128
+wall_ms: 328578
+review_score: 9
+review_summary: "Excellent adherence to the 'deep void' aesthetic with a scientifically accurate and visually striking plasma loop simulation."
+reviewed_at: "2026-09-29T02:30:47.612Z"
+review_issues:
+  - "Core is slightly smaller than typical 'star' visualizations, though it fits the magnetic loop context well."

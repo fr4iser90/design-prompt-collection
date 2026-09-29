@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 319715
+gen_ms: 319715
+ttft_ms: 1982
+queue_wait_ms: 128
+wall_ms: 321889
+review_score: 8
+review_summary: "Strong industrial aesthetic with excellent typography and layout; the isometric box is simplified but effective, and the UI panel is well-integrated."
+reviewed_at: "2026-09-29T00:39:35.987Z"
+review_issues:
+  - "Box is cut off at the left edge (likely mid-animation, but compositionally awkward in a static shot)"
+  - "Missing the specific 'green laser line' overlay on the box (though 'SCAN ACTIVE' implies it)"

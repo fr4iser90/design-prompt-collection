@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abyssal Pressure Depth Scale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --surface:#005f73;
+    --mid:#0a9396;
+    --abyss:#001219;
+    --accent:#94d2bd;
+    --glow:#0a9396;
+    --ink:#e6f7f6;
+    --ink-dim:#9fb8bb;
+    --glass-brd:rgba(148,210,189,.28);
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --disp:'Space Grotesk',system-ui,sans-serif;
+    --body:'Lato',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--abyss);
+    color:var(--ink);
+    font-family:var(--body);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  #ocean{position:fixed;inset:0;z-index:-3;background:var(--surface)}
+  #caustics{
+    position:fixed;inset:0;z-index:-2;pointer-events:none;
+    background:
+      radial-gradient(140% 90% at 50% -20%, rgba(230,255,252,.28), transparent 55%),
+      radial-gradient(80% 60% at 15% 0%, rgba(148,210,189,.20), transparent 60%),
+      radial-gradient(90% 70% at 85% 5%, rgba(10,147,150,.25), transparent 60%);
+    mix-blend-mode:screen;
+    filter:blur(24px);
+  }
+  #snow{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.6}
+  #vignette{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 40%, transparent 55%, rgba(0,0,0,.55));
+  }
+  #grain{
+    position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- TOP HUD ---------- */
+  .hud{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px clamp(18px,4vw,48px);
+    font-family:var(--mono);font-size:12px;letter-spacing:.06em;
+    color:var(--ink-dim);
+    text-shadow:0 1px 12px rgba(0,0,0,.6);
+  }
+  .hud .brand{
+    font-family:var(--disp);font-weight:700;font-size:15px;letter-spacing:.22em;
+    color:var(--ink);text-transform:uppercase;
+  }
+  .hud .brand b{color:var(--accent)}
+  .hud .telem{display:flex;gap:clamp(14px,2.4vw,30px);align-items:center}
+  .hud .telem span{display:inline-flex;align-items:center;gap:6px}
+  .hud .telem b{color:var(--accent);font-weight:500}
+  .rec{width:7px;height:7px;border-radius:50%;background:#ff5d5d;box-shadow:0 0 10px #ff5d5d;animation:blink 1.6s steps(1) infinite}
+  @keyframes blink{50%{opacity:.15}}
+
+  /* ---------- GROWTH BAR ---------- */
+  .growth{position:fixed;top:0;left:0;height:3px;width:100%;z-index:21;
+    background:linear-gradient(90deg,var(--accent),var(--mid));
+    transform:scaleX(0);transform-origin:left;box-shadow:0 0 14px var(--glow)}
+
+  /* ---------- LAYOUT ---------- */
+  main{position:relative;z-index:5}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,64px)}
+
+  /* ---------- HERO ---------- */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative}
+  .hero .kicker{
+    font-family:var(--mono);font-size:13px;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:26px;
+  }
+  .hero h1{
+    font-family:var(--disp);font-weight:700;
+    font-size:clamp(3rem,11vw,8.6rem);line-height:.92;letter-spacing:-.03em;
+    color:var(--ink);
+  }
+  .hero h1 .l2{display:block;color:transparent;-webkit-text-stroke:1.4px var(--ink)}
+  .hero .lead{
+    max-width:46ch;margin-top:34px;font-weight:300;font-size:clamp(1rem,1.5vw,1.22rem);
+    line-height:1.7;color:var(--ink-dim);
+  }
+  .hero .lead b{color:var(--accent);font-weight:400}
+  .hero .coords{
+    margin-top:44px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;
+    color:var(--ink-dim);display:flex;gap:26px;flex-wrap:wrap;
+  }
+  .hero .coords span b{color:var(--ink);font-weight:500}
+  .scrollcue{
+    position:absolute;bottom:38px;left:0;font-family:var(--mono);font-size:11px;
+    letter-spacing:.3em;text-transform:uppercase;color:var(--ink-dim);
+    display:flex;align-items:center;gap:12px;
+  }
+  .scrollcue .bar{width:1px;height:46px;background:linear-gradient(var(--accent),transparent);position:relative;overflow:hidden}
+  .scrollcue .bar::after{content:"";position:absolute;top:-46px;left:0;width:1px;height:46px;background:var(--accent);animation:drip 2.4s cubic-bezier(.7,0,.3,1) infinite}
+  @keyframes drip{to{top:46px}}
+
+  /* ---------- DESCENT SECTIONS ---------- */
+  .zone{min-height:100vh;display:flex;align-items:center;position:relative;padding:12vh 0}
+  .zone .inner{width:100%}
+  .depth-tag{
+    position:absolute;left:0;top:14vh;font-family:var(--mono);font-size:12px;
+    letter-spacing:.2em;color:var(--ink-dim);
+  }
+  .depth-tag b{color:var(--accent)}
+
+  /* ---------- GLASS CARD ---------- */
+  .card{
+    position:relative;background:rgba(10,147,150,.05);
+    border:1px solid var(--glass-brd);border-radius:18px;
+    padding:clamp(24px,3.4vw,44px);
+    box-shadow:
+      inset 0 1px 0 rgba(230,255,252,.16),
+      inset 0 -30px 60px -40px rgba(10,147,150,.5),
+      0 30px 80px -30px rgba(0,0,0,.7);
+    backdrop-filter:blur(9px) saturate(1.25);
+    -webkit-backdrop-filter:blur(9px) saturate(1.25);
+    transform-origin:center center;
+    will-change:transform,filter;
+  }
+  .card::before{ /* refractive highlight edge */
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(135deg,rgba(148,210,189,.22),transparent 30%,transparent 70%,rgba(10,147,150,.16));
+    -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+    -webkit-mask-composite:xor;mask-composite:exclude;padding:1px;
+  }
+  .card::after{ /* bioluminescent rim */
+    content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;
+    box-shadow:0 0 26px -6px rgba(10,147,150,.55);opacity:.7;
+  }
+  .card .zname{
+    font-family:var(--disp);font-weight:600;font-size:clamp(1.5rem,3vw,2.3rem);
+    letter-spacing:-.01em;color:var(--ink);margin-bottom:6px;
+  }
+  .card .zrange{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--accent);margin-bottom:22px}
+  .card p{font-weight:300;line-height:1.72;color:var(--ink-dim);max-width:52ch;font-size:1.02rem}
+  .card p b{color:var(--ink);font-weight:400}
+
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px}
+  .metric{border-left:1px solid var(--glass-brd);padding-left:16px}
+  .metric .lab{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-dim)}
+  .metric .val{font-family:var(--mono);font-weight:600;font-size:clamp(1.4rem,2.6vw,2rem);color:var(--ink);margin-top:6px}
+  .metric .val small{font-size:.5em;color:var(--accent);font-weight:500;margin-left:4px}
+  .metric .sub{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-top:4px}
+
+  /* ---------- INSTRUMENT PANEL ---------- */
+  .panel{margin-top:16vh}
+  .panel .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(20px,3vw,40px);align-items:stretch}
+  .gauge-box{display:flex;flex-direction:column}
+  .gauge-box h3,.panel h3{font-family:var(--disp);font-weight:600;font-size:1.15rem;letter-spacing:.02em;margin-bottom:18px;color:var(--ink)}
+  .gauge-box h3 span,.panel h3 span{color:var(--accent)}
+  .gauge{flex:1;min-height:340px}
+  .gauge svg{width:100%;height:100%;display:block;overflow:visible}
+  .ticks text{font-family:var(--mono);font-size:9px;fill:var(--ink-dim);letter-spacing:.06em}
+  .ticks line{stroke:rgba(148,210,189,.25)}
+  .ticks line.major{stroke:rgba(148,210,189,.55)}
+  .gfill{fill:url(#ggrad)}
+  .gmarker{stroke:var(--accent);stroke-width:1.5;filter:drop-shadow(0 0 6px var(--glow))}
+  .gmarker text{font-family:var(--mono);font-size:11px;fill:var(--accent);font-weight:600}
+  .gzone{font-family:var(--mono);font-size:8px;fill:rgba(230,247,246,.5);letter-spacing:.15em}
+
+  .readouts{display:grid;grid-template-rows:auto 1fr;gap:20px}
+  .bigread{
+    background:rgba(10,147,150,.05);border:1px solid var(--glass-brd);border-radius:16px;
+    padding:26px;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(230,255,252,.14);
+  }
+  .bigread .lab{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim)}
+  .bigread .num{font-family:var(--mono);font-weight:600;font-size:clamp(2.6rem,7vw,4.4rem);line-height:1;color:var(--ink);margin-top:8px}
+  .bigread .num small{font-size:.28em;color:var(--accent);letter-spacing:.1em;margin-left:8px}
+  .rowset{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .row{
+    background:rgba(10,147,150,.04);border:1px solid var(--glass-brd);border-radius:12px;padding:16px 18px;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .row .lab{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .row .v{font-family:var(--mono);font-weight:500;font-size:1.35rem;color:var(--ink);margin-top:8px}
+  .row .v small{color:var(--accent);font-size:.6em}
+  .barwrap{margin-top:10px;height:4px;background:rgba(148,210,189,.12);border-radius:4px;overflow:hidden}
+  .barwrap i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--mid),var(--accent));border-radius:4px;transition:width .2s linear}
+
+  /* ---------- FOOTER ---------- */
+  footer{padding:16vh 0 12vh;text-align:center}
+  footer .abyssline{font-family:var(--mono);font-size:12px;letter-spacing:.3em;color:var(--ink-dim);text-transform:uppercase}
+  footer .abyssline b{color:var(--accent)}
+  footer .end{font-family:var(--disp);font-weight:700;font-size:clamp(2rem,7vw,4.5rem);letter-spacing:-.02em;margin-top:20px;color:var(--ink)}
+  footer .note{margin-top:24px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink-dim)}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(30px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+
+  @media (max-width:820px){
+    .panel .grid{grid-template-columns:1fr}
+    .metrics{grid-template-columns:1fr 1fr}
+    .rowset{grid-template-columns:1fr 1fr}
+    .hud .telem span:nth-child(n+3){display:none}
+  }
+  @media (max-width:520px){
+    .metrics{grid-template-columns:1fr}
+    .rowset{grid-template-columns:1fr}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .rv{transition:none;opacity:1;transform:none}
+    .scrollcue .bar::after,.rec{animation:none}
+    #snow{display:none}
+  }
+</style>
+</head>
+<body>
+  <div id="ocean"></div>
+  <div id="caustics"></div>
+  <canvas id="snow"></canvas>
+  <div id="vignette"></div>
+  <div id="grain"></div>
+
+  <div class="growth" id="growth"></div>
+
+  <header class="hud">
+    <div class="brand">ABYSSAL<b>·</b>DEPTH</div>
+    <div class="telem">
+      <span><i class="rec"></i>LIVE</span>
+      <span>DEPTH <b id="hudDepth">0000</b> m</span>
+      <span>PRESS <b id="hudPress">0000</b> bar</span>
+      <span>TEMP <b id="hudTemp">+21.0</b> °C</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero wrap">
+      <div class="kicker rv">Descent Instrument · 0 → 10 000 m</div>
+      <h1 class="rv">Abyssal<br><span class="l2">Pressure</span> Scale</h1>
+      <p class="lead rv">A scroll-driven descent through the water column. As you sink, the interface is <b>physically compressed</b> by the weight of the ocean above — text flattens, edges blur, light dies. This is what <b>1000 atmospheres</b> does to a structure.</p>
+      <div class="coords rv">
+        <span>LAT <b>11°21′ S</b></span>
+        <span>LON <b>142°12′ E</b></span>
+        <span>SONDE <b>DSV-07</b></span>
+        <span>STATUS <b>DIVE ACTIVE</b></span>
+      </div>
+      <div class="scrollcue"><span>Begin Descent</span><span class="bar"></span></div>
+    </section>
+
+    <!-- ZONES -->
+    <section class="zone wrap" data-depth="0">
+      <div class="depth-tag">ZONE 01 · <b>0 m</b></div>
+      <div class="inner card rv">
+        <div class="zname">Epipelagic</div>
+        <div class="zrange">0 – 200 M · SUNLIGHT ZONE</div>
+        <p>The photic layer. Full sunlight penetrates, driving photosynthesis and warming the water to a balmy <b>+21 °C</b>. Pressure here is a single atmosphere — the same you feel standing on shore. Everything is bright, legible, uncompressed.</p>
+        <div class="metrics">
+          <div class="metric"><div class="lab">Depth</div><div class="val">0<small>m</small></div><div class="sub">sea level</div></div>
+          <div class="metric"><div class="lab">Pressure</div><div class="val">1.0<small>bar</small></div><div class="sub">1 atm</div></div>
+          <div class="metric"><div class="lab">Temp</div><div class="val">+21.0<small>°C</small></div><div class="sub">surface</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone wrap" data-depth="200">
+      <div class="depth-tag">ZONE 02 · <b>200 m</b></div>
+      <div class="inner card rv">
+        <div class="zname">Mesopelagic</div>
+        <div class="zrange">200 – 1 000 M · TWILIGHT ZONE</div>
+        <p>Light scatters and fades to a bruised turquoise. The <b>deep scattering layer</b> migrates here at dusk. Pressure climbs to <b>20 bar</b> — twenty times the surface. Bioluminescence becomes the only light source.</p>
+        <div class="metrics">
+          <div class="metric"><div class="lab">Depth</div><div class="val">200<small>m</small></div><div class="sub">twilight</div></div>
+          <div class="metric"><div class="lab">Pressure</div><div class="val">21<small>bar</small></div><div class="sub">21 atm</div></div>
+          <div class="metric"><div class="lab">Temp</div><div class="val">+15.0<small>°C</small></div><div class="sub">falling</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone wrap" data-depth="1000">
+      <div class="depth-tag">ZONE 03 · <b>1 000 m</b></div>
+      <div class="inner card rv">
+        <div class="zname">Bathypelagic</div>
+        <div class="zrange">1 000 – 4 000 M · MIDNIGHT ZONE</div>
+        <p>Perpetual darkness. Sunlight has no reach. The temperature collapses toward <b>+4 °C</b> while pressure reaches <b>100 bar</b>. The hull begins to groan; the interface visibly flattens under the load.</p>
+        <div class="metrics">
+          <div class="metric"><div class="lab">Depth</div><div class="val">1 000<small>m</small></div><div class="sub">midnight</div></div>
+          <div class="metric"><div class="lab">Pressure</div><div class="val">101<small>bar</small></div><div class="sub">100 atm</div></div>
+          <div class="metric"><div class="lab">Temp</div><div class="val">+4.0<small>°C</small></div><div class="sub">cold</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone wrap" data-depth="4000">
+      <div class="depth-tag">ZONE 04 · <b>4 000 m</b></div>
+      <div class="inner card rv">
+        <div class="zname">Abyssopelagic</div>
+        <div class="zrange">4 000 – 6 000 M · THE ABYSS</div>
+        <p>The abyssal plain stretches in near-freezing black. Pressure exceeds <b>400 bar</b>. Marine snow drifts endlessly downward onto the sediment. Text compresses further; only the bioluminescent rim holds the form together.</p>
+        <div class="metrics">
+          <div class="metric"><div class="lab">Depth</div><div class="val">4 000<small>m</small></div><div class="sub">abyss</div></div>
+          <div class="metric"><div class="lab">Pressure</div><div class="val">401<small>bar</small></div><div class="sub">400 atm</div></div>
+          <div class="metric"><div class="lab">Temp</div><div class="val">+2.0<small>°C</small></div><div class="sub">near-freeze</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="zone wrap" data-depth="6000">
+      <div class="depth-tag">ZONE 05 · <b>6 000 m</b></div>
+      <div class="inner card rv">
+        <div class="zname">Hadalpelagic</div>
+        <div class="zrange">6 000 – 10 000 M · THE TRENCHES</div>
+        <p>Only trenches reach this depth. Pressure now crushes at <b>600 to 1000 bar</b> — a tonne per square centimetre. The scale is nearly obliterated, its letters flattened, yet the instrument still reads true.</p>
+        <div class="metrics">
+          <div class="metric"><div class="lab">Depth</div><div class="val">6 000<small>m</small></div><div class="sub">hadal</div></div>
+          <div class="metric"><div class="lab">Pressure</div><div class="val">601<small>bar</small></div><div class="sub">600 atm</div></div>
+          <div class="metric"><div class="lab">Temp</div><div class="val">+1.5<small>°C</small></div><div class="sub">freezing</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTRUMENT PANEL -->
+    <section class="zone wrap panel" data-depth="10000">
+      <div class="depth-tag">INSTRUMENT · <b>REAL-TIME</b></div>
+      <div class="inner card rv">
+        <div class="grid">
+          <div class="gauge-box">
+            <h3>Depth <span>Gauge</span></h3>
+            <div class="gauge">
+              <svg viewBox="0 0 200 400" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ggrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#94d2bd"/>
+                    <stop offset="0.5" stop-color="#0a9396"/>
+                    <stop offset="1" stop-color="#005f73"/>
+                  </linearGradient>
+                </defs>
+                <rect x="86" y="20" width="28" height="360" rx="14" fill="rgba(148,210,189,.08)" stroke="rgba(148,210,189,.22)"/>
+                <rect class="gfill" id="gfill" x="86" y="20" width="28" height="0" rx="14"/>
+                <g class="ticks" id="ticks"></g>
+                <g class="gmarker" id="gmarker">
+                  <line x1="70" y1="20" x2="130" y2="20"/>
+                  <text x="138" y="24" id="gmarkTxt">0 m</text>
+                </g>
+                <text class="gzone" x="100" y="12" text-anchor="middle">SURFACE</text>
+                <text class="gzone" x="100" y="394" text-anchor="middle">10 000 m</text>
+              </svg>
+            </div>
+          </div>
+          <div class="readouts">
+            <div class="bigread">
+              <div class="lab">Current Depth</div>
+              <div class="num"><span id="bigDepth">0000</span><small>METRES</small></div>
+            </div>
+            <div class="rowset">
+              <div class="row">
+                <div class="lab">Pressure</div>
+                <div class="v"><span id="rPress">1.0</span><small> bar</small></div>
+                <div class="barwrap"><i id="bPress"></i></div>
+              </div>
+              <div class="row">
+                <div class="lab">Temperature</div>
+                <div class="v"><span id="rTemp">+21.0</span><small> °C</small></div>
+                <div class="barwrap"><i id="bTemp"></i></div>
+              </div>
+              <div class="row">
+                <div class="lab">Light Level</div>
+                <div class="v"><span id="rLight">100</span><small> %</small></div>
+                <div class="barwrap"><i id="bLight"></i></div>
+              </div>
+              <div class="row">
+                <div class="lab">Descent</div>
+                <div class="v"><span id="rProg">0</span><small> %</small></div>
+                <div class="barwrap"><i id="bProg"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="wrap">
+      <div class="abyssline rv">Terminal Depth Reached · <b>10 000 m · 1013 bar</b></div>
+      <div class="end rv">The Bottom.</div>
+      <div class="note rv">Abyssal Pressure Depth Scale — a conceptual descent instrument. Data simulated for visualization.</div>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var MAXD = 10000;
+  var ocean = document.getElementById('ocean');
+  var caustics = document.getElementById('caustics');
+  var growth = document.getElementById('growth');
+  var cards = [].slice.call(document.querySelectorAll('.card'));
+
+  // palette anchors
+  var cSurface=[0,95,115], cMid=[10,147,150], cAbyss=[0,18,25];
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function mix3(t){
+    var c;
+    if(t<0.4){var k=t/0.4; c=[lerp(cSurface[0],cMid[0],k),lerp(cSurface[1],cMid[1],k),lerp(cSurface[2],cMid[2],k)];}
+    else{var k2=(t-0.4)/0.6; c=[lerp(cMid[0],cAbyss[0],k2),lerp(cMid[1],cAbyss[1],k2),lerp(cMid[2],cAbyss[2],k2)];}
+    return 'rgb('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+')';
+  }
+
+  // build gauge ticks
+  var ticks=document.getElementById('ticks');
+  for(var i=0;i<=10;i++){
+    var y=20+(i/10)*360;
+    var major=(i%2===0);
+    var ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('x1',major?78:84);ln.setAttribute('x2',114);
+    ln.setAttribute('y1',y);ln.setAttribute('y2',y);
+    ln.setAttribute('class',major?'major':'');
+    ticks.appendChild(ln);
+    if(major){
+      var tx=document.createElementNS('http://www.w3.org/2000/svg','text');
+      tx.setAttribute('x',72);tx.setAttribute('y',y+3);tx.setAttribute('text-anchor','end');
+      tx.textContent=(i*1000).toLocaleString('en-US').replace(/,/g,' ');
+      ticks.appendChild(tx);
+    }
+  }
+
+  // elements
+  var gfill=document.getElementById('gfill');
+  var gmarker=document.getElementById('gmarker');
+  var gmarkTxt=document.getElementById('gmarkTxt');
+  var hudDepth=document.getElementById('hudDepth'),hudPress=document.getElementById('hudPress'),hudTemp=document.getElementById('hudTemp');
+  var bigDepth=document.getElementById('bigDepth');
+  var rPress=document.getElementById('rPress'),rTemp=document.getElementById('rTemp'),rLight=document.getElementById('rLight'),rProg=document.getElementById('rProg');
+  var bPress=document.getElementById('bPress'),bTemp=document.getElementById('bTemp'),bLight=document.getElementById('bLight'),bProg=document.getElementById('bProg');
+
+  function pad(n){return String(Math.round(n)).padStart(4,'0');}
+
+  function computeDepth(){
+    var maxScroll=document.documentElement.scrollHeight-window.innerHeight;
+    var p=maxScroll>0?window.scrollY/maxScroll:0;
+    p=Math.max(0,Math.min(1,p));
+    return p*MAXD;
+  }
+
+  function update(){
+    var depth=computeDepth();
+    var t=depth/MAXD;
+
+    // background + caustics
+    ocean.style.background=mix3(t);
+    caustics.style.opacity=Math.max(0,1-t*1.6);
+    growth.style.transform='scaleX('+t+')';
+
+    // data
+    var press=1+depth/10;                 // ~1 bar per 10 m
+    var temp=21-Math.min(19.5,depth/500); // drops to ~1.5
+    var light=Math.max(0,100*(1-Math.pow(t,0.55)));
+
+    hudDepth.textContent=pad(depth);
+    hudPress.textContent=pad(press);
+    hudTemp.textContent=(temp>=0?'+':'')+temp.toFixed(1);
+    bigDepth.textContent=pad(depth);
+    rPress.textContent=press<1000?press.toFixed(1):Math.round(press);
+    rTemp.textContent=(temp>=0?'+':'')+temp.toFixed(1);
+    rLight.textContent=Math.round(light);
+    rProg.textContent=Math.round(t*100);
+    bPress.style.width=Math.min(100,press/1013*100)+'%';
+    bTemp.style.width=Math.max(0,Math.min(100,(temp-0)/21*100))+'%';
+    bLight.style.width=light+'%';
+    bProg.style.width=(t*100)+'%';
+
+    // gauge
+    var gy=20+t*360;
+    gfill.setAttribute('height',Math.max(0,gy-20));
+    gmarker.setAttribute('transform','translate(0,'+gy+')');
+    gmarkTxt.textContent=Math.round(depth).toLocaleString('en-US').replace(/,/g,' ')+' m';
+
+    // compression on cards
+    for(var i=0;i<cards.length;i++){
+      var r=cards[i].getBoundingClientRect();
+      var c=(r.top+r.height/2)/window.innerHeight;
+      c=Math.max(0,Math.min(1,c));
+      var sy=1-0.15*c;
+      var blur=(1.8*c).toFixed(2)+'px';
+      cards[i].style.transform='scaleY('+sy.toFixed(3)+')';
+      cards[i].style.filter='blur('+blur+')';
+    }
+  }
+
+  // reveal
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:0.2});
+  [].slice.call(document.querySelectorAll('.rv')).forEach(function(el){io.observe(el);});
+
+  // marine snow
+  if(!reduce){
+    var cv=document.getElementById('snow'),ctx=cv.getContext('2d');
+    var W,H,parts=[];
+    function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+    resize();window.addEventListener('resize',resize);
+    for(var i=0;i<90;i++){parts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+0.3,v:Math.random()*0.3+0.08,d:Math.random()*0.4-0.2});}
+    function frame(){
+      ctx.clearRect(0,0,W,H);
+      for(var i=0;i<parts.length;i++){
+        var p=parts[i];
+        p.y-=p.v; p.x+=p.d;
+        if(p.y<-5){p.y=H+5;p.x=Math.random()*W;}
+        if(p.x<-5)p.x=W+5; if(p.x>W+5)p.x=-5;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,6.283);
+        ctx.fillStyle='rgba(230,255,252,'+(0.15+p.r*0.12)+')';
+        ctx.fill();
+      }
+      requestAnimationFrame(frame);
+    }
+    frame();
+  }
+
+  var ticking=false;
+  function onScroll(){if(!ticking){ticking=true;requestAnimationFrame(function(){update();ticking=false;});}}
+  window.addEventListener('scroll',onScroll,{passive:true});
+  window.addEventListener('resize',onScroll);
+  update();
+})();
+</script>
+</body>
+</html>

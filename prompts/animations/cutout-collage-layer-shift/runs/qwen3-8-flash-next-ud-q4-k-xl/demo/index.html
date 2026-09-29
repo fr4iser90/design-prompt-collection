@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cutout Collage Layer Shift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#2C2C2C;
+    --red:#E63946;
+    --teal:#A8DADC;
+    --off:#F1FAEE;
+    --navy:#1D3557;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--off);
+    font-family:'Space Mono',monospace;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative;
+    width:100%;
+    height:100vh;
+    min-height:640px;
+    overflow:hidden;
+    background:radial-gradient(120% 120% at 30% 20%, #343434 0%, #2C2C2C 55%, #242424 100%);
+    perspective:1400px;
+  }
+  .stage::before{ /* subtle grain */
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:40;opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .stage::after{ /* vignette */
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:41;
+    box-shadow:inset 0 0 220px rgba(0,0,0,.55);
+  }
+
+  /* ---------- BASE LAYER (revealed typography) ---------- */
+  .base{
+    position:absolute;inset:0;z-index:0;
+    transform:translate3d(calc(var(--mx,0)*-5px),calc(var(--my,0)*-5px),0);
+    transition:transform .35s ease-out;
+  }
+  .base-word{
+    position:absolute;
+    font-family:'Anton',sans-serif;
+    text-transform:uppercase;
+    line-height:.82;
+    letter-spacing:.01em;
+    color:var(--navy);
+    -webkit-text-stroke:2px rgba(241,250,238,.14);
+    white-space:nowrap;
+    user-select:none;
+  }
+  .bw-1{left:-2%;top:12%;font-size:clamp(120px,20vw,340px)}
+  .bw-2{right:-4%;top:44%;font-size:clamp(120px,20vw,340px)}
+  .bw-3{left:6%;bottom:-6%;font-size:clamp(120px,20vw,340px)}
+  .base-mark{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-family:'Anton',sans-serif;font-size:clamp(90px,16vw,240px);
+    color:rgba(241,250,238,.06);letter-spacing:.4em;text-transform:uppercase;
+  }
+
+  /* ---------- PARALLAX WRAP (mouse tilt) ---------- */
+  .parallax{
+    position:absolute;inset:0;z-index:1;
+    transform-style:preserve-3d;
+    transform:rotateX(calc(var(--my,0)*-3deg)) rotateY(calc(var(--mx,0)*4deg));
+    transition:transform .25s ease-out;
+  }
+
+  /* ---------- SHAPES ---------- */
+  .layer{position:absolute;will-change:transform}
+  .shape{
+    position:absolute;
+    filter:drop-shadow(10px 14px 16px rgba(0,0,0,.5)) drop-shadow(2px 3px 4px rgba(0,0,0,.4));
+    will-change:transform;
+  }
+  .shape svg{display:block;width:100%;height:100%;overflow:visible}
+  .shape svg path{stroke:none}
+
+  /* torn-edge variants */
+  .e1{clip-path:polygon(0% 4%,4% 0%,12% 3%,20% 0%,28% 4%,36% 1%,44% 4%,52% 0%,60% 3%,68% 0%,76% 4%,84% 1%,92% 4%,100% 2%,100% 20%,97% 30%,100% 40%,98% 50%,100% 62%,97% 72%,100% 82%,98% 92%,100% 100%,88% 97%,80% 100%,70% 96%,60% 100%,50% 97%,40% 100%,30% 96%,20% 100%,12% 97%,4% 100%,0% 96%,2% 84%,0% 74%,3% 64%,0% 54%,2% 44%,0% 34%,3% 24%,0% 14%)}
+  .e2{clip-path:polygon(0% 8%,6% 0%,18% 4%,30% 0%,42% 5%,54% 0%,66% 4%,78% 0%,90% 5%,100% 1%,100% 16%,96% 28%,100% 40%,97% 52%,100% 66%,96% 78%,100% 90%,98% 100%,84% 96%,70% 100%,56% 95%,42% 100%,28% 96%,14% 100%,2% 95%,0% 100%,3% 86%,0% 70%,4% 56%,0% 42%,3% 28%,0% 16%)}
+  .e3{clip-path:polygon(0% 3%,8% 0%,16% 5%,26% 1%,34% 5%,44% 0%,54% 4%,64% 0%,74% 5%,84% 1%,94% 4%,100% 0%,100% 30%,97% 44%,100% 58%,97% 72%,100% 86%,98% 100%,86% 96%,74% 100%,62% 95%,50% 100%,38% 96%,26% 100%,14% 96%,6% 100%,0% 96%,2% 78%,0% 60%,3% 42%,0% 24%)}
+  .e4{clip-path:polygon(0% 12%,10% 0%,24% 6%,38% 0%,52% 7%,66% 0%,80% 6%,92% 0%,100% 10%,100% 26%,96% 42%,100% 58%,96% 74%,100% 90%,92% 100%,78% 94%,64% 100%,50% 93%,36% 100%,22% 94%,10% 100%,0% 90%,4% 74%,0% 58%,4% 42%,0% 26%)}
+
+  .shape.sq{width:clamp(150px,17vw,290px);height:clamp(150px,17vw,290px)}
+  .shape.wide{width:clamp(220px,26vw,430px);height:clamp(120px,13vw,210px)}
+  .shape.tall{width:clamp(120px,13vw,220px);height:clamp(230px,30vw,500px)}
+  .shape.circ{width:clamp(160px,18vw,320px);height:clamp(160px,18vw,320px)}
+  .shape.circ svg{filter:none}
+
+  .shape .tag{
+    position:absolute;left:10px;top:8px;
+    font-family:'Space Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.14em;
+    color:rgba(0,0,0,.35);
+  }
+  .shape.circ .tag{left:50%;transform:translateX(-50%)}
+
+  /* entrance — fly in + elastic settle */
+  @keyframes flyL{from{opacity:0;transform:translate3d(-130vw,0,0) rotate(-8deg)}to{opacity:1;transform:translate3d(0,0,0) rotate(0)}}
+  @keyframes flyR{from{opacity:0;transform:translate3d(130vw,0,0) rotate(8deg)}to{opacity:1;transform:translate3d(0,0,0) rotate(0)}}
+  @keyframes flyT{from{opacity:0;transform:translate3d(0,-130vh,0) rotate(-8deg)}to{opacity:1;transform:translate3d(0,0,0) rotate(0)}}
+  @keyframes flyB{from{opacity:0;transform:translate3d(0,130vh,0) rotate(8deg)}to{opacity:1;transform:translate3d(0,0,0) rotate(0)}}
+  .shape{animation:flyL .95s var(--ease) both}
+  .shape.r{animation-name:flyR}
+  .shape.t{animation-name:flyT}
+  .shape.b{animation-name:flyB}
+
+  /* ---------- LAYER TRACKS (parallax drift) ---------- */
+  .track{position:absolute;inset:0;will-change:transform}
+  .track--back{z-index:1;animation:driftBack 60s linear infinite}
+  .track--mid {z-index:2;animation:driftMid 37s linear infinite}
+  .track--front{z-index:3;animation:driftFront 23s linear infinite}
+
+  @keyframes driftFront{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+  @keyframes driftMid {from{transform:translate3d(-50%,0,0)}to{transform:translate3d(0,0,0)}}
+  @keyframes driftBack{from{transform:translate3d(0,0,0)}to{transform:translate3d(-12%,0,0)}}
+
+  /* ---------- HUD ---------- */
+  .hud{
+    position:absolute;inset:0;z-index:50;pointer-events:none;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:clamp(16px,3vw,34px);
+  }
+  .hud-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+  .brand{
+    font-family:'Anton',sans-serif;text-transform:uppercase;line-height:.9;
+    color:var(--off);
+    text-shadow:0 2px 0 rgba(0,0,0,.3);
+  }
+  .brand .b1{display:block;font-size:clamp(30px,5.4vw,64px);letter-spacing:.02em}
+  .brand .b2{
+    display:block;font-size:clamp(30px,5.4vw,64px);letter-spacing:.02em;
+    color:var(--red);-webkit-text-stroke:0;
+  }
+  .meta{
+    text-align:right;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(241,250,238,.6);line-height:1.9;
+  }
+  .meta b{color:var(--teal);font-weight:700}
+  .legend{
+    display:flex;gap:clamp(14px,2.4vw,30px);flex-wrap:wrap;align-items:center;
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(241,250,238,.72);
+  }
+  .legend span{display:flex;align-items:center;gap:8px}
+  .dot{width:14px;height:14px;display:inline-block;clip-path:polygon(0 8%,10% 0,22% 6,34% 0,46% 6,58% 0,70% 6,82% 0,92% 6,100% 2,100% 92%,90% 100%,78% 94%,66% 100%,54% 94%,42% 100%,30% 94%,18% 100%,8% 94%,0 100%)}
+  .dot.red{background:var(--red)} .dot.teal{background:var(--teal)} .dot.off{background:var(--off)}
+  .hint{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(241,250,238,.45)}
+  .hint .arrow{display:inline-block;animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+
+  .corner{position:absolute;width:26px;height:26px;border:2px solid rgba(241,250,238,.25);z-index:51;pointer-events:none}
+  .corner.tl{top:14px;left:14px;border-right:0;border-bottom:0}
+  .corner.tr{top:14px;right:14px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:14px;left:14px;border-right:0;border-top:0}
+  .corner.br{bottom:14px;right:14px;border-left:0;border-top:0}
+
+  /* ---------- MOBILE: vertical parallax ---------- */
+  @media (max-width:760px){
+    .stage{perspective:none}
+    .parallax{transform:none!important;transition:none}
+    .base{transform:none!important}
+    .base-word{font-size:clamp(90px,34vw,200px)}
+    .bw-1{left:-6%;top:6%}.bw-2{right:-8%;top:46%}.bw-3{left:2%;bottom:2%}
+    .shape{width:clamp(150px,46vw,260px);height:clamp(150px,46vw,260px)}
+    .shape.wide{width:clamp(200px,64vw,360px);height:clamp(110px,30vw,180px)}
+    .shape.tall{width:clamp(110px,32vw,180px);height:clamp(200px,52vw,340px)}
+    .shape.circ{width:clamp(140px,42vw,240px);height:clamp(140px,42vw,240px)}
+    .track{height:200%}
+    .track--front{animation:driftFrontV 22s linear infinite}
+    .track--mid {animation:driftMidV 36s linear infinite}
+    .track--back{animation:driftBackV 58s linear infinite}
+    .meta{display:none}
+  }
+  @keyframes driftFrontV{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-50%,0)}}
+  @keyframes driftMidV{from{transform:translate3d(0,-50%,0)}to{transform:translate3d(0,0,0)}}
+  @keyframes driftBackV{from{transform:translate3d(0,0,0)}to{transform:translate3d(0,-10%,0)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .track,.shape{animation:none!important}
+    .shape{opacity:1!important;transform:none!important}
+    .hint .arrow{animation:none}
+  }
+</style>
+</head>
+<body>
+  <main class="stage" id="stage" aria-label="Cutout Collage Layer Shift animation">
+    <!-- BASE: revealed type + marks -->
+    <div class="base" id="base">
+      <span class="base-word bw-1">CUT</span>
+      <span class="base-word bw-2">LAYER</span>
+      <span class="base-word bw-3">SHIFT</span>
+      <span class="base-mark">✦</span>
+    </div>
+
+    <!-- PARALLAX STACK -->
+    <div class="parallax" id="parallax">
+
+      <!-- BACK (slowest drift) -->
+      <div class="track track--back">
+        <div class="shape tall t" style="left:6%;top:12%;animation-delay:.05s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e1" fill="#F1FAEE" d="M0 0H100V100H0Z"/></svg><span class="tag">03</span></div>
+        <div class="shape wide b r" style="left:44%;top:58%;animation-delay:.15s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e2" fill="#A8DADC" d="M0 0H100V100H0Z"/></svg><span class="tag">03</span></div>
+        <div class="shape circ t" style="left:70%;top:18%;animation-delay:.25s"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#F1FAEE"/></svg><span class="tag">03</span></div>
+        <div class="shape wide b r" style="left:14%;top:72%;animation-delay:.3s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e3" fill="#E63946" d="M0 0H100V100H0Z"/></svg><span class="tag">03</span></div>
+        <div class="shape tall t" style="left:88%;top:40%;animation-delay:.2s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e4" fill="#A8DADC" d="M0 0H100V100H0Z"/></svg><span class="tag">03</span></div>
+        <div class="shape wide b" style="left:56%;top:8%;animation-delay:.35s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e1" fill="#F1FAEE" d="M0 0H100V100H0Z"/></svg><span class="tag">03</span></div>
+      </div>
+
+      <!-- MIDDLE (medium drift → right) -->
+      <div class="track track--mid">
+        <div class="shape sq b r" style="left:2%;top:30%;animation-delay:.1s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e2" fill="#E63946" d="M0 0H100V100H0Z"/></svg><span class="tag">02</span></div>
+        <div class="shape circ t" style="left:30%;top:6%;animation-delay:.2s"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#A8DADC"/></svg><span class="tag">02</span></div>
+        <div class="shape wide b" style="left:52%;top:34%;animation-delay:.3s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e3" fill="#F1FAEE" d="M0 0H100V100H0Z"/></svg><span class="tag">02</span></div>
+        <div class="shape tall t r" style="left:74%;top:52%;animation-delay:.25s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e1" fill="#E63946" d="M0 0H100V100H0Z"/></svg><span class="tag">02</span></div>
+        <div class="shape sq b" style="left:18%;top:60%;animation-delay:.35s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e4" fill="#F1FAEE" d="M0 0H100V100H0Z"/></svg><span class="tag">02</span></div>
+        <div class="shape wide b r" style="left:86%;top:12%;animation-delay:.15s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e2" fill="#A8DADC" d="M0 0H100V100H0Z"/></svg><span class="tag">02</span></div>
+      </div>
+
+      <!-- FRONT (fastest drift → left) -->
+      <div class="track track--front">
+        <div class="shape sq b" style="left:0%;top:8%;animation-delay:.05s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e1" fill="#A8DADC" d="M0 0H100V100H0Z"/></svg><span class="tag">01</span></div>
+        <div class="shape wide b r" style="left:26%;top:50%;animation-delay:.15s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e2" fill="#E63946" d="M0 0H100V100H0Z"/></svg><span class="tag">01</span></div>
+        <div class="shape circ t" style="left:48%;top:16%;animation-delay:.25s"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#E63946"/></svg><span class="tag">01</span></div>
+        <div class="shape tall t" style="left:66%;top:44%;animation-delay:.2s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e3" fill="#F1FAEE" d="M0 0H100V100H0Z"/></svg><span class="tag">01</span></div>
+        <div class="shape sq b r" style="left:84%;top:8%;animation-delay:.3s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e4" fill="#E63946" d="M0 0H100V100H0Z"/></svg><span class="tag">01</span></div>
+        <div class="shape wide b" style="left:12%;top:78%;animation-delay:.35s"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path class="e1" fill="#A8DADC" d="M0 0H100V100H0Z"/></svg><span class="tag">01</span></div>
+        <div class="shape circ t r" style="left:38%;top:82%;animation-delay:.4s"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#F1FAEE"/></svg><span class="tag">01</span></div>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-row">
+        <h1 class="brand"><span class="b1">Cutout Collage</span><span class="b2">Layer Shift</span></h1>
+        <div class="meta">
+          <div>Studio / <b>DADA-01</b></div>
+          <div>Series / <b>Paper-Cut Parallax</b></div>
+          <div>Plate / <b>N°&nbsp;037</b></div>
+        </div>
+      </div>
+      <div class="hud-row" style="align-items:flex-end">
+        <div class="legend">
+          <span><i class="dot red"></i>Front · Fastest</span>
+          <span><i class="dot teal"></i>Middle · Medium</span>
+          <span><i class="dot off"></i>Back · Drift</span>
+        </div>
+        <div class="hint">Move cursor to tilt the stack <span class="arrow">→</span></div>
+      </div>
+    </div>
+
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+  </main>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var parallax=document.getElementById('parallax');
+  var base=document.getElementById('base');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isMobile=window.matchMedia('(max-width:760px)').matches;
+
+  if(reduce) return;
+
+  var tx=0,ty=0,cx=0,cy=0,raf=null;
+
+  function onMove(e){
+    if(isMobile) return;
+    var r=stage.getBoundingClientRect();
+    var px=(e.clientX-r.left)/r.width-0.5;
+    var py=(e.clientY-r.top)/r.height-0.5;
+    tx=px; ty=py;
+    if(!raf) raf=requestAnimationFrame(loop);
+  }
+  function loop(){
+    cx+=(tx-cx)*0.08;
+    cy+=(ty-cy)*0.08;
+    parallax.style.setProperty('--mx',cx.toFixed(4));
+    parallax.style.setProperty('--my',cy.toFixed(4));
+    base.style.setProperty('--mx',cx.toFixed(4));
+    base.style.setProperty('--my',cy.toFixed(4));
+    if(Math.abs(tx-cx)>0.001||Math.abs(ty-cy)>0.001){raf=requestAnimationFrame(loop);}
+    else{raf=null;}
+  }
+  function reset(){tx=0;ty=0;if(!raf)raf=requestAnimationFrame(loop);}
+
+  window.addEventListener('pointermove',onMove,{passive:true});
+  stage.addEventListener('pointerleave',reset);
+
+  function check(){isMobile=window.matchMedia('(max-width:760px)').matches;}
+  window.addEventListener('resize',check);
+})();
+</script>
+</body>
+</html>

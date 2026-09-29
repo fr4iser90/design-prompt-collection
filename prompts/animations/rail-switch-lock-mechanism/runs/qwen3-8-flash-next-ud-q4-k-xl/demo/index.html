@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rail Switch Lock Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --iron:#4A5568;
+    --slate:#2D3748;
+    --red:#E53E3E;
+    --steel:#cfd8e3;
+    --amber:#E8B24A;
+    --ink:#141922;
+    --paper:#d7dce4;
+    --line:rgba(255,255,255,.10);
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+    --disp:'Anton',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--mono);
+    background:var(--ink);
+    color:var(--paper);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  ::selection{background:var(--red);color:#fff}
+
+  /* ---------- ATMOSPHERIC BACKGROUND ---------- */
+  .atmos{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 8%, #3a4657 0%, #262f3d 42%, #171d27 78%, #10151d 100%);
+  }
+  .atmos::before{ /* vignette */
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(90% 70% at 50% 45%, transparent 40%, rgba(8,11,16,.72) 100%);
+  }
+  .atmos::after{ /* faint blueprint grid */
+    content:"";position:absolute;inset:0;opacity:.05;
+    background-image:
+      linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);
+    background-size:56px 56px;
+    -webkit-mask-image:radial-gradient(80% 80% at 50% 40%,#000 0%,transparent 75%);
+            mask-image:radial-gradient(80% 80% at 50% 40%,#000 0%,transparent 75%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{position:relative;z-index:3;max-width:1240px;margin:0 auto;padding:22px clamp(16px,4vw,40px) 60px}
+
+  /* ---------- HEADER ---------- */
+  .top{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:12px}
+  .brand .mark{
+    font-family:var(--disp);font-size:clamp(20px,2.6vw,30px);letter-spacing:.04em;
+    color:var(--paper);text-transform:uppercase;
+  }
+  .brand .mark b{color:var(--red)}
+  .brand .sub{font-size:10px;letter-spacing:.34em;color:#8b98ab;text-transform:uppercase}
+  .status{
+    display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.22em;
+    color:#9aa7ba;text-transform:uppercase;white-space:nowrap;
+  }
+  .status .dot{
+    width:9px;height:9px;border-radius:50%;background:#5a6a80;
+    box-shadow:0 0 0 0 rgba(229,62,62,.5);transition:background .2s;
+  }
+  body.locked .status .dot{background:var(--red);animation:pulse 1.1s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,62,62,.55)}100%{box-shadow:0 0 0 10px rgba(229,62,62,0)}}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(20px,3vw,44px);
+    align-items:center;padding:clamp(24px,4vw,52px) 0 clamp(30px,4vw,56px);
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:#93a1b4;margin-bottom:22px;
+  }
+  .eyebrow::before{content:"";width:34px;height:2px;background:var(--red)}
+  h1{
+    font-family:var(--disp);font-weight:400;text-transform:uppercase;
+    font-size:clamp(46px,8.4vw,116px);line-height:.86;letter-spacing:.005em;
+    color:var(--paper);
+  }
+  h1 .red{color:var(--red)}
+  .lede{
+    margin-top:26px;max-width:44ch;font-size:15px;color:#aeb9c8;line-height:1.7;
+  }
+  .lede b{color:var(--paper);font-weight:600}
+
+  .stats{
+    margin-top:30px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+    background:var(--line);border:1px solid var(--line);
+  }
+  .stat{background:rgba(20,25,34,.5);padding:14px 14px}
+  .stat .k{font-size:9px;letter-spacing:.24em;color:#7c8a9e;text-transform:uppercase}
+  .stat .v{font-family:var(--disp);font-size:clamp(18px,2.4vw,26px);color:var(--paper);margin-top:6px;line-height:1}
+  .stat .v small{font-size:11px;color:#8b98ab;font-family:var(--mono);letter-spacing:.05em}
+
+  .actions{margin-top:30px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .btn{
+    font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    padding:14px 22px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+    color:var(--paper);cursor:pointer;position:relative;overflow:hidden;
+    transition:transform .12s ease,border-color .2s,background .2s;
+  }
+  .btn::after{
+    content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.14) 50%,transparent 70%);
+    transform:translateX(-120%);transition:transform .5s;
+  }
+  .btn:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.06)}
+  .btn:hover::after{transform:translateX(120%)}
+  .btn:active{transform:translateY(1px)}
+  .btn.engage{border-color:var(--red);color:#fff;background:rgba(229,62,62,.14)}
+  .btn.engage:hover{background:rgba(229,62,62,.24)}
+  .btn.engage.armed{animation:armed 1s ease-in-out infinite}
+  @keyframes armed{0%,100%{box-shadow:0 0 0 0 rgba(229,62,62,.5)}50%{box-shadow:0 0 0 6px rgba(229,62,62,0)}}
+  .hint{font-size:10px;letter-spacing:.14em;color:#6f7d90;text-transform:uppercase}
+  .hint kbd{border:1px solid var(--line);padding:2px 6px;border-radius:3px;color:#aeb9c8;font-family:var(--mono)}
+
+  /* ---------- THE STAGE (MECHANISM) ---------- */
+  .stage{
+    position:relative;aspect-ratio:1/1;width:100%;max-width:640px;margin-inline:auto;
+    border:1px solid var(--line);
+    background:
+      radial-gradient(120% 120% at 32% 26%, rgba(120,140,170,.14), transparent 55%),
+      linear-gradient(160deg,#212a37,#161c26 70%,#0f141c);
+    box-shadow:inset 0 2px 30px rgba(0,0,0,.6), 0 40px 80px -40px rgba(0,0,0,.9);
+    overflow:hidden;
+  }
+  .stage::before{ /* floor shadow / anchor */
+    content:"";position:absolute;left:8%;right:8%;bottom:8%;height:16%;
+    background:radial-gradient(60% 100% at 50% 100%, rgba(0,0,0,.7), transparent 70%);
+    filter:blur(6px);
+  }
+  .stage::after{ /* oil stain */
+    content:"";position:absolute;left:14%;top:66%;width:38%;height:22%;border-radius:50%;
+    background:radial-gradient(60% 60% at 40% 40%, rgba(0,0,0,.55), transparent 70%);
+    filter:blur(4px);opacity:.6;
+  }
+  #mech{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block}
+  #mech.shake{animation:shake .22s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes shake{
+    10%{transform:translate(-2px,1px)}25%{transform:translate(3px,-1px)}
+    40%{transform:translate(-3px,2px)}60%{transform:translate(2px,-2px)}
+    80%{transform:translate(-1px,1px)}100%{transform:translate(0,0)}
+  }
+
+  /* corner registration marks */
+  .corner{position:absolute;width:22px;height:22px;z-index:2;pointer-events:none}
+  .corner::before,.corner::after{content:"";position:absolute;background:rgba(255,255,255,.22)}
+  .corner::before{width:100%;height:1px;top:0}.corner::after{width:1px;height:100%;left:0}
+  .c-tl{top:14px;left:14px}
+  .c-tr{top:14px;right:14px;transform:scaleX(-1)}
+  .c-bl{bottom:14px;left:14px;transform:scaleY(-1)}
+  .c-br{bottom:14px;right:14px;transform:scale(-1)}
+
+  /* LOCKED stamp */
+  .stamp{
+    position:absolute;left:50%;bottom:9%;transform:translate(-50%,14px) scale(.94);
+    z-index:3;font-family:var(--disp);font-size:clamp(30px,5.4vw,52px);letter-spacing:.14em;
+    color:var(--red);text-transform:uppercase;padding:6px 16px;
+    border:2px solid var(--red);
+    opacity:0;pointer-events:none;
+    text-shadow:0 0 26px rgba(229,62,62,.55);
+    background:linear-gradient(180deg,rgba(229,62,62,.10),transparent);
+  }
+  .stamp::before,.stamp::after{content:"";position:absolute;top:50%;width:26px;height:2px;background:var(--red)}
+  .stamp::before{left:-34px}.stamp::after{right:-34px}
+  body.locked .stamp{animation:stamp .4s cubic-bezier(.2,.9,.2,1) forwards}
+  @keyframes stamp{
+    0%{opacity:0;transform:translate(-50%,14px) scale(1.5) rotate(-4deg)}
+    55%{opacity:1;transform:translate(-50%,0) scale(.9) rotate(1deg)}
+    100%{opacity:1;transform:translate(-50%,0) scale(1) rotate(0)}
+  }
+
+  /* HUD readout */
+  .hud{
+    position:absolute;top:14px;left:14px;z-index:3;font-size:10px;letter-spacing:.12em;
+    color:#93a1b4;background:rgba(12,16,22,.55);border:1px solid var(--line);
+    padding:9px 11px;min-width:158px;backdrop-filter:blur(2px);
+  }
+  .hud .row{display:flex;justify-content:space-between;gap:14px;margin:2px 0}
+  .hud .row span:first-child{color:#6f7d90}
+  .hud .val{color:#cfd8e3}
+  .hud .val.red{color:var(--red)}
+  .hud .bar{margin-top:8px;height:4px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+  .hud .bar i{position:absolute;left:0;top:0;height:100%;width:0%;background:linear-gradient(90deg,#7c8a9e,var(--red));transition:width .05s linear}
+
+  .scale{
+    position:absolute;bottom:14px;right:14px;z-index:3;font-size:9px;letter-spacing:.14em;
+    color:#6f7d90;text-align:right;
+  }
+  .scale .tick{display:flex;align-items:center;gap:6px;justify-content:flex-end;margin:3px 0}
+  .scale .tick b{width:34px;height:1px;background:rgba(255,255,255,.25)}
+
+  /* ---------- SECTION 2 : SPEC SHEET ---------- */
+  .sect{padding-top:clamp(40px,6vw,80px)}
+  .sect-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:30px}
+  .sect-head h2{
+    font-family:var(--disp);font-weight:400;text-transform:uppercase;
+    font-size:clamp(30px,5vw,60px);line-height:.9;letter-spacing:.01em;color:var(--paper);
+  }
+  .sect-head .idx{font-size:11px;letter-spacing:.3em;color:#7c8a9e;text-transform:uppercase}
+  .sect-head p{max-width:42ch;color:#9aa7ba;font-size:14px;margin-top:8px}
+
+  .spec{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);
+  }
+  .cell{background:linear-gradient(180deg,#1a212c,#151b24);padding:22px 20px;position:relative;overflow:hidden;transition:background .3s}
+  .cell:hover{background:linear-gradient(180deg,#202936,#181f29)}
+  .cell::before{content:"";position:absolute;top:0;left:0;width:0;height:2px;background:var(--red);transition:width .4s ease}
+  .cell:hover::before{width:100%}
+  .cell .n{font-size:10px;letter-spacing:.24em;color:#6f7d90;text-transform:uppercase}
+  .cell .big{font-family:var(--disp);font-size:clamp(28px,4vw,46px);color:var(--paper);margin-top:14px;line-height:.95}
+  .cell .big .u{font-family:var(--mono);font-size:13px;color:#8b98ab;letter-spacing:.05em}
+  .cell .d{margin-top:12px;font-size:12px;color:#93a1b4;line-height:1.6}
+  .cell.wide{grid-column:span 3}
+  .cell.mid{grid-column:span 2}
+
+  /* sequence */
+  .seq{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-top:1px}
+  .step{background:#151b24;padding:22px 20px;position:relative;transition:background .3s}
+  .step:hover{background:#1c2431}
+  .step .t{font-family:var(--disp);font-size:40px;color:rgba(255,255,255,.08);line-height:1}
+  .step .lab{margin-top:12px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--paper)}
+  .step .txt{margin-top:8px;font-size:12px;color:#93a1b4;line-height:1.6}
+  .step .bar{margin-top:16px;height:3px;background:rgba(255,255,255,.08)}
+  .step .bar i{display:block;height:100%;width:0;background:var(--red);transition:width 1.1s ease .1s}
+  .step.in .bar i{width:100%}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    margin-top:clamp(48px,7vw,90px);padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;
+    font-size:11px;letter-spacing:.16em;color:#6f7d90;text-transform:uppercase;
+  }
+  footer .brand .mark{font-size:16px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal:nth-child(2){transition-delay:.06s}
+  .reveal:nth-child(3){transition-delay:.12s}
+  .reveal:nth-child(4){transition-delay:.18s}
+  .reveal:nth-child(5){transition-delay:.24s}
+  .reveal:nth-child(6){transition-delay:.30s}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media(max-width:900px){
+    .hero{grid-template-columns:1fr;gap:34px}
+    .stage{max-width:520px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .spec{grid-template-columns:repeat(2,1fr)}
+    .cell.wide,.cell.mid{grid-column:span 2}
+    .seq{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:520px){
+    .spec{grid-template-columns:1fr}
+    .cell.wide,.cell.mid{grid-column:span 1}
+    .seq{grid-template-columns:1fr}
+    .status{font-size:10px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    .step .bar i{width:100%}
+    .stamp{opacity:1;transform:translate(-50%,0) scale(1)}
+    body.locked .status .dot{background:var(--red)}
+  }
+</style>
+</head>
+<body>
+  <div class="atmos"></div>
+  <div class="grain"></div>
+
+  <div class="wrap">
+    <!-- HEADER -->
+    <header class="top">
+      <div class="brand">
+        <span class="mark">RAIL<b>·</b>SWITCH</span>
+        <span class="sub">Lock Mechanism</span>
+      </div>
+      <div class="status"><span class="dot"></span><span id="statusTxt">System Standby</span></div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="copy">
+        <span class="eyebrow">Point Machine · Class 4 Interlocking</span>
+        <h1>Zero<br>Tolerance<br><span class="red">Lock.</span></h1>
+        <p class="lede">A heavy steel bolt drives home into the switch housing and <b>seals the route with absolute finality.</b> No drift. No hesitation. One decision, held rigid against the load of the line.</p>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Tolerance</div><div class="v">±0.05<small> mm</small></div></div>
+          <div class="stat"><div class="k">Lock Force</div><div class="v">8.4<small> kN</small></div></div>
+          <div class="stat"><div class="k">Cycle</div><div class="v">3.6<small> s</small></div></div>
+          <div class="stat"><div class="k">Rating</div><div class="v">SIL<small> 4</small></div></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn engage" id="engageBtn">Engage Lock</button>
+          <button class="btn" id="resetBtn">Reset</button>
+          <span class="hint">Press <kbd>Enter</kbd> to engage</span>
+        </div>
+      </div>
+
+      <!-- STAGE -->
+      <div class="stage">
+        <div class="corner c-tl"></div><div class="corner c-tr"></div>
+        <div class="corner c-bl"></div><div class="corner c-br"></div>
+
+        <svg id="mech" viewBox="0 0 640 640" preserveAspectRatio="xMidYMid meet" aria-label="Railway switch lock mechanism">
+          <defs>
+            <linearGradient id="iron" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#76828f"/>
+              <stop offset=".14" stop-color="#5a6674"/>
+              <stop offset=".5" stop-color="#454f5d"/>
+              <stop offset=".86" stop-color="#333b47"/>
+              <stop offset="1" stop-color="#252b34"/>
+            </linearGradient>
+            <linearGradient id="iron2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#616d7b"/>
+              <stop offset=".5" stop-color="#3c4552"/>
+              <stop offset="1" stop-color="#282e38"/>
+            </linearGradient>
+            <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#eef3f8"/>
+              <stop offset=".16" stop-color="#c2ccd6"/>
+              <stop offset=".46" stop-color="#8b97a4"/>
+              <stop offset=".62" stop-color="#5b6672"/>
+              <stop offset="1" stop-color="#39424d"/>
+            </linearGradient>
+            <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ff8a8a"/>
+              <stop offset=".3" stop-color="#e53e3e"/>
+              <stop offset="1" stop-color="#8f1f1f"/>
+            </linearGradient>
+            <radialGradient id="redGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#ff6b6b" stop-opacity=".95"/>
+              <stop offset="45%" stop-color="#e53e3e" stop-opacity=".5"/>
+              <stop offset="100%" stop-color="#e53e3e" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="flare" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+              <stop offset="35%" stop-color="#ffd7a0" stop-opacity=".5"/>
+              <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="vign" cx="50%" cy="46%" r="60%">
+              <stop offset="0" stop-color="#000" stop-opacity="0"/>
+              <stop offset="70%" stop-color="#000" stop-opacity="0"/>
+              <stop offset="100%" stop-color="#05070b" stop-opacity=".85"/>
+            </radialGradient>
+            <pattern id="brush" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(0)">
+              <line x1="0" y1="0" x2="0" y2="6" stroke="#000" stroke-opacity=".16" stroke-width="1"/>
+              <line x1="3" y1="0" x2="3" y2="6" stroke="#fff" stroke-opacity=".05" stroke-width="1"/>
+            </pattern>
+            <pattern id="hazard" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="18" height="18" fill="#12161d"/>
+              <rect width="9" height="18" fill="#c9302c"/>
+            </pattern>
+            <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
+            <filter id="soft2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+          </defs>
+
+          <!-- cast shadow under housing -->
+          <ellipse cx="315" cy="512" rx="180" ry="26" fill="#000" opacity=".55" filter="url(#soft)"/>
+
+          <!-- ===== HOUSING (left, fixed) ===== -->
+          <g id="housing">
+            <!-- mounting base plate -->
+            <rect x="118" y="470" width="196" height="30" rx="4" fill="url(#iron2)" stroke="#1b212a" stroke-width="1.5"/>
+            <rect x="118" y="470" width="196" height="30" rx="4" fill="url(#brush)"/>
+            <!-- main block -->
+            <rect x="150" y="196" width="150" height="290" rx="16" fill="url(#iron)" stroke="#1b212a" stroke-width="2"/>
+            <rect x="150" y="196" width="150" height="290" rx="16" fill="url(#brush)"/>
+            <!-- top bevel highlight -->
+            <rect x="158" y="202" width="134" height="10" rx="5" fill="#8a97a6" opacity=".5"/>
+            <!-- side shading -->
+            <rect x="150" y="196" width="18" height="290" rx="9" fill="#1c222b" opacity=".55"/>
+            <!-- bolt bosses -->
+            <g fill="#20262f" stroke="#0e131a" stroke-width="1">
+              <circle cx="172" cy="220" r="7"/><circle cx="278" cy="220" r="7"/>
+              <circle cx="172" cy="462" r="7"/><circle cx="278" cy="462" r="7"/>
+            </g>
+            <g fill="#5c6672"><circle cx="172" cy="220" r="3"/><circle cx="278" cy="220" r="3"/><circle cx="172" cy="462" r="3"/><circle cx="278" cy="462" r="3"/></g>
+            <!-- machined face inset -->
+            <rect x="196" y="286" width="96" height="112" rx="8" fill="#2b333e" stroke="#161c24" stroke-width="1.5"/>
+            <!-- THE LOCKING SLOT (target) -->
+            <rect x="284" y="292" width="26" height="100" rx="6" fill="#0a0d12"/>
+            <rect x="284" y="292" width="26" height="100" rx="6" fill="none" stroke="#11151b" stroke-width="2"/>
+            <!-- slot inner shadow -->
+            <rect x="286" y="294" width="22" height="96" rx="5" fill="#05070a"/>
+          </g>
+
+          <!-- ===== ACTUATOR (right, fixed) ===== -->
+          <g id="actuator">
+            <!-- mounting base plate -->
+            <rect x="372" y="470" width="150" height="30" rx="4" fill="url(#iron2)" stroke="#1b212a" stroke-width="1.5"/>
+            <rect x="372" y="470" width="150" height="30" rx="4" fill="url(#brush)"/>
+            <!-- body -->
+            <rect x="392" y="212" width="130" height="262" rx="14" fill="url(#iron)" stroke="#1b212a" stroke-width="2"/>
+            <rect x="392" y="212" width="130" height="262" rx="14" fill="url(#brush)"/>
+            <rect x="400" y="218" width="114" height="9" rx="4" fill="#8a97a6" opacity=".45"/>
+            <rect x="404" y="212" width="18" height="262" rx="9" fill="#1c222b" opacity=".5"/>
+            <!-- hazard band -->
+            <rect x="392" y="330" width="130" height="26" fill="url(#hazard)" opacity=".9"/>
+            <rect x="392" y="330" width="130" height="26" fill="none" stroke="#0d1219" stroke-width="1"/>
+            <!-- bolts -->
+            <g fill="#20262f" stroke="#0e131a" stroke-width="1">
+              <circle cx="412" cy="236" r="7"/><circle cx="502" cy="236" r="7"/>
+              <circle cx="412" cy="450" r="7"/><circle cx="502" cy="450" r="7"/>
+            </g>
+            <g fill="#5c6672"><circle cx="412" cy="236" r="3"/><circle cx="502" cy="236" r="3"/><circle cx="412" cy="450" r="3"/><circle cx="502" cy="450" r="3"/></g>
+            <!-- gland / rod exit -->
+            <rect x="376" y="300" width="26" height="84" rx="6" fill="#20262f" stroke="#0e131a" stroke-width="1.5"/>
+            <rect x="376" y="300" width="26" height="84" rx="6" fill="url(#brush)"/>
+          </g>
+
+          <!-- ===== RED LOCKING PIN (behind rod) ===== -->
+          <g id="pin">
+            <circle id="pinGlow" cx="300" cy="342" r="52" fill="url(#redGlow)" opacity="0"/>
+            <rect x="288" y="286" width="26" height="112" rx="6" fill="url(#red)" stroke="#6d1717" stroke-width="1.5"/>
+            <rect x="292" y="290" width="6" height="104" rx="3" fill="#ffb3b3" opacity=".7"/>
+          </g>
+
+          <!-- ===== STEEL ROD (moves right -> left) ===== -->
+          <g id="rod">
+            <!-- contact flare -->
+            <ellipse id="flare" cx="300" cy="342" rx="120" ry="70" fill="url(#flare)" opacity="0"/>
+            <!-- shaft -->
+            <rect x="298" y="306" width="252" height="72" rx="10" fill="url(#steel)" stroke="#232a33" stroke-width="1.5"/>
+            <!-- specular streaks -->
+            <rect x="300" y="313" width="248" height="9" rx="4" fill="#ffffff" opacity=".55"/>
+            <rect x="300" y="325" width="248" height="3" rx="2" fill="#ffffff" opacity=".28"/>
+            <rect x="300" y="360" width="248" height="10" rx="4" fill="#0e131a" opacity=".35"/>
+            <!-- moving specular highlight -->
+            <rect id="spec" x="318" y="314" width="46" height="8" rx="4" fill="#fff" opacity=".9"/>
+            <!-- bolted collar -->
+            <rect x="452" y="296" width="42" height="92" rx="8" fill="url(#iron2)" stroke="#161c24" stroke-width="1.5"/>
+            <rect x="452" y="296" width="42" height="92" rx="8" fill="url(#brush)"/>
+            <g fill="#20262f" stroke="#0e131a" stroke-width="1"><circle cx="473" cy="314" r="6"/><circle cx="473" cy="370" r="6"/></g>
+            <g fill="#5c6672"><circle cx="473" cy="314" r="2.6"/><circle cx="473" cy="370" r="2.6"/></g>
+            <!-- rounded nose -->
+            <path d="M300 306 q-30 36 0 72 z" fill="url(#steel)" stroke="#232a33" stroke-width="1.5"/>
+            <path d="M300 312 q-22 30 0 60" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="4"/>
+          </g>
+
+          <!-- vignette -->
+          <rect x="0" y="0" width="640" height="640" fill="url(#vign)"/>
+        </svg>
+
+        <!-- HUD -->
+        <div class="hud">
+          <div class="row"><span>STATE</span><span class="val" id="hState">UNLOCKED</span></div>
+          <div class="row"><span>TRAVEL</span><span class="val" id="hTravel">0%</span></div>
+          <div class="row"><span>FORCE</span><span class="val" id="hForce">0.0 kN</span></div>
+          <div class="row"><span>CONTACT</span><span class="val" id="hContact">OPEN</span></div>
+          <div class="bar"><i id="hBar"></i></div>
+        </div>
+
+        <div class="scale">
+          <div class="tick">342.0 <b></b></div>
+          <div class="tick">338.5 <b></b></div>
+          <div class="tick">335.0 <b></b></div>
+        </div>
+
+        <div class="stamp">Locked</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="sect">
+      <div class="sect-head reveal">
+        <div>
+          <div class="idx">02 — Engineering Dossier</div>
+          <h2>How the route is<br>sealed.</h2>
+        </div>
+        <p>Every engagement is a mechanical proof. The bolt cannot rest halfway — it is either fully seated against the housing, or the interlock refuses the route entirely.</p>
+      </div>
+
+      <div class="spec">
+        <div class="cell wide reveal">
+          <div class="n">Material</div>
+          <div class="big">Cast Iron <span class="u">GG-25</span></div>
+          <div class="d">The housing is poured, not machined from billet. Mass is the point — it absorbs the shock of a 240-tonne axle load and keeps the geometry honest.</div>
+        </div>
+        <div class="cell mid reveal">
+          <div class="n">Bolt</div>
+          <div class="big">Ø58 <span class="u">mm</span></div>
+          <div class="d">Hardened steel, ground to a mirror finish for a repeatable, drag-free stroke.</div>
+        </div>
+        <div class="cell reveal">
+          <div class="n">Stroke</div>
+          <div class="big">142 <span class="u">mm</span></div>
+          <div class="d">Full throw, right to left.</div>
+        </div>
+        <div class="cell reveal">
+          <div class="n">Seating</div>
+          <div class="big">0.05 <span class="u">mm</span></div>
+          <div class="d">Contact tolerance.</div>
+        </div>
+        <div class="cell reveal">
+          <div class="n">Drive</div>
+          <div class="big">Hydraulic <span class="u">210 bar</span></div>
+          <div class="d">Weighted, irreversible.</div>
+        </div>
+      </div>
+
+      <div class="seq">
+        <div class="step reveal"><div class="t">01</div><div class="lab">Command</div><div class="txt">The route request is validated. The actuator primes against pressure.</div><div class="bar"><i></i></div></div>
+        <div class="step reveal"><div class="t">02</div><div class="lab">Drive</div><div class="txt">The bolt advances at constant velocity — slow, deliberate, high inertia.</div><div class="bar"><i></i></div></div>
+        <div class="step reveal"><div class="t">03</div><div class="lab">Seating</div><div class="txt">The nose meets the slot. Abrupt stop. The frame shudders once.</div><div class="bar"><i></i></div></div>
+        <div class="step reveal"><div class="t">04</div><div class="lab">Lock</div><div class="txt">The pin lights red. Contact confirmed. The route is now rigid.</div><div class="bar"><i></i></div></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="brand"><span class="mark">RAIL<b>·</b>SWITCH</span></div>
+      <span>Point Machine · Class 4 Interlocking · SIL 4</span>
+      <span>© 2024 — Safety Through Rigidity</span>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var rod   = document.getElementById('rod');
+  var spec  = document.getElementById('spec');
+  var flare = document.getElementById('flare');
+  var pinGlow = document.getElementById('pinGlow');
+  var stage = document.querySelector('.stage');
+  var mech  = document.getElementById('mech');
+
+  var hState=document.getElementById('hState'),
+      hTravel=document.getElementById('hTravel'),
+      hForce=document.getElementById('hForce'),
+      hContact=document.getElementById('hContact'),
+      hBar=document.getElementById('hBar');
+  var statusTxt=document.getElementById('statusTxt');
+  var engageBtn=document.getElementById('engageBtn');
+  var resetBtn=document.getElementById('resetBtn');
+
+  var TRAVEL = 170; // px the rod moves (right -> left)
+  var DUR = 3600;   // ms
+
+  var state = 'idle'; // idle | engaging | locked
+  var raf = null, startTime = 0, lastForce = 0;
+
+  // ease-in start, constant velocity mid, abrupt ease-out (clunk) at end
+  function ease(t){
+    if(t <= 0) return 0;
+    if(t >= 1) return 1;
+    if(t < 0.28){
+      // smooth ease-in
+      var a = t/0.28;
+      return 0.28 * (a*a*a);
+    } else if(t < 0.9){
+      // constant velocity segment
+      return 0.28 + (t-0.28) * (0.90-0.28)/(0.90-0.28);
+    } else {
+      // abrupt ease-out into the lock
+      var b = (t-0.9)/0.1;
+      var eased = 1 - Math.pow(1-b, 3);
+      return 0.90 + (1-0.90) * eased;
+    }
+  }
+
+  function setRod(x){
+    rod.setAttribute('transform','translate(' + (-x) + ',0)');
+    // specular highlight slides along shaft as it moves
+    var sx = 318 - x*0.18;
+    spec.setAttribute('x', sx.toFixed(1));
+  }
+
+  function setHUD(p, force){
+    hTravel.textContent = Math.round(p*100) + '%';
+    hForce.textContent = force.toFixed(1) + ' kN';
+    hBar.style.width = (p*100) + '%';
+    hContact.textContent = p > 0.985 ? 'SEATED' : 'OPEN';
+    hContact.className = 'val' + (p > 0.985 ? ' red' : '');
+  }
+
+  function doClunk(){
+    if(reduce) return;
+    mech.classList.remove('shake');
+    void mech.offsetWidth;
+    mech.classList.add('shake');
+    setTimeout(function(){ mech.classList.remove('shake'); }, 240);
+  }
+
+  function lockIn(){
+    state = 'locked';
+    document.body.classList.add('locked');
+    statusTxt.textContent = 'Route Locked';
+    hState.textContent = 'LOCKED';
+    hState.className = 'val red';
+    engageBtn.textContent = 'Engaged';
+    engageBtn.classList.remove('armed');
+    hTravel.textContent = '100%';
+    hForce.textContent = '8.4 kN';
+    hContact.textContent = 'SEATED';
+    hContact.className = 'val red';
+    hBar.style.width = '100%';
+    // flare + pin glow
+    if(!reduce){
+      flare.style.transition = 'opacity .12s ease';
+      flare.style.opacity = '1';
+      pinGlow.style.transition = 'opacity .5s ease';
+      pinGlow.style.opacity = '0.9';
+      setTimeout(function(){
+        flare.style.transition = 'opacity .6s ease';
+        flare.style.opacity = '0';
+      }, 140);
+    }
+  }
+
+  function engage(){
+    if(state === 'engaging') return;
+    if(state === 'locked'){ reset(); }
+    state = 'engaging';
+    document.body.classList.remove('locked');
+    statusTxt.textContent = 'Engaging…';
+    hState.textContent = 'ENGAGING';
+    hState.className = 'val';
+    engageBtn.classList.add('armed');
+    engageBtn.textContent = 'Engaging…';
+    flare.style.transition = 'none'; flare.style.opacity = '0';
+    pinGlow.style.transition = 'none'; pinGlow.style.opacity = '0';
+
+    if(reduce){
+      setRod(TRAVEL); setHUD(1, 8.4); lockIn(); return;
+    }
+
+    startTime = performance.now();
+    cancelAnimationFrame(raf);
+    function frame(now){
+      var t = (now - startTime) / DUR;
+      if(t >= 1){
+        setRod(TRAVEL);
+        setHUD(1, 8.4);
+        lockIn();
+        doClunk();
+        return;
+      }
+      var p = ease(t);
+      setRod(p * TRAVEL);
+      // force ramps hard near the end
+      var force = p < 0.9 ? (p * 3.2) : (3.2 + (p-0.9)/0.1 * 5.2);
+      setHUD(p, force);
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+  }
+
+  function reset(){
+    cancelAnimationFrame(raf);
+    state = 'idle';
+    document.body.classList.remove('locked');
+    statusTxt.textContent = 'System Standby';
+    hState.textContent = 'UNLOCKED';
+    hState.className = 'val';
+    engageBtn.textContent = 'Engage Lock';
+    engageBtn.classList.remove('armed');
+    hTravel.textContent = '0%';
+    hForce.textContent = '0.0 kN';
+    hContact.textContent = 'OPEN';
+    hContact.className = 'val';
+    hBar.style.width = '0%';
+    flare.style.transition = 'opacity .3s ease'; flare.style.opacity = '0';
+    pinGlow.style.transition = 'opacity .3s ease'; pinGlow.style.opacity = '0';
+    setRod(0);
+  }
+
+  engageBtn.addEventListener('click', engage);
+  resetBtn.addEventListener('click', reset);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); engage(); }
+    if(e.key === 'Escape'){ reset(); }
+  });
+
+  // reveal on scroll
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.18});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // autoplay once on load (after a beat)
+  setRod(0);
+  if(!reduce){
+    setTimeout(engage, 900);
+  } else {
+    setRod(TRAVEL); setHUD(1, 8.4); lockIn();
+  }
+})();
+</script>
+</body>
+</html>

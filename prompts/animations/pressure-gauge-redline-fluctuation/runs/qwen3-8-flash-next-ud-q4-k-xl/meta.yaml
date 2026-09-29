@@ -1,0 +1,25 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: null
+status: rebuild
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 261696
+gen_ms: 261696
+ttft_ms: 1685
+queue_wait_ms: 105
+wall_ms: 263564
+reject_reason: "score_2_below_5"
+rejected_at: "2026-09-29T06:24:53.623Z"
+last_review_score: 2
+last_review_summary: "The primary subject (the pressure gauge) is completely missing from the viewport, leaving a mostly empty dark screen with text."
+last_reject_reason: "score_2_below_5"

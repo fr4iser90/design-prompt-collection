@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tsuru Cold Chain — Preserved at Source</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0F172A; --bg2:#0B1220; --bg3:#070C16;
+  --ice:#38BDF8; --ice-soft:#7DD3FC; --ice-deep:#0EA5E9;
+  --pink:#E65C78; --pink-deep:#C2314E;
+  --text:#E6F1FA; --muted:#8298B8; --line:rgba(125,211,252,.14);
+  --glass:rgba(255,255,255,.035);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;font-weight:300;
+  line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:
+    radial-gradient(120% 80% at 50% -10%, #12203a 0%, transparent 55%),
+    radial-gradient(90% 60% at 50% 120%, #0a1526 0%, transparent 60%);
+}
+::selection{background:var(--ice);color:#04121f}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'Space Mono',monospace}
+.wrap{width:min(1200px,92vw);margin-inline:auto}
+.eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--ice);display:inline-flex;align-items:center;gap:.7em}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--ice);opacity:.6}
+h1,h2,h3{font-weight:400;letter-spacing:-.02em;line-height:1.02}
+
+/* ---------- NAV ---------- */
+.nav{position:fixed;inset:0 0 auto;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px clamp(18px,4vw,40px);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:linear-gradient(180deg,rgba(9,15,28,.82),rgba(9,15,28,.28));
+  border-bottom:1px solid var(--line);}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:26px;height:26px;overflow:visible}
+.brand .word{font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.28em;
+  font-size:.82rem;text-transform:uppercase}
+.brand .word b{color:var(--ice);font-weight:700}
+.nav-links{display:flex;gap:34px;align-items:center}
+.nav-links a{font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  position:relative;padding:4px 0;transition:color .3s}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;
+  background:var(--ice);transition:width .35s var(--ease)}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.nav-cta{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  padding:10px 18px;border:1px solid var(--line);border-radius:2px;color:var(--ice);
+  background:var(--glass);transition:.35s var(--ease)}
+.nav-cta:hover{background:var(--ice);color:#04121f;box-shadow:0 0 24px rgba(56,189,248,.4)}
+.burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:6px}
+.burger span{width:22px;height:1.5px;background:var(--text);transition:.3s}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;
+  padding:120px 0 60px;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none}
+.hero-bg .grid{position:absolute;inset:0;opacity:.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(70% 70% at 50% 45%,#000 0%,transparent 78%);
+  mask-image:radial-gradient(70% 70% at 50% 45%,#000 0%,transparent 78%)}
+.rays{position:absolute;top:-20%;left:50%;width:120%;height:120%;transform:translateX(-50%);
+  background:repeating-linear-gradient(100deg,transparent 0 42px,rgba(56,189,248,.05) 42px 44px);
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.5),transparent 60%);
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.5),transparent 60%);
+  animation:drift 26s linear infinite}
+@keyframes drift{to{background-position:600px 0}}
+
+.hero-inner{position:relative;z-index:3;display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(30px,5vw,70px);align-items:center;width:100%}
+.hero-copy{max-width:560px}
+.hero-copy h1{font-size:clamp(2.6rem,6.4vw,5.1rem);margin:22px 0 26px;letter-spacing:-.035em}
+.hero-copy h1 .l2{display:block;color:var(--ice)}
+.hero-copy p.lead{font-size:1.06rem;color:var(--muted);max-width:44ch;font-weight:300}
+.hero-actions{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap}
+.btn{font-family:'Space Mono',monospace;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:15px 26px;border-radius:2px;cursor:pointer;transition:.4s var(--ease);border:1px solid transparent;display:inline-flex;align-items:center;gap:10px}
+.btn-primary{background:var(--ice);color:#04121f;box-shadow:0 0 0 rgba(56,189,248,0)}
+.btn-primary:hover{box-shadow:0 8px 40px rgba(56,189,248,.35);transform:translateY(-2px)}
+.btn-ghost{border-color:var(--line);color:var(--text);background:var(--glass)}
+.btn-ghost:hover{border-color:var(--ice);color:var(--ice)}
+
+.hero-meta{display:flex;gap:28px;margin-top:44px;flex-wrap:wrap}
+.hero-meta div{border-left:1px solid var(--line);padding-left:14px}
+.hero-meta b{font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--text);display:block;font-weight:700}
+.hero-meta span{font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- CRYSTAL VESSEL ---------- */
+.vessel-wrap{position:relative;display:flex;justify-content:center;align-items:center}
+.vessel{position:relative;width:min(460px,86vw);aspect-ratio:1;cursor:crosshair}
+.vessel::before{content:"";position:absolute;inset:-14%;border-radius:50%;
+  background:radial-gradient(circle,rgba(56,189,248,.22),transparent 62%);
+  filter:blur(10px);animation:pulse 5.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.05)}}
+.vessel .frame{position:absolute;inset:-26px;border:1px solid var(--line);border-radius:50%;
+  -webkit-mask-image:conic-gradient(from 210deg,#000 0 62%,transparent 62% 100%);
+  mask-image:conic-gradient(from 210deg,#000 0 62%,transparent 62% 100%)}
+.vessel .frame2{position:absolute;inset:-46px;border:1px dashed rgba(125,211,252,.16);border-radius:50%;
+  animation:spin 40s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.vessel .fish{position:absolute;inset:9%;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 40% 34%,#F27C93 0%,#D9455F 42%,#A81F3E 78%,#7d1530 100%);
+  box-shadow:inset 0 0 60px rgba(80,0,20,.6),0 20px 60px rgba(0,0,0,.5)}
+.vessel .fish::after{content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(115deg,rgba(255,214,224,.55) 0 2px,transparent 2px 15px),
+    repeating-linear-gradient(115deg,rgba(120,20,40,.4) 0 1px,transparent 1px 24px);
+  opacity:.55;mix-blend-mode:screen}
+.vessel .fish::before{content:"";position:absolute;width:70%;height:40%;left:10%;top:14%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.5),transparent 70%);filter:blur(6px)}
+
+.vessel .ice{position:absolute;inset:9%;border-radius:50%;overflow:hidden;
+  background:linear-gradient(150deg,rgba(180,230,255,.5),rgba(56,189,248,.16) 45%,rgba(9,25,45,.55));
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  box-shadow:inset 0 0 40px rgba(56,189,248,.25);
+  transition:opacity .5s var(--ease)}
+.vessel .ice svg{position:absolute;inset:0;width:100%;height:100%}
+.facet{stroke:rgba(220,245,255,.5);stroke-width:.6;transform-origin:center;
+  transition:transform .55s var(--ease),opacity .55s var(--ease);will-change:transform,opacity}
+.vessel:hover .facet{transform:translate(calc(var(--dx)*1px),calc(var(--dy)*1px)) rotate(calc(var(--rot)*1deg));
+  opacity:calc(1 - var(--crack)*.9)}
+.vessel .glint{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.55) 50%,transparent 58%);
+  background-size:250% 250%;mix-blend-mode:screen;opacity:.7;animation:glint 6s ease-in-out infinite}
+@keyframes glint{0%,100%{background-position:120% 120%}50%{background-position:-20% -20%}}
+.vessel .cracklines{position:absolute;inset:9%;pointer-events:none;opacity:0;transition:opacity .4s}
+.vessel:hover .cracklines{opacity:1}
+.vessel .cracklines line{stroke:rgba(255,255,255,.9);stroke-width:1;filter:drop-shadow(0 0 4px rgba(56,189,248,.9));
+  stroke-dasharray:60;stroke-dashoffset:60;animation:crack .5s var(--ease) forwards}
+@keyframes crack{to{stroke-dashoffset:0}}
+.vessel .scanline{position:absolute;left:9%;right:9%;height:2px;top:9%;
+  background:linear-gradient(90deg,transparent,var(--ice),transparent);opacity:.5;
+  animation:scan 4.5s ease-in-out infinite;border-radius:2px}
+@keyframes scan{0%,100%{top:12%;opacity:.15}50%{top:88%;opacity:.6}}
+
+/* readouts */
+.readout{position:absolute;font-family:'Space Mono',monospace;z-index:5;pointer-events:none}
+.readout .lbl{font-size:.56rem;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+.readout .val{font-size:.9rem;color:var(--ice);letter-spacing:.08em}
+.r-top{top:-8px;left:50%;transform:translateX(-50%);text-align:center}
+.r-left{left:-6px;top:34%;text-align:left}
+.r-right{right:-6px;top:52%;text-align:right}
+.r-bottom{bottom:-14px;left:50%;transform:translateX(-50%);text-align:center}
+.r-bottom .val{font-size:1.15rem;color:var(--ice-soft)}
+.temp .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ice);
+  box-shadow:0 0 8px var(--ice);animation:blink 1.6s steps(2) infinite;vertical-align:middle;margin-right:6px}
+@keyframes blink{50%{opacity:.2}}
+
+/* ---------- MARQUEE ---------- */
+.marquee{border-block:1px solid var(--line);overflow:hidden;padding:18px 0;
+  background:linear-gradient(90deg,rgba(56,189,248,.03),transparent,rgba(56,189,248,.03))}
+.marquee-track{display:flex;gap:52px;white-space:nowrap;width:max-content;animation:marq 32s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+.marquee span{font-family:'Space Mono',monospace;font-size:.82rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:52px}
+.marquee span::after{content:"◆";color:var(--ice);font-size:.6rem}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- SECTION SHELL ---------- */
+section{position:relative;padding:clamp(70px,10vw,130px) 0}
+.sec-head{max-width:640px;margin-bottom:56px}
+.sec-head h2{font-size:clamp(1.9rem,4vw,3.1rem);margin:18px 0 16px}
+.sec-head p{color:var(--muted);max-width:52ch}
+
+/* ---------- MANIFESTO ---------- */
+.manifesto{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center}
+.manifesto .big{font-size:clamp(1.5rem,3vw,2.3rem);line-height:1.28;font-weight:300;letter-spacing:-.01em}
+.manifesto .big em{font-style:normal;color:var(--ice)}
+.manifesto .side p{color:var(--muted);margin-bottom:22px}
+.spec-list{list-style:none;display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+.spec-list li{background:var(--bg2);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.spec-list li span{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.spec-list li b{font-family:'Space Mono',monospace;font-weight:700;color:var(--ice-soft);font-size:.92rem}
+
+/* ---------- MATRIX ---------- */
+.matrix{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.card{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;
+  background:var(--bg2);min-height:360px;display:flex;flex-direction:column;cursor:pointer;
+  transition:transform .5s var(--ease),border-color .5s}
+.card:hover{transform:translateY(-6px);border-color:rgba(56,189,248,.4)}
+.card .thumb{position:relative;flex:1;overflow:hidden;min-height:230px}
+.card .thumb .img{position:absolute;inset:0;transition:filter .6s var(--ease),transform .6s var(--ease)}
+.card .thumb .img::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg,rgba(255,214,224,.4) 0 1.5px,transparent 1.5px 13px);opacity:.5;mix-blend-mode:screen}
+.card .ice-layer{position:absolute;inset:0;
+  background:linear-gradient(150deg,rgba(180,230,255,.55),rgba(56,189,248,.14) 45%,rgba(9,25,45,.6));
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  transition:opacity .6s var(--ease),backdrop-filter .6s;
+  box-shadow:inset 0 0 30px rgba(56,189,248,.2)}
+.card .ice-layer svg{position:absolute;inset:0;width:100%;height:100%}
+.card:hover .ice-layer{opacity:.12;backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0)}
+.card:hover .thumb .img{transform:scale(1.06)}
+.card .info{padding:20px 22px;border-top:1px solid var(--line);background:rgba(11,18,32,.7)}
+.card .info .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.card .info h3{font-size:1.15rem;letter-spacing:-.01em}
+.card .info .code{font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.18em;color:var(--ice)}
+.card .info p{font-size:.82rem;color:var(--muted);margin-top:8px}
+.card .tags{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.card .tags i{font-style:normal;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;
+  text-transform:uppercase;padding:4px 9px;border:1px solid var(--line);border-radius:2px;color:var(--ice-soft)}
+.card .probe{position:absolute;top:14px;left:14px;z-index:3;font-family:'Space Mono',monospace;
+  font-size:.66rem;letter-spacing:.14em;color:var(--ice);background:rgba(7,12,22,.6);
+  padding:5px 9px;border:1px solid var(--line);border-radius:2px;backdrop-filter:blur(4px)}
+
+/* ---------- CHAIN ---------- */
+.chain{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.chain::before{content:"";position:absolute;top:34px;left:6%;right:6%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--ice),var(--ice),transparent);opacity:.5}
+.step{padding:0 22px;position:relative}
+.step .num{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--line);background:var(--bg2);position:relative;z-index:2;margin-bottom:26px;
+  font-family:'Space Mono',monospace;font-size:1.1rem;color:var(--ice);
+  box-shadow:0 0 0 6px var(--bg)}
+.step h3{font-size:1.05rem;margin-bottom:10px}
+.step p{font-size:.85rem;color:var(--muted)}
+.step .t{font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.16em;color:var(--ice-soft);margin-top:12px;display:block}
+
+/* ---------- PANEL ---------- */
+.scrim{position:fixed;inset:0;background:rgba(4,9,18,.6);backdrop-filter:blur(3px);
+  opacity:0;pointer-events:none;transition:opacity .4s;z-index:80}
+.scrim.open{opacity:1;pointer-events:auto}
+.panel{position:fixed;top:0;right:0;height:100%;width:min(460px,92vw);z-index:90;
+  background:linear-gradient(180deg,#0c1626,#0a1120);border-left:1px solid var(--line);
+  transform:translateX(100%);transition:transform .55s var(--ease);overflow-y:auto;
+  box-shadow:-30px 0 60px rgba(0,0,0,.5)}
+.panel.open{transform:translateX(0)}
+.panel .close{position:absolute;top:18px;right:18px;background:none;border:1px solid var(--line);
+  color:var(--ice);width:38px;height:38px;border-radius:2px;cursor:pointer;font-size:1.1rem;transition:.3s}
+.panel .close:hover{background:var(--ice);color:#04121f}
+.panel .pv{height:230px;position:relative;overflow:hidden}
+.panel .pv .img{position:absolute;inset:0}
+.panel .pv .img::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(115deg,rgba(255,214,224,.4) 0 1.5px,transparent 1.5px 13px);opacity:.5;mix-blend-mode:screen}
+.panel .pv .code{position:absolute;bottom:14px;left:16px;font-family:'Space Mono',monospace;
+  font-size:.72rem;letter-spacing:.2em;color:var(--ice);text-shadow:0 0 10px #000}
+.panel .body{padding:26px 28px}
+.panel .body h3{font-size:1.7rem;margin-bottom:6px}
+.panel .body .sub{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.panel .body p{color:var(--muted);margin:18px 0}
+.panel .specs{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:22px 0}
+.panel .specs div{background:var(--bg2);padding:14px 16px}
+.panel .specs span{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.panel .specs b{font-family:'Space Mono',monospace;font-size:.92rem;color:var(--ice-soft)}
+.panel .order{width:100%;justify-content:center;margin-top:8px}
+
+/* ---------- FOOTER ---------- */
+footer{border-top:1px solid var(--line);padding:70px 0 40px;background:var(--bg3)}
+.foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
+.foot-brand .word{font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.24em;
+  text-transform:uppercase;font-size:1rem;margin-bottom:18px;display:block}
+.foot-brand p{color:var(--muted);max-width:34ch;font-size:.9rem}
+.foot-col h4{font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ice);margin-bottom:18px}
+.foot-col a{display:block;color:var(--muted);font-size:.88rem;padding:6px 0;transition:.3s}
+.foot-col a:hover{color:var(--text);padding-left:6px}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:56px;
+  padding-top:24px;border-top:1px solid var(--line);flex-wrap:wrap;gap:14px}
+.foot-bottom small{color:var(--muted);font-family:'Space Mono',monospace;font-size:.68rem;letter-spacing:.1em}
+
+/* ---------- REVEAL ---------- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:900px){
+  .nav-links,.nav-cta{display:none}
+  .burger{display:flex}
+  .nav.open .nav-links{display:flex;position:absolute;top:100%;left:0;right:0;flex-direction:column;
+    gap:0;padding:10px 24px 24px;background:rgba(9,15,28,.97);border-bottom:1px solid var(--line)}
+  .nav.open .nav-links a{padding:14px 0;border-bottom:1px solid var(--line)}
+  .hero-inner{grid-template-columns:1fr;gap:60px}
+  .hero-copy{order:2;text-align:left}
+  .vessel-wrap{order:1}
+  .manifesto{grid-template-columns:1fr;gap:40px}
+  .chain{grid-template-columns:1fr 1fr;gap:40px 0}
+  .chain::before{display:none}
+  .foot-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .chain{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr}
+  .hero-meta{gap:18px}
+  .panel .specs{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="brand">
+    <svg viewBox="0 0 40 40" fill="none">
+      <polygon points="20,2 38,20 20,38 2,20" stroke="#38BDF8" stroke-width="1.4" fill="rgba(56,189,248,.06)"/>
+      <polygon points="20,10 30,20 20,30 10,20" fill="#38BDF8" opacity=".85"/>
+      <line x1="20" y1="2" x2="20" y2="38" stroke="#38BDF8" stroke-width=".6" opacity=".5"/>
+      <line x1="2" y1="20" x2="38" y2="20" stroke="#38BDF8" stroke-width=".6" opacity=".5"/>
+    </svg>
+    <span class="word">TSURU <b>COLD CHAIN</b></span>
+  </div>
+  <div class="nav-links">
+    <a href="#matrix">The Matrix</a>
+    <a href="#chain">Chain</a>
+    <a href="#protocol">Protocol</a>
+    <a href="#contact">Access</a>
+  </div>
+  <a href="#contact" class="nav-cta">Request Access</a>
+  <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-bg">
+    <div class="grid"></div>
+    <div class="rays"></div>
+  </div>
+  <div class="wrap hero-inner">
+    <div class="hero-copy">
+      <span class="eyebrow">Bluefin Preservation · Est. 2014</span>
+      <h1>Preserved<br><span class="l2">at the source.</span></h1>
+      <p class="lead">Toro suspended in a crystalline lattice, held at −60°C from the moment of the cut. No thaw. No drift. Only the integrity of the flesh, delivered to your counter in a state of arrested time.</p>
+      <div class="hero-actions">
+        <a href="#matrix" class="btn btn-primary">Enter the Matrix</a>
+        <a href="#chain" class="btn btn-ghost">View the Chain</a>
+      </div>
+      <div class="hero-meta">
+        <div><b>−60°C</b><span>Cellular freeze</span></div>
+        <div><b>0.2°C</b><span>Max drift</span></div>
+        <div><b>72h</b><span>From sea to plate</span></div>
+      </div>
+    </div>
+
+    <div class="vessel-wrap">
+      <div class="vessel" id="vessel">
+        <div class="frame"></div>
+        <div class="frame2"></div>
+        <div class="fish"></div>
+        <div class="ice" id="ice">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" id="iceSvg"></svg>
+          <div class="glint"></div>
+        </div>
+        <svg class="cracklines" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="50" y1="50" x2="18" y2="22"/>
+          <line x1="50" y1="50" x2="84" y2="30"/>
+          <line x1="50" y1="50" x2="30" y2="82"/>
+          <line x1="50" y1="50" x2="78" y2="80"/>
+          <line x1="50" y1="50" x2="50" y2="8"/>
+        </svg>
+        <div class="scanline"></div>
+
+        <div class="readout r-top"><div class="lbl">Specimen</div><div class="val">TORO · VENTRAL</div></div>
+        <div class="readout r-left"><div class="lbl">Core</div><div class="val temp"><span class="dot"></span>−20.4°C</div></div>
+        <div class="readout r-right"><div class="lbl">Humidity</div><div class="val">08.2%</div></div>
+        <div class="readout r-bottom"><div class="lbl">Matrix Integrity</div><div class="val" id="integrity">100.0%</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track" id="marquee"></div>
+</div>
+
+<!-- MANIFESTO -->
+<section id="protocol">
+  <div class="wrap manifesto">
+    <div class="reveal">
+      <span class="eyebrow">The Protocol</span>
+      <p class="big" style="margin-top:22px">Freshness is a rumor. <em>Temperature is a fact.</em> We do not chase the myth of the catch — we engineer the moment it is frozen, holding every cell in perfect suspension until the knife finds it again.</p>
+    </div>
+    <div class="side reveal">
+      <p>Each specimen is ultra-frozen within minutes of the cut, sealed into a geometric ice lattice that eliminates oxidation and halts enzymatic decay. What arrives at your counter is not preserved fish. It is a pause.</p>
+      <ul class="spec-list">
+        <li><span>Freezing Method</span><b>Ultra · −60°C</b></li>
+        <li><span>Core Variance</span><b>±0.2°C</b></li>
+        <li><span>Seal</span><b>Crystalline Vacuum</b></li>
+        <li><span>Provenance</span><b>Traceable · QR</b></li>
+        <li><span>Thaw Profile</span><b>Controlled · 4°C</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- MATRIX -->
+<section id="matrix">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The Ice Crystal Matrix</span>
+      <h2>Every cut, catalogued and frozen.</h2>
+      <p>Hover to fracture the lattice. Click to open the specimen dossier. Each entry is a single, verified block — graded, imaged, and held at temperature.</p>
+    </div>
+    <div class="matrix" id="matrixGrid"></div>
+  </div>
+</section>
+
+<!-- CHAIN -->
+<section id="chain">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The Cold Chain</span>
+      <h2>Four states. Zero thaw.</h2>
+      <p>An unbroken thermal line from the deep to the kitchen. Every handoff is logged, every degree recorded.</p>
+    </div>
+    <div class="chain">
+      <div class="step reveal"><div class="num">01</div><h3>Arrest</h3><p>Ultra-freeze within 4 minutes of the cut. Ice crystals form smaller than a cell — no rupture.</p><span class="t">−60°C · INSTANT</span></div>
+      <div class="step reveal"><div class="num">02</div><h3>Lattice</h3><p>Encased in a geometric vacuum seal that refracts light and blocks oxygen entirely.</p><span class="t">CRYSTALLINE SEAL</span></div>
+      <div class="step reveal"><div class="num">03</div><h3>Transit</h3><p>Refrigerated line with continuous telemetry. Any drift beyond 0.2°C triggers a recall.</p><span class="t">−60°C · MONITORED</span></div>
+      <div class="step reveal"><div class="num">04</div><h3>Thaw</h3><p>Controlled descent to 4°C at the counter. The flesh returns to its original state.</p><span class="t">4°C · 6 HRS</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <span class="word">TSURU <span style="color:var(--ice)">COLD CHAIN</span></span>
+        <p>Deep-sea preservation for the world's most exacting counters. By invitation and verified trade only.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Specimens</h4>
+        <a href="#matrix">Otoro</a><a href="#matrix">Chutoro</a><a href="#matrix">Akami</a><a href="#matrix">Sealed Blocks</a>
+      </div>
+      <div class="foot-col">
+        <h4>Protocol</h4>
+        <a href="#protocol">Freezing</a><a href="#chain">The Chain</a><a href="#protocol">Telemetry</a><a href="#protocol">Grading</a>
+      </div>
+      <div class="foot-col">
+        <h4>Access</h4>
+        <a href="#">Chef Portal</a><a href="#">Trade Inquiry</a><a href="#">Provenance Log</a><a href="#">Tokyo · Toyosu</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <small>© 2024 TSURU COLD CHAIN — PRESERVED AT SOURCE</small>
+      <small>35.65°N 139.78°E · CORE −60.0°C · NOMINAL</small>
+    </div>
+  </div>
+</footer>
+
+<!-- PANEL -->
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" aria-hidden="true">
+  <button class="close" id="panelClose" aria-label="Close">✕</button>
+  <div class="pv"><div class="img" id="panelImg"></div><div class="code" id="panelCode"></div></div>
+  <div class="body">
+    <span class="sub" id="panelSub"></span>
+    <h3 id="panelTitle"></h3>
+    <p id="panelDesc"></p>
+    <div class="specs" id="panelSpecs"></div>
+    <button class="btn btn-primary order" id="panelOrder">Add to Cold Order</button>
+  </div>
+</aside>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- build ice facets for hero ---------- */
+  function buildIce(svg, count){
+    const cx=50, cy=50; let html='';
+    for(let i=0;i<count;i++){
+      const a0=Math.random()*Math.PI*2, a1=a0+0.5+Math.random()*0.9;
+      const r0=6+Math.random()*16, r1=40+Math.random()*22;
+      const p=[
+        [cx+Math.cos(a0)*r0, cy+Math.sin(a0)*r0],
+        [cx+Math.cos(a0)*r1, cy+Math.sin(a0)*r1],
+        [cx+Math.cos(a1)*r1, cy+Math.sin(a1)*r1],
+        [cx+Math.cos(a1)*r0, cy+Math.sin(a1)*r0]
+      ];
+      const pts=p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+      const mx=(p[0][0]+p[2][0])/2, my=(p[0][1]+p[2][1])/2;
+      const dx=(mx-cx)*0.32, dy=(my-cy)*0.32, rot=(Math.random()-0.5)*14;
+      const op=(0.06+Math.random()*0.16).toFixed(2);
+      const crack=(0.7+Math.random()*0.3).toFixed(2);
+      html+=`<polygon class="facet" points="${pts}" fill="rgba(200,240,255,${op})" style="--dx:${dx.toFixed(2)};--dy:${dy.toFixed(2)};--rot:${rot.toFixed(2)};--crack:${crack}"/>`;
+    }
+    svg.innerHTML=html;
+  }
+  const iceSvg=document.getElementById('iceSvg');
+  if(iceSvg) buildIce(iceSvg, 26);
+
+  /* ---------- integrity readout on hover ---------- */
+  const vessel=document.getElementById('vessel');
+  const integrity=document.getElementById('integrity');
+  if(vessel && !reduce){
+    let raf, target=100, cur=100;
+    function tick(){
+      cur += (target-cur)*0.12;
+      integrity.textContent=cur.toFixed(1)+'%';
+      if(Math.abs(target-cur)>0.05){raf=requestAnimationFrame(tick);}
+    }
+    vessel.addEventListener('mouseenter',()=>{target=41.3;cancelAnimationFrame(raf);tick();});
+    vessel.addEventListener('mouseleave',()=>{target=100;cancelAnimationFrame(raf);tick();});
+  }
+
+  /* ---------- marquee ---------- */
+  const items=['TORO','CHUTORO','AKAMI','−60°C CORE','CRYSTALLINE SEAL','ZERO THAW','TOYOSU','TRACEABLE','CELLULAR FREEZE','ARRESTED TIME'];
+  const track=document.getElementById('marquee');
+  const seq=items.concat(items).map(t=>`<span>${t}</span>`).join('');
+  track.innerHTML=seq;
+
+  /* ---------- specimen data ---------- */
+  const data=[
+    {code:'TSR-001',name:'Otoro',sub:'Ventral · Grade A5',g:'radial-gradient(circle at 42% 34%,#F58AA0,#DE5069 40%,#B02546 74%,#7c1330)',
+     desc:'The fattiest cut of the bluefin belly, marbled in fine capillaries of fat that dissolve at body temperature. Frozen at −60°C to hold the melt.',
+     tags:['Grade A5','Melt','Belly'],specs:[['Core','−60.0°C'],['Marbling','9 / 10'],['Origin','Ōma, Aomori'],['Weight','1.2 kg']]},
+    {code:'TSR-014',name:'Chutoro',sub:'Mid-Belly · Grade A4',g:'radial-gradient(circle at 40% 38%,#EF7E92,#D64A64 42%,#9E1E3E 78%,#6f1029)',
+     desc:'Balanced fat and lean from the mid-belly. The versatile centerpiece of any omakase progression.',
+     tags:['Grade A4','Balanced','Mid-Belly'],specs:[['Core','−60.0°C'],['Marbling','7 / 10'],['Origin','Ōma, Aomori'],['Weight','1.0 kg']]},
+    {code:'TSR-027',name:'Akami',sub:'Loin · Grade A3',g:'radial-gradient(circle at 44% 36%,#E8637A,#C43A55 44%,#8E1533 80%,#5f0c22)',
+     desc:'Deep red loin, lean and iron-rich. The cleanest expression of the fish — a bright, metallic finish.',
+     tags:['Grade A3','Lean','Loin'],specs:[['Core','−60.0°C'],['Marbling','3 / 10'],['Origin','Ōma, Aomori'],['Weight','0.9 kg']]},
+    {code:'TSR-040',name:'Sealed Block',sub:'Vacuum · −60°C',g:'radial-gradient(circle at 46% 40%,#EFA0B0,#D65A72 46%,#A82C48 80%,#7a1330)',
+     desc:'A full sub-primal block sealed in the crystalline lattice. Cut to your specification at the counter.',
+     tags:['Vacuum','Block','Custom'],specs:[['Core','−60.0°C'],['Marbling','Mixed'],['Origin','Traceable'],['Weight','3.4 kg']]},
+    {code:'TSR-055',name:'Toro Reserve',sub:'Cellar · A5 Reserve',g:'radial-gradient(circle at 40% 32%,#F793A8,#E05874 40%,#B32A4A 76%,#821534)',
+     desc:'Reserve-grade otoro aged in ultra-cold storage, held for depth of flavor before release to select counters.',
+     tags:['Reserve','Aged','Cellar'],specs:[['Core','−60.0°C'],['Marbling','10 / 10'],['Origin','Ōma, Aomori'],['Weight','0.8 kg']]},
+    {code:'TSR-068',name:'Sashimi Set',sub:'Progression · 4 Cut',g:'radial-gradient(circle at 42% 38%,#EE7E94,#D0465F 44%,#9C1C3C 78%,#6d0f27)',
+     desc:'A curated progression from lean to fatty, each cut individually frozen and thawed to order.',
+     tags:['Set','Progression','4 Cut'],specs:[['Core','−60.0°C'],['Cuts','4'],['Origin','Ōma, Aomori'],['Weight','0.6 kg']]}
+  ];
+
+  function facetSVG(){
+    let s='';const cx=50,cy=50;
+    for(let i=0;i<18;i++){
+      const a0=Math.random()*6.28,a1=a0+0.6+Math.random()*0.9;
+      const r0=8+Math.random()*14,r1=42+Math.random()*20;
+      const p=[[cx+Math.cos(a0)*r0,cy+Math.sin(a0)*r0],[cx+Math.cos(a0)*r1,cy+Math.sin(a0)*r1],[cx+Math.cos(a1)*r1,cy+Math.sin(a1)*r1],[cx+Math.cos(a1)*r0,cy+Math.sin(a1)*r0]];
+      const pts=p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+      const op=(0.08+Math.random()*0.18).toFixed(2);
+      s+=`<polygon points="${pts}" fill="rgba(200,240,255,${op})" stroke="rgba(220,245,255,.4)" stroke-width=".5"/>`;
+    }
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${s}</svg>`;
+  }
+
+  const grid=document.getElementById('matrixGrid');
+  grid.innerHTML=data.map((d,i)=>`
+    <article class="card reveal" data-i="${i}" style="transition-delay:${(i%3)*90}ms">
+      <div class="probe">−60.0°C</div>
+      <div class="thumb">
+        <div class="img" style="background:${d.g}"></div>
+        <div class="ice-layer">${facetSVG()}</div>
+      </div>
+      <div class="info">
+        <div class="row"><h3>${d.name}</h3><span class="code">${d.code}</span></div>
+        <p>${d.sub}</p>
+        <div class="tags">${d.tags.map(t=>`<i>${t}</i>`).join('')}</div>
+      </div>
+    </article>`).join('');
+
+  /* ---------- panel ---------- */
+  const panel=document.getElementById('panel');
+  const scrim=document.getElementById('scrim');
+  const freeze=document.createElement('div');
+  freeze.style.cssText='position:fixed;inset:0;z-index:95;background:#0F172A;opacity:0;pointer-events:none;transition:opacity .35s;backdrop-filter:grayscale(1) brightness(1.4)';
+  document.body.appendChild(freeze);
+
+  function openPanel(i){
+    const d=data[i];
+    document.getElementById('panelImg').style.background=d.g;
+    document.getElementById('panelCode').textContent=d.code;
+    document.getElementById('panelSub').textContent=d.sub;
+    document.getElementById('panelTitle').textContent=d.name;
+    document.getElementById('panelDesc').textContent=d.desc;
+    document.getElementById('panelSpecs').innerHTML=d.specs.map(s=>`<div><span>${s[0]}</span><b>${s[1]}</b></div>`).join('');
+    if(!reduce){
+      freeze.style.opacity='1';
+      setTimeout(()=>{freeze.style.opacity='0';},260);
+    }
+    panel.classList.add('open');scrim.classList.add('open');
+    panel.setAttribute('aria-hidden','false');
+    document.getElementById('panelOrder').textContent='Add '+d.name+' to Cold Order';
+  }
+  function closePanel(){panel.classList.remove('open');scrim.classList.remove('open');panel.setAttribute('aria-hidden','true');}
+  grid.addEventListener('click',e=>{const c=e.target.closest('.card');if(c)openPanel(+c.dataset.i);});
+  document.getElementById('panelClose').addEventListener('click',closePanel);
+  scrim.addEventListener('click',closePanel);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+
+  /* ---------- reveal observer ---------- */
+  if('IntersectionObserver' in window && !reduce){
+    const io=new IntersectionObserver((es)=>{es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}});},{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  }else{document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));}
+
+  /* ---------- nav ---------- */
+  const nav=document.getElementById('nav');
+  document.getElementById('burger').addEventListener('click',()=>nav.classList.toggle('open'));
+  nav.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>nav.classList.remove('open')));
+
+  /* ---------- parallax rays (subtle) ---------- */
+  if(!reduce){
+    const rays=document.querySelector('.rays');
+    window.addEventListener('scroll',()=>{const y=window.scrollY;rays.style.transform='translateX(-50%) translateY('+(y*0.15)+'px)';},{passive:true});
+  }
+})();
+</script>
+</body>
+</html>

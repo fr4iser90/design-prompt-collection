@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Splice Studio — Microfilm & Paper Records, Migrated to Digital Archives</title>
+<meta name="description" content="Splice Studio migrates legacy microfilm and paper records to clean, searchable digital archives. Precision splicing. Preservation-grade scanning.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#111111; --text:#EEEEEE; --green:#CCFF00; --grey:#333333; --grey2:#1a1a1a;
+  --mono:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+  --disp:'Oswald','Arial Narrow',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--mono);
+  font-size:16px; line-height:1.5; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+::selection{background:var(--green);color:#111}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ---------- Film grain overlay ---------- */
+.grain{
+  position:fixed; inset:0; z-index:9000; pointer-events:none; opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- Top status bar ---------- */
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:800;
+  display:flex; align-items:center; gap:14px; padding:9px 20px;
+  font-size:11px; letter-spacing:.12em; color:#8a8a8a;
+  background:rgba(17,17,17,.86); border-bottom:1px solid var(--grey);
+  backdrop-filter:blur(4px);
+}
+.topbar .led{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2.4s steps(1) infinite}
+.topbar .sep{color:var(--grey)}
+.topbar .spacer{flex:1}
+.topbar .clock{color:var(--green)}
+@keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.25}}
+
+/* ---------- Header ---------- */
+header{
+  position:fixed; top:33px; left:0; right:0; z-index:790;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 24px;
+  background:linear-gradient(180deg,rgba(17,17,17,.92) 0%,rgba(17,17,17,0) 100%);
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand svg{width:30px;height:30px;flex:none}
+.brand .wm{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:.02em;line-height:1}
+.brand .wm span{color:var(--green)}
+.brand .sub{font-size:9px;letter-spacing:.32em;color:#7a7a7a;margin-top:3px}
+nav{display:flex;align-items:center;gap:30px}
+nav a{font-size:12px;letter-spacing:.14em;color:#b9b9b9;position:relative;padding:4px 0;text-transform:uppercase}
+nav a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:2px;background:var(--green);transition:width .28s cubic-bezier(.7,0,.2,1)}
+nav a:hover{color:var(--green)}
+nav a:hover::after{width:100%}
+.nav-cta{border:1px solid var(--grey);padding:9px 16px;font-size:11px;letter-spacing:.16em;color:var(--green);text-transform:uppercase;transition:.25s}
+.nav-cta:hover{background:var(--green);color:#111;border-color:var(--green)}
+.menu-btn{display:none;font-size:12px;letter-spacing:.14em;color:var(--green);border:1px solid var(--grey);padding:8px 12px}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+  padding:15px 26px;border:1px solid var(--green);color:var(--green);
+  background:transparent;transition:.22s;
+}
+.btn:hover{background:var(--green);color:#111;box-shadow:0 0 24px rgba(204,255,0,.25)}
+.btn.ghost{border-color:var(--grey);color:var(--text)}
+.btn.ghost:hover{border-color:var(--green);color:var(--green);background:transparent;box-shadow:none}
+
+/* ---------- Hero ---------- */
+.hero{
+  position:relative; min-height:100vh; padding:120px 24px 0;
+  display:flex; flex-direction:column;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #171717 0%, #111 60%),
+    repeating-linear-gradient(0deg,transparent 0 47px,rgba(255,255,255,.022) 47px 48px),
+    repeating-linear-gradient(90deg,transparent 0 47px,rgba(255,255,255,.022) 47px 48px);
+  overflow:hidden;
+}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(140% 120% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%)}
+.hero-inner{position:relative;z-index:3;flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1400px;margin:0 auto;width:100%}
+.kicker{display:flex;align-items:center;gap:12px;font-size:12px;letter-spacing:.28em;color:var(--green);text-transform:uppercase;margin-bottom:26px}
+.kicker .tick{width:34px;height:1px;background:var(--green)}
+.hero h1{
+  font-family:var(--disp);font-weight:700;text-transform:uppercase;
+  font-size:clamp(3rem,10.5vw,9.2rem);line-height:.9;letter-spacing:-.01em;
+}
+.hero h1 .l2{color:var(--green)}
+.hero h1 .l3{color:#5c5c5c;-webkit-text-stroke:1px var(--text);color:transparent}
+.hero-lead{max-width:520px;margin-top:30px;color:#b0b0b0;font-size:15px;line-height:1.7}
+.hero-lead b{color:var(--text);font-weight:600}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-top:34px}
+.hero-readout{display:flex;flex-wrap:wrap;gap:26px;margin-top:44px;font-size:11px;letter-spacing:.1em;color:#7a7a7a}
+.hero-readout div span{display:block;color:var(--green);font-size:20px;font-weight:600;letter-spacing:.02em;margin-bottom:2px}
+.hero-readout div span.mut{color:var(--text)}
+
+/* ---------- Filmstrip ---------- */
+.strip-wrap{position:relative;z-index:3;margin-top:44px;padding:0 0 40px}
+.strip-meta{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.18em;color:#666;margin-bottom:8px}
+.strip-meta .rec{color:var(--green)}
+.strip-viewport{position:relative;height:150px;overflow:hidden;border-top:1px solid var(--grey);border-bottom:1px solid var(--grey);background:#0c0c0c}
+.strip-viewport::before,.strip-viewport::after{content:"";position:absolute;top:0;bottom:0;width:120px;z-index:5;pointer-events:none}
+.strip-viewport::before{left:0;background:linear-gradient(90deg,#0c0c0c,transparent)}
+.strip-viewport::after{right:0;background:linear-gradient(270deg,#0c0c0c,transparent)}
+.strip-track{position:absolute;top:0;left:0;height:100%;display:flex;will-change:transform}
+.frame{
+  position:relative;flex:none;width:190px;height:100%;margin-right:26px;
+  background:#050505;border:1px solid #262626;padding:14px 14px 12px;
+  display:flex;flex-direction:column;gap:5px;overflow:hidden;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s;
+}
+.frame .sprock{position:absolute;top:0;left:0;right:0;height:12px;background:
+  repeating-linear-gradient(90deg,transparent 0 14px,#0c0c0c 14px 26px);border-bottom:1px solid #222}
+.frame .sprock.b{top:auto;bottom:0;border-top:1px solid #222;border-bottom:none}
+.frame .fbody{flex:1;margin-top:8px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.frame .tag{font-size:8px;letter-spacing:.14em;color:#5a5a5a}
+.frame .scan{position:absolute;inset:0;z-index:6;opacity:0;background:repeating-linear-gradient(0deg,rgba(204,255,0,.10) 0 1px,transparent 1px 3px);pointer-events:none;transition:opacity .3s}
+.frame:hover{transform:scale(1.05);border-color:var(--green);z-index:7}
+.frame:hover .scan{opacity:1;animation:scanmove .5s linear infinite}
+@keyframes scanmove{to{background-position:0 6px}}
+/* frame content types */
+.f-text .ln{height:5px;background:#2b2b2b}
+.f-text .ln:nth-child(odd){width:100%}
+.f-text .ln:nth-child(even){width:82%}
+.f-text .ln:nth-child(3n){width:64%;background:#3a3a3a}
+.f-text .ln.hi{background:var(--green);opacity:.85;width:40%}
+.f-qr{align-items:center;justify-content:center}
+.f-qr canvas{width:88px;height:88px;image-rendering:pixelated}
+.f-bar{align-items:flex-start;justify-content:center}
+.f-bar .code{font-size:8px;letter-spacing:.2em;color:#666;margin-top:6px}
+.f-data .row{display:flex;justify-content:space-between;font-size:9px;color:#5a5a5a;border-bottom:1px dotted #262626;padding-bottom:2px}
+.f-data .row b{color:#9a9a9a;font-weight:500}
+.f-data .row b.g{color:var(--green)}
+/* splice */
+.splice{position:relative;flex:none;width:44px;height:100%;display:flex;align-items:center;justify-content:center}
+.splice .tape{position:absolute;width:66px;height:40px;background:rgba(204,255,0,.14);border:1px solid rgba(204,255,0,.5);transform:rotate(-6deg);box-shadow:0 0 12px rgba(204,255,0,.12)}
+.splice .tape2{transform:rotate(7deg);width:60px;height:34px;background:rgba(204,255,0,.09)}
+.splice .dot{width:5px;height:5px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green)}
+.strip-progress{height:2px;background:var(--grey);margin-top:10px;position:relative}
+.strip-progress i{position:absolute;left:0;top:0;bottom:0;background:var(--green);width:0;box-shadow:0 0 10px var(--green)}
+
+/* ---------- Section shell ---------- */
+section{position:relative;padding:110px 24px;max-width:1400px;margin:0 auto}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;flex-wrap:wrap;border-bottom:1px solid var(--grey);padding-bottom:22px;margin-bottom:56px}
+.sec-index{font-size:12px;letter-spacing:.28em;color:var(--green);margin-bottom:14px}
+.sec-head h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(2.2rem,6vw,4.6rem);line-height:.92;letter-spacing:-.01em}
+.sec-head p{max-width:360px;color:#8f8f8f;font-size:13px;line-height:1.7}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- Services ---------- */
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--grey);border-left:1px solid var(--grey)}
+.svc{border-right:1px solid var(--grey);border-bottom:1px solid var(--grey);padding:30px;position:relative;transition:background .3s}
+.svc:hover{background:#151515}
+.svc .spec{font-size:10px;letter-spacing:.2em;color:#666;margin-bottom:22px;display:flex;justify-content:space-between}
+.svc .status{display:inline-flex;align-items:center;gap:7px;color:var(--green)}
+.svc .status i{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:blink 2s steps(1) infinite}
+.svc h3{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:1.7rem;line-height:1;margin-bottom:16px}
+.svc p{color:#9a9a9a;font-size:13px;line-height:1.75;margin-bottom:22px;min-height:66px}
+.svc .spec-rows{border-top:1px dashed #2a2a2a;padding-top:14px;display:flex;flex-direction:column;gap:7px}
+.svc .spec-rows .r{display:flex;justify-content:space-between;font-size:11px;color:#777}
+.svc .spec-rows .r b{color:var(--text);font-weight:500}
+.svc .idx{position:absolute;top:26px;right:26px;font-family:var(--disp);font-size:2.4rem;color:#222;font-weight:700;transition:color .3s}
+.svc:hover .idx{color:var(--green)}
+
+/* ---------- Process ---------- */
+.process{background:#0d0d0d;border-top:1px solid var(--grey);border-bottom:1px solid var(--grey);padding:110px 0}
+.process .wrap{max-width:1400px;margin:0 auto;padding:0 24px}
+.timeline{position:relative;margin-top:70px;padding-top:40px}
+.timeline .rail{position:absolute;top:44px;left:0;right:0;height:2px;background:var(--grey)}
+.timeline .rail i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--green);box-shadow:0 0 12px var(--green);transition:width 1.2s cubic-bezier(.2,.7,.2,1)}
+.timeline.in .rail i{width:100%}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);position:relative}
+.step{position:relative;padding:0 14px;cursor:pointer}
+.step .node{width:16px;height:16px;border:2px solid var(--grey);background:#0d0d0d;border-radius:50%;margin:0 auto 26px;position:relative;z-index:2;transition:.3s}
+.step:hover .node,.step.active .node{border-color:var(--green);background:var(--green);box-shadow:0 0 16px var(--green)}
+.step .num{font-size:11px;letter-spacing:.2em;color:#666;text-align:center;margin-bottom:10px}
+.step h4{font-family:var(--disp);font-weight:600;text-transform:uppercase;font-size:1.15rem;text-align:center;line-height:1.1;transition:color .3s}
+.step:hover h4,.step.active h4{color:var(--green)}
+.step .tip{position:absolute;left:50%;top:-8px;transform:translate(-50%,10px);width:200px;background:#161616;border:1px solid var(--green);padding:14px;font-size:11px;line-height:1.6;color:#b5b5b5;opacity:0;pointer-events:none;transition:.28s;z-index:10}
+.step:hover .tip{opacity:1;transform:translate(-50%,0)}
+.step .tip::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:#161616;border-right:1px solid var(--green);border-bottom:1px solid var(--green)}
+.step .tip b{color:var(--green);display:block;margin-bottom:6px;letter-spacing:.1em}
+
+/* ---------- Metrics ---------- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--grey)}
+.metric{padding:38px 26px;border-right:1px solid var(--grey);position:relative}
+.metric:last-child{border-right:none}
+.metric .v{font-family:var(--disp);font-weight:700;font-size:clamp(2.6rem,6vw,4.4rem);line-height:.9;color:var(--green)}
+.metric .v .u{color:var(--text);font-size:.4em;margin-left:4px}
+.metric .k{font-size:11px;letter-spacing:.18em;color:#8a8a8a;margin-top:16px;text-transform:uppercase}
+.metric .d{font-size:11px;color:#5f5f5f;margin-top:8px}
+
+/* ---------- Standards ---------- */
+.std-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:start}
+.std-list{display:flex;flex-direction:column}
+.std-row{display:flex;gap:24px;padding:22px 0;border-bottom:1px solid var(--grey);align-items:baseline;transition:.3s}
+.std-row:hover{padding-left:12px}
+.std-row .code{font-size:11px;letter-spacing:.14em;color:var(--green);white-space:nowrap;min-width:120px}
+.std-row .name{font-family:var(--disp);font-weight:500;text-transform:uppercase;font-size:1.3rem;line-height:1.1}
+.std-row .desc{margin-left:auto;font-size:11px;color:#777;text-align:right;max-width:220px}
+.spec-card{border:1px solid var(--grey);background:#141414;padding:30px}
+.spec-card h4{font-family:var(--disp);text-transform:uppercase;font-size:1.4rem;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center}
+.spec-card h4 .led{width:9px;height:9px;background:var(--green);border-radius:50%;box-shadow:0 0 10px var(--green)}
+.spec-card .line{display:flex;justify-content:space-between;font-size:12px;padding:11px 0;border-bottom:1px dotted #2c2c2c;color:#8f8f8f}
+.spec-card .line b{color:var(--text);font-weight:500}
+.spec-card .line b.g{color:var(--green)}
+
+/* ---------- CTA ---------- */
+.cta{position:relative;padding:120px 24px;text-align:center;overflow:hidden;
+  background:radial-gradient(90% 140% at 50% 50%,#181818,#111)}
+.cta .reel{position:absolute;width:520px;height:520px;opacity:.06;left:-160px;top:50%;transform:translateY(-50%)}
+.cta .reel.r2{left:auto;right:-160px;transform:translateY(-50%) scaleX(-1)}
+.cta h2{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:clamp(2.4rem,8vw,6rem);line-height:.9;position:relative;z-index:2}
+.cta h2 em{color:var(--green);font-style:normal}
+.cta p{max-width:460px;margin:26px auto 0;color:#9a9a9a;font-size:14px;position:relative;z-index:2}
+.cta .btn{margin-top:36px;position:relative;z-index:2}
+
+/* ---------- Footer ---------- */
+footer{border-top:1px solid var(--grey);background:#0a0a0a}
+.foot-top{max-width:1400px;margin:0 auto;padding:60px 24px 40px;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+.foot-brand .wm{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:.02em}
+.foot-brand .wm span{color:var(--green)}
+.foot-brand p{color:#777;font-size:12px;line-height:1.8;margin-top:16px;max-width:320px}
+.foot-col h5{font-size:11px;letter-spacing:.22em;color:#666;margin-bottom:18px;text-transform:uppercase}
+.foot-col a{display:block;font-size:12px;color:#b0b0b0;padding:6px 0;position:relative;width:fit-content;transition:color .25s}
+.foot-col a::after{content:"";position:absolute;left:0;bottom:2px;width:0;height:8px;background:rgba(204,255,0,.28);z-index:-1;transition:width .28s}
+.foot-col a:hover{color:var(--green)}
+.foot-col a:hover::after{width:100%}
+.foot-bottom{border-top:1px solid var(--grey);max-width:1400px;margin:0 auto;padding:22px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:11px;letter-spacing:.1em;color:#666}
+.foot-bottom .links{display:flex;gap:26px}
+.foot-bottom .links a{color:#9a9a9a}
+.foot-bottom .links a:hover{color:var(--green)}
+
+/* ---------- Responsive ---------- */
+@media(max-width:960px){
+  nav{display:none}
+  .menu-btn{display:block}
+  .svc-grid{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+  .metric:nth-child(2){border-right:none}
+  .metric:nth-child(1),.metric:nth-child(2){border-bottom:1px solid var(--grey)}
+  .std-grid{grid-template-columns:1fr;gap:40px}
+  .steps{grid-template-columns:1fr;gap:0}
+  .timeline .rail{display:none}
+  .step{display:flex;align-items:center;gap:18px;padding:20px 0;border-bottom:1px solid var(--grey)}
+  .step .node{margin:0}
+  .step .num,.step h4{text-align:left}
+  .step .tip{position:static;transform:none;opacity:1;pointer-events:auto;width:auto;margin-left:auto;display:none}
+  .foot-top{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .hero{padding-top:110px}
+  .metrics{grid-template-columns:1fr}
+  .metric{border-right:none;border-bottom:1px solid var(--grey)}
+  .metric:last-child{border-bottom:none}
+  .foot-bottom{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+  .timeline .rail i{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- Top status bar -->
+<div class="topbar">
+  <span class="led"></span>
+  <span>SPLICE&nbsp;OS&nbsp;v4.2</span>
+  <span class="sep">//</span>
+  <span>ARCHIVE&nbsp;NODE&nbsp;07</span>
+  <span class="spacer"></span>
+  <span>LINK&nbsp;<span style="color:var(--green)">SECURE</span></span>
+  <span class="sep">//</span>
+  <span class="clock" id="clock">--:--:--</span>
+</div>
+
+<!-- Header -->
+<header>
+  <a class="brand" href="#top">
+    <svg viewBox="0 0 40 40" fill="none" stroke="#CCFF00" stroke-width="1.4">
+      <circle cx="20" cy="20" r="18"/>
+      <circle cx="20" cy="20" r="4" fill="#CCFF00" stroke="none"/>
+      <circle cx="20" cy="8" r="2.4" fill="#111"/>
+      <circle cx="30.4" cy="14" r="2.4" fill="#111"/>
+      <circle cx="30.4" cy="26" r="2.4" fill="#111"/>
+      <circle cx="20" cy="32" r="2.4" fill="#111"/>
+      <circle cx="9.6" cy="26" r="2.4" fill="#111"/>
+      <circle cx="9.6" cy="14" r="2.4" fill="#111"/>
+    </svg>
+    <div>
+      <div class="wm">SPLICE<span>·</span>STUDIO</div>
+      <div class="sub">MICROFILM MIGRATION</div>
+    </div>
+  </a>
+  <nav>
+    <a href="#services">Services</a>
+    <a href="#process">Process</a>
+    <a href="#metrics">Throughput</a>
+    <a href="#standards">Standards</a>
+    <a href="#contact" class="nav-cta">Request&nbsp;Scan</a>
+  </nav>
+  <button class="menu-btn" onclick="document.querySelector('#contact').scrollIntoView({behavior:'smooth'})">REQUEST&nbsp;SCAN</button>
+</header>
+
+<!-- Hero -->
+<div class="hero" id="top">
+  <div class="hero-inner">
+    <div class="kicker"><span class="tick"></span>EST.&nbsp;1987&nbsp;·&nbsp;PRESERVATION&nbsp;GRADE&nbsp;·&nbsp;36&nbsp;YEARS</div>
+    <h1>
+      <div>MIGRATE</div>
+      <div class="l2">YOUR&nbsp;HISTORY</div>
+      <div class="l3">FRAME&nbsp;BY&nbsp;FRAME</div>
+    </h1>
+    <p class="hero-lead">Splice Studio converts decaying <b>microfilm reels</b> and <b>paper records</b> into clean, searchable, preservation-grade digital archives. We splice the past into the future — one precise frame at a time.</p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn">Initiate&nbsp;Migration&nbsp;→</a>
+      <a href="#process" class="btn ghost">View&nbsp;Splice&nbsp;Line</a>
+    </div>
+    <div class="hero-readout">
+      <div><span>4.2M</span>FRAMES&nbsp;SCANNED</div>
+      <div><span>18K</span>REELS&nbsp;PROCESSED</div>
+      <div><span class="mut">99.98%</span>OCR&nbsp;ACCURACY</div>
+      <div><span class="mut">ISO&nbsp;19264</span>GRADE&nbsp;A</div>
+    </div>
+  </div>
+
+  <!-- Filmstrip -->
+  <div class="strip-wrap">
+    <div class="strip-meta">
+      <span>◉ LIVE&nbsp;FEED&nbsp;·&nbsp;REEL&nbsp;#0007-A</span>
+      <span class="rec">●&nbsp;READING</span>
+      <span id="frameCount">FRAME&nbsp;0000&nbsp;/&nbsp;0000</span>
+    </div>
+    <div class="strip-viewport">
+      <div class="strip-track" id="track"></div>
+    </div>
+    <div class="strip-progress"><i id="prog"></i></div>
+  </div>
+</div>
+
+<!-- Services -->
+<section id="services">
+  <div class="sec-head reveal">
+    <div>
+      <div class="sec-index">[&nbsp;01&nbsp;]&nbsp;—&nbsp;CAPABILITIES</div>
+      <h2>Technical<br>Specifications</h2>
+    </div>
+    <p>Three core modules of the migration pipeline. Each operates independently, each is logged, each is verifiable against the source reel.</p>
+  </div>
+  <div class="svc-grid">
+    <div class="svc reveal">
+      <div class="idx">01</div>
+      <div class="spec"><span>MODULE&nbsp;/&nbsp;SCAN</span><span class="status"><i></i>ONLINE</span></div>
+      <h3>High-Resolution Capture</h3>
+      <p>Roll microfilm and aperture cards are digitized at true archival resolution using calibrated flatbed and planetary systems. No re-shoots, no generative guessing.</p>
+      <div class="spec-rows">
+        <div class="r"><span>OPTICAL&nbsp;RES</span><b>600–1200&nbsp;dpi</b></div>
+        <div class="r"><span>FORMAT</span><b>TIFF&nbsp;·&nbsp;PDF/A</b></div>
+        <div class="r"><span>COLOR&nbsp;DEPTH</span><b>24-bit&nbsp;RGB</b></div>
+      </div>
+    </div>
+    <div class="svc reveal">
+      <div class="idx">02</div>
+      <div class="spec"><span>MODULE&nbsp;/&nbsp;OCR</span><span class="status"><i></i>ONLINE</span></div>
+      <h3>Machine-Readable Index</h3>
+      <p>Every frame is run through OCR tuned for degraded microfilm typography. Barcodes, stamps, and dense ledger text become queryable fields in seconds.</p>
+      <div class="spec-rows">
+        <div class="r"><span>OCR&nbsp;ENGINE</span><b>4.2&nbsp;v-arch</b></div>
+        <div class="r"><span>ACCURACY</span><b>99.98%</b></div>
+        <div class="r"><span>LANGUAGES</span><b>38</b></div>
+      </div>
+    </div>
+    <div class="svc reveal">
+      <div class="idx">03</div>
+      <div class="spec"><span>MODULE&nbsp;/&nbsp;DELIVER</span><span class="status"><i></i>ONLINE</span></div>
+      <h3>Searchable Archive</h3>
+      <p>Delivered as an indexed, full-text archive with checksums, audit logs, and a retrieval API. Your records go from locked drawer to instant query.</p>
+      <div class="spec-rows">
+        <div class="r"><span>INTEGRITY</span><b>SHA-256</b></div>
+        <div class="r"><span>ACCESS</span><b>REST&nbsp;API</b></div>
+        <div class="r"><span>RETENTION</span><b>50&nbsp;YR</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Process -->
+<div class="process" id="process">
+  <div class="wrap">
+    <div class="sec-head reveal" style="border:none;padding:0;margin:0">
+      <div>
+        <div class="sec-index">[&nbsp;02&nbsp;]&nbsp;—&nbsp;PIPELINE</div>
+        <h2>The Splice Line</h2>
+      </div>
+      <p>Five stations. Each reel travels the same path, from physical intake to a permanent digital record. Hover a node to inspect.</p>
+    </div>
+    <div class="timeline reveal" id="timeline">
+      <div class="rail"><i></i></div>
+      <div class="steps">
+        <div class="step">
+          <div class="node"></div>
+          <div class="num">ST-01</div>
+          <h4>Intake</h4>
+          <div class="tip"><b>STATION&nbsp;01&nbsp;·&nbsp;INTAKE</b>Reels logged, condition-graded, and assigned a barcode. Chain-of-custody begins here.</div>
+        </div>
+        <div class="step">
+          <div class="node"></div>
+          <div class="num">ST-02</div>
+          <h4>Inspection</h4>
+          <div class="tip"><b>STATION&nbsp;02&nbsp;·&nbsp;INSPECTION</b>Emulsion checked for silver-rot, scratches, and breaks. Splice points mapped before scanning.</div>
+        </div>
+        <div class="step">
+          <div class="node"></div>
+          <div class="num">ST-03</div>
+          <h4>Scan</h4>
+          <div class="tip"><b>STATION&nbsp;03&nbsp;·&nbsp;SCAN</b>Frame-accurate capture at archival resolution. Every frame verified against the physical reel.</div>
+        </div>
+        <div class="step">
+          <div class="node"></div>
+          <div class="num">ST-04</div>
+          <h4>Index</h4>
+          <div class="tip"><b>STATION&nbsp;04&nbsp;·&nbsp;INDEX</b>OCR extraction, barcode decode, and metadata tagging. Frames become searchable records.</div>
+        </div>
+        <div class="step">
+          <div class="node"></div>
+          <div class="num">ST-05</div>
+          <h4>Deliver</h4>
+          <div class="tip"><b>STATION&nbsp;05&nbsp;·&nbsp;DELIVER</b>Checksummed archive handed over with API access and full audit trail. Originals returned or stored.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Metrics -->
+<section id="metrics">
+  <div class="sec-head reveal">
+    <div>
+      <div class="sec-index">[&nbsp;03&nbsp;]&nbsp;—&nbsp;THROUGHPUT</div>
+      <h2>By the Numbers</h2>
+    </div>
+    <p>Measured across 36 years of continuous operation. Every figure is auditable against delivered project logs.</p>
+  </div>
+  <div class="metrics reveal">
+    <div class="metric"><div class="v" data-count="4.2" data-dec="1">0<span class="u">M</span></div><div class="k">Frames Scanned</div><div class="d">and counting, daily</div></div>
+    <div class="metric"><div class="v" data-count="18400" data-dec="0">0</div><div class="k">Reels Processed</div><div class="d">since 1987</div></div>
+    <div class="metric"><div class="v" data-count="99.98" data-dec="2">0<span class="u">%</span></div><div class="k">OCR Accuracy</div><div class="d">on degraded film</div></div>
+    <div class="metric"><div class="v" data-count="36" data-dec="0">0<span class="u">yr</span></div><div class="k">Continuous Ops</div><div class="d">zero lost records</div></div>
+  </div>
+</section>
+
+<!-- Standards -->
+<section id="standards">
+  <div class="sec-head reveal">
+    <div>
+      <div class="sec-index">[&nbsp;04&nbsp;]&nbsp;—&nbsp;COMPLIANCE</div>
+      <h2>Standards We<br>Hold To</h2>
+    </div>
+    <p>Archival work is only as good as the standard it's measured against. We build to the letter.</p>
+  </div>
+  <div class="std-grid">
+    <div class="std-list reveal">
+      <div class="std-row"><span class="code">ISO&nbsp;19264-1</span><span class="name">Image Quality</span><span class="desc">Grade A capture verification</span></div>
+      <div class="std-row"><span class="code">ISO&nbsp;32000</span><span class="name">PDF/A-2</span><span class="desc">Long-term digital preservation</span></div>
+      <div class="std-row"><span class="code">NARA&nbsp;TRIM</span><span class="name">Federal Records</span><span class="desc">U.S. government transfer spec</span></div>
+      <div class="std-row"><span class="code">FADGI&nbsp;4★</span><span class="name">Digitization</span><span class="desc">Federal guidelines, four-star</span></div>
+      <div class="std-row"><span class="code">SHA-256</span><span class="name">Integrity</span><span class="desc">Per-file checksum audit</span></div>
+    </div>
+    <div class="spec-card reveal">
+      <h4>Active&nbsp;Scan&nbsp;Profile <span class="led"></span></h4>
+      <div class="line"><span>MODE</span><b class="g">ARCHIVAL</b></div>
+      <div class="line"><span>RESOLUTION</span><b>1200 dpi</b></div>
+      <div class="line"><span>COLOR</span><b>24-bit RGB</b></div>
+      <div class="line"><span>OUTPUT</span><b>TIFF + PDF/A</b></div>
+      <div class="line"><span>OCR</span><b class="g">ENABLED</b></div>
+      <div class="line"><span>DE-SKEW</span><b>ACTIVE</b></div>
+      <div class="line"><span>CHECKSUM</span><b>SHA-256</b></div>
+      <div class="line"><span>STATUS</span><b class="g">● READY</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta" id="contact">
+  <svg class="reel" viewBox="0 0 200 200" fill="none" stroke="#EEEEEE" stroke-width="2">
+    <circle cx="100" cy="100" r="95"/><circle cx="100" cy="100" r="20"/>
+    <circle cx="100" cy="45" r="14"/><circle cx="148" cy="72" r="14"/><circle cx="148" cy="128" r="14"/><circle cx="100" cy="155" r="14"/><circle cx="52" cy="128" r="14"/><circle cx="52" cy="72" r="14"/>
+  </svg>
+  <svg class="reel r2" viewBox="0 0 200 200" fill="none" stroke="#EEEEEE" stroke-width="2">
+    <circle cx="100" cy="100" r="95"/><circle cx="100" cy="100" r="20"/>
+    <circle cx="100" cy="45" r="14"/><circle cx="148" cy="72" r="14"/><circle cx="148" cy="128" r="14"/><circle cx="100" cy="155" r="14"/><circle cx="52" cy="128" r="14"/><circle cx="52" cy="72" r="14"/>
+  </svg>
+  <h2>STOP<br><em>HOARDING</em><br>THE PAST.</h2>
+  <p>Send us a reel. We'll return a searchable archive. The first assessment is free and takes under 48 hours.</p>
+  <a href="#contact" class="btn" onclick="return false">Request&nbsp;Free&nbsp;Assessment&nbsp;→</a>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="foot-top">
+    <div class="foot-brand">
+      <div class="wm">SPLICE<span>·</span>STUDIO</div>
+      <p>Legacy microfilm and paper records, migrated to preservation-grade digital archives. Splicing the past into the future since 1987.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Services</h5>
+      <a href="#services">Microfilm Scanning</a>
+      <a href="#services">Aperture Cards</a>
+      <a href="#services">OCR Indexing</a>
+      <a href="#standards">Compliance</a>
+    </div>
+    <div class="foot-col">
+      <h5>Company</h5>
+      <a href="#process">The Splice Line</a>
+      <a href="#metrics">Throughput</a>
+      <a href="#contact">Contact</a>
+      <a href="#contact">Request Scan</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 1987–2025 SPLICE STUDIO · ARCHIVE NODE 07 · ALL RECORDS ACCOUNTED</span>
+    <div class="links">
+      <a href="#contact">Contact</a>
+      <a href="#contact">Privacy</a>
+      <a href="#contact">Terms</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Clock ---- */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var p = function(n){return String(n).padStart(2,'0');};
+    clock.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---- Build filmstrip frames ---- */
+  var track = document.getElementById('track');
+  var frameEls = [];
+  var types = ['text','qr','bar','data','text','qr','data','text','bar','qr'];
+  var labels = ['LEDGER','CENSUS','DEED','PERMIT','MANIFEST','BLUEPRINT','REPORT','LEDGER','INDEX','MAP'];
+
+  function rand(seed){ // simple deterministic-ish
+    return Math.random();
+  }
+
+  function makeQR(canvas){
+    var size=18, ctx=canvas.getContext('2d');
+    canvas.width=size; canvas.height=size;
+    ctx.fillStyle='#050505'; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='#EEEEEE';
+    for(var y=0;y<size;y++){for(var x=0;x<size;x++){ if(Math.random()>0.52){ ctx.fillRect(x,y,1,1);} }}
+    // finder patterns
+    function finder(fx,fy){
+      ctx.fillStyle='#EEEEEE'; ctx.fillRect(fx,fy,5,5);
+      ctx.fillStyle='#050505'; ctx.fillRect(fx+1,fy+1,3,3);
+      ctx.fillStyle='#EEEEEE'; ctx.fillRect(fx+2,fy+2,1,1);
+    }
+    finder(0,0); finder(size-5,0); finder(0,size-5);
+  }
+
+  function makeBarcode(){
+    var w=150,h=42,c=document.createElement('canvas');
+    c.width=w;c.height=h;c.style.width='150px';c.style.height='42px';c.style.imageRendering='pixelated';
+    var ctx=c.getContext('2d');
+    ctx.fillStyle='#050505';ctx.fillRect(0,0,w,h);
+    ctx.fillStyle='#EEEEEE';
+    var x=2;
+    while(x<w-2){ var bw=1+Math.floor(Math.random()*3); if(Math.random()>0.45){ctx.fillRect(x,2,bw,h-4);} x+=bw+1+Math.floor(Math.random()*2); }
+    return c;
+  }
+
+  function buildFrames(count){
+    for(var i=0;i<count;i++){
+      var t = types[i%types.length];
+      var f = document.createElement('div');
+      f.className='frame f-'+t;
+      var top = '<div class="sprock"></div>';
+      var bot = '<div class="sprock b"></div>';
+      var body='';
+      if(t==='text'){
+        var lines='';
+        var n=8+Math.floor(Math.random()*4);
+        for(var l=0;l<n;l++){ lines+='<div class="ln'+(Math.random()>0.85?' hi':'')+'"></div>'; }
+        body='<div class="fbody"><div class="tag">'+labels[i%labels.length]+' · PG '+(100+i)+'</div>'+lines+'</div>';
+      } else if(t==='qr'){
+        body='<div class="fbody f-qr" style="align-items:center;justify-content:center"><div class="tag" style="text-align:center">'+labels[i%labels.length]+' QR</div><canvas></canvas></div>';
+      } else if(t==='bar'){
+        body='<div class="fbody f-bar" style="align-items:center;justify-content:center"><div class="tag">'+labels[i%labels.length]+' · CODE</div><div class="bc"></div><div class="code">▮▮▮ '+ (100000+i*7) +'</div></div>';
+      } else {
+        var rows='';
+        var keys=['REF','DATE','SEQ','FILE','SIZE','CHK','LANG','OCR'];
+        for(var r=0;r<6;r++){
+          var k=keys[(i+r)%keys.length];
+          var g=(r===0||r===3)?' g':'';
+          var val = k==='DATE' ? '19'+(40+((i+r)%50))+'.'+String((i+r)%12+1).padStart(2,'0') : k==='OCR'? '99.9%' : String((i*13+r*7)%9999).padStart(4,'0');
+          rows+='<div class="row"><span>'+k+'</span><b class="'+g.trim()+'">'+val+'</b></div>';
+        }
+        body='<div class="fbody f-data">'+rows+'</div>';
+      }
+      f.innerHTML = top+body+bot+'<div class="scan"></div>';
+      track.appendChild(f);
+      frameEls.push(f);
+      // fill canvas after append
+      if(t==='qr'){ var cv=f.querySelector('canvas'); if(cv) makeQR(cv); }
+      if(t==='bar'){ var bc=f.querySelector('.bc'); if(bc) bc.appendChild(makeBarcode()); }
+    }
+  }
+
+  var totalFrames = 24;
+  buildFrames(totalFrames);
+
+  /* splice markers inserted between segments */
+  function insertSplices(){
+    // clear existing splices first
+    track.querySelectorAll('.splice').forEach(function(s){s.remove();});
+    var seg = 6;
+    for(var i=seg;i<frameEls.length;i+=seg){
+      var sp=document.createElement('div');
+      sp.className='splice';
+      sp.innerHTML='<div class="tape"></div><div class="tape tape2"></div><div class="dot"></div>';
+      track.insertBefore(sp, frameEls[i]);
+    }
+  }
+  insertSplices();
+
+  /* ---- Scroll-driven filmstrip ---- */
+  var prog = document.getElementById('prog');
+  var frameCount = document.getElementById('frameCount');
+  var hero = document.querySelector('.hero');
+  var stripWrap = document.querySelector('.strip-wrap');
+  var baseOffset = 0;
+  var raf = null;
+
+  function measure(){
+    baseOffset = stripWrap.getBoundingClientRect().left; // where track starts at 0
+  }
+  measure();
+
+  function maxScroll(){
+    // how far the strip can travel = track width - viewport width
+    var vw = stripWrap.querySelector('.strip-viewport').clientWidth;
+    return Math.max(0, track.scrollWidth - vw);
+  }
+
+  function update(){
+    var scrollY = window.pageYOffset;
+    var heroH = hero.offsetHeight;
+    var progress = Math.min(1, Math.max(0, scrollY / (heroH * 0.9)));
+    var max = maxScroll();
+    var drift = reduce ? 0 : (Date.now()*0.008 % max); // slow auto drift
+    var x = -(progress * max);
+    track.style.transform = 'translateX(' + x + 'px)';
+    prog.style.width = (progress*100) + '%';
+    // frame readout
+    var vw = stripWrap.querySelector('.strip-viewport').clientWidth;
+    var frameW = 190 + 26;
+    var idx = Math.min(totalFrames, Math.floor((-x)/frameW)+1);
+    frameCount.textContent = 'FRAME ' + String(idx).padStart(4,'0') + ' / ' + String(totalFrames).padStart(4,'0');
+  }
+
+  function loop(){ update(); raf=requestAnimationFrame(loop); }
+  if(!reduce){ loop(); } else { update(); }
+  window.addEventListener('scroll', function(){ if(reduce) update(); }, {passive:true});
+  window.addEventListener('resize', function(){ measure(); if(reduce) update(); });
+
+  /* ---- Reveal on scroll ---- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  },{threshold:0.18});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ---- Counters ---- */
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target;
+      var target = parseFloat(el.getAttribute('data-count'));
+      var dec = parseInt(el.getAttribute('data-dec'),10);
+      var unit = el.querySelector('.u');
+      var unitHtml = unit ? unit.outerHTML : '';
+      var start=null, dur=1400;
+      function fmt(v){ return v.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
+      if(reduce){ el.innerHTML = fmt(target)+unitHtml; cio.unobserve(el); return; }
+      function step(ts){
+        if(!start) start=ts;
+        var p=Math.min(1,(ts-start)/dur);
+        var eased=1-Math.pow(1-p,3);
+        el.innerHTML = fmt(target*eased)+unitHtml;
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      cio.unobserve(el);
+    });
+  },{threshold:0.4});
+  document.querySelectorAll('[data-count]').forEach(function(el){ cio.observe(el); });
+
+  /* ---- Process step active on hover (touch) ---- */
+  document.querySelectorAll('.step').forEach(function(s){
+    s.addEventListener('mouseenter',function(){ document.querySelectorAll('.step').forEach(function(o){o.classList.remove('active');}); s.classList.add('active'); });
+  });
+})();
+</script>
+</body>
+</html>

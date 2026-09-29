@@ -11,11 +11,11 @@ tags:
   - arid
 status: draft
 summary: "A reverse-animation of sun-baked mud cracking, where the fissures knit themselves back together, smoothing out into wet, pliable earth."
-preview: null
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
-demo: null
-default_run: null
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
 source_model: "qwen3.8-flash-next"
 source_provider: "custom"
 created: "2026-09-28"

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gasket Compression Seal — Material Stress Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e9ecee; --bg2:#dfe3e6;
+    --ink:#16191c; --ink2:#5b636a; --ink3:#98a0a6;
+    --line:#c6ccd1; --line2:#d6dbe0;
+    --red:#c44536; --red-dk:#8f2a20; --red-lt:#e5675a;
+    --green:#22a06b; --green-lt:#d7efe3;
+    --alu1:#f2f3f4; --alu2:#cfd3d6; --alu3:#a7adb2;
+    --mono:"IBM Plex Mono", ui-monospace, monospace;
+    --disp:"Space Grotesk", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--disp); color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #f4f6f7 0%, var(--bg) 46%, var(--bg2) 100%);
+    min-height:100vh; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  /* ambient technical grid */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line2) 1px, transparent 1px);
+    background-size:44px 44px; opacity:.5;
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 92%);
+            mask-image:radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 92%);
+  }
+
+  .wrap{position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:26px clamp(16px,4vw,44px) 40px;}
+
+  /* header */
+  header{display:flex; align-items:center; justify-content:space-between; gap:20px; padding-bottom:22px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .mark{width:30px;height:30px;flex:none}
+  .brand .word{font-weight:600; letter-spacing:.26em; font-size:13px; text-transform:uppercase; color:var(--ink);}
+  .brand .word b{color:var(--red)}
+  .hmeta{display:flex; gap:26px; font-family:var(--mono); font-size:11px; color:var(--ink2); letter-spacing:.04em;}
+  .hmeta span b{color:var(--ink); font-weight:500}
+  @media(max-width:640px){.hmeta{display:none}}
+
+  /* hero title */
+  .hero{padding:34px 0 26px; display:flex; justify-content:space-between; align-items:flex-end; gap:30px; flex-wrap:wrap;}
+  .hero .lead{max-width:640px}
+  .kicker{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--red); display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .kicker::before{content:""; width:26px; height:1px; background:var(--red)}
+  h1{font-size:clamp(40px,7.4vw,86px); line-height:.92; font-weight:700; letter-spacing:-.02em;}
+  h1 .l2{display:block; color:var(--ink2); font-weight:400;}
+  .hero p{margin-top:18px; font-size:15px; line-height:1.6; color:var(--ink2); max-width:440px;}
+  .hero .spec{font-family:var(--mono); font-size:12px; color:var(--ink3); text-align:right; line-height:1.9;}
+  .hero .spec b{color:var(--ink2); font-weight:500}
+  @media(max-width:760px){.hero .spec{display:none}}
+
+  /* stage */
+  .stage{display:grid; grid-template-columns:1fr 300px; gap:clamp(16px,2.4vw,30px); align-items:stretch;}
+  @media(max-width:900px){.stage{grid-template-columns:1fr}}
+
+  .viewport{
+    position:relative; border:1px solid var(--line); border-radius:4px;
+    background:linear-gradient(180deg,#f7f8f9,#e7eaec);
+    overflow:hidden; min-height:440px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 30px 60px -40px rgba(20,30,40,.4);
+  }
+  .viewport svg{width:100%; height:100%; display:block}
+
+  /* corner ticks */
+  .tick{position:absolute; width:16px; height:16px; border:1px solid var(--ink3); opacity:.55}
+  .tick.tl{top:12px;left:12px;border-right:0;border-bottom:0}
+  .tick.tr{top:12px;right:12px;border-left:0;border-bottom:0}
+  .tick.bl{bottom:12px;left:12px;border-right:0;border-top:0}
+  .tick.br{bottom:12px;right:12px;border-left:0;border-top:0}
+  .vp-tag{position:absolute; font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--ink3); text-transform:uppercase}
+  .vp-tag.a{top:16px; left:36px}
+  .vp-tag.b{bottom:16px; right:36px}
+
+  /* status chip */
+  .status{
+    position:absolute; top:16px; right:36px; display:flex; align-items:center; gap:9px;
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    padding:7px 12px; border-radius:2px; background:#fff; border:1px solid var(--line);
+    color:var(--ink2); transition:color .3s, background .3s, border-color .3s;
+  }
+  .status .dot{width:9px;height:9px;border-radius:50%;background:var(--ink3);transition:background .3s, box-shadow .3s}
+  .status[data-state="contact"]{color:var(--ink)}
+  .status[data-state="contact"] .dot{background:var(--ink)}
+  .status[data-state="compression"]{color:var(--red); border-color:#e6c3bd; background:#fdf1ef}
+  .status[data-state="compression"] .dot{background:var(--red)}
+  .status[data-state="sealed"]{color:var(--green); border-color:#bfe6d1; background:var(--green-lt)}
+  .status[data-state="sealed"] .dot{background:var(--green); box-shadow:0 0 0 4px rgba(34,160,107,.18)}
+
+  /* checkmark */
+  .check{opacity:0; transform:scale(.4); transform-origin:center; transform-box:fill-box; transition:opacity .35s ease, transform .5s cubic-bezier(.2,1.5,.4,1)}
+  .check.on{opacity:1; transform:scale(1)}
+
+  /* panel */
+  .panel{border:1px solid var(--line); border-radius:4px; background:#fff; display:flex; flex-direction:column; overflow:hidden}
+  .panel h2{font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink2); padding:16px 18px; border-bottom:1px solid var(--line2); display:flex; justify-content:space-between; align-items:center}
+  .panel h2 .rec{display:flex;align-items:center;gap:7px;color:var(--red)}
+  .panel h2 .rec i{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1.4s steps(1) infinite}
+  @keyframes blink{50%{opacity:.25}}
+
+  .readouts{padding:6px 18px 14px}
+  .ro{display:flex; justify-content:space-between; align-items:baseline; padding:13px 0; border-bottom:1px dashed var(--line2)}
+  .ro:last-child{border-bottom:0}
+  .ro .lab{font-family:var(--mono); font-size:11px; letter-spacing:.08em; color:var(--ink3); text-transform:uppercase}
+  .ro .val{font-family:var(--mono); font-size:22px; font-weight:500; color:var(--ink); letter-spacing:-.01em}
+  .ro .val u{font-size:12px; text-decoration:none; color:var(--ink3); margin-left:2px}
+  .ro.big .val{font-size:34px}
+
+  /* stress bar */
+  .stress{padding:16px 18px 4px}
+  .stress .top{display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink3); margin-bottom:9px}
+  .stress .top b{color:var(--ink); font-weight:500}
+  .bar{height:12px; border-radius:2px; background:#eef0f1; border:1px solid var(--line2); overflow:hidden; position:relative}
+  .bar i{position:absolute; inset:0 auto 0 0; width:0%; background:linear-gradient(90deg,var(--red-lt),var(--red) 60%,var(--red-dk)); transition:width .12s linear}
+
+  /* phases */
+  .phases{margin-top:auto; padding:16px 18px 18px; border-top:1px solid var(--line2)}
+  .phases .ph{display:flex; align-items:center; gap:11px; padding:8px 0; font-family:var(--mono); font-size:12px; letter-spacing:.06em; color:var(--ink3); transition:color .25s}
+  .ph .n{width:20px;height:20px;flex:none;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;transition:all .25s}
+  .ph .nm{flex:1}
+  .ph .tm{font-size:10px;color:var(--ink3)}
+  .ph.active{color:var(--ink)}
+  .ph.active .n{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .ph.done{color:var(--ink2)}
+  .ph.done .n{border-color:var(--ink2);color:var(--ink2)}
+  .ph.active .nm{font-weight:500}
+
+  /* controls */
+  .controls{display:flex; gap:10px; padding:14px 18px 18px; border-top:1px solid var(--line2)}
+  .btn{font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; padding:11px 14px; border-radius:3px; border:1px solid var(--ink); background:var(--ink); color:#fff; cursor:pointer; display:flex; align-items:center; gap:8px; transition:transform .12s, opacity .2s; flex:1; justify-content:center}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn.ghost{background:#fff; color:var(--ink)}
+  .btn svg{width:13px;height:13px}
+
+  footer{margin-top:30px; padding-top:18px; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; letter-spacing:.06em; color:var(--ink3)}
+  footer .legend{display:flex; gap:18px; flex-wrap:wrap}
+  footer .legend span{display:flex; align-items:center; gap:7px}
+  footer .sw{width:12px;height:12px;border-radius:2px;border:1px solid rgba(0,0,0,.12)}
+
+  @media(prefers-reduced-motion:reduce){
+    .panel h2 .rec i{animation:none}
+    .check{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" fill="none">
+        <rect x="6" y="6" width="28" height="7" rx="1.5" fill="#a7adb2"/>
+        <rect x="6" y="27" width="28" height="7" rx="1.5" fill="#a7adb2"/>
+        <rect x="11" y="15" width="18" height="10" rx="4" fill="#c44536"/>
+      </svg>
+      <div class="word">SEAL<b>·</b>LAB <span style="color:var(--ink3);letter-spacing:.14em">/ MECH</span></div>
+    </div>
+    <div class="hmeta">
+      <span>DOC <b>GCS-04</b></span>
+      <span>REV <b>2.3</b></span>
+      <span>MAT <b>EPDM 70A</b></span>
+      <span>UNIT <b>mm</b></span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="lead">
+      <div class="kicker">Macro · Compression Study</div>
+      <h1>Gasket<br><span class="l2">Compression Seal</span></h1>
+      <p>A rigid aluminum assembly meets a compliant rubber element. Watch volume conserve as the gasket bulges, wrinkles, and locks under load.</p>
+    </div>
+    <div class="spec">
+      <div>PLATE · <b>6061-T6 AL</b></div>
+      <div>GASKET · <b>EPDM RED</b></div>
+      <div>FREE HEIGHT · <b>14.0 mm</b></div>
+      <div>TARGET · <b>100% COMPRESSION</b></div>
+    </div>
+  </section>
+
+  <div class="stage">
+    <div class="viewport">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+      <span class="vp-tag a">SECTION A–A</span>
+      <span class="vp-tag b">SCALE 6.0×</span>
+      <div class="status" id="status" data-state="approach">
+        <span class="dot"></span><span id="statusTxt">Approach</span>
+      </div>
+
+      <svg viewBox="0 0 640 560" preserveAspectRatio="xMidYMid meet" aria-label="Gasket compression animation">
+        <defs>
+          <linearGradient id="aluTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f4f5f6"/>
+            <stop offset=".5" stop-color="#d3d7da"/>
+            <stop offset="1" stop-color="#b0b6bb"/>
+          </linearGradient>
+          <linearGradient id="aluBottom" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#cfd3d6"/>
+            <stop offset=".55" stop-color="#b3b9be"/>
+            <stop offset="1" stop-color="#949a9f"/>
+          </linearGradient>
+          <linearGradient id="aluEdge" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8b9196"/>
+            <stop offset="1" stop-color="#6f757a"/>
+          </linearGradient>
+          <linearGradient id="rubber" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d95a4b"/>
+            <stop offset=".45" stop-color="#c44536"/>
+            <stop offset="1" stop-color="#9a3327"/>
+          </linearGradient>
+          <linearGradient id="rubberStress" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#b23b2e"/>
+            <stop offset=".5" stop-color="#9a2f23"/>
+            <stop offset="1" stop-color="#6f2016"/>
+          </linearGradient>
+          <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fff" stop-opacity=".55"/>
+            <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="shadow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#1b2026" stop-opacity=".28"/>
+            <stop offset="1" stop-color="#1b2026" stop-opacity="0"/>
+          </linearGradient>
+          <pattern id="brush" width="3" height="3" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="0" y2="3" stroke="#ffffff" stroke-opacity=".16" stroke-width="1"/>
+            <line x1="1.6" y1="0" x2="1.6" y2="3" stroke="#000000" stroke-opacity=".05" stroke-width="1"/>
+          </pattern>
+          <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.2"/>
+          </filter>
+        </defs>
+
+        <!-- dimension line (free height) -->
+        <g id="dims" opacity="0" stroke="#98a0a6" fill="#98a0a6" font-family="IBM Plex Mono, monospace" font-size="11">
+          <line x1="118" y1="132" x2="118" y2="392" stroke-width="1"/>
+          <line x1="112" y1="132" x2="124" y2="132" stroke-width="1"/>
+          <line x1="112" y1="392" x2="124" y2="392" stroke-width="1"/>
+          <text x="106" y="266" text-anchor="middle" transform="rotate(-90 106 266)">FREE 14.0</text>
+        </g>
+
+        <!-- bottom plate -->
+        <g id="bottom">
+          <rect x="120" y="404" width="400" height="46" rx="3" fill="url(#aluBottom)"/>
+          <rect x="120" y="404" width="400" height="46" rx="3" fill="url(#brush)"/>
+          <rect x="120" y="404" width="400" height="6" rx="3" fill="#e6e9eb"/>
+          <rect x="120" y="444" width="400" height="6" fill="url(#aluEdge)"/>
+          <line x1="120" y1="404" x2="520" y2="404" stroke="#8b9196" stroke-width="1.4"/>
+          <text x="132" y="470" font-family="IBM Plex Mono, monospace" font-size="10" fill="#98a0a6" letter-spacing="2">BASE · 6061-T6</text>
+        </g>
+
+        <!-- gasket shadow on base -->
+        <ellipse id="gshadow" cx="320" cy="404" rx="86" ry="7" fill="#1b2026" opacity=".16" filter="url(#soft)"/>
+
+        <!-- gasket -->
+        <g id="gasket">
+          <path id="gBody" d="" fill="url(#rubber)"/>
+          <path id="gBodyStress" d="" fill="url(#rubberStress)" opacity="0"/>
+          <path id="gGloss" d="" fill="url(#gloss)"/>
+          <!-- wrinkle lines near contact edges -->
+          <g id="wrinkles" stroke="#7d2418" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0">
+            <path id="wkL1" d=""/>
+            <path id="wkL2" d=""/>
+            <path id="wkR1" d=""/>
+            <path id="wkR2" d=""/>
+          </g>
+        </g>
+
+        <!-- top plate -->
+        <g id="top">
+          <rect id="tBody" x="120" y="120" width="400" height="52" rx="3" fill="url(#aluTop)"/>
+          <rect id="tBrush" x="120" y="120" width="400" height="52" rx="3" fill="url(#brush)"/>
+          <rect id="tTop" x="120" y="120" width="400" height="7" rx="3" fill="#fbfcfc"/>
+          <rect id="tEdge" x="120" y="166" width="400" height="6" fill="url(#aluEdge)"/>
+          <line id="tBottom" x1="120" y1="172" x2="520" y2="172" stroke="#7f858a" stroke-width="1.4"/>
+          <text id="tLabel" x="132" y="146" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6b7176" letter-spacing="2">PLATEN · 6061-T6</text>
+          <!-- platen screw heads -->
+          <g id="screws" fill="#9aa0a5" stroke="#767c81" stroke-width="1">
+            <circle cx="150" cy="146" r="6"/><line x1="146" y1="146" x2="154" y2="146"/>
+            <circle cx="490" cy="146" r="6"/><line x1="486" y1="146" x2="494" y2="146"/>
+          </g>
+        </g>
+
+        <!-- checkmark -->
+        <g class="check" id="check">
+          <circle cx="320" cy="300" r="30" fill="#fff" stroke="#22a06b" stroke-width="3"/>
+          <path d="M306 300 l10 10 l18 -22" fill="none" stroke="#22a06b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+      </svg>
+    </div>
+
+    <aside class="panel">
+      <h2>Live Telemetry <span class="rec"><i></i>REC</span></h2>
+
+      <div class="readouts">
+        <div class="ro big">
+          <span class="lab">Compression</span>
+          <span class="val"><span id="vComp">0.0</span><u>%</u></span>
+        </div>
+        <div class="ro">
+          <span class="lab">Free Height</span>
+          <span class="val"><span id="vFree">14.0</span><u>mm</u></span>
+        </div>
+        <div class="ro">
+          <span class="lab">Compressed</span>
+          <span class="val"><span id="vH">14.0</span><u>mm</u></span>
+        </div>
+        <div class="ro">
+          <span class="lab">Bulge Width</span>
+          <span class="val"><span id="vW">100.0</span><u>mm</u></span>
+        </div>
+        <div class="ro">
+          <span class="lab">Plate Gap</span>
+          <span class="val"><span id="vGap">14.0</span><u>mm</u></span>
+        </div>
+      </div>
+
+      <div class="stress">
+        <div class="top"><span>Material Stress</span><b id="stressLbl">0.0 MPa</b></div>
+        <div class="bar"><i id="stressBar"></i></div>
+      </div>
+
+      <div class="phases" id="phases">
+        <div class="ph" data-p="0"><span class="n">1</span><span class="nm">Approach</span><span class="tm">0.0s</span></div>
+        <div class="ph" data-p="1"><span class="n">2</span><span class="nm">Contact</span><span class="tm">1.0s</span></div>
+        <div class="ph" data-p="2"><span class="n">3</span><span class="nm">Compression</span><span class="tm">2.9s</span></div>
+        <div class="ph" data-p="3"><span class="n">4</span><span class="nm">Seal · Lock</span><span class="tm">3.9s</span></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="btnPause">
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+          <span id="btnPauseTxt">Pause</span>
+        </button>
+        <button class="btn ghost" id="btnReset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 1 1 2.3 5.6"/><path d="M4 20v-5h5"/></svg>
+          Reset
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="legend">
+      <span><span class="sw" style="background:linear-gradient(#d3d7da,#949a9f)"></span>Aluminum Platen</span>
+      <span><span class="sw" style="background:linear-gradient(#d95a4b,#9a3327)"></span>EPDM Gasket</span>
+      <span><span class="sw" style="background:#22a06b"></span>Seal Confirmed</span>
+    </div>
+    <div>VOLUME-CONSERVING DEFORMATION · LOOP · <span id="loopCount">LOOP 01</span></div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // geometry (viewBox 640x560)
+  const CX = 320;
+  const BASE = 404;         // top surface of bottom plate
+  const PLATE_H = 52;       // top plate body height
+  const FREE_H = 14;        // gasket free height (mm)
+  const PXMM = 8;           // pixels per mm
+  const FREE_PX = FREE_H * PXMM;          // 112
+  const FREE_HALF = 50;                    // half width px
+  const MAX_BULGE = 24;                    // extra half-width px
+  const FINAL_H_PX = FREE_PX * 0.16;       // compressed height
+  const GAP_OPEN = 150;                    // gap between plates at start
+  const T_MIN = 132;                       // top plate top at start
+  const T_MAX = BASE - FREE_PX - PLATE_H;  // top plate top at contact = 240
+  const T_FULL = BASE - FINAL_H_PX - PLATE_H; // at full compression
+
+  // timing
+  const tContact = 1.0, tFull = 2.9, tSeal = 3.9, tLoop = 5.2;
+
+  const el = id => document.getElementById(id);
+  const gBody = el('gBody'), gStress = el('gBodyStress'), gGloss = el('gGloss');
+  const gShadow = el('gshadow'), topG = el('top'), dims = el('dims'), check = el('check');
+  const wr = el('wrinkles');
+  const wk = { L1:el('wkL1'), L2:el('wkL2'), R1:el('wkR1'), R2:el('wkR2') };
+  const status = el('status'), statusTxt = el('statusTxt');
+  const vComp=el('vComp'), vH=el('vFree'), vHc=el('vH'), vW=el('vW'), vGap=el('vGap');
+  const stressBar=el('stressBar'), stressLbl=el('stressLbl');
+  const phaseEls = Array.from(document.querySelectorAll('.ph'));
+  const loopCount = el('loopCount');
+
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeOut=t=>1-Math.pow(1-t,3);
+  const easeIn =t=>t*t*t;
+
+  // build gasket path: rounded rect with bulging sides (outward cubic)
+  function gasketPath(halfW, h){
+    const xL=CX-halfW, xR=CX+halfW, yT=BASE-h, yB=BASE;
+    const r=Math.min(12, h/2);
+    const bulge = (halfW-FREE_HALF)*0.62;   // outward control offset
+    const topCtlY = yT + r*0.6;
+    const botCtlY = yB - r*0.6;
+    return [
+      'M', xL+r, yT,
+      'L', xR-r, yT,
+      'Q', xR, yT, xR, yT+r,
+      'C', xR+bulge, topCtlY, xR+bulge, botCtlY, xR, yB-r,
+      'Q', xR, yB, xR-r, yB,
+      'L', xL+r, yB,
+      'Q', xL, yB, xL, yB-r,
+      'C', xL-bulge, botCtlY, xL-bulge, topCtlY, xL, yT+r,
+      'Q', xL, yT, xL+r, yT,
+      'Z'
+    ].join(' ');
+  }
+
+  // wrinkle lines near the contact edges (appear as it squishes)
+  function wrinklePaths(halfW, h, wAmt){
+    const xL=CX-halfW, xR=CX+halfW, yT=BASE-h, yB=BASE;
+    const amp = wAmt * 2.4;
+    const t = 0.28, b = 0.72;
+    const y1=yT+h*t, y2=yT+h*b;
+    const set=(p,d)=>p.setAttribute('d',d);
+    set(wk.L1, `M ${xL-amp} ${y1} q 4 3 0 6`);
+    set(wk.L2, `M ${xL-amp*0.7} ${y2} q 3 3 0 5`);
+    set(wk.R1, `M ${xR+amp} ${y1} q -4 3 0 6`);
+    set(wk.R2, `M ${xR+amp*0.7} ${y2} q -3 3 0 5`);
+  }
+
+  function setState(name, label){
+    if(status.dataset.state!==name){ status.dataset.state=name; statusTxt.textContent=label; }
+  }
+  function setPhase(active, doneUpTo){
+    phaseEls.forEach((p,i)=>{
+      p.classList.toggle('active', i===active);
+      p.classList.toggle('done', i<doneUpTo);
+    });
+  }
+
+  let loop = 1;
+
+  function render(t){
+    let comp=0, topY=T_MIN, halfW=FREE_HALF, h=FREE_PX, wAmt=0, stress=0;
+
+    if(t < tContact){
+      // approach: linear descent, no deformation
+      const p = t/tContact;
+      topY = lerp(T_MIN, T_MAX, p);
+      h = FREE_PX;
+      setState('approach','Approach'); setPhase(0,0);
+    } else if(t < tFull){
+      // compression: gasket height decreases linearly, bulge eases out
+      const p = (t-tContact)/(tFull-tContact);
+      h = lerp(FREE_PX, FINAL_H_PX, p);
+      topY = BASE - h - PLATE_H;
+      const bulge = easeOut(p)*MAX_BULGE;
+      halfW = FREE_HALF + bulge;
+      wAmt = p;
+      comp = (1 - h/FREE_PX)*100;
+      stress = easeIn(p);
+      setState('compression','Compression'); setPhase(2,2);
+    } else if(t < tSeal){
+      // seal hold
+      h = FINAL_H_PX; topY = T_FULL; halfW = FREE_HALF+MAX_BULGE; wAmt=1; comp=100; stress=1;
+      setState('sealed','Sealed · Locked'); setPhase(3,3);
+    } else {
+      // reset hold
+      h = FREE_PX; topY = T_MIN; halfW = FREE_HALF; wAmt=0; comp=0; stress=0;
+      setState('approach','Approach'); setPhase(0,0);
+    }
+
+    // top plate
+    topG.setAttribute('transform', `translate(0, ${topY})`);
+
+    // gasket
+    const d = gasketPath(halfW, h);
+    gBody.setAttribute('d', d);
+    gStress.setAttribute('d', d);
+    gStress.setAttribute('opacity', (stress*0.85).toFixed(3));
+    // gloss highlight on top face
+    const yT = BASE-h;
+    gGloss.setAttribute('d', `M ${CX-halfW+6} ${yT+1} Q ${CX} ${yT-3} ${CX+halfW-6} ${yT+1} L ${CX+halfW-14} ${yT+7} Q ${CX} ${yT+3} ${CX-halfW+14} ${yT+7} Z`);
+    gGloss.setAttribute('opacity', (0.5 - stress*0.35).toFixed(3));
+    gGloss.setAttribute('transform', `translate(0,0)`);
+
+    // shadow on base grows with bulge
+    gShadow.setAttribute('rx', (halfW+4).toFixed(1));
+    gShadow.setAttribute('opacity', (0.12 + comp/100*0.12).toFixed(3));
+
+    // wrinkles
+    wr.setAttribute('opacity', (wAmt*0.55).toFixed(3));
+    wrinklePaths(halfW, h, wAmt);
+
+    // checkmark
+    check.classList.toggle('on', t>=tSeal);
+
+    // dimension line visible only when open
+    dims.setAttribute('opacity', t<tContact ? (1 - t/tContact*0.4).toFixed(2) : 0);
+
+    // readouts
+    const mmH = h/PXMM, mmW = (halfW*2)/PXMM, gap = (BASE - topY - PLATE_H)/PXMM;
+    vComp.textContent = comp.toFixed(1);
+    vHc.textContent = mmH.toFixed(1);
+    vW.textContent = mmW.toFixed(1);
+    vGap.textContent = (t<tContact? gap : mmH).toFixed(1);
+    stressBar.style.width = (stress*100).toFixed(1)+'%';
+    stressLbl.textContent = (stress*12.4).toFixed(1)+' MPa';
+  }
+
+  // animation clock
+  let running = !reduce;
+  let elapsed = 0, last = null, raf;
+
+  function frame(ts){
+    if(last==null) last=ts;
+    let dt=(ts-last)/1000; last=ts;
+    if(dt>0.05) dt=0.05;
+    if(running){
+      elapsed += dt;
+      if(elapsed>=tLoop){ elapsed-=tLoop; loop++; loopCount.textContent='LOOP '+String(loop).padStart(2,'0'); }
+    }
+    render(elapsed);
+    raf=requestAnimationFrame(frame);
+  }
+
+  // controls
+  const btnPause=el('btnPause'), btnPauseTxt=el('btnPauseTxt');
+  btnPause.addEventListener('click',()=>{
+    running=!running; last=null;
+    btnPauseTxt.textContent = running?'Pause':'Play';
+    btnPause.querySelector('svg').innerHTML = running
+      ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+      : '<path d="M7 5l12 7-12 7z"/>';
+  });
+  el('btnReset').addEventListener('click',()=>{ elapsed=0; last=null; render(0); });
+
+  if(reduce){
+    // park on the sealed state, static
+    elapsed = tSeal + 0.05;
+    render(elapsed);
+    running=false;
+    btnPauseTxt.textContent='Play';
+    btnPause.querySelector('svg').innerHTML='<path d="M7 5l12 7-12 7z"/>';
+  }
+  raf=requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

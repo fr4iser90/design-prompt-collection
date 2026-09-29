@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aluminum Knob Torque</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#222222;
+    --ink:#e0e0e0;
+    --ink-dim:#8b8f95;
+    --ink-faint:#565a60;
+    --amber:#ffce8a;
+    --amber-soft:#ffb060;
+    --line:rgba(255,255,255,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* ---------- atmospheric layers ---------- */
+  .atmo{position:fixed;inset:0;pointer-events:none;z-index:0}
+  .atmo .vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 30%, rgba(0,0,0,.55) 100%);
+  }
+  .atmo .grain{
+    position:absolute;inset:-50%;
+    opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grainShift 6s steps(6) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate(0,0)}20%{transform:translate(-6%,4%)}40%{transform:translate(4%,-6%)}
+    60%{transform:translate(-4%,-4%)}80%{transform:translate(6%,6%)}100%{transform:translate(0,0)}
+  }
+  .atmo .glow{
+    position:absolute;left:50%;top:38%;width:640px;height:640px;transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(255,190,120,.10), transparent 62%);
+    opacity:0;transition:opacity .5s ease;
+  }
+  .atmo .glow.on{opacity:1}
+
+  /* ---------- layout ---------- */
+  .shell{
+    position:relative;z-index:2;
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    padding:clamp(20px,4vw,54px);
+    max-width:1240px;margin:0 auto;
+  }
+  header.top{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;flex-direction:column;gap:10px}
+  .wordmark{
+    font-weight:700;letter-spacing:.34em;font-size:clamp(13px,1.4vw,16px);
+    text-transform:uppercase;color:var(--ink);
+  }
+  .wordmark b{color:var(--amber)}
+  .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-faint);
+  }
+  .meta{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    color:var(--ink-faint);text-align:right;line-height:1.9;text-transform:uppercase;
+  }
+  .meta .live{color:var(--amber-soft)}
+
+  /* ---------- stage ---------- */
+  .stage{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    position:relative;padding:clamp(10px,4vh,40px) 0;
+  }
+  .knob-zone{
+    position:relative;display:flex;align-items:center;justify-content:center;
+    width:min(92vw,560px);aspect-ratio:1;
+  }
+  .tick-ring{
+    position:absolute;inset:0;width:100%;height:100%;
+    transform:scale(.98);
+  }
+  .tick-ring .tick{stroke:var(--ink-faint);stroke-width:2;stroke-linecap:round;transition:stroke .25s ease}
+  .tick-ring .tick.active{stroke:var(--amber);stroke-width:3}
+  .tick-ring .tick.near{stroke:rgba(255,190,120,.5)}
+
+  .knob{
+    position:relative;
+    width:64%;aspect-ratio:1;border-radius:50%;
+    cursor:grab;touch-action:none;outline:none;
+    /* machined body */
+    background:
+      repeating-conic-gradient(from 0deg,
+        rgba(255,255,255,.05) 0deg,
+        rgba(0,0,0,.06) 0.9deg,
+        rgba(255,255,255,.03) 1.8deg),
+      radial-gradient(circle at 38% 32%, #eef0f2 0%, #c8ccd0 20%, #9ea3a8 46%, #6d7176 74%, #4a4d51 100%);
+    box-shadow:
+      0 40px 70px -20px rgba(0,0,0,.75),
+      0 12px 24px -8px rgba(0,0,0,.6),
+      inset 0 2px 3px rgba(255,255,255,.55),
+      inset 0 -14px 26px rgba(0,0,0,.45),
+      inset 0 0 0 1px rgba(0,0,0,.25);
+    will-change:transform;
+  }
+  .knob:active{cursor:grabbing}
+  .knob:focus-visible{box-shadow:0 40px 70px -20px rgba(0,0,0,.75),0 0 0 3px rgba(255,190,120,.55),inset 0 2px 3px rgba(255,255,255,.55),inset 0 -14px 26px rgba(0,0,0,.45)}
+
+  /* rotating inner face carries the notch so the highlight stays fixed */
+  .face{
+    position:absolute;inset:0;border-radius:50%;
+    display:flex;align-items:flex-start;justify-content:center;
+    will-change:transform;
+  }
+  .notch{
+    position:absolute;top:5%;left:50%;transform:translateX(-50%);
+    width:7px;height:20%;border-radius:4px;
+    background:linear-gradient(#15171a,#0a0b0d);
+    box-shadow:inset 0 1px 1px rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.25);
+    transition:box-shadow .28s ease, background .28s ease;
+  }
+  .notch::after{
+    content:"";position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+    width:14px;height:14px;border-radius:50%;
+    background:radial-gradient(circle, var(--amber) 0%, transparent 70%);
+    opacity:0;transition:opacity .3s ease;filter:blur(2px);
+  }
+  .knob.snapped .notch{
+    background:linear-gradient(#2a1c0e,#160d04);
+    box-shadow:inset 0 1px 1px rgba(0,0,0,.9), 0 0 10px 1px rgba(255,190,120,.85);
+  }
+  .knob.snapped .notch::after{opacity:.9}
+
+  /* fixed specular sheen */
+  .sheen{
+    position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:linear-gradient(125deg, rgba(255,255,255,.28) 0%, transparent 34%, transparent 66%, rgba(0,0,0,.18) 100%);
+    mix-blend-mode:screen;
+  }
+  .bevel{
+    position:absolute;inset:9%;border-radius:50%;pointer-events:none;
+    box-shadow:inset 0 2px 4px rgba(255,255,255,.4), inset 0 -3px 6px rgba(0,0,0,.4);
+    background:radial-gradient(circle at 40% 34%, rgba(255,255,255,.12), transparent 60%);
+  }
+
+  /* ---------- readout ---------- */
+  .readout{
+    position:absolute;left:50%;bottom:-6%;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .readout .num{font-size:clamp(34px,5.5vw,54px);font-weight:500;letter-spacing:.02em;color:var(--ink);line-height:1}
+  .readout .num .unit{font-size:.42em;color:var(--ink-dim);margin-left:.15em}
+  .readout .lbl{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-faint)}
+
+  /* ---------- footer controls ---------- */
+  footer.bottom{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+    border-top:1px solid var(--line);padding-top:22px;margin-top:8px;
+  }
+  .legend{display:flex;gap:26px;flex-wrap:wrap}
+  .legend .item{display:flex;flex-direction:column;gap:6px}
+  .legend .k{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+  .legend .v{font-size:12px;letter-spacing:.04em;color:var(--ink-dim)}
+  .hint{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+  .hint kbd{
+    font-family:inherit;background:rgba(255,255,255,.06);border:1px solid var(--line);
+    border-radius:4px;padding:2px 6px;color:var(--ink);margin:0 2px;
+  }
+
+  @media (max-width:640px){
+    .meta{text-align:left}
+    footer.bottom{flex-direction:column;align-items:flex-start}
+    .readout{bottom:-4%}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .atmo .grain{animation:none}
+    .notch,.notch::after,.tick-ring .tick,.atmo .glow{transition:none}
+  }
+</style>
+</head>
+<body>
+  <div class="atmo" aria-hidden="true">
+    <div class="glow" id="glow"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="shell">
+    <header class="top">
+      <div class="brand">
+        <div class="wordmark">ALUMINUM <b>·</b> KNOB <b>·</b> TORQUE</div>
+        <div class="sub">Soft-Machine Interface — Detent Module 01</div>
+      </div>
+      <div class="meta">
+        <div>Material · Anodized Alu</div>
+        <div>Detents · 12 @ 30°</div>
+        <div>Physics · Spring / Damping</div>
+        <div class="live">● Live Simulation</div>
+      </div>
+    </header>
+
+    <main class="stage">
+      <div class="knob-zone">
+        <svg class="tick-ring" id="ticks" viewBox="0 0 200 200" aria-hidden="true"></svg>
+
+        <div class="knob" id="knob" role="slider" tabindex="0"
+             aria-label="Torque dial, 12 positions"
+             aria-valuemin="0" aria-valuemax="11" aria-valuenow="0" aria-orientation="horizontal">
+          <div class="face" id="face">
+            <div class="notch" id="notch"></div>
+          </div>
+          <div class="bevel"></div>
+          <div class="sheen"></div>
+        </div>
+
+        <div class="readout">
+          <div class="num"><span id="numVal">00</span><span class="unit">/11</span></div>
+          <div class="lbl">Detent Position</div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="bottom">
+      <div class="legend">
+        <div class="item"><span class="k">Drag</span><span class="v">Horizontal · 1:1 torque</span></div>
+        <div class="item"><span class="k">Flick</span><span class="v">Coast &amp; settle</span></div>
+        <div class="item"><span class="k">Keys</span><span class="v">← → step · Home/End</span></div>
+      </div>
+      <div class="hint">Grab the dial · <kbd>←</kbd><kbd>→</kbd> to nudge</div>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const knob   = document.getElementById('knob');
+  const face   = document.getElementById('face');
+  const ticks  = document.getElementById('ticks');
+  const numVal = document.getElementById('numVal');
+  const glow   = document.getElementById('glow');
+
+  const DETENTS = 12;
+  const STEP    = 30;                 // degrees per detent
+  const PPM     = 2.2;                // pixels per degree (drag sensitivity)
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- build tick ring ----
+  const tickEls = [];
+  const NS = 'http://www.w3.org/2000/svg';
+  for(let i=0;i<DETENTS;i++){
+    const ang = (i*STEP - 90) * Math.PI/180;   // -90 so 0 points up
+    const r1 = 96, r2 = (i%3===0) ? 84 : 90;
+    const x1 = 100 + Math.cos(ang)*r1, y1 = 100 + Math.sin(ang)*r1;
+    const x2 = 100 + Math.cos(ang)*r2, y2 = 100 + Math.sin(ang)*r2;
+    const line = document.createElementNS(NS,'line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('class','tick');
+    ticks.appendChild(line);
+    tickEls.push(line);
+  }
+
+  // ---- state ----
+  let rotation = 0;        // visual degrees
+  let velocity = 0;        // deg/frame
+  let target = null;       // snap target when not dragging
+  let dragging = false;
+  let lastX = 0, lastT = 0;
+  let lastDetent = -1;
+  let raf = null;
+
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const snapTo = deg => Math.round(deg/STEP)*STEP;
+
+  function setRotation(v){
+    rotation = v;
+    face.style.transform = 'rotate(' + v + 'deg)';
+  }
+
+  function updateTicks(){
+    const active = ((Math.round(rotation/STEP)%DETENTS)+DETENTS)%DETENTS;
+    for(let i=0;i<tickEls.length;i++){
+      const diff = Math.abs(((i-active+DETENTS)%DETENTS));
+      const d = Math.min(diff, DETENTS-diff);
+      tickEls[i].classList.toggle('active', d===0);
+      tickEls[i].classList.toggle('near',  d===1);
+    }
+    const idx = active;
+    if(idx !== lastDetent){
+      lastDetent = idx;
+      numVal.textContent = String(idx).padStart(2,'0');
+      knob.setAttribute('aria-valuenow', idx);
+      flashSnap();
+    }
+  }
+
+  let snapTimer = null;
+  function flashSnap(){
+    knob.classList.add('snapped');
+    glow.classList.add('on');
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(()=>{ knob.classList.remove('snapped'); glow.classList.remove('on'); }, 320);
+  }
+
+  // ---- physics loop ----
+  function loop(){
+    if(dragging){
+      // magnetic detents: resist near a detent, accelerate past threshold
+      const nearest = snapTo(rotation);
+      const delta = nearest - rotation;
+      const mag = Math.abs(delta);
+      const pull = mag < 12 ? 0.30 : 0.14;   // sticky inside window, light outside
+      rotation += delta * pull;
+      velocity = 0;
+    } else {
+      if(target !== null){
+        // heavy spring: low tension, high friction
+        const tension = 0.16, friction = 0.74;
+        const force = (target - rotation) * tension;
+        velocity = (velocity + force) * friction;
+        rotation += velocity;
+        if(Math.abs(velocity) < 0.04 && Math.abs(target - rotation) < 0.15){
+          rotation = target; velocity = 0; target = null;
+        }
+      } else if(Math.abs(velocity) > 0.04){
+        // coast with damping, ease toward nearest detent
+        velocity *= 0.94;
+        rotation += velocity;
+      }
+    }
+    setRotation(rotation);
+    updateTicks();
+    if(!dragging && target === null && Math.abs(velocity) < 0.04){
+      raf = null; return;   // idle
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  function kick(){ if(raf === null) raf = requestAnimationFrame(loop); }
+
+  // ---- pointer interaction ----
+  function onDown(e){
+    dragging = true;
+    target = null; velocity = 0;
+    lastX = e.clientX; lastT = performance.now();
+    knob.setPointerCapture(e.pointerId);
+    knob.classList.remove('snapped');
+    kick();
+  }
+  function onMove(e){
+    if(!dragging) return;
+    const now = performance.now();
+    const dx = e.clientX - lastX;
+    const dt = Math.max(now - lastT, 1);
+    rotation += dx * PPM;
+    velocity = (dx * PPM) * (16.67 / dt);   // deg/frame estimate
+    lastX = e.clientX; lastT = now;
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging = false;
+    // flick: coast to nearest detent; else settle directly
+    target = snapTo(rotation);
+    if(reduce){ velocity = 0; rotation = target; target = null; setRotation(rotation); updateTicks(); }
+    kick();
+  }
+
+  knob.addEventListener('pointerdown', onDown);
+  knob.addEventListener('pointermove', onMove);
+  knob.addEventListener('pointerup', onUp);
+  knob.addEventListener('pointercancel', onUp);
+
+  // ---- keyboard ----
+  knob.addEventListener('keydown', (e)=>{
+    const idx = ((Math.round(rotation/STEP)%DETENTS)+DETENTS)%DETENTS;
+    let next = null;
+    if(e.key==='ArrowRight'||e.key==='ArrowUp') next = idx+1;
+    else if(e.key==='ArrowLeft'||e.key==='ArrowDown') next = idx-1;
+    else if(e.key==='Home') next = 0;
+    else if(e.key==='End') next = DETENTS-1;
+    else return;
+    e.preventDefault();
+    target = next*STEP;
+    if(reduce){ rotation = target; setRotation(rotation); updateTicks(); }
+    kick();
+  });
+
+  // init
+  setRotation(0);
+  updateTicks();
+})();
+</script>
+</body>
+</html>

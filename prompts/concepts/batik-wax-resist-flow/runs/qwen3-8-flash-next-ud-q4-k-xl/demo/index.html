@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Batik Wax Resist Flow — Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;0,900;1,500&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#fffff0; --paper:#f6f0df; --panel:#1c1811; --panel2:#262016;
+  --wax:#daa520; --soga:#8b4513; --indigo:#006400; --maroon:#8b0000;
+  --ink:#241f16; --muted:#7d725c; --line:rgba(36,31,22,.14);
+  --accent:#c9962e; --accent2:#a9701f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Exo 2',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 720px at 82% -8%, rgba(218,165,32,.16), transparent 60%),
+    radial-gradient(900px 640px at -6% 108%, rgba(0,100,0,.12), transparent 60%),
+    linear-gradient(158deg,#120f0a,#221b12 55%,#161009);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.app{position:relative;z-index:1;display:grid;grid-template-columns:1fr 340px;height:100dvh}
+
+/* ---------- STAGE ---------- */
+.stage{position:relative;display:flex;flex-direction:column;min-width:0;padding:16px 12px 12px 18px;gap:12px}
+.brand{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mark{width:44px;height:44px;border-radius:11px;flex:none;display:grid;place-items:center;
+  background:linear-gradient(150deg,#e7b73c,#a9701f);box-shadow:0 8px 22px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.4)}
+.mark svg{width:26px;height:26px}
+.brand h1{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(1.5rem,3.4vw,2.5rem);
+  line-height:.94;color:#f3e9cf;letter-spacing:-.01em}
+.brand h1 em{font-style:italic;font-weight:500;color:var(--accent)}
+.brand .sub{font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:#b7a888;margin-top:5px}
+.brand .sub b{color:#e7c063;font-weight:600}
+
+.canvas-wrap{flex:1;min-height:0;display:flex;justify-content:center;align-items:center}
+.canvas-frame{position:relative;height:100%;aspect-ratio:4/5;max-width:100%;
+  border-radius:5px;background:var(--ivory);
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05),0 0 0 9px rgba(0,0,0,.25)}
+#fabric{position:absolute;inset:0;width:100%;height:100%;border-radius:5px;touch-action:none;display:block}
+.canvas-frame::after{content:"";position:absolute;inset:0;border-radius:5px;pointer-events:none;
+  box-shadow:inset 0 0 60px rgba(120,90,40,.14)}
+.stage-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:0 4px;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#9c8f74}
+.stage-foot .hint{display:flex;align-items:center;gap:7px}
+.stage-foot .hint .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.stage-foot .mode-tag{color:#e7c063;font-weight:600}
+
+/* ---------- PANEL ---------- */
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border-left:1px solid rgba(255,255,255,.06);
+  padding:26px 22px;overflow-y:auto;position:relative;display:flex;flex-direction:column;gap:22px}
+.panel::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--wax),var(--soga),var(--indigo),var(--maroon))}
+.panel::-webkit-scrollbar{width:8px}.panel::-webkit-scrollbar-thumb{background:#3a3226;border-radius:8px}
+
+.p-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:#f0e6cd}
+.p-title span{display:block;font-family:'Exo 2';font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;
+  color:#8f8368;margin-top:4px;font-weight:500}
+
+.sect-label{font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:#8f8368;margin-bottom:11px;font-weight:600}
+
+/* tools */
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.tool{appearance:none;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#d8cdb4;
+  border-radius:11px;padding:13px 10px;cursor:pointer;font-family:'Exo 2';font-weight:600;font-size:.72rem;
+  letter-spacing:.05em;text-transform:uppercase;display:flex;flex-direction:column;gap:7px;align-items:flex-start;
+  transition:.22s;position:relative;overflow:hidden}
+.tool svg{width:20px;height:20px;stroke:#e7c063;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tool:hover{background:rgba(218,165,32,.1);border-color:rgba(218,165,32,.4);transform:translateY(-2px)}
+.tool.active{background:linear-gradient(150deg,rgba(218,165,32,.24),rgba(169,112,31,.14));
+  border-color:var(--accent);color:#fff;box-shadow:0 8px 20px -8px rgba(218,165,32,.6)}
+.tool.active::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+
+/* dyes */
+.dyes{display:flex;flex-direction:column;gap:9px}
+.dye{appearance:none;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#d8cdb4;
+  border-radius:11px;padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:12px;
+  font-family:'Exo 2';font-weight:600;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;transition:.22s}
+.dye .sw{width:26px;height:26px;border-radius:7px;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.dye:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.28)}
+.dye .meta{display:flex;flex-direction:column;line-height:1.25}
+.dye .meta small{font-size:.56rem;letter-spacing:.16em;color:#8f8368;font-weight:500}
+.dye.active{border-color:var(--accent);background:rgba(218,165,32,.12);color:#fff;box-shadow:0 8px 20px -10px rgba(218,165,32,.55)}
+
+/* brush */
+.brush-row{display:flex;align-items:center;gap:14px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:5px;
+  background:linear-gradient(90deg,var(--accent),#4a3f2c);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:#f3e9cf;border:3px solid var(--accent);cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#f3e9cf;border:3px solid var(--accent);cursor:pointer}
+.brush-val{font-family:'Playfair Display';font-size:1.15rem;color:#e7c063;min-width:34px;text-align:right;font-weight:700}
+
+/* actions */
+.actions{display:flex;flex-direction:column;gap:9px}
+.btn{appearance:none;border:none;border-radius:11px;padding:14px;cursor:pointer;font-family:'Exo 2';font-weight:700;
+  font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:9px;transition:.22s}
+.btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn.primary{background:linear-gradient(150deg,#e7b73c,#b5781f);color:#241a06;box-shadow:0 10px 24px -10px rgba(218,165,32,.75)}
+.btn.primary:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(218,165,32,.9)}
+.btn.ghost{background:rgba(255,255,255,.04);color:#d8cdb4;border:1px solid rgba(255,255,255,.1)}
+.btn.ghost:hover{background:rgba(255,255,255,.09);transform:translateY(-2px)}
+.btn.wash{background:linear-gradient(150deg,#3a6b4a,#1f4630);color:#e7f3ea;border:1px solid rgba(255,255,255,.12)}
+.btn.wash:hover{transform:translateY(-2px);box-shadow:0 12px 26px -12px rgba(0,100,0,.7)}
+.btn:active{transform:translateY(0) scale(.98)}
+
+.legend{border-top:1px solid rgba(255,255,255,.07);padding-top:18px;font-size:.72rem;line-height:1.6;color:#a2957a}
+.legend b{color:#e7c063;font-weight:600}
+.legend p+p{margin-top:8px}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:50;
+  background:rgba(20,16,10,.94);color:#f0e6cd;border:1px solid rgba(218,165,32,.4);padding:12px 20px;border-radius:40px;
+  font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;opacity:0;pointer-events:none;
+  transition:.35s cubic-bezier(.2,.9,.3,1);box-shadow:0 16px 40px -10px rgba(0,0,0,.6)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:920px){
+  body{overflow:auto}
+  .app{grid-template-columns:1fr;height:auto;min-height:100dvh}
+  .stage{padding:14px 14px 6px}
+  .canvas-frame{height:auto;width:100%;max-width:520px}
+  .panel{border-left:none;border-top:1px solid rgba(255,255,255,.08);padding:22px 18px 40px}
+  .tools{grid-template-columns:repeat(4,1fr)}
+  .tool{align-items:center;text-align:center;padding:11px 6px}
+  .dyes{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .dye{flex:none}
+  .dye .meta small{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- STAGE -->
+  <section class="stage">
+    <header class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2C9 7 6 9 6 14a6 6 0 0 0 12 0c0-5-3-7-6-12Z" fill="#3a2606" stroke="#fff3d6" stroke-width="1.3"/><path d="M12 8c-1.4 2.2-2.4 3.4-2.4 5.2a2.4 2.4 0 0 0 4.8 0C14.4 11.4 13.4 10.2 12 8Z" fill="#fff3d6" opacity=".85"/></svg>
+      </div>
+      <div>
+        <h1>Batik <em>Wax Resist</em> Flow</h1>
+        <div class="sub">Wax · Dye · Reveal &nbsp;—&nbsp; <b>Interactive Canting Studio</b></div>
+      </div>
+    </header>
+
+    <div class="canvas-wrap">
+      <div class="canvas-frame">
+        <canvas id="fabric"></canvas>
+      </div>
+    </div>
+
+    <div class="stage-foot">
+      <div class="hint"><span class="dot"></span><span id="modeTag">Wax tool — draw with your finger or cursor</span></div>
+      <div>Layered resist · Export as PNG</div>
+    </div>
+  </section>
+
+  <!-- PANEL -->
+  <aside class="panel">
+    <div class="p-title">The Canting<span>Wax &amp; Dye Controls</span></div>
+
+    <div>
+      <div class="sect-label">Tools</div>
+      <div class="tools">
+        <button class="tool active" data-tool="wax">
+          <svg viewBox="0 0 24 24"><path d="M4 20l4-1 9-9-3-3-9 9-1 4Z"/><path d="M14 7l3 3"/><path d="M17 4l3 3"/></svg>
+          Apply Wax
+        </button>
+        <button class="tool" data-tool="dye">
+          <svg viewBox="0 0 24 24"><path d="M12 3c3.5 5 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 2.5-6 6-11Z"/></svg>
+          Dye
+        </button>
+        <button class="tool" data-tool="wash">
+          <svg viewBox="0 0 24 24"><path d="M3 8h18M3 13h18M3 18h18"/><path d="M6 5l-1 3M12 5l-1 3M18 5l-1 3"/></svg>
+          Wash Wax
+        </button>
+        <button class="tool" data-tool="clear">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sect-label">Dye Colors</div>
+      <div class="dyes">
+        <button class="dye active" data-dye="soga"><span class="sw" style="background:#8b4513"></span><span class="meta">Soga Brown<small>Sogan</small></span></button>
+        <button class="dye" data-dye="indigo"><span class="sw" style="background:#006400"></span><span class="meta">Indigo<small>Nilа</small></span></button>
+        <button class="dye" data-dye="maroon"><span class="sw" style="background:#8b0000"></span><span class="meta">Maroon<small>Merah</small></span></button>
+      </div>
+    </div>
+
+    <div>
+      <div class="sect-label">Wax Tip Size</div>
+      <div class="brush-row">
+        <input type="range" id="brush" min="4" max="46" value="16">
+        <span class="brush-val" id="brushVal">16</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn wash" id="washBtn">
+        <svg viewBox="0 0 24 24"><path d="M3 8h18M3 13h18M3 18h18"/></svg> Wash Off Wax
+      </button>
+      <button class="btn primary" id="saveBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg> Save Pattern
+      </button>
+      <button class="btn ghost" id="clearBtn">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></svg> Clear Cloth
+      </button>
+    </div>
+
+    <div class="legend">
+      <p><b>Paint</b> wax in any tool. Switch to <b>Dye</b> and tap to flood the cloth — wax resists the color.</p>
+      <p>Layer dyes to build depth. <b>Wash Off Wax</b> reveals the pattern hidden beneath.</p>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var fabric = document.getElementById('fabric');
+  var ctx = fabric.getContext('2d');
+  var modeTag = document.getElementById('modeTag');
+  var toastEl = document.getElementById('toast');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var WAX = '#daa520';
+  var DYES = { soga:'#8b4513', indigo:'#006400', maroon:'#8b0000' };
+  var DYE_NAMES = { soga:'Soga Brown', indigo:'Indigo', maroon:'Maroon' };
+
+  var state = {
+    tool:'wax',
+    dye:'soga',
+    brush:16,
+    drawing:false,
+    last:null,
+    washAnim:false
+  };
+
+  // offscreen layers
+  var waxC = document.createElement('canvas');
+  var waxCtx = waxC.getContext('2d');
+  var dyeC = document.createElement('canvas');
+  var dyeCtx = dyeC.getContext('2d');
+  var clothC = document.createElement('canvas');
+
+  // pre-rendered textures
+  var linenTex = document.createElement('canvas');
+  var waxTex = document.createElement('canvas');
+  var washTex = document.createElement('canvas');
+
+  var W=0,H=0;
+
+  function makeNoise(size, base, spread, alpha){
+    var c=document.createElement('canvas'); c.width=c.height=size;
+    var g=c.getContext('2d'); var img=g.createImageData(size,size); var d=img.data;
+    for(var i=0;i<d.length;i+=4){
+      var v=base+(Math.random()*2-1)*spread;
+      d[i]=v; d[i+1]=v; d[i+2]=v; d[i+3]=alpha;
+    }
+    g.putImageData(img,0,0); return c;
+  }
+
+  function buildTextures(){
+    linenTex.width=linenTex.height=160;
+    var g=linenTex.getContext('2d');
+    g.fillStyle='#fffff0'; g.fillRect(0,0,160,160);
+    for(var x=0;x<160;x+=2){ g.fillStyle='rgba(120,95,50,0.045)'; g.fillRect(x,0,1,160); }
+    for(var y=0;y<160;y+=2){ g.fillStyle='rgba(120,95,50,0.035)'; g.fillRect(0,y,160,1); }
+    var n=makeNoise(160,128,40,10); g.globalAlpha=1; g.drawImage(n,0,0);
+
+    waxTex.width=waxTex.height=128;
+    var wg=waxTex.getContext('2d');
+    var wn=makeNoise(128,128,70,255); wg.drawImage(wn,0,0);
+    wg.globalCompositeOperation='multiply';
+    wg.fillStyle=WAX; wg.fillRect(0,0,128,128);
+    wg.globalCompositeOperation='source-over';
+
+    washTex.width=washTex.height=128;
+    var cg=washTex.getContext('2d');
+    cg.fillStyle='#f4ecd6'; cg.fillRect(0,0,128,128);
+    cg.globalCompositeOperation='multiply';
+    cg.drawImage(wn,0,0);
+    cg.globalCompositeOperation='source-over';
+  }
+
+  function resize(){
+    var wrap=fabric.parentElement;
+    var rect=wrap.getBoundingClientRect();
+    var dpr=Math.min(window.devicePixelRatio||1, 2);
+    var w=Math.max(1,Math.round(rect.width)), h=Math.max(1,Math.round(rect.height));
+    if(w===W && h===H) return;
+    W=w; H=h;
+    fabric.width=Math.round(W*dpr); fabric.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.imageSmoothingEnabled=true;
+    waxC.width=fabric.width; waxC.height=fabric.height;
+    waxCtx.setTransform(dpr,0,0,dpr,0,0); waxCtx.imageSmoothingEnabled=true;
+    dyeC.width=fabric.width; dyeC.height=fabric.height;
+    dyeCtx.setTransform(dpr,0,0,dpr,0,0); dyeCtx.imageSmoothingEnabled=true;
+    clothC.width=fabric.width; clothC.height=fabric.height;
+    var cctx=clothC.getContext('2d');
+    cctx.setTransform(dpr,0,0,dpr,0,0); cctx.imageSmoothingEnabled=true;
+    var pat=cctx.createPattern(linenTex,'repeat');
+    cctx.fillStyle=pat; cctx.fillRect(0,0,W,H);
+    render();
+  }
+
+  // ---- wax drawing ----
+  function waxDot(x,y){
+    var r=state.brush/2;
+    waxCtx.globalCompositeOperation='source-over';
+    var g=waxCtx.createRadialGradient(x,y,r*0.15,x,y,r);
+    g.addColorStop(0,'rgba(218,165,32,0.55)');
+    g.addColorStop(0.6,'rgba(218,165,32,0.42)');
+    g.addColorStop(1,'rgba(218,165,32,0)');
+    waxCtx.fillStyle=g;
+    waxCtx.beginPath(); waxCtx.arc(x,y,r,0,Math.PI*2); waxCtx.fill();
+    // speckle bleed
+    waxCtx.fillStyle='rgba(218,165,32,0.30)';
+    for(var i=0;i<3;i++){
+      var a=Math.random()*Math.PI*2, d=Math.random()*r;
+      waxCtx.beginPath(); waxCtx.arc(x+Math.cos(a)*d,y+Math.sin(a)*d,r*0.12,0,Math.PI*2); waxCtx.fill();
+    }
+  }
+  function waxSeg(x0,y0,x1,y1){
+    var dx=x1-x0, dy=y1-y0, dist=Math.hypot(dx,dy);
+    var step=Math.max(1.4, state.brush*0.16);
+    var n=Math.max(1,Math.ceil(dist/step));
+    for(var i=1;i<=n;i++){
+      var t=i/n, x=x0+dx*t, y=y0+dy*t;
+      var j=(state.brush*0.14)*(Math.random()*2-1);
+      var px=x0+dy, py=y0-dx, m=Math.hypot(dx,dy)||1;
+      waxDot(x+(dy/m)*j, y+(-dx/m)*j);
+    }
+  }
+
+  // ---- dye flood ----
+  function floodDye(x,y){
+    var color=DYES[state.dye];
+    var rad=Math.hypot(W,H)*0.9;
+    var dur=reduce?0:1500;
+    var start=performance.now();
+    dyeCtx.save();
+    dyeCtx.globalCompositeOperation='destination-out';
+    function step(now){
+      var p=dur?Math.min(1,(now-start)/dur):1;
+      var ease=1-Math.pow(1-p,3);
+      dyeCtx.save();
+      dyeCtx.setTransform(1,0,0,1,0,0);
+      dyeCtx.clearRect(0,0,dyeC.width,dyeC.height);
+      dyeCtx.restore();
+      dyeCtx.globalCompositeOperation='destination-out';
+      var r=rad*ease;
+      var g=dyeCtx.createRadialGradient(x,y,r*0.82,x,y,r);
+      g.addColorStop(0,'rgba(0,0,0,1)'); g.addColorStop(1,'rgba(0,0,0,0)');
+      dyeCtx.fillStyle=g;
+      dyeCtx.beginPath(); dyeCtx.arc(x,y,r,0,Math.PI*2); dyeCtx.fill();
+      dyeCtx.globalCompositeOperation='source-over';
+      dyeCtx.fillStyle=color;
+      dyeCtx.beginPath(); dyeCtx.arc(x,y,r,0,Math.PI*2); dyeCtx.fill();
+      render();
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---- wash wax ----
+  function washWax(){
+    if(state.washAnim) return;
+    var dur=reduce?0:900;
+    var start=performance.now();
+    state.washAnim=true;
+    function step(now){
+      var p=dur?Math.min(1,(now-start)/dur):1;
+      var ease=p*p*(3-2*p);
+      var g=waxCtx;
+      g.save(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,waxC.width,waxC.height); g.restore();
+      g.globalCompositeOperation='source-over';
+      g.globalAlpha=1-ease;
+      g.drawImage(washTex,0,0,W,H);
+      g.globalAlpha=1;
+      render();
+      if(p<1){ requestAnimationFrame(step); }
+      else { g.save(); g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,waxC.width,waxC.height); g.restore(); state.washAnim=false; render(); toast('Wax washed off — pattern revealed'); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---- composite render ----
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    ctx.drawImage(clothC,0,0,W,H);
+    ctx.drawImage(dyeC,0,0,W,H);
+    ctx.save();
+    ctx.globalCompositeOperation='destination-out';
+    ctx.drawImage(waxC,0,0,W,H);
+    ctx.restore();
+    ctx.drawImage(waxC,0,0,W,H);
+    ctx.save();
+    ctx.globalCompositeOperation='source-atop';
+    ctx.globalAlpha=0.35;
+    var p=ctx.createPattern(waxTex,'repeat');
+    ctx.fillStyle=p; ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+
+  // ---- pointer handling ----
+  function pos(e){
+    var r=fabric.getBoundingClientRect();
+    return { x:(e.clientX-r.left), y:(e.clientY-r.top) };
+  }
+  fabric.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    var p=pos(e);
+    if(state.tool==='dye'){ floodDye(p.x,p.y); return; }
+    if(state.tool==='wash'){ washWax(); return; }
+    if(state.tool==='clear'){ clearAll(); return; }
+    state.drawing=true; state.last=p;
+    waxDot(p.x,p.y); render();
+    try{ fabric.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  fabric.addEventListener('pointermove',function(e){
+    if(!state.drawing) return;
+    var p=pos(e);
+    waxSeg(state.last.x,state.last.y,p.x,p.y);
+    state.last=p; render();
+  });
+  function endDraw(e){ if(state.drawing){ state.drawing=false; } }
+  fabric.addEventListener('pointerup',endDraw);
+  fabric.addEventListener('pointercancel',endDraw);
+  fabric.addEventListener('pointerleave',endDraw);
+
+  // ---- UI wiring ----
+  function setTool(t){
+    state.tool=t;
+    document.querySelectorAll('.tool').forEach(function(b){ b.classList.toggle('active', b.dataset.tool===t); });
+    var labels={wax:'Wax tool — draw with your finger or cursor', dye:'Dye tool — tap the cloth to flood color', wash:'Wash — tap to dissolve the wax', clear:'Clear — tap to reset the cloth'};
+    modeTag.textContent=labels[t];
+    fabric.style.cursor = (t==='wax')?'crosshair':'pointer';
+  }
+  document.querySelectorAll('.tool').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.dataset.tool;
+      if(t==='wash'){ washWax(); return; }
+      if(t==='clear'){ clearAll(); return; }
+      setTool(t);
+    });
+  });
+  document.querySelectorAll('.dye').forEach(function(b){
+    b.addEventListener('click',function(){
+      state.dye=b.dataset.dye;
+      document.querySelectorAll('.dye').forEach(function(d){ d.classList.toggle('active',d===b); });
+    });
+  });
+  var brush=document.getElementById('brush'), brushVal=document.getElementById('brushVal');
+  brush.addEventListener('input',function(){ state.brush=+brush.value; brushVal.textContent=brush.value; });
+
+  document.getElementById('washBtn').addEventListener('click',washWax);
+  document.getElementById('clearBtn').addEventListener('click',clearAll);
+  document.getElementById('saveBtn').addEventListener('click',function(){
+    var out=document.createElement('canvas'); out.width=fabric.width; out.height=fabric.height;
+    var o=out.getContext('2d'); o.imageSmoothingEnabled=true;
+    o.drawImage(fabric,0,0);
+    var a=document.createElement('a'); a.download='batik-pattern.png'; a.href=out.toDataURL('image/png'); a.click();
+    toast('Pattern saved as PNG');
+  });
+
+  function clearAll(){
+    waxCtx.save(); waxCtx.setTransform(1,0,0,1,0,0); waxCtx.clearRect(0,0,waxC.width,waxC.height); waxCtx.restore();
+    dyeCtx.save(); dyeCtx.setTransform(1,0,0,1,0,0); dyeCtx.clearRect(0,0,dyeC.width,dyeC.height); dyeCtx.restore();
+    render(); toast('Cloth cleared');
+  }
+
+  var toastTimer;
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ toastEl.classList.remove('show'); },1900);
+  }
+
+  // seed a small demo motif so the resist reads immediately
+  function seed(){
+    var cx=W*0.5, cy=H*0.42;
+    waxCtx.lineCap='round';
+    for(var i=0;i<6;i++){
+      var a=(i/6)*Math.PI*2;
+      var x0=cx, y0=cy, x1=cx+Math.cos(a)*W*0.16, y1=cy+Math.sin(a)*W*0.16;
+      waxSeg(x0,y0,x1,y1);
+    }
+    waxCtx.beginPath();
+    for(var t=0;t<=Math.PI*2+0.1;t+=0.1){
+      var rr=W*0.22*(1+0.06*Math.sin(t*5));
+      var px=cx+Math.cos(t)*rr, py=cy+Math.sin(t)*rr;
+      if(t===0) waxCtx.moveTo(px,py); else waxCtx.lineTo(px,py);
+    }
+    waxCtx.closePath(); waxCtx.fillStyle='rgba(218,165,32,0.4)'; waxCtx.fill();
+    render();
+  }
+
+  buildTextures();
+  resize();
+  seed();
+  setTool('wax');
+
+  var ro=new ResizeObserver(function(){ resize(); });
+  ro.observe(fabric.parentElement);
+  window.addEventListener('resize',resize);
+})();
+</script>
+</body>
+</html>

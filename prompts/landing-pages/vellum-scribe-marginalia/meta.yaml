@@ -1,0 +1,27 @@
+id: vellum-scribe-marginalia
+title: "Vellum Scribe Marginalia"
+category: landing-pages
+tags:
+  - vellum
+  - handwriting
+  - marginalia
+  - manuscript
+  - annotation
+  - warm-neutral
+  - serif
+  - static
+status: polished
+summary: "A landing page for 'Ink & Vellum', a high-end calligraphy service, featuring handwritten marginalia that annotates the main text, warm parchment tones, and static, dignified typography."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

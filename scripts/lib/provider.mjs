@@ -348,17 +348,26 @@ export async function chatCompletions({
     }
     const attemptStart = Date.now();
     let gotBytes = false;
+    // slot → request → (stream: first token / non-stream: full body)
+    let phase = "slot";
     const heartbeat = setInterval(() => {
-      if (gotBytes && (thinkingEnabled || !useStream)) return;
+      const sec = Math.round((Date.now() - attemptStart) / 1000);
+      const max = Math.round(timeoutMs / 1000);
       if (gotBytes && useStream && !thinkingEnabled) {
-        const sec = Math.round((Date.now() - attemptStart) / 1000);
         console.log(`  … streaming ${sec}s`);
         return;
       }
       if (gotBytes) return;
-      const sec = Math.round((Date.now() - attemptStart) / 1000);
-      const max = Math.round(timeoutMs / 1000);
-      console.log(`  … waiting for first token ${sec}s / ${max}s`);
+      if (phase === "slot") {
+        console.log(`  … waiting for idle slot ${sec}s / ${max}s`);
+        return;
+      }
+      if (useStream) {
+        console.log(`  … waiting for first token ${sec}s / ${max}s`);
+        return;
+      }
+      // Non-stream (ai-fill json, etc.): no tokens until the whole body arrives
+      console.log(`  … waiting for full response ${sec}s / ${max}s`);
     }, heartbeatMs);
 
     const signal = mergeAbortSignals(
@@ -388,6 +397,7 @@ export async function chatCompletions({
         }
       }
 
+      phase = "request";
       const requestStart = Date.now();
       let firstTokenAt = null;
 

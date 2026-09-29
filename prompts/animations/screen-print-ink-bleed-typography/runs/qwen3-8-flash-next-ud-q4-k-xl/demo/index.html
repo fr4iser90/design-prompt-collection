@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Print Ink Bleed — Press Study Nº 04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F0F0F;
+    --paper:#F5F2EA;
+    --sub:#D9D4C7;
+    --cyan:#00AEEF;
+    --magenta:#E6007E;
+    --mono:"IBM Plex Mono", ui-monospace, monospace;
+    --serif:"Bodoni Moda", Georgia, serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .atmosphere{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 50% 42%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      radial-gradient(140% 120% at 50% 50%, rgba(245,242,234,0) 58%, rgba(120,108,84,.16) 100%);
+  }
+  .grain{
+    position:fixed; inset:-10%; z-index:2; pointer-events:none;
+    opacity:.55; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    background-size:180px 180px;
+    animation:grainShift 6s steps(6) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate(0,0)} 20%{transform:translate(-2%,1%)}
+    40%{transform:translate(1%,-2%)} 60%{transform:translate(-1%,2%)}
+    80%{transform:translate(2%,1%)} 100%{transform:translate(0,0)}
+  }
+
+  /* ---------- PRESS FRAME ---------- */
+  .press{
+    position:relative; z-index:3; min-height:100vh;
+    display:grid; grid-template-rows:auto 1fr auto;
+    padding:clamp(18px,3vw,42px);
+    gap:clamp(12px,2vw,22px);
+  }
+  .corner{position:absolute;width:18px;height:18px;border:1.5px solid var(--ink);opacity:.5;}
+  .corner.tl{top:clamp(12px,2vw,26px);left:clamp(12px,2vw,26px);border-right:0;border-bottom:0;}
+  .corner.tr{top:clamp(12px,2vw,26px);right:clamp(12px,2vw,26px);border-left:0;border-bottom:0;}
+  .corner.bl{bottom:clamp(12px,2vw,26px);left:clamp(12px,2vw,26px);border-right:0;border-top:0;}
+  .corner.br{bottom:clamp(12px,2vw,26px);right:clamp(12px,2vw,26px);border-left:0;border-top:0;}
+
+  /* ---------- HEADER ---------- */
+  .masthead{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+    border-bottom:1px solid rgba(15,15,15,.16); padding-bottom:14px;
+  }
+  .wordmark{display:flex;flex-direction:column;gap:2px;}
+  .wordmark .mk{
+    font-family:var(--mono); font-weight:600; letter-spacing:.34em;
+    font-size:clamp(12px,1.5vw,16px); text-transform:uppercase; color:var(--ink);
+  }
+  .wordmark .mk b{color:var(--magenta);}
+  .wordmark .sub{font-size:clamp(9px,1.1vw,11px);letter-spacing:.24em;color:rgba(15,15,15,.5);text-transform:uppercase;}
+  .edition{font-size:clamp(9px,1.1vw,11px);letter-spacing:.22em;color:rgba(15,15,15,.55);text-transform:uppercase;text-align:right;line-height:1.7;}
+  .edition .dot{color:var(--cyan);}
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:relative; display:grid; place-items:center;
+    min-height:min(72vh,640px);
+    cursor:crosshair;
+  }
+  .stage svg{width:100%;height:100%;display:block;overflow:visible;}
+  #glyph{will-change:filter;}
+
+  .ghost{
+    position:absolute; inset:0; display:grid; place-items:center;
+    font-family:var(--serif); font-weight:900;
+    font-size:clamp(240px,42vw,720px); line-height:1;
+    color:transparent; -webkit-text-stroke:1px rgba(15,15,15,.07);
+    user-select:none; pointer-events:none;
+  }
+
+  /* ---------- FOOTER ---------- */
+  .colophon{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:20px; flex-wrap:wrap;
+    border-top:1px solid rgba(15,15,15,.16); padding-top:14px;
+  }
+  .title-block h1{
+    font-family:var(--serif); font-weight:700; font-style:italic;
+    font-size:clamp(26px,4.6vw,54px); line-height:.95; letter-spacing:-.01em;
+  }
+  .title-block .meta{
+    margin-top:8px; font-size:clamp(9px,1.2vw,12px); letter-spacing:.14em;
+    text-transform:uppercase; color:rgba(15,15,15,.55);
+  }
+  .title-block .meta em{font-style:normal;color:var(--cyan);}
+
+  .controls{display:flex;flex-direction:column;align-items:flex-end;gap:10px;}
+  .state{
+    display:flex;align-items:center;gap:8px;
+    font-size:clamp(10px,1.3vw,13px);letter-spacing:.2em;text-transform:uppercase;
+  }
+  .state .led{width:9px;height:9px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 3px rgba(0,174,239,.18);}
+  .state[data-state="dry"] .led{background:var(--ink);box-shadow:0 0 0 3px rgba(15,15,15,.14);}
+  .state[data-state="dry"] .txt::after{content:" · drying";}
+  .state[data-state="wet"] .txt::after{content:" · bleeding";}
+
+  .btn{
+    font-family:var(--mono); font-weight:500; font-size:clamp(10px,1.2vw,12px);
+    letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+    background:transparent; color:var(--ink); border:1px solid var(--ink);
+    padding:9px 16px; transition:background .25s ease,color .25s ease;
+  }
+  .btn:hover{background:var(--ink);color:var(--paper);}
+  .btn:active{transform:translateY(1px);}
+
+  .hint{font-size:clamp(9px,1.1vw,11px);letter-spacing:.16em;color:rgba(15,15,15,.42);text-transform:uppercase;}
+
+  /* ---------- REGISTRATION MARKS ---------- */
+  .reg{position:absolute;width:34px;height:34px;opacity:.85;pointer-events:none;}
+  .reg svg{width:100%;height:100%;}
+  .reg.r1{top:6%;left:5%;}
+  .reg.r2{top:6%;right:5%;}
+  .reg.r3{bottom:6%;left:5%;}
+  .reg.r4{bottom:6%;right:5%;}
+
+  @media (max-width:640px){
+    .edition{display:none;}
+    .reg{display:none;}
+    .controls{align-items:flex-start;}
+    .colophon{flex-direction:column;align-items:flex-start;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .grain{animation:none;}
+    .ghost{display:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="atmosphere"></div>
+  <div class="grain"></div>
+
+  <main class="press">
+    <span class="corner tl"></span><span class="corner tr"></span>
+    <span class="corner bl"></span><span class="corner br"></span>
+
+    <header class="masthead">
+      <div class="wordmark">
+        <span class="mk">SCREEN&nbsp;PRINT&nbsp;<b>INK&nbsp;BLEED</b></span>
+        <span class="sub">Tactile Type · Press Study</span>
+      </div>
+      <div class="edition">
+        PRESS&nbsp;STUDY&nbsp;Nº&nbsp;04<br>
+        SUBSTRATE&nbsp;: 300GSM&nbsp;COTTON&nbsp;<span class="dot">●</span><br>
+        INK&nbsp;: PROCESS&nbsp;BLACK&nbsp;/&nbsp;CYAN&nbsp;UNDERPRINT
+      </div>
+    </header>
+
+    <section class="stage" id="stage" aria-label="Animated screen-printed letter K">
+      <div class="ghost" aria-hidden="true">K</div>
+
+      <!-- registration marks -->
+      <div class="reg r1" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="#0F0F0F" stroke-width="1.4"/><line x1="20" y1="2" x2="20" y2="38" stroke="#0F0F0F" stroke-width="1.2"/><line x1="2" y1="20" x2="38" y2="20" stroke="#0F0F0F" stroke-width="1.2"/><circle cx="20" cy="20" r="12" fill="none" stroke="#00AEEF" stroke-width="1"/></svg></div>
+      <div class="reg r2" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="#0F0F0F" stroke-width="1.4"/><line x1="20" y1="2" x2="20" y2="38" stroke="#0F0F0F" stroke-width="1.2"/><line x1="2" y1="20" x2="38" y2="20" stroke="#0F0F0F" stroke-width="1.2"/><circle cx="20" cy="20" r="12" fill="none" stroke="#E6007E" stroke-width="1"/></svg></div>
+      <div class="reg r3" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="#0F0F0F" stroke-width="1.4"/><line x1="20" y1="2" x2="20" y2="38" stroke="#0F0F0F" stroke-width="1.2"/><line x1="2" y1="20" x2="38" y2="20" stroke="#0F0F0F" stroke-width="1.2"/><circle cx="20" cy="20" r="12" fill="none" stroke="#00AEEF" stroke-width="1"/></svg></div>
+      <div class="reg r4" aria-hidden="true"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="#0F0F0F" stroke-width="1.4"/><line x1="20" y1="2" x2="20" y2="38" stroke="#0F0F0F" stroke-width="1.2"/><line x1="2" y1="20" x2="38" y2="20" stroke="#0F0F0F" stroke-width="1.2"/><circle cx="20" cy="20" r="12" fill="none" stroke="#E6007E" stroke-width="1"/></svg></div>
+
+      <svg viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Monumental serif letter K with ink bleed">
+        <defs>
+          <filter id="bleed" x="-40%" y="-40%" width="180%" height="180%" color-interpolation-filters="sRGB">
+            <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.014" numOctaves="4" seed="11" result="noise"/>
+            <feDisplacementMap id="disp" in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+            <feGaussianBlur id="blur" in="displaced" stdDeviation="0.35" result="soft"/>
+            <feComposite in="soft" in2="SourceGraphic" operator="over"/>
+          </filter>
+        </defs>
+
+        <!-- cyan underprint (misregistration) -->
+        <text id="cyan" x="600" y="320" text-anchor="middle" dominant-baseline="central"
+              font-family="'Bodoni Moda', Georgia, serif" font-weight="900" font-size="560"
+              fill="#00AEEF" opacity="0.55" transform="translate(-9,7)">K</text>
+
+        <!-- black ink with organic bleed -->
+        <text id="glyph" x="600" y="320" text-anchor="middle" dominant-baseline="central"
+              font-family="'Bodoni Moda', Georgia, serif" font-weight="900" font-size="560"
+              fill="#0F0F0F" filter="url(#bleed)">K</text>
+      </svg>
+    </section>
+
+    <footer class="colophon">
+      <div class="title-block">
+        <h1>Ink Bleed</h1>
+        <div class="meta">High-contrast serif · viscous edge · <em>hover to dry the ink</em></div>
+      </div>
+      <div class="controls">
+        <div class="state" id="state" data-state="wet"><span class="led"></span><span class="txt">Wet</span></div>
+        <button class="btn" id="reprint" type="button">↻ Re-print pass</button>
+        <div class="hint">SVG feTurbulence + feDisplacementMap · no bitmap</div>
+      </div>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var turb   = document.getElementById("turb");
+  var disp   = document.getElementById("disp");
+  var blur   = document.getElementById("blur");
+  var glyph  = document.getElementById("glyph");
+  var cyan   = document.getElementById("cyan");
+  var state  = document.getElementById("state");
+  var stage  = document.getElementById("stage");
+  var reprint= document.getElementById("reprint");
+
+  // Wet / dry targets
+  var WET = { scale: 17, freq: 0.013, blur: 1.0,  off: 11, seed: 11 };
+  var DRY = { scale: 2.2, freq: 0.032, blur: 0.15, off: 3,  seed: 11 };
+
+  var cur = { scale: WET.scale, freq: WET.freq, blur: WET.blur, off: WET.off };
+  var target = { scale: WET.scale, freq: WET.freq, blur: WET.blur, off: WET.off };
+
+  var hovering = false;
+  var t0 = performance.now();
+
+  function easeInOut(x){ return x<0.5 ? 2*x*x : 1-Math.pow(-2*x+2,2)/2; }
+
+  // ambient breathing cycle (soft -> sharp -> soft)
+  function wetTarget(t){
+    var period = 7000;
+    var p = (t % period) / period;
+    var b = easeInOut(0.5 - 0.5*Math.cos(p*Math.PI*2)); // 0..1..0
+    return {
+      scale: WET.scale * (0.55 + 0.45*b),
+      freq:  WET.freq  + (0.006*(1-b)),
+      blur:  WET.blur  * (0.5 + 0.5*b),
+      off:   WET.off   * (0.6 + 0.4*b)
+    };
+  }
+
+  function apply(){
+    turb.setAttribute("baseFrequency", cur.freq.toFixed(5));
+    disp.setAttribute("scale", cur.scale.toFixed(3));
+    blur.setAttribute("stdDeviation", cur.blur.toFixed(3));
+    cyan.setAttribute("transform", "translate(" + (-cur.off).toFixed(2) + "," + (cur.off*0.75).toFixed(2) + ")");
+  }
+
+  function frame(now){
+    var t = now - t0;
+    var tgt = hovering ? DRY : wetTarget(t);
+
+    // viscous easing — slow, heavy, never jittery
+    var k = 0.045;
+    cur.scale += (tgt.scale - cur.scale) * k;
+    cur.freq  += (tgt.freq  - cur.freq ) * k;
+    cur.blur  += (tgt.blur  - cur.blur ) * k;
+    cur.off   += (tgt.off   - cur.off  ) * k;
+
+    apply();
+    requestAnimationFrame(frame);
+  }
+
+  function setState(){
+    state.setAttribute("data-state", hovering ? "dry" : "wet");
+    state.querySelector(".txt").textContent = hovering ? "Dry" : "Wet";
+  }
+
+  function reprintPass(){
+    // re-pull the squeegee: snap sharp, then let it bleed again
+    cur.scale = DRY.scale; cur.freq = DRY.freq; cur.blur = DRY.blur; cur.off = DRY.off;
+    var s = (Math.random()*20)|0;
+    turb.setAttribute("seed", s);
+    WET.seed = s;
+  }
+
+  // entrance: stencil lift-off + scale impact
+  function entrance(){
+    if(reduced) return;
+    glyph.style.transition = "transform .55s cubic-bezier(.2,.8,.2,1)";
+    cyan.style.transition  = "transform .55s cubic-bezier(.2,.8,.2,1)";
+    glyph.style.transformOrigin = "600px 320px";
+    glyph.style.transform = "scale(0.98)";
+    cyan.style.transformOrigin = "600px 320px";
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        glyph.style.transform = "scale(1)";
+      });
+    });
+  }
+
+  stage.addEventListener("mouseenter", function(){ hovering = true; setState(); });
+  stage.addEventListener("mouseleave", function(){ hovering = false; setState(); });
+  stage.addEventListener("touchstart", function(){ hovering = true; setState(); }, {passive:true});
+  stage.addEventListener("touchend",   function(){ hovering = false; setState(); }, {passive:true});
+  reprint.addEventListener("click", reprintPass);
+
+  // boot
+  if(reduced){
+    // static, sharp, legible
+    cur.scale = 1.5; cur.freq = 0.04; cur.blur = 0.1; cur.off = 4;
+    apply();
+    glyph.style.transform = "scale(1)";
+  } else {
+    entrance();
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

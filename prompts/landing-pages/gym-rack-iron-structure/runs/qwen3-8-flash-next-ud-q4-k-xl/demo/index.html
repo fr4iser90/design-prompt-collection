@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IronGrid — Build Strength</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#1A1A1A;
+  --gun:#4A4A4A;
+  --steel:#999999;
+  --chrome:#C0C0C0;
+  --line:rgba(153,153,153,.16);
+  --line-strong:rgba(153,153,153,.34);
+  --ease-snap:cubic-bezier(0.175,0.885,0.32,1.275);
+  --ease-drop:cubic-bezier(0.22,1,0.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--black);
+  color:var(--steel);
+  font-family:'Roboto Condensed',sans-serif;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(192,192,192,.06), transparent 60%),
+    radial-gradient(100% 100% at 50% 120%, rgba(0,0,0,.6), transparent 70%);
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--chrome);color:var(--black)}
+
+/* ---------- ATMOSPHERIC OVERLAYS ---------- */
+.noise{
+  position:fixed;inset:0;z-index:55;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{position:fixed;inset:0;z-index:40;pointer-events:none;box-shadow:inset 0 0 220px 40px rgba(0,0,0,.7)}
+
+/* ---------- VERTICAL RACK UPRIGHTS (grid as feature) ---------- */
+.rack{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.rack::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent calc(12.5% - 4px),var(--line) calc(12.5% - 4px),var(--line) 12.5%);
+}
+.rack::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg,transparent 0,transparent 118px,var(--line-strong) 118px,var(--line-strong) 122px);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%);
+          mask-image:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%);
+}
+
+/* ---------- LAYOUT ---------- */
+.wrap{position:relative;z-index:10;width:min(1320px,92vw);margin:0 auto}
+
+/* ---------- NAV ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;height:66px;
+  background:linear-gradient(180deg,rgba(26,26,26,.97),rgba(26,26,26,.82));
+  border-bottom:4px solid var(--gun);
+  transition:background .3s,box-shadow .3s,border-color .3s}
+.nav.scrolled{box-shadow:0 14px 34px rgba(0,0,0,.6);border-color:var(--chrome)}
+.nav__in{height:100%;width:min(1320px,92vw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .bolt{width:22px;height:22px;flex:none}
+.brand .bolt circle{fill:var(--chrome)}
+.brand .bolt .hole{fill:var(--black)}
+.brand .word{font-family:'Bebas Neue';font-size:30px;letter-spacing:.14em;color:var(--chrome);line-height:.8}
+.brand .word span{color:var(--steel)}
+.nav__links{display:flex;gap:34px;font-size:14px;letter-spacing:.22em;text-transform:uppercase;font-weight:700}
+.nav__links a{position:relative;color:var(--steel);padding:6px 0;transition:color .25s}
+.nav__links a::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--chrome);transition:width .3s var(--ease-snap)}
+.nav__links a:hover{color:var(--chrome)}
+.nav__links a:hover::after{width:100%}
+.nav__right{display:flex;align-items:center;gap:22px}
+.nav__quote{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--black);
+  background:var(--chrome);padding:9px 16px;border:2px solid var(--chrome);transition:.25s}
+.nav__quote:hover{background:transparent;color:var(--chrome)}
+.burger{display:none;flex-direction:column;justify-content:center;gap:5px;width:46px;height:46px;
+  background:transparent;border:2px solid var(--chrome);cursor:pointer;position:relative}
+.burger i{display:block;height:2px;width:22px;background:var(--chrome);margin:0 auto;transition:.3s var(--ease-snap)}
+
+/* ---------- MOBILE MENU (SAFETY PIN) ---------- */
+.menu{position:fixed;top:66px;right:0;bottom:0;width:min(340px,86vw);z-index:59;
+  background:#141414;border-left:4px solid var(--gun);
+  transform:translateX(100%);transition:transform .42s var(--ease-snap);
+  padding:34px 30px;display:flex;flex-direction:column;gap:6px}
+.menu.open{transform:translateX(0)}
+.menu a{font-family:'Bebas Neue';font-size:38px;letter-spacing:.06em;color:var(--steel);
+  padding:14px 0;border-bottom:1px solid var(--gun);transition:.25s}
+.menu a:hover{color:var(--chrome);padding-left:12px}
+.menu .m-cta{margin-top:26px;text-align:center;background:var(--chrome);color:var(--black);
+  font-family:'Bebas Neue';font-size:24px;letter-spacing:.1em;padding:14px;border:none}
+.pin{position:absolute;top:22px;left:-30px;width:64px;height:64px;pointer-events:none;
+  transition:transform .42s var(--ease-snap)}
+.pin .pin-head{fill:var(--chrome)}
+.pin .pin-bar{stroke:var(--chrome);stroke-width:6;stroke-linecap:round}
+.pin .pin-hole{fill:var(--black)}
+.pin .pin-lock{fill:none;stroke:var(--gun);stroke-width:6;stroke-dasharray:120;stroke-dashoffset:120;transition:stroke-dashoffset .5s .1s}
+.nav.menu-open .pin{transform:rotate(-90deg) translate(4px,-4px)}
+.nav.menu-open .pin .pin-lock{stroke:var(--chrome);stroke-dashoffset:0}
+
+/* ---------- SECTION FRAME ---------- */
+section{position:relative}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
+  padding:120px 0 46px;border-bottom:4px solid var(--gun)}
+.sec-head .idx{font-family:'Bebas Neue';font-size:20px;letter-spacing:.2em;color:var(--chrome);
+  display:flex;align-items:center;gap:14px;white-space:nowrap}
+.sec-head .idx .dot{width:12px;height:12px;border-radius:50%;background:var(--chrome);box-shadow:0 0 0 4px rgba(192,192,192,.15)}
+.sec-title{font-family:'Bebas Neue';font-size:clamp(48px,8vw,110px);line-height:.82;letter-spacing:.01em;
+  color:var(--chrome);text-transform:uppercase}
+.sec-title .out{color:transparent;-webkit-text-stroke:2px var(--steel)}
+.sec-desc{max-width:340px;font-size:15px;line-height:1.6;color:var(--steel);text-transform:uppercase;letter-spacing:.05em}
+
+/* ---------- HERO ---------- */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding-top:96px;position:relative}
+.hero__top{display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--steel);
+  padding-bottom:26px;border-bottom:1px solid var(--gun)}
+.hero__top b{color:var(--chrome);font-weight:700}
+.hero__title{font-family:'Bebas Neue';text-transform:uppercase;line-height:.78;
+  font-size:clamp(84px,20vw,290px);color:var(--chrome);margin:26px 0 0;
+  text-shadow:6px 6px 0 rgba(0,0,0,.55)}
+.hero__title .l2{color:transparent;-webkit-text-stroke:3px var(--chrome)}
+.hero__grid{display:grid;grid-template-columns:1.4fr 1fr;gap:40px;align-items:end;margin-top:44px}
+.hero__lead{font-size:clamp(16px,1.5vw,20px);line-height:1.55;color:var(--steel);
+  text-transform:uppercase;letter-spacing:.04em;max-width:520px;border-left:4px solid var(--chrome);padding-left:22px}
+.hero__lead b{color:var(--chrome)}
+.hero__cta{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px}
+.btn{font-family:'Bebas Neue';font-size:22px;letter-spacing:.12em;text-transform:uppercase;
+  padding:16px 30px;border:3px solid var(--chrome);cursor:pointer;transition:.25s;
+  box-shadow:6px 6px 0 rgba(0,0,0,.5);position:relative;overflow:hidden}
+.btn--solid{background:var(--chrome);color:var(--black)}
+.btn--solid:hover{transform:translate(3px,3px);box-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.btn--ghost{background:transparent;color:var(--chrome)}
+.btn--ghost:hover{background:var(--chrome);color:var(--black);transform:translate(3px,3px);box-shadow:2px 2px 0 rgba(0,0,0,.5)}
+.hero__meta{display:flex;flex-direction:column;gap:18px}
+.hero__plate{border:3px solid var(--gun);padding:22px;background:linear-gradient(135deg,#222,#161616)}
+.hero__plate .row{display:flex;justify-content:space-between;font-size:13px;letter-spacing:.18em;
+  text-transform:uppercase;padding:9px 0;border-bottom:1px dashed var(--gun)}
+.hero__plate .row:last-child{border:none}
+.hero__plate .row b{color:var(--chrome)}
+.hero__scroll{position:absolute;bottom:26px;left:0;font-size:12px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--steel);display:flex;align-items:center;gap:12px}
+.hero__scroll .bar{width:60px;height:3px;background:var(--gun);position:relative;overflow:hidden}
+.hero__scroll .bar::after{content:"";position:absolute;inset:0;width:40%;background:var(--chrome);animation:scan 2.4s infinite}
+@keyframes scan{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+
+/* ---------- MARQUEE ---------- */
+.marquee{margin-top:40px;border-top:4px solid var(--gun);border-bottom:4px solid var(--gun);
+  overflow:hidden;background:#151515;padding:16px 0}
+.marquee__track{display:flex;gap:56px;white-space:nowrap;width:max-content;animation:slide 26s linear infinite}
+.marquee:hover .marquee__track{animation-play-state:paused}
+.marquee__track span{font-family:'Bebas Neue';font-size:34px;letter-spacing:.08em;color:var(--steel);
+  display:flex;align-items:center;gap:56px}
+.marquee__track span::after{content:"";width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,var(--chrome),#666);box-shadow:inset -2px -2px 4px rgba(0,0,0,.6)}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* ---------- PRODUCTS (RACK) ---------- */
+.rack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;
+  border:4px solid var(--gun);background:var(--gun);margin-top:0}
+.card{position:relative;background:#1e1e1e;padding:0;overflow:hidden;
+  transition:box-shadow .3s,border-color .3s,transform .3s var(--ease-snap);
+  box-shadow:inset 0 0 0 1px rgba(153,153,153,.08)}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:0;
+  background:var(--chrome);transition:height .3s var(--ease-snap);z-index:3}
+.card:hover{box-shadow:20px 20px 40px rgba(0,0,0,.85),inset 0 0 0 2px var(--chrome);
+  transform:translate(-4px,-4px);z-index:5}
+.card:hover::before{height:5px}
+.card__img{aspect-ratio:4/3;overflow:hidden;border-bottom:4px solid var(--gun);position:relative}
+.card__img img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.08) brightness(.9);
+  transform:scale(1.04);transition:transform .5s var(--ease-snap),filter .4s}
+.card:hover .card__img img{transform:scale(1.12);filter:grayscale(.2) contrast(1.1) brightness(1)}
+.card__code{position:absolute;top:10px;left:10px;z-index:2;font-family:'Bebas Neue';font-size:15px;
+  letter-spacing:.15em;color:var(--chrome);background:rgba(26,26,26,.85);padding:3px 8px;border:1px solid var(--gun)}
+.card__body{padding:20px 22px 26px}
+.card__name{font-family:'Bebas Neue';font-size:30px;letter-spacing:.03em;color:var(--chrome);line-height:.9}
+.card__sub{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--steel);margin-top:6px}
+.card__spec{display:flex;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px dashed var(--gun);
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+.card__spec b{color:var(--chrome)}
+
+/* ---------- SPECS TABLE ---------- */
+.spec-wrap{margin-top:0;border:4px solid var(--gun);background:#161616;overflow-x:auto}
+.spec-wrap table{width:100%;border-collapse:collapse;min-width:640px}
+.spec-wrap thead th{background:var(--chrome);color:var(--black);font-family:'Bebas Neue';font-size:20px;
+  letter-spacing:.14em;text-align:left;padding:16px 22px;text-transform:uppercase}
+.spec-wrap tbody td{padding:16px 22px;border-bottom:1px solid var(--gun);font-size:14px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--steel);font-variant-numeric:tabular-nums}
+.spec-wrap tbody tr{transition:background .2s}
+.spec-wrap tbody tr:hover{background:#222}
+.spec-wrap tbody tr:hover td{color:var(--chrome)}
+.spec-wrap td:first-child{font-family:'Bebas Neue';font-size:22px;letter-spacing:.06em;color:var(--chrome)}
+
+/* ---------- LOAD / STATS ---------- */
+.load{display:grid;grid-template-columns:repeat(4,1fr);border:4px solid var(--gun);border-left:none;border-right:none}
+.stat{padding:54px 30px;border-right:4px solid var(--gun);text-align:center;position:relative}
+.stat:last-child{border-right:none}
+.stat .num{font-family:'Bebas Neue';font-size:clamp(56px,7vw,92px);color:var(--chrome);line-height:.8}
+.stat .lbl{font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--steel);margin-top:14px}
+.stat .num .u{font-size:.42em;color:var(--steel);vertical-align:super}
+
+/* ---------- TESTIMONIAL ---------- */
+.quote{border:4px solid var(--gun);background:linear-gradient(135deg,#202020,#151515);
+  padding:64px clamp(28px,6vw,80px);position:relative;margin-top:0}
+.quote .mark{font-family:'Bebas Neue';font-size:180px;line-height:.5;color:var(--gun);position:absolute;
+  top:24px;left:24px}
+.quote blockquote{font-family:'Bebas Neue';font-size:clamp(30px,4.5vw,58px);line-height:1;
+  color:var(--chrome);letter-spacing:.02em;position:relative;z-index:2;max-width:1000px}
+.quote cite{display:block;margin-top:28px;font-style:normal;font-size:14px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--steel)}
+.quote cite b{color:var(--chrome)}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:120px;border-top:4px solid var(--gun);background:#131313}
+.foot__cta{padding:80px 0;display:flex;justify-content:space-between;align-items:center;gap:40px;flex-wrap:wrap;
+  border-bottom:4px solid var(--gun)}
+.foot__cta h2{font-family:'Bebas Neue';font-size:clamp(46px,8vw,120px);color:var(--chrome);line-height:.82;text-transform:uppercase}
+.foot__cta h2 .out{color:transparent;-webkit-text-stroke:2px var(--steel)}
+.foot__grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;padding:60px 0}
+.foot__grid h4{font-family:'Bebas Neue';font-size:22px;letter-spacing:.12em;color:var(--chrome);margin-bottom:18px}
+.foot__grid a,.foot__grid p{display:block;font-size:14px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--steel);padding:6px 0;transition:color .2s}
+.foot__grid a:hover{color:var(--chrome)}
+.foot__brand .word{font-family:'Bebas Neue';font-size:44px;letter-spacing:.1em;color:var(--chrome)}
+.foot__brand .word span{color:var(--steel)}
+.foot__brand p{max-width:280px;line-height:1.6}
+.foot__bar{display:flex;justify-content:space-between;padding:22px 0;border-top:1px solid var(--gun);
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel);flex-wrap:wrap;gap:12px}
+
+/* ---------- REVEAL MOTION ---------- */
+.reveal{opacity:0;transform:translateY(-48px);transition:opacity .5s ease,transform .6s var(--ease-snap)}
+.reveal.in{opacity:1;transform:none}
+.reveal-up{opacity:0;transform:translateY(34px);transition:opacity .5s ease,transform .6s var(--ease-snap)}
+.reveal-up.in{opacity:1;transform:none}
+.reveal-l{opacity:0;transform:translateX(-40px);transition:opacity .5s ease,transform .6s var(--ease-snap)}
+.reveal-l.in{opacity:1;transform:none}
+
+/* ---------- RESPONSIVE ---------- */
+@media(max-width:1000px){
+  .nav__links{display:none}
+  .burger{display:flex}
+  .hero__grid{grid-template-columns:1fr}
+  .rack-grid{grid-template-columns:repeat(2,1fr)}
+  .foot__grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .rack::before{background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 4px),var(--line) calc(25% - 4px),var(--line) 25%)}
+  .sec-head{flex-direction:column;align-items:flex-start;padding-top:80px}
+  .rack-grid{grid-template-columns:1fr}
+  .load{grid-template-columns:1fr 1fr}
+  .stat{border-bottom:4px solid var(--gun)}
+  .stat:nth-child(2n){border-right:none}
+  .foot__grid{grid-template-columns:1fr}
+  .hero__top{font-size:11px;letter-spacing:.16em}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal,.reveal-up,.reveal-l{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div class="vignette"></div>
+<div class="rack"></div>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="brand" href="#top">
+      <svg class="bolt" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle class="hole" cx="12" cy="12" r="4"/></svg>
+      <span class="word">IRON<span>GRID</span></span>
+    </a>
+    <nav class="nav__links">
+      <a href="#rack">Racks</a>
+      <a href="#specs">Specs</a>
+      <a href="#load">Load</a>
+      <a href="#build">Build</a>
+    </nav>
+    <div class="nav__right">
+      <a class="nav__quote" href="#build">Request Quote</a>
+      <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+    </div>
+  </div>
+  <!-- safety pin -->
+  <svg class="pin" viewBox="0 0 64 64">
+    <path class="pin-lock" d="M40 12 A20 20 0 1 1 20 44"/>
+    <circle class="pin-head" cx="44" cy="20" r="12"/>
+    <circle class="pin-hole" cx="44" cy="20" r="5"/>
+    <line class="pin-bar" x1="36" y1="30" x2="14" y2="52"/>
+  </svg>
+</header>
+
+<!-- MOBILE MENU -->
+<nav class="menu" id="menu">
+  <a href="#rack">Racks</a>
+  <a href="#specs">Specs</a>
+  <a href="#load">Load</a>
+  <a href="#build">Build</a>
+  <a href="#build" class="m-cta">Request Quote</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero__top reveal-l">
+      <span>Commercial Strength Systems</span>
+      <span><b>Est. 1998</b> · Built In The Steel Belt</span>
+      <span>Model Series <b>IG-9000</b></span>
+    </div>
+    <h1 class="hero__title">
+      <span class="reveal">Build</span><br>
+      <span class="reveal l2">Strength</span>
+    </h1>
+    <div class="hero__grid">
+      <div class="reveal-up">
+        <p class="hero__lead">IronGrid forges <b>architectural steel</b> for the world's hardest gyms. Every upright, pin and plate is machined to hold the load — no flex, no give, no excuses.</p>
+        <div class="hero__cta">
+          <a class="btn btn--solid" href="#rack">Configure A Rack</a>
+          <a class="btn btn--ghost" href="#specs">View Spec Sheet</a>
+        </div>
+      </div>
+      <div class="hero__meta reveal-up">
+        <div class="hero__plate">
+          <div class="row"><span>Upright Gauge</span><b>11 GA / 3MM</b></div>
+          <div class="row"><span>Load Rating</span><b>1500 LBS</b></div>
+          <div class="row"><span>Pin System</span><b>5/8" Laser-Cut</b></div>
+          <div class="row"><span>Finish</span><b>Textured Powder</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap"><div class="hero__scroll"><span class="bar"></span> Scroll To Load</div></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee__track">
+    <span>Power Racks</span><span>Half Racks</span><span>Plate-Loaded</span><span>Landmine</span><span>Safety Straps</span><span>Monolift</span><span>Steel Uprights</span>
+    <span>Power Racks</span><span>Half Racks</span><span>Plate-Loaded</span><span>Landmine</span><span>Safety Straps</span><span>Monolift</span><span>Steel Uprights</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="rack">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="idx reveal-l"><span class="dot"></span> 01 / The Rack</div>
+        <h2 class="sec-title reveal">Slot It<br><span class="out">In</span></h2>
+      </div>
+      <p class="sec-desc reveal-up">Each unit drops into a grid cell. Hover to feel the weight climb.</p>
+    </div>
+    <div class="rack-grid">
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-9000</span><img src="https://picsum.photos/seed/steel-power-rack-frame/640/480?grayscale" alt="Power Rack"></div>
+        <div class="card__body">
+          <h3 class="card__name">Power Rack</h3>
+          <div class="card__sub">4-Post / Cage</div>
+          <div class="card__spec"><span>Load</span><b>1500 LBS</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-7200</span><img src="https://picsum.photos/seed/steel-half-rack-frame/640/480?grayscale" alt="Half Rack"></div>
+        <div class="card__body">
+          <h3 class="card__name">Half Rack</h3>
+          <div class="card__sub">2-Post / Wall</div>
+          <div class="card__spec"><span>Load</span><b>1000 LBS</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-3300</span><img src="https://picsum.photos/seed/steel-plate-loaded-machine/640/480?grayscale" alt="Plate Loaded"></div>
+        <div class="card__body">
+          <h3 class="card__name">Plate Loaded</h3>
+          <div class="card__sub">Iso-Lateral</div>
+          <div class="card__spec"><span>Load</span><b>800 LBS</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-5500</span><img src="https://picsum.photos/seed/steel-deadlift-platform/640/480?grayscale" alt="Deadlift Platform"></div>
+        <div class="card__body">
+          <h3 class="card__name">Deadlift Platform</h3>
+          <div class="card__sub">Steel / Rubber</div>
+          <div class="card__spec"><span>Load</span><b>2000 LBS</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-1100</span><img src="https://picsum.photos/seed/steel-barbell-chrome-rod/640/480?grayscale" alt="Barbell"></div>
+        <div class="card__body">
+          <h3 class="card__name">Barbell</h3>
+          <div class="card__sub">20KG / IPF</div>
+          <div class="card__spec"><span>Tensile</span><b>190K PSI</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-2200</span><img src="https://picsum.photos/seed/steel-weight-plate-stack/640/480?grayscale" alt="Weight Plates"></div>
+        <div class="card__body">
+          <h3 class="card__name">Weight Plates</h3>
+          <div class="card__sub">Bumper / Iron</div>
+          <div class="card__spec"><span>Range</span><b>2.5–25 KG</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-8800</span><img src="https://picsum.photos/seed/steel-gym-dumbbell-rack/640/480?grayscale" alt="Dumbbell Rack"></div>
+        <div class="card__body">
+          <h3 class="card__name">Dumbbell Rack</h3>
+          <div class="card__sub">3-Tier / Steel</div>
+          <div class="card__spec"><span>Load</span><b>1200 LBS</b></div>
+        </div>
+      </article>
+      <article class="card reveal-up">
+        <div class="card__img"><span class="card__code">IG-4400</span><img src="https://picsum.photos/seed/steel-cable-pulley-tower/640/480?grayscale" alt="Cable Tower"></div>
+        <div class="card__body">
+          <h3 class="card__name">Cable Tower</h3>
+          <div class="card__sub">Dual / 90KG</div>
+          <div class="card__spec"><span>Stations</span><b>12</b></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section id="specs">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="idx reveal-l"><span class="dot"></span> 02 / Spec Sheet</div>
+        <h2 class="sec-title reveal">The <span class="out">Numbers</span></h2>
+      </div>
+      <p class="sec-desc reveal-up">Steel plate label. Read it, then trust it.</p>
+    </div>
+    <div class="spec-wrap reveal-up">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Upright</th><th>Footprint</th><th>Load Rating</th><th>Finish</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>IG-9000</td><td>11 GA / 3MM</td><td>48" × 48"</td><td>1500 LBS</td><td>Textured Black</td></tr>
+          <tr><td>IG-7200</td><td>11 GA / 3MM</td><td>48" × 24"</td><td>1000 LBS</td><td>Gunmetal</td></tr>
+          <tr><td>IG-5500</td><td>10 GA / 4MM</td><td>60" × 48"</td><td>2000 LBS</td><td>Raw Steel</td></tr>
+          <tr><td>IG-3300</td><td>12 GA / 2.5MM</td><td>36" × 30"</td><td>800 LBS</td><td>Chrome</td></tr>
+          <tr><td>IG-8800</td><td>10 GA / 4MM</td><td>30" × 24"</td><td>1200 LBS</td><td>Textured Black</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- LOAD -->
+<section id="load">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="idx reveal-l"><span class="dot"></span> 03 / Load</div>
+        <h2 class="sec-title reveal">Built To <span class="out">Hold</span></h2>
+      </div>
+      <p class="sec-desc reveal-up">Numbers that don't bend.</p>
+    </div>
+    <div class="load reveal-up">
+      <div class="stat"><div class="num" data-count="1500">0<span class="u">LBS</span></div><div class="lbl">Max Load / Rack</div></div>
+      <div class="stat"><div class="num" data-count="3" data-dec="0" data-suffix="MM">0</div><div class="lbl">Upright Steel</div></div>
+      <div class="stat"><div class="num" data-count="128" data-suffix="+">0</div><div class="lbl">Gyms Outfitted</div></div>
+      <div class="stat"><div class="num" data-count="25" data-suffix="YR">0</div><div class="lbl">Structural Warranty</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL -->
+<section id="build">
+  <div class="wrap">
+    <div class="quote reveal-up">
+      <span class="mark">"</span>
+      <blockquote>We loaded 1,500 pounds onto an IronGrid cage and it didn't flinch. This isn't equipment — it's infrastructure.</blockquote>
+      <cite>— <b>Dana Reyes</b>, Head Coach, Foundry Strength Collective</cite>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot__cta">
+      <h2 class="reveal">Build Your<br><span class="out">Rack</span></h2>
+      <a class="btn btn--solid reveal-up" href="#top">Request A Quote →</a>
+    </div>
+    <div class="foot__grid">
+      <div class="foot__brand">
+        <div class="word">IRON<span>GRID</span></div>
+        <p>Commercial strength systems forged from architectural steel. Built to hold the load for a generation.</p>
+      </div>
+      <div>
+        <h4>Systems</h4>
+        <a href="#rack">Power Racks</a>
+        <a href="#rack">Half Racks</a>
+        <a href="#rack">Plate Loaded</a>
+        <a href="#rack">Platforms</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="#build">About</a>
+        <a href="#specs">Specs</a>
+        <a href="#load">Warranty</a>
+        <a href="#build">Contact</a>
+      </div>
+      <div>
+        <h4>Factory</h4>
+        <p>4200 Steelworks Ave</p>
+        <p>Pittsburgh, PA</p>
+        <a href="tel:+14120000000">+1 412 000 0000</a>
+        <a href="mailto:build@irongrid.co">build@irongrid.co</a>
+      </div>
+    </div>
+    <div class="foot__bar">
+      <span>© 2024 IronGrid Manufacturing Co.</span>
+      <span>Strength Is Structural</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* NAV state */
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 40); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* SAFETY PIN MENU */
+  var burger = document.getElementById('burger');
+  var menu = document.getElementById('menu');
+  burger.addEventListener('click', function(){
+    menu.classList.toggle('open');
+    nav.classList.toggle('menu-open');
+  });
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      menu.classList.remove('open');
+      nav.classList.remove('menu-open');
+    });
+  });
+
+  /* REVEAL (drop / snap) */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal,.reveal-up,.reveal-l').forEach(function(el,i){
+    el.style.transitionDelay = (Math.min(i%8,7)*45) + 'ms';
+    io.observe(el);
+  });
+
+  /* COUNTERS */
+  var cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target;
+      var target = parseFloat(el.getAttribute('data-count'));
+      var suffix = el.getAttribute('data-suffix') || '';
+      var dec = parseInt(el.getAttribute('data-dec')||'0',10);
+      var unit = el.querySelector('.u');
+      var unitHTML = unit ? unit.outerHTML : '';
+      if(reduce){ el.innerHTML = target + suffix + unitHTML; cio.unobserve(el); return; }
+      var start = null, dur = 1400;
+      function step(ts){
+        if(!start) start = ts;
+        var p = Math.min((ts-start)/dur,1);
+        var eased = 1 - Math.pow(1-p,3);
+        var val = target*eased;
+        var shown = dec ? val.toFixed(dec) : Math.round(val);
+        el.innerHTML = shown + suffix + unitHTML;
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      cio.unobserve(el);
+    });
+  }, {threshold:0.4});
+  document.querySelectorAll('[data-count]').forEach(function(el){ cio.observe(el); });
+})();
+</script>
+</body>
+</html>

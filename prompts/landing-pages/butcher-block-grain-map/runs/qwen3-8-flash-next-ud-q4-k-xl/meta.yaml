@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 610974
+gen_ms: 610974
+ttft_ms: 1301
+queue_wait_ms: 139
+wall_ms: 612470
+review_score: 6
+review_summary: "Strong industrial typography and concept, but the wood texture is a flat vector pattern rather than the requested hyper-realistic end-grain."
+reviewed_at: "2026-09-29T01:18:29.445Z"
+review_issues:
+  - "Wood texture is too flat and vector-like (vertical stripes), lacking the depth of real end-grain"
+  - "Knife illustration is low-fidelity and looks like a simple SVG shape rather than a product"
+  - "Hero text is cut off at the bottom edge ('CLEAN')"
+  - "Background lacks atmospheric depth or lighting variation"

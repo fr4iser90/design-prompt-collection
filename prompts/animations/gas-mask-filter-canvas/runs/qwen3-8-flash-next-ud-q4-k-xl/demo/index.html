@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gas Mask Filter Canvas — Macro Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --charcoal:#2C3E50; --dust:#95A5A6; --rust:#D35400;
+  --bg0:#0a0d11; --bg1:#141a21; --bg2:#1c242e;
+  --ink:#dfe6ec; --dim:#8593a0; --line:rgba(149,165,166,.20);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'IBM Plex Mono',monospace; color:var(--ink); background:var(--bg0);
+  overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+.bg{position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 50% -12%, rgba(148,178,206,.10), transparent 55%),
+    radial-gradient(90% 70% at 50% 120%, rgba(211,84,0,.06), transparent 60%),
+    linear-gradient(180deg,#0a0d11 0%,#12181f 45%,#0b0e12 100%);}
+.bg::before{content:'';position:absolute;inset:-2px;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(149,165,166,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(149,165,166,.045) 1px,transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask:radial-gradient(120% 90% at 50% 42%,#000 30%,transparent 88%);
+          mask:radial-gradient(120% 90% at 50% 42%,#000 30%,transparent 88%);}
+.bg::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 40%,transparent 55%,rgba(0,0,0,.55) 100%);}
+.scan{position:fixed;left:0;right:0;top:-140px;height:140px;z-index:6;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(150,180,210,.05),transparent);
+  animation:scan 9s linear infinite}
+@keyframes scan{to{transform:translateY(120vh)}}
+
+.frame{position:fixed;inset:14px;z-index:2;pointer-events:none}
+.frame i{position:absolute;width:16px;height:16px;border:1px solid var(--line)}
+.frame i.tl{top:0;left:0;border-right:0;border-bottom:0}
+.frame i.tr{top:0;right:0;border-left:0;border-bottom:0}
+.frame i.bl{bottom:0;left:0;border-right:0;border-top:0}
+.frame i.br{bottom:0;right:0;border-left:0;border-top:0}
+
+.wrap{position:relative;z-index:3;max-width:1240px;margin:0 auto;padding:clamp(18px,3vw,42px);min-height:100vh}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
+  padding-bottom:16px;border-bottom:1px solid var(--line)}
+.mark{display:flex;gap:12px;align-items:center}
+.mark svg{width:34px;height:34px;flex:none}
+.mark b{font-family:'Oswald';font-weight:700;font-size:1.02rem;letter-spacing:.14em;text-transform:uppercase}
+.mark span{display:block;font-size:.6rem;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;margin-top:3px}
+.hud{font-size:.6rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;line-height:1.7;text-align:right}
+.hud b{color:var(--dust);font-weight:500}
+.hud .ok{color:var(--dust)}
+.hud .ok::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--dust);
+  margin-right:6px;box-shadow:0 0 8px var(--dust);animation:blink 2.4s steps(1) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(26px,4vw,64px);align-items:center;
+  padding:clamp(24px,4vw,52px) 0}
+.eyebrow{font-size:.62rem;letter-spacing:.34em;text-transform:uppercase;color:var(--rust);
+  display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.eyebrow::before{content:'';width:34px;height:1px;background:var(--rust)}
+h1{font-family:'Oswald';font-weight:700;text-transform:uppercase;line-height:.9;
+  font-size:clamp(3rem,8.4vw,6.2rem);letter-spacing:-.01em}
+h1 .l2{display:block;color:transparent;-webkit-text-stroke:1.4px var(--dust)}
+h1 .l3{display:block;color:var(--rust)}
+.lead{margin-top:24px;max-width:44ch;color:#b9c4cd;font-size:.98rem;line-height:1.7}
+.lead em{color:var(--ink);font-style:normal;border-bottom:1px solid var(--rust)}
+
+.spec{margin-top:30px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.spec div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.spec dt{font-size:.56rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.spec dd{font-family:'Oswald';font-weight:500;font-size:1.02rem;margin-top:4px;letter-spacing:.02em}
+.spec dd small{color:var(--dust);font-size:.62rem;font-family:'IBM Plex Mono';letter-spacing:.05em}
+
+.actions{margin-top:30px;display:flex;gap:12px;flex-wrap:wrap}
+.btn{font-family:'Oswald';text-transform:uppercase;letter-spacing:.16em;font-size:.74rem;font-weight:600;
+  padding:13px 22px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;
+  transition:.25s;display:inline-flex;align-items:center;gap:10px}
+.btn:hover{border-color:var(--dust);background:rgba(149,165,166,.08)}
+.btn.p{background:var(--rust);border-color:var(--rust);color:#120a04}
+.btn.p:hover{background:#e5641a;border-color:#e5641a}
+.btn:focus-visible{outline:2px solid var(--rust);outline-offset:3px}
+
+/* stage */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center}
+.disc{position:relative;width:min(84vw,520px);aspect-ratio:1}
+#filter{position:absolute;inset:0;width:100%;height:100%;display:block;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
+.callout{position:absolute;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  white-space:nowrap;pointer-events:none}
+.callout::before{content:'';position:absolute;width:5px;height:5px;border-radius:50%;background:var(--rust);
+  box-shadow:0 0 8px var(--rust)}
+.callout b{color:var(--dust);font-weight:500}
+.c1{top:14%;left:100%;transform:translateX(10px)}
+.c1::before{left:-14px;top:6px}
+.c2{bottom:26%;left:0;transform:translateX(-14px);text-align:right}
+.c2::before{right:-14px;top:6px}
+.c3{top:52%;left:100%;transform:translateX(10px)}
+.c3::before{left:-14px;top:6px}
+
+/* readouts */
+.read{margin-top:clamp(20px,3vw,34px);width:100%;max-width:640px;display:grid;
+  grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.read div{background:linear-gradient(180deg,#141a21,#0e131a);padding:12px 12px}
+.read .k{font-size:.54rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.read .v{font-family:'Oswald';font-weight:600;font-size:1.35rem;margin-top:4px;letter-spacing:.01em}
+.read .v small{font-size:.6rem;color:var(--dust);font-family:'IBM Plex Mono';font-weight:400}
+.read .v.rust{color:var(--rust)}
+
+/* ticker */
+.ticker{margin-top:clamp(22px,3vw,38px);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  overflow:hidden;position:relative}
+.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:70px;z-index:2}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg0),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg0),transparent)}
+.track{display:inline-flex;white-space:nowrap;animation:mar 34s linear infinite;padding:11px 0}
+.track span{font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dust);padding:0 26px;position:relative}
+.track span::before{content:'◆';color:var(--rust);position:absolute;left:-6px;top:1px;font-size:.5rem}
+@keyframes mar{to{transform:translateX(-50%)}}
+
+/* footer */
+.foot{margin-top:clamp(24px,3vw,40px);padding-top:16px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:.58rem;
+  letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.foot b{color:var(--dust);font-weight:500}
+
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr;gap:34px}
+  .stage{order:2}
+  .callout{display:none}
+  .read{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .spec{grid-template-columns:1fr}
+  .hud{text-align:left}
+  .top{flex-direction:column}
+}
+@media(prefers-reduced-motion:reduce){
+  .scan,.track,.hud .ok::before{animation:none}
+  .reveal{opacity:1;transform:none;transition:none}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="scan"></div>
+<div class="frame"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+
+<div class="wrap">
+  <header class="top">
+    <div class="mark">
+      <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M20 3l14 5v9c0 9-6 16-14 20C12 33 6 26 6 17V8l14-5z" stroke="#95A5A6" stroke-width="1.4"/>
+        <circle cx="20" cy="18" r="6.4" stroke="#D35400" stroke-width="1.4"/>
+        <circle cx="20" cy="18" r="2.2" fill="#D35400"/>
+      </svg>
+      <div><b>Ventex Respiratory</b><span>Protective Systems · Field Division</span></div>
+    </div>
+    <div class="hud">
+      <div>SN <b id="sn">VX-7742-C</b> · REV 4.1</div>
+      <div>LOT <b>2024-09</b> · CAL 07:14</div>
+      <div class="ok">FILTER INTEGRITY NOMINAL</div>
+    </div>
+  </header>
+
+  <main class="hero">
+    <section class="copy">
+      <div class="eyebrow reveal">Macro Study · Filter Media</div>
+      <h1 class="reveal">
+        <span class="l1">Gas Mask</span>
+        <span class="l2">Filter</span>
+        <span class="l3">Canvas</span>
+      </h1>
+      <p class="lead reveal">A living shield, seen at the macro scale. The woven carbon mesh <em>breathes</em> with each draw of air — pulling dust, soot and aerosol out of the stream and trapping them in the weave. Four seconds of filtered, working air.</p>
+
+      <dl class="spec reveal">
+        <div><dt>Media</dt><dd>Activated Carbon <small>/ Woven</small></dd></div>
+        <div><dt>Classification</dt><dd>EN 143 P3 <small>R</small></dd></div>
+        <div><dt>Rated Life</dt><dd>300 <small>h</small></dd></div>
+        <div><dt>Service</dt><dd>A · B · E · K <small>Gas</small></dd></div>
+      </dl>
+
+      <div class="actions reveal">
+        <button class="btn p" id="toggle" aria-pressed="true">❚❚ Pause Breath</button>
+        <button class="btn" id="reset">↻ Purge Particulate</button>
+      </div>
+    </section>
+
+    <section class="stage reveal">
+      <div class="disc">
+        <canvas id="filter" aria-label="Animated macro view of a breathing gas mask filter with trapped dust particles"></canvas>
+        <div class="callout c1"><b>Carbon Mesh</b> — 120 gsm</div>
+        <div class="callout c2"><b>Trapped Particulate</b> · soot</div>
+        <div class="callout c3"><b>Threaded Collar</b> · 40 mm</div>
+      </div>
+
+      <div class="read">
+        <div><div class="k">Respiration</div><div class="v" id="r1">12.0<small> /min</small></div></div>
+        <div><div class="k">Flow</div><div class="v" id="r2">48.0<small> L/min</small></div></div>
+        <div><div class="k">Δ Pressure</div><div class="v" id="r3">42<small> Pa</small></div></div>
+        <div><div class="k">Loaded</div><div class="v rust" id="r4">0.0<small> %</small></div></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="ticker">
+    <div class="track" id="track">
+      <span>EN 143 P3 R</span><span>Carbon 120 gsm</span><span>ΔP 42 Pa</span><span>Rated 300 h</span><span>Service A B E K</span><span>SN VX-7742-C</span><span>Rev 4.1</span><span>Lot 2024-09</span>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div><b>Ventex Respiratory</b> — Field Division · Technical Reference</div>
+    <div>Seamless loop · <b>4.00 s</b> · 60 fps target</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const cvs=document.getElementById('filter'), ctx=cvs.getContext('2d');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const C={charcoal:'#2C3E50',dust:'#95A5A6',rust:'#D35400'};
+
+  let W=0,H=0,cx=0,cy=0,D=0,R=0,Rdisc=0,Rmesh=0,dpr=1;
+  let tex=null, texD=0, meshCanvas=null, meshCtx=null, meshR=0;
+  let particles=[], stuck=[], breathPhase=0, paused=false, t0=performance.now();
+
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+
+  function buildTex(d){
+    const c=document.createElement('canvas'); c.width=d; c.height=d;
+    const g=c.getContext('2d');
+    g.fillStyle='#404b53'; g.fillRect(0,0,d,d);
+    const s=d/58, step=s*2, r=s*0.64;
+    for(let row=0;row<Math.ceil(d/step)+1;row++){
+      for(let col=0;col<Math.ceil(d/step)+1;col++){
+        const x=col*step+(row%2? s:0), y=row*step;
+        const o=(Math.sin((row*1.7+col*0.9)*1.3)*0.5+0.5)*36;
+        g.fillStyle='rgb('+(128+o)+','+(134+o)+','+(140+o)+')';
+        g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+      }
+    }
+    g.globalCompositeOperation='multiply';
+    for(let i=0;i<26;i++){
+      const x=Math.random()*d,y=Math.random()*d,rr=(Math.random()*0.24+0.08)*d;
+      const gr=g.createRadialGradient(x,y,0,x,y,rr);
+      gr.addColorStop(0,'rgba(90,98,104,0.9)'); gr.addColorStop(1,'rgba(90,98,104,0)');
+      g.fillStyle=gr; g.beginPath(); g.arc(x,y,rr,0,7); g.fill();
+    }
+    g.globalCompositeOperation='source-over';
+    for(let i=0;i<11;i++){
+      const x=Math.random()*d,y=Math.random()*d,rr=(Math.random()*0.12+0.05)*d;
+      const gr=g.createRadialGradient(x,y,0,x,y,rr);
+      gr.addColorStop(0,'rgba(120,52,16,0.55)'); gr.addColorStop(1,'rgba(120,52,16,0)');
+      g.fillStyle=gr; g.beginPath(); g.arc(x,y,rr,0,7); g.fill();
+    }
+    for(let i=0;i<420;i++){
+      const x=Math.random()*d,y=Math.random()*d,sz=Math.random()*1.6+0.4;
+      g.fillStyle=Math.random()<0.5?'rgba(16,20,24,'+(0.05+Math.random()*0.14)+')':'rgba(200,210,216,'+(0.03+Math.random()*0.08)+')';
+      g.fillRect(x,y,sz,sz);
+    }
+    return c;
+  }
+
+  function resize(){
+    const rect=cvs.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=Math.round(rect.width*dpr); H=Math.round(rect.height*dpr);
+    cvs.width=W; cvs.height=H;
+    cx=W/2; cy=H/2; D=Math.min(W,H); R=D/2; Rdisc=R*0.985;
+    Rmesh=R*0.55; meshR=Rmesh*1.16;
+    texD=Math.max(320,Math.round(meshR*2.6));
+    tex=buildTex(texD);
+    meshCanvas=document.createElement('canvas');
+    meshCanvas.width=Math.ceil(meshR*2.12); meshCanvas.height=meshCanvas.width;
+    meshCtx=meshCanvas.getContext('2d');
+    if(reduce){ for(let i=0;i<70;i++) stuck.push({x:Math.random()*meshR*2,y:Math.random()*meshR*2,r:Math.random()*1.8+0.5,sh:Math.random()<0.16}); }
+    else seed();
+  }
+
+  function seed(){
+    particles=[]; stuck=[];
+    for(let i=0;i<14;i++){
+      const a=Math.random()*6.283, rr=meshR*(0.3+Math.random()*0.6);
+      particles.push({x:meshR+Math.cos(a)*rr,y:meshR+Math.sin(a)*rr,vx:(Math.random()-0.5)*0.14,vy:(Math.random()-0.5)*0.14,r:Math.random()*1.5+0.5,sh:Math.random()<0.2});
+    }
+  }
+
+  function drawParticles(p,ox,oy){
+    for(const s of stuck){
+      const x=ox+s.x,y=oy+s.y;
+      p.beginPath(); p.arc(x,y,s.r,0,7);
+      p.fillStyle=s.sh?'rgba(120,52,16,0.85)':'rgba(12,16,20,0.82)'; p.fill();
+    }
+    for(const q of particles){
+      const x=ox+q.x,y=oy+q.y;
+      p.beginPath(); p.arc(x,y,q.r,0,7);
+      p.fillStyle=q.sh?'rgba(120,52,16,0.7)':'rgba(14,18,22,0.7)'; p.fill();
+    }
+  }
+
+  function update(dt){
+    const speed=reduce?0:(paused?0:1);
+    breathPhase=(breathPhase+dt/4000*speed)%1;
+    const inhale=breathPhase<0.45;
+    const step=dt/16.6;
+    for(const q of particles){
+      const dx=meshR-q.x, dy=meshR-q.y, dist=Math.hypot(dx,dy)||1;
+      q.vx+=dx/dist*0.02*step; q.vy+=dy/dist*0.02*step;
+      q.vx+=(Math.random()-0.5)*0.06*step; q.vy+=(Math.random()-0.5)*0.06*step;
+      q.vx*=0.96; q.vy*=0.96;
+      q.x+=q.vx*step; q.y+=q.vy*step;
+      if(dist<meshR*0.82){ stuck.push({x:q.x,y:q.y,r:q.r,sh:q.sh}); respawn(q); }
+    }
+    if(stuck.length>460) stuck.splice(0,stuck.length-460);
+  }
+  function respawn(q){ const a=Math.random()*6.283; q.x=meshR+Math.cos(a)*meshR*1.3; q.y=meshR+Math.sin(a)*meshR*1.3; q.vx=0; q.vy=0; }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    let disp;
+    if(reduce){ disp=0.012; }
+    else{
+      const p=breathPhase;
+      disp = p<0.45 ? -0.03*(0.5-0.5*Math.cos(p/0.45*Math.PI))
+           : p<0.55 ? 0
+           : 0.028*(0.5-0.5*Math.cos((p-0.55)/0.45*Math.PI));
+    }
+    const mR=Rmesh*(1+disp);
+    const ox=cx-meshR, oy=cy-meshR;
+
+    // ---- housing ----
+    let g=ctx.createRadialGradient(cx,cy-R*0.12,R*0.1,cx,cy,R);
+    g.addColorStop(0,'#3a4d61'); g.addColorStop(.5,'#2c3e50'); g.addColorStop(.82,'#223140'); g.addColorStop(1,'#161f29');
+    ctx.beginPath(); ctx.arc(cx,cy,Rdisc,0,7); ctx.fillStyle=g; ctx.fill();
+
+    // brushed metal
+    ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,Rdisc,0,7); ctx.clip();
+    for(let i=0;i<150;i++){
+      const a=Math.random()*6.283, r0=Rdisc*0.55+Math.random()*Rdisc*0.42, len=0.05+Math.random()*0.12;
+      ctx.strokeStyle='rgba('+(Math.random()<0.5?'180,192,200,0.05':'10,14,18,0.06')+')';
+      ctx.lineWidth=0.6*dpr; ctx.beginPath();
+      ctx.arc(cx,cy,r0,a,a+len); ctx.stroke();
+    }
+    // specular overhead
+    g=ctx.createRadialGradient(cx,cy-Rdisc*0.35,0,cx,cy-Rdisc*0.35,Rdisc*0.85);
+    g.addColorStop(0,'rgba(190,215,240,0.20)'); g.addColorStop(1,'rgba(190,215,240,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,Rdisc,0,7); ctx.fill();
+    ctx.restore();
+
+    // rim highlights
+    ctx.lineWidth=2*dpr; ctx.strokeStyle='rgba(200,220,240,0.22)';
+    ctx.beginPath(); ctx.arc(cx,cy,Rdisc*0.995,-2.5,-0.6); ctx.stroke();
+    ctx.strokeStyle='rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.arc(cx,cy,Rdisc*0.995,0.7,2.5); ctx.stroke();
+
+    // knurling
+    const kn=Rdisc*0.9;
+    for(let i=0;i<120;i++){
+      const a=i/120*6.283;
+      ctx.strokeStyle='rgba('+(i%2?'10,14,18,0.5':'150,165,175,0.18')+')';
+      ctx.lineWidth=1.2*dpr; ctx.beginPath();
+      ctx.moveTo(cx+Math.cos(a)*Rdisc*0.86,cy+Math.sin(a)*Rdisc*0.86);
+      ctx.lineTo(cx+Math.cos(a)*Rdisc*0.965,cy+Math.sin(a)*Rdisc*0.965);
+      ctx.stroke();
+    }
+    // threaded groove
+    ctx.strokeStyle='rgba(15,20,26,0.7)'; ctx.lineWidth=2.4*dpr;
+    ctx.beginPath(); ctx.arc(cx,cy,Rdisc*0.735,0,7); ctx.stroke();
+    ctx.strokeStyle='rgba(150,168,178,0.25)'; ctx.lineWidth=1*dpr;
+    ctx.beginPath(); ctx.arc(cx,cy,Rdisc*0.705,0,7); ctx.stroke();
+
+    // stamped serial
+    ctx.save();
+    ctx.translate(cx,cy); ctx.rotate(-Math.PI/2);
+    ctx.font=(Rdisc*0.055)+'px "IBM Plex Mono", monospace';
+    ctx.fillStyle='rgba(150,168,178,0.55)'; ctx.textAlign='center';
+    ctx.fillText('SN VX-7742-C',0,-Rdisc*0.82);
+    ctx.restore();
+
+    // ---- mesh recess ----
+    g=ctx.createRadialGradient(cx,cy,mR*0.4,cx,cy,mR*1.06);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(.8,'rgba(0,0,0,0.55)'); g.addColorStop(1,'rgba(0,0,0,0.9)');
+    ctx.beginPath(); ctx.arc(cx,cy,mR*1.06,0,7); ctx.fillStyle=g; ctx.fill();
+
+    // ---- mesh surface ----
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,mR,0,7); ctx.clip();
+    meshCtx.clearRect(0,0,meshCanvas.width,meshCanvas.height);
+    meshCtx.save();
+    meshCtx.translate(meshR,meshR); meshCtx.scale(mR/meshR,mR/meshR);
+    meshCtx.beginPath(); meshCtx.arc(0,0,meshR,0,7); meshCtx.clip();
+    meshCtx.translate(-meshR,-meshR);
+    meshCtx.drawImage(tex,0,0,texD,texD,0,0,meshCanvas.width,meshCanvas.height);
+    drawParticles(meshCtx,0,0);
+    meshCtx.restore();
+    ctx.drawImage(meshCanvas,ox,oy,meshCanvas.width,meshCanvas.height);
+
+    // lighting shift on weave
+    const shift=disp/0.03;
+    let lg=ctx.createRadialGradient(cx-shift*18,cy-shift*18,0,cx,cy,mR*1.3);
+    lg.addColorStop(0,'rgba(205,225,245,'+(0.14+0.06*(1-shift))+')'); lg.addColorStop(.6,'rgba(205,225,245,0)');
+    ctx.fillStyle=lg; ctx.beginPath(); ctx.arc(cx,cy,mR,0,7); ctx.fill();
+    let sg=ctx.createRadialGradient(cx+disp*200,cy+disp*200,0,cx+disp*200,cy+disp*200,mR*1.4);
+    sg.addColorStop(0,'rgba(0,0,0,'+(0.35+0.15*Math.abs(shift))+')'); sg.addColorStop(.7,'rgba(0,0,0,0)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(cx,cy,mR,0,7); ctx.fill();
+    // inner rim shadow
+    ctx.lineWidth=6*dpr; ctx.strokeStyle='rgba(0,0,0,0.5)';
+    ctx.beginPath(); ctx.arc(cx,cy,mR,0,7); ctx.stroke();
+    ctx.restore();
+
+    // ---- flow arrows ----
+    if(!reduce){
+      const inh=breathPhase<0.45;
+      const alpha=0.10+0.16*Math.abs(disp)/0.03;
+      const dir=inh?-1:1;
+      for(let i=0;i<3;i++){
+        const rr=mR*(0.42+i*0.16);
+        ctx.strokeStyle='rgba(149,165,166,'+alpha+')'; ctx.lineWidth=1.4*dpr;
+        ctx.beginPath(); ctx.arc(cx,cy,rr,-0.5,0.5); ctx.stroke();
+        const ang=0.5, ax=cx+Math.cos(ang)*rr, ay=cy+Math.sin(ang)*rr;
+        ctx.fillStyle='rgba(149,165,166,'+alpha+')';
+        ctx.beginPath();
+        ctx.moveTo(ax+dir*6*dpr,ay); ctx.lineTo(ax-dir*2*dpr,ay-4*dpr); ctx.lineTo(ax-dir*2*dpr,ay+4*dpr);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    // vignette
+    g=ctx.createRadialGradient(cx,cy,R*0.5,cx,cy,R);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.4)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.fill();
+  }
+
+  // readouts
+  const r1=document.getElementById('r1'),r2=document.getElementById('r2'),r3=document.getElementById('r3'),r4=document.getElementById('r4');
+  let last=performance.now(), acc=0;
+  function readouts(now){
+    const p=breathPhase, inh=p<0.45;
+    const load=Math.min(100,stuck.length/460*100);
+    if(!reduce){
+      r1.firstChild.nodeValue=(12+2*Math.sin(now/1000)).toFixed(1);
+      r2.firstChild.nodeValue=(48+6*Math.sin(now/700)).toFixed(1);
+      r3.firstChild.nodeValue=Math.round(42+(inh?12:0)+Math.random()*3);
+    }
+    r4.firstChild.nodeValue=load.toFixed(1);
+  }
+
+  function loop(now){
+    const dt=Math.min(50,now-last); last=now;
+    update(dt); draw();
+    acc+=dt; if(acc>120){ readouts(now); acc=0; }
+    requestAnimationFrame(loop);
+  }
+
+  // controls
+  const toggle=document.getElementById('toggle');
+  toggle.addEventListener('click',()=>{ paused=!paused; toggle.setAttribute('aria-pressed',String(!paused)); toggle.textContent=paused?'▶ Resume Breath':'❚❚ Pause Breath'; });
+  document.getElementById('reset').addEventListener('click',()=>{ stuck=[]; seed(); });
+
+  // reveal
+  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} }),{threshold:0.15});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{ el.style.transitionDelay=(i*70)+'ms'; io.observe(el); });
+
+  // ticker duplicate
+  const track=document.getElementById('track'); track.innerHTML+=track.innerHTML;
+
+  window.addEventListener('resize',()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(resize,150); });
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

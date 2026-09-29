@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retrospect — Microfilm Focus Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --projector:#1a1a1a;
+    --paper:#d4d4d4;
+    --highlight:#ffffff;
+    --scan:rgba(255,255,255,.05);
+    --line:rgba(212,212,212,.14);
+    --serif:'Playfair Display', Georgia, 'Times New Roman', serif;
+    --body:'Libre Baskerville', Georgia, serif;
+    --mono:'Courier New', Courier, monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--projector);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.62;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    cursor:default;
+  }
+  ::selection{background:var(--paper);color:var(--projector)}
+
+  /* ---------- ATMOSPHERE LAYERS ---------- */
+  .grain{
+    position:fixed;inset:-60%;z-index:5;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.055;mix-blend-mode:overlay;animation:grain 1.1s steps(3) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}33%{transform:translate(-1.5%,1%)}
+    66%{transform:translate(1%,-1.5%)}100%{transform:translate(0,0)}
+  }
+  .scanlines{
+    position:fixed;inset:0;z-index:6;pointer-events:none;
+    background:repeating-linear-gradient(to bottom,
+      rgba(0,0,0,.16) 0px, rgba(0,0,0,.16) 1px,
+      transparent 1px, transparent 3px);
+    opacity:.5;
+  }
+  .sweep{
+    position:fixed;left:0;right:0;top:0;height:150px;z-index:7;pointer-events:none;
+    background:linear-gradient(to bottom,
+      transparent, rgba(255,255,255,.045) 45%, rgba(255,255,255,.085) 50%, rgba(255,255,255,.045) 55%, transparent);
+    box-shadow:0 0 26px 3px rgba(255,255,255,.04);
+    animation:sweep 4.4s linear infinite;
+  }
+  @keyframes sweep{0%{transform:translateY(-160px)}100%{transform:translateY(100vh)}}
+  .vignette{
+    position:fixed;inset:0;z-index:8;pointer-events:none;
+    background:radial-gradient(ellipse 72% 70% at 50% 44%,
+      transparent 38%, rgba(0,0,0,.30) 74%, rgba(0,0,0,.74) 100%);
+  }
+  .lens-frame{
+    position:fixed;inset:0;z-index:9;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),
+               inset 0 0 60px rgba(0,0,0,.55),
+               inset 0 0 130px rgba(0,0,0,.35);
+  }
+  .power-on{
+    position:fixed;inset:0;z-index:60;background:#000;
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity 1.1s ease .25s;
+  }
+  .power-on .bar{
+    width:64%;height:2px;background:rgba(255,255,255,.85);
+    box-shadow:0 0 22px 4px rgba(255,255,255,.5);
+    animation:powerbar 1.5s ease forwards;
+  }
+  @keyframes powerbar{
+    0%{transform:scaleX(0);opacity:0}
+    18%{transform:scaleX(1);opacity:1}
+    70%{opacity:1}100%{opacity:0}
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px clamp(16px,4vw,40px);
+    background:linear-gradient(to bottom, rgba(26,26,26,.92), rgba(26,26,26,.55) 70%, transparent);
+    backdrop-filter:blur(2px);
+  }
+  .brand{
+    font-family:var(--serif);font-weight:900;letter-spacing:.14em;
+    font-size:clamp(15px,2.4vw,20px);color:var(--highlight);
+    display:flex;align-items:baseline;gap:10px;
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;background:var(--highlight);
+    box-shadow:0 0 10px rgba(255,255,255,.6);animation:blink 2.6s steps(1) infinite;
+  }
+  @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.25}}
+  .brand small{
+    font-family:var(--mono);font-weight:400;letter-spacing:.28em;
+    font-size:9px;color:var(--paper);opacity:.6;
+  }
+  .hud{display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:11px;letter-spacing:.12em}
+  .hud .rec{display:flex;align-items:center;gap:6px;color:var(--paper);opacity:.75}
+  .hud .rec i{width:7px;height:7px;border-radius:50%;background:var(--highlight);animation:blink 1.4s steps(1) infinite}
+  .hud .coord{color:var(--paper);opacity:.55}
+  @media(max-width:640px){.hud .coord{display:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    padding:120px clamp(20px,6vw,90px) 60px;position:relative;
+  }
+  .hero .kicker{
+    font-family:var(--mono);font-size:11px;letter-spacing:.42em;color:var(--paper);
+    opacity:.6;margin-bottom:26px;text-transform:uppercase;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:900;line-height:.9;
+    font-size:clamp(3.2rem,13.5vw,11rem);letter-spacing:-.01em;color:var(--highlight);
+    max-width:16ch;
+  }
+  .hero h1 .l2{display:block;font-style:italic;font-weight:400}
+  .hero .lede{
+    max-width:52ch;margin-top:34px;font-size:clamp(15px,1.6vw,18px);color:var(--paper);opacity:.82;
+  }
+  .hero .meta{
+    margin-top:44px;display:flex;flex-wrap:wrap;gap:26px 44px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--paper);opacity:.55;
+  }
+  .hero .meta b{display:block;color:var(--highlight);opacity:.9;font-weight:400;margin-top:6px;letter-spacing:.06em}
+
+  /* ---------- READER FRAME ---------- */
+  .reader{
+    margin-top:56px;position:relative;
+    border:1px solid var(--line);border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.25));
+    box-shadow:inset 0 0 40px rgba(0,0,0,.6), 0 20px 60px rgba(0,0,0,.5);
+    padding:18px;overflow:hidden;
+  }
+  .reader .corner{position:absolute;width:14px;height:14px;border:1px solid rgba(255,255,255,.35)}
+  .reader .c1{top:8px;left:8px;border-right:0;border-bottom:0}
+  .reader .c2{top:8px;right:8px;border-left:0;border-bottom:0}
+  .reader .c3{bottom:8px;left:8px;border-right:0;border-top:0}
+  .reader .c4{bottom:8px;right:8px;border-left:0;border-top:0}
+  .reader .screen{
+    border-radius:8px;overflow:hidden;position:relative;
+    background:#111;box-shadow:inset 0 0 60px rgba(0,0,0,.85);
+    aspect-ratio:16/7;min-height:180px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .reader .screen .instr{
+    font-family:var(--mono);letter-spacing:.4em;font-size:clamp(12px,2.2vw,18px);
+    color:var(--paper);opacity:.7;text-transform:uppercase;text-align:center;padding:0 20px;
+  }
+  .reader .screen .instr .arrow{display:block;margin-top:18px;opacity:.5;animation:bob 1.8s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(8px);opacity:.8}}
+  .reader .scrub{
+    position:absolute;left:18px;right:18px;bottom:14px;height:2px;background:rgba(255,255,255,.12);
+  }
+  .reader .scrub .fill{height:100%;width:0;background:var(--highlight);box-shadow:0 0 8px rgba(255,255,255,.5)}
+
+  /* ---------- SECTIONS / FILM CARDS ---------- */
+  main{position:relative;z-index:2;padding:0 clamp(16px,5vw,80px)}
+  .film-card{
+    position:relative;max-width:1120px;margin:clamp(70px,12vh,140px) auto;
+    background:linear-gradient(180deg,#161616,#131313);
+    border:1px solid var(--line);border-radius:6px;
+    box-shadow:0 26px 70px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.02);
+    padding:clamp(28px,5vw,64px);
+    transition:filter .8s ease, transform .8s ease, opacity .8s ease, box-shadow .8s ease;
+    filter:blur(10px);transform:scale(.985);opacity:.5;
+    will-change:filter,transform;
+  }
+  .film-card.in-view{filter:blur(0);transform:scale(1);opacity:1;
+    box-shadow:0 30px 90px rgba(0,0,0,.75), inset 0 0 0 1px rgba(255,255,255,.05);}
+  .film-card.passed{filter:blur(5px);transform:scale(.99);opacity:.72}
+  .film-card .stamp{
+    position:absolute;top:14px;right:16px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.14em;color:var(--paper);opacity:.5;text-align:right;line-height:1.5;
+  }
+  .film-card .issue{
+    font-family:var(--mono);font-size:10px;letter-spacing:.34em;color:var(--paper);opacity:.5;
+    text-transform:uppercase;margin-bottom:16px;
+  }
+  .film-card .headline{
+    font-family:var(--serif);font-weight:900;line-height:1.02;letter-spacing:-.01em;
+    font-size:clamp(1.9rem,5vw,3.6rem);color:var(--highlight);
+    transition:text-shadow .8s ease;
+  }
+  .film-card.in-view .headline{text-shadow:0 0 1px rgba(255,255,255,.5), 0 0 8px rgba(255,255,255,.16)}
+  .film-card .byline{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--paper);opacity:.55;
+    margin:16px 0 26px;padding-bottom:22px;border-bottom:1px solid var(--line);
+  }
+  .film-card .cols{column-gap:40px}
+  @media(min-width:760px){.film-card .cols{column-count:2}}
+  .film-card p{margin-bottom:16px;font-size:clamp(14px,1.15vw,15.5px);color:var(--paper);opacity:.86}
+  .film-card p:first-child::first-letter{
+    font-family:var(--serif);font-weight:900;float:left;font-size:3.4em;line-height:.72;
+    padding:6px 10px 0 0;color:var(--highlight);
+  }
+  .film-card .pull{
+    font-family:var(--serif);font-style:italic;font-size:clamp(1.15rem,2.4vw,1.7rem);
+    line-height:1.3;color:var(--highlight);border-left:2px solid rgba(255,255,255,.35);
+    padding-left:18px;margin:24px 0;break-inside:avoid;
+  }
+  .film-card .tags{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px}
+  .film-card .tags span{
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--paper);opacity:.5;
+    border:1px solid var(--line);padding:4px 9px;border-radius:2px;
+  }
+
+  /* ---------- ARCHIVE STATS ---------- */
+  .stats{
+    max-width:1120px;margin:clamp(70px,12vh,130px) auto;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:44px 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:30px;
+  }
+  .stat{flex:1 1 150px}
+  .stat .num{font-family:var(--serif);font-weight:900;font-size:clamp(2rem,5vw,3.4rem);color:var(--highlight);line-height:1}
+  .stat .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--paper);opacity:.55;margin-top:10px;text-transform:uppercase}
+
+  /* ---------- CTA / RESET ---------- */
+  .cta{
+    max-width:1120px;margin:0 auto clamp(80px,14vh,160px);text-align:center;
+    padding:clamp(40px,7vw,80px) 24px;border:1px solid var(--line);border-radius:10px;
+    background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.03), transparent 70%);
+  }
+  .cta h2{font-family:var(--serif);font-weight:900;font-size:clamp(1.8rem,4.5vw,3rem);color:var(--highlight);line-height:1.05}
+  .cta p{max-width:46ch;margin:18px auto 34px;color:var(--paper);opacity:.78;font-size:15px}
+  .btn{
+    font-family:var(--mono);letter-spacing:.18em;font-size:12px;text-transform:uppercase;
+    background:var(--highlight);color:var(--projector);border:1px solid var(--highlight);
+    padding:14px 30px;border-radius:3px;cursor:pointer;transition:all .25s ease;
+  }
+  .btn:hover{background:transparent;color:var(--highlight);box-shadow:0 0 24px rgba(255,255,255,.25)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;color:var(--paper);border-color:var(--line);margin-left:12px}
+  .btn.ghost:hover{color:var(--highlight);border-color:var(--highlight);box-shadow:none}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--line);padding:34px clamp(20px,6vw,80px);
+    display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px;
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--paper);opacity:.5;
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .film-card{filter:blur(0)!important;transform:none!important;opacity:1!important}
+    .sweep,.grain{display:none}
+    .power-on{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="power-on" id="powerOn"><div class="bar"></div></div>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="sweep"></div>
+<div class="vignette"></div>
+<div class="lens-frame"></div>
+
+<header>
+  <div class="brand"><span class="dot"></span>RETROSPECT <small>MICROFILM READER</small></div>
+  <div class="hud">
+    <span class="rec"><i></i>REC</span>
+    <span class="coord">REEL 004 · 1897–1962</span>
+    <span class="coord" id="focusReadout">FOCUS: —</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="kicker">The Historical Newspaper Archive</div>
+  <h1>HISTORY<span class="l2">in focus.</span></h1>
+  <p class="lede">Millions of pages, preserved on silver-halide film and waiting to be read. Turn the reel, align the lens, and let the past resolve out of the blur — one frame at a time.</p>
+
+  <div class="reader">
+    <span class="corner c1"></span><span class="corner c2"></span>
+    <span class="corner c3"></span><span class="corner c4"></span>
+    <div class="screen">
+      <div class="instr">Scroll to focus<span class="arrow">▾</span></div>
+    </div>
+    <div class="scrub"><div class="fill" id="scrubFill"></div></div>
+  </div>
+
+  <div class="meta">
+    <div>Collection<b>12,480,000 pages</b></div>
+    <div>Span<b>1742 – 1998</b></div>
+    <div>Formats<b>Microfilm · Digital scan</b></div>
+    <div>Access<b>Open reading room</b></div>
+  </div>
+</section>
+
+<main>
+
+  <article class="film-card" data-id="1">
+    <div class="stamp">REEL 004<br>FR. 0117</div>
+    <div class="issue">Vol. XCII · No. 318</div>
+    <h2 class="headline">The City Wakes Beneath the Iron Lattice</h2>
+    <div class="byline">Filed from the Northern District · Morning Edition</div>
+    <div class="cols">
+      <p>Before the first tram bell had struck, the iron lattice above the river already hummed with the weight of a city in transit. Labourers crossed in long, unhurried lines, their breath a pale thread against the cold, while the ferry crews lashed their ropes and waited for the tide to turn the schedule in their favour.</p>
+      <p>By the hour of eight the market stalls had begun to shout their wares, and the smell of coal smoke and fresh bread mingled in the narrow lanes. It was, the almanac promised, to be a day of changeable weather — and of changeable fortune, as the merchants whispered over their ledgers.</p>
+      <blockquote class="pull">"A city is only as honest as the morning it keeps."</blockquote>
+      <p>Yet for all its bustle, the quarter retained a certain patience. The old stone facades, blackened by a century of soot, stood indifferent to the commerce below, keeping their own counsel about the years that had passed and the years still to come.</p>
+    </div>
+    <div class="tags"><span>URBAN LIFE</span><span>TRADE</span><span>NORTHERN DISTRICT</span></div>
+  </article>
+
+  <article class="film-card" data-id="2">
+    <div class="stamp">REEL 007<br>FR. 0442</div>
+    <div class="issue">Vol. CVI · No. 021</div>
+    <h2 class="headline">Letters Recovered From the Salt Cellar</h2>
+    <div class="byline">Correspondent's Note · The Harbour Office</div>
+    <div class="cols">
+      <p>Among the crates unloaded from the grounded brigantine, clerks discovered a sealed tin no larger than a man's fist. Inside, folded and refolded until the creases wore thin as lace, lay a sheaf of letters — undated, unsigned, and unmistakably loved.</p>
+      <p>The harbour master, a practical man, intended to file the tin among the lost property. It was the young archivist who insisted otherwise, who read aloud the first line and found the room fall silent. "To whoever finds this," it began, "know that I meant to come home."</p>
+      <p>What followed was a quiet scramble of speculation: a sailor, a promise, a voyage cut short by weather and by time. The letters were copied, the tin photographed, and both returned to the dark of the archive — where they wait, as all such things wait, for a reader patient enough to focus.</p>
+    </div>
+    <div class="tags"><span>MARITIME</span><span>PERSONAL PAPERS</span><span>1911</span></div>
+  </article>
+
+  <article class="film-card" data-id="3">
+    <div class="stamp">REEL 012<br>FR. 0908</div>
+    <div class="issue">Vol. CXIV · No. 559</div>
+    <h2 class="headline">A Machine Learns to Count the Rain</h2>
+    <div class="byline">Science Desk · The Observatory Annex</div>
+    <div class="cols">
+      <p>In a low room at the edge of the observatory, a brass apparatus no bigger than a writing desk has begun, quite unassisted, to tally the falling rain. Each drop strikes a tiny cup; each cup tips a lever; each lever marks a column of paper with a dot of ink. The result is a record more faithful than any human hand could keep.</p>
+      <p>The natural philosophers are divided. Some hail the device as a triumph of the age — a mind of metal, tireless and exact. Others warn that in trusting the machine we surrender something of the observer's judgment, the very eye that once watched the sky and asked why.</p>
+      <blockquote class="pull">"It counts every drop, but not one of them, it understands."</blockquote>
+      <p>For now the machine keeps its columns, indifferent to the argument, and the rain — faithful, indifferent rain — continues to fall.</p>
+    </div>
+    <div class="tags"><span>SCIENCE</span><span>INSTRUMENTS</span><span>1928</span></div>
+  </article>
+
+  <div class="stats">
+    <div class="stat"><div class="num">12.4M</div><div class="lbl">Pages Preserved</div></div>
+    <div class="stat"><div class="num">3,900</div><div class="lbl">Publications</div></div>
+    <div class="stat"><div class="num">256</div><div class="lbl">Years Covered</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="lbl">Reading Room</div></div>
+  </div>
+
+  <section class="cta">
+    <h2>Bring the archive into focus.</h2>
+    <p>Whether you are tracing a family name or the first tremor of an idea, Retrospect keeps the past sharp, searchable, and open. Step up to the lens.</p>
+    <button class="btn" id="resetBtn">Reset Focus</button>
+    <button class="btn ghost" id="topBtn">Return to Reel Start</button>
+  </section>
+
+</main>
+
+<footer>
+  <span>RETROSPECT · HISTORICAL NEWSPAPER ARCHIVE</span>
+  <span>REEL 004 · SCANLINE ACTIVE · MONOCHROME</span>
+  <span>© EST. MMXIV</span>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Power-on fade
+  var po = document.getElementById('powerOn');
+  if(po){
+    if(reduce){ po.style.display='none'; }
+    else { setTimeout(function(){ po.style.opacity='0'; }, 1400); setTimeout(function(){ po.style.display='none'; }, 2700); }
+  }
+
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.film-card'));
+  var readout = document.getElementById('focusReadout');
+  var scrub = document.getElementById('scrubFill');
+
+  // Intersection Observer: focus when element enters middle 50% of viewport
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var el = e.target;
+      if(e.isIntersecting){
+        el.classList.add('in-view');
+        el.classList.remove('passed');
+        if(readout) readout.textContent = 'FOCUS: ' + el.dataset.id;
+      } else {
+        el.classList.remove('in-view');
+        el.classList.add('passed');
+      }
+    });
+  }, { rootMargin: '-25% 0px -25% 0px', threshold: 0.01 });
+
+  cards.forEach(function(c){ io.observe(c); });
+
+  // Scroll progress scrub
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop || document.body.scrollTop) / max : 0;
+    if(scrub) scrub.style.width = (p*100) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // Mobile: tap a card to toggle focus
+  var isTouch = window.matchMedia('(hover: none)').matches;
+  if(isTouch){
+    cards.forEach(function(c){
+      c.addEventListener('click', function(){
+        var focused = c.classList.contains('in-view');
+        cards.forEach(function(o){ o.classList.remove('in-view'); o.classList.add('passed'); });
+        if(!focused){ c.classList.remove('passed'); c.classList.add('in-view'); if(readout) readout.textContent='FOCUS: '+c.dataset.id; }
+      });
+    });
+  }
+
+  // Reset focus button
+  var resetBtn = document.getElementById('resetBtn');
+  if(resetBtn){
+    resetBtn.addEventListener('click', function(){
+      cards.forEach(function(o){ o.classList.remove('in-view'); o.classList.remove('passed'); });
+      if(readout) readout.textContent = 'FOCUS: —';
+      // Re-arm observer to re-focus on next scroll
+      setTimeout(function(){
+        cards.forEach(function(c){ io.unobserve(c); io.observe(c); });
+      }, 400);
+    });
+  }
+
+  var topBtn = document.getElementById('topBtn');
+  if(topBtn){ topBtn.addEventListener('click', function(){ window.scrollTo({top:0, behavior: reduce?'auto':'smooth'}); }); }
+})();
+</script>
+</body>
+</html>

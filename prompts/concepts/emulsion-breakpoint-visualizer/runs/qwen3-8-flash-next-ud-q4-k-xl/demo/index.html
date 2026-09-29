@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emulsion Breakpoint Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2C2C2C;
+    --off:#F5F5F0;
+    --sage:#8C9E7A;
+    --gold:#D4AF37;
+    --panel:#202020;
+    --line:rgba(245,245,240,.12);
+    --line2:rgba(245,245,240,.06);
+    --muted:rgba(245,245,240,.55);
+    --muted2:rgba(245,245,240,.32);
+    --disp:'Space Grotesk','Futura','Century Gothic',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    color:var(--off);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+  .atmos{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(140,158,122,.10), transparent 55%),
+      radial-gradient(90% 70% at 85% 110%, rgba(212,175,55,.06), transparent 60%);
+  }
+  .grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:26px 30px 20px;
+    display:flex;flex-direction:column;min-height:100vh}
+
+  /* top bar */
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .mark{width:26px;height:26px;flex:none;animation:spin 26s linear infinite}
+  .mark circle:first-child{fill:none;stroke:var(--off);stroke-width:1.4;opacity:.5}
+  .mark circle:nth-child(2){fill:var(--gold)}
+  .mark circle:nth-child(3){fill:var(--off)}
+  .mark circle:nth-child(4){fill:var(--sage)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .brand b{font-family:var(--disp);font-weight:700;letter-spacing:.04em;font-size:.98rem;text-transform:uppercase}
+  .brand span{font-family:var(--mono);font-size:.62rem;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+  .meta{display:flex;align-items:center;gap:14px;font-size:.62rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+  .meta .rec{display:flex;align-items:center;gap:7px}
+  .rec i{width:7px;height:7px;border-radius:50%;background:var(--sage);box-shadow:0 0 8px var(--sage);animation:blink 2.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .meta .clock{color:var(--off);letter-spacing:.16em}
+
+  /* title block */
+  .title{padding:22px 0 20px}
+  .kicker{font-size:.66rem;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;margin-bottom:12px}
+  .kicker b{color:var(--gold);font-weight:400}
+  h1{font-family:var(--disp);font-weight:700;text-transform:uppercase;letter-spacing:-.02em;
+    line-height:.92;font-size:clamp(2.5rem,6.4vw,5.1rem);max-width:16ch}
+  h1 .g{color:var(--gold)}
+  h1 .s{color:var(--sage)}
+  .lede{margin-top:16px;max-width:56ch;color:var(--muted);font-size:.86rem;line-height:1.65}
+  .lede b{color:var(--off);font-weight:500}
+
+  /* stage */
+  .stage{display:flex;gap:30px;align-items:stretch;flex:1;min-height:0;padding-bottom:14px}
+  .viz{flex:1;min-width:0;display:flex;align-items:center;justify-content:center}
+  .bowl{position:relative;width:min(560px,100%);aspect-ratio:1/1}
+  .bowl::before{content:"";position:absolute;inset:-4%;border-radius:50%;
+    background:radial-gradient(circle at 50% 42%, rgba(140,158,122,.16), rgba(212,175,55,.05) 42%, transparent 72%);
+    filter:blur(2px);z-index:0}
+  canvas#sim{position:relative;z-index:1;width:100%;height:100%;display:block;
+    border-radius:50%;box-shadow:inset 0 0 60px rgba(0,0,0,.75), inset 0 0 0 1px rgba(245,245,240,.05)}
+  .bowl::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2;
+    box-shadow:inset 0 2px 10px rgba(245,245,240,.06), inset 0 -26px 40px rgba(0,0,0,.5)}
+  .ring{position:absolute;inset:-2.5%;border-radius:50%;z-index:2;pointer-events:none;
+    border:1px dashed rgba(245,245,240,.14);animation:spin 40s linear infinite}
+  .tag{position:absolute;font-size:.56rem;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase;z-index:3;pointer-events:none}
+  .tag.tl{top:2%;left:6%}
+  .tag.tr{top:2%;right:6%}
+  .tag.bl{bottom:2%;left:6%}
+  .tag.br{bottom:2%;right:6%}
+  .tag b{color:var(--off);font-weight:400}
+
+  /* panel */
+  .panel{width:340px;flex:none;display:flex;flex-direction:column;gap:16px}
+  .status{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
+    padding:16px 18px 18px;position:relative;overflow:hidden}
+  .status::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sage);
+    box-shadow:0 0 14px var(--sage);transition:background .4s,box-shadow .4s}
+  .status.broken::before{background:var(--gold);box-shadow:0 0 14px var(--gold)}
+  .status .lbl{font-size:.6rem;letter-spacing:.26em;color:var(--muted);text-transform:uppercase}
+  .status .state{font-family:var(--disp);font-weight:700;text-transform:uppercase;font-size:1.5rem;
+    letter-spacing:.02em;margin-top:4px;display:flex;align-items:center;gap:10px;line-height:1}
+  .status .state .dot{width:9px;height:9px;border-radius:50%;background:var(--sage);box-shadow:0 0 10px var(--sage);transition:.4s}
+  .status.broken .state .dot{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+  .gauge{margin-top:16px}
+  .gauge .row{display:flex;justify-content:space-between;align-items:baseline;font-size:.6rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:7px}
+  .gauge .row b{font-family:var(--disp);font-size:1.35rem;font-weight:700;letter-spacing:0;color:var(--sage);transition:color .4s}
+  .status.broken .gauge .row b{color:var(--gold)}
+  .track{height:5px;background:rgba(245,245,240,.1);position:relative;overflow:hidden}
+  .fill{position:absolute;left:0;top:0;bottom:0;width:70%;background:linear-gradient(90deg,var(--sage),var(--sage));transition:width .12s linear,background .4s}
+  .status.broken .fill{background:linear-gradient(90deg,var(--gold),#e6c766)}
+
+  .controls{border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:22px}
+  .ctrl .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .ctrl .name{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--off)}
+  .ctrl .val{font-family:var(--disp);font-weight:700;font-size:1.15rem;letter-spacing:.01em}
+  .ctrl .val .u{font-family:var(--mono);font-size:.62rem;color:var(--muted);font-weight:400;margin-left:3px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;display:block}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;background:rgba(245,245,240,.16)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-6px;
+    background:var(--off);border-radius:50%;box-shadow:0 0 0 4px rgba(245,245,240,.06);transition:transform .15s,background .3s,box-shadow .3s}
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.25)}
+  input[type=range]::-moz-range-track{height:2px;background:rgba(245,245,240,.16)}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border:none;background:var(--off);border-radius:50%}
+  #ag::-webkit-slider-thumb{background:var(--sage)}
+  #ag:active::-webkit-slider-thumb{box-shadow:0 0 0 5px rgba(140,158,122,.25)}
+  #fat::-webkit-slider-thumb{background:var(--gold)}
+  #fat:active::-webkit-slider-thumb{box-shadow:0 0 0 5px rgba(212,175,55,.25)}
+
+  .presets{display:flex;flex-direction:column;gap:8px}
+  .presets .plbl{font-size:.6rem;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+  .prow{display:flex;gap:8px}
+  .prow button{flex:1;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);background:transparent;border:1px solid var(--line);padding:9px 6px;cursor:pointer;transition:.2s}
+  .prow button:hover{color:var(--off);border-color:rgba(245,245,240,.3);background:rgba(245,245,240,.04)}
+  .prow button:active{transform:translateY(1px)}
+
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .readout .cell{background:var(--ink);padding:12px 14px}
+  .readout .k{font-size:.56rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+  .readout .v{font-family:var(--disp);font-weight:700;font-size:1.05rem;margin-top:5px;letter-spacing:.01em}
+  .readout .v.g{color:var(--gold)}
+  .readout .v.s{color:var(--sage)}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px 18px;padding:4px 2px 0}
+  .legend .li{display:flex;align-items:center;gap:8px;font-size:.6rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+  .legend .sw{width:11px;height:11px;border-radius:50%;flex:none}
+  .sw.oil{background:var(--gold);box-shadow:0 0 6px rgba(212,175,55,.6)}
+  .sw.water{background:var(--off);opacity:.85}
+  .sw.cream{background:var(--sage)}
+
+  .foot{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;
+    gap:16px;flex-wrap:wrap;font-size:.58rem;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase}
+  .foot b{color:var(--muted);font-weight:400}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  body.ready .reveal{opacity:1;transform:none}
+  body.ready .d1{transition-delay:.05s}
+  body.ready .d2{transition-delay:.15s}
+  body.ready .d3{transition-delay:.28s}
+  body.ready .d4{transition-delay:.4s}
+
+  @media (max-width:900px){
+    .wrap{padding:20px 18px 16px}
+    .stage{flex-direction:column;gap:22px}
+    .panel{width:100%}
+    .bowl{width:min(90vw,440px)}
+    h1{font-size:clamp(2.2rem,11vw,3.4rem)}
+  }
+  @media (max-width:520px){
+    .meta{display:none}
+    .status .state{font-size:1.25rem}
+    .tag{font-size:.5rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="atmos"></div>
+<div class="grain"></div>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 26 26">
+        <circle cx="13" cy="13" r="12"/>
+        <circle cx="8.5" cy="10" r="2.4"/>
+        <circle cx="16" cy="9" r="1.7"/>
+        <circle cx="12" cy="16.5" r="2.1"/>
+      </svg>
+      <div>
+        <b>Emulsion Breakpoint</b><br>
+        <span>Fluid Dynamics Lab · Study 07</span>
+      </div>
+    </div>
+    <div class="meta">
+      <div class="rec"><i></i>Live Simulation</div>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </header>
+
+  <section class="title reveal d1">
+    <div class="kicker"><b>◆</b> &nbsp;Phase Behaviour of Oil-in-Water Suspensions</div>
+    <h1>Emulsion <span class="g">Breakpoint</span> <span class="s">Visualizer</span></h1>
+    <p class="lede">A live study of how mechanical energy forces two immiscible phases together. Drive <b>agitation</b> and <b>fat ratio</b> in real time — push past the stability threshold and watch the sauce <b>break</b> into separated layers.</p>
+  </section>
+
+  <div class="stage">
+    <div class="viz reveal d2">
+      <div class="bowl">
+        <div class="ring"></div>
+        <canvas id="sim"></canvas>
+        <span class="tag tl">Dish <b>Hollandaise</b></span>
+        <span class="tag tr">Temp <b>62°C</b></span>
+        <span class="tag bl">Phase <b id="phaseTag">O/W</b></span>
+        <span class="tag br">Reactor <b>R-07</b></span>
+      </div>
+    </div>
+
+    <aside class="panel reveal d3">
+      <div class="status" id="status">
+        <div class="lbl">System State</div>
+        <div class="state"><span class="dot"></span><span id="stateTxt">Emulsified</span></div>
+        <div class="gauge">
+          <div class="row"><span>Stability Index</span><b id="stabVal">72</b></div>
+          <div class="track"><div class="fill" id="stabFill"></div></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="ctrl">
+          <div class="head"><span class="name">Agitation Speed</span><span class="val"><span id="agVal">180</span><span class="u">RPM</span></span></div>
+          <input id="ag" type="range" min="0" max="300" value="180" aria-label="Agitation speed in RPM">
+        </div>
+        <div class="ctrl">
+          <div class="head"><span class="name">Fat Ratio</span><span class="val"><span id="fatVal">45</span><span class="u">%</span></span></div>
+          <input id="fat" type="range" min="10" max="95" value="45" aria-label="Fat ratio percentage">
+        </div>
+        <div class="presets">
+          <div class="plbl">Recipes</div>
+          <div class="prow">
+            <button data-ag="200" data-fat="40">Hollandaise</button>
+            <button data-ag="150" data-fat="58">Vinaigrette</button>
+          </div>
+          <div class="prow">
+            <button data-ag="60" data-fat="82">Break It</button>
+            <button data-ag="270" data-fat="30">Re-emulsify</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div class="cell"><div class="k">Disperse Radius</div><div class="v s" id="rDis">— µm</div></div>
+        <div class="cell"><div class="k">Coalesce Radius</div><div class="v g" id="rCoh">— µm</div></div>
+        <div class="cell"><div class="k">Droplet Count</div><div class="v" id="nDro">—</div></div>
+        <div class="cell"><div class="k">Energy Input</div><div class="v" id="energy">—</div></div>
+      </div>
+
+      <div class="legend">
+        <div class="li"><span class="sw oil"></span>Oil Phase</div>
+        <div class="li"><span class="sw water"></span>Water / Vinegar</div>
+        <div class="li"><span class="sw cream"></span>Stable Cream</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot reveal d4">
+    <span><b>Threshold:</b> stability = agitation − 1.4 × fat</span>
+    <span><b>Model:</b> Laminar swirl · coalescence &amp; stratification</span>
+    <span><b>Canvas</b> particle system · 60fps</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var canvas = document.getElementById('sim');
+  var ctx = canvas.getContext('2d');
+  var D = Math.PI/180;
+  var TWO = Math.PI*2;
+
+  // state
+  var agTarget = 180, fatTarget = 45;
+  var ag = 180, fat = 45;
+  var stability = 72, broken = false, brokenAmount = 0, layerY = 0.5;
+  var rot = 0, rotVel = 0;
+  var particles = [];
+  var MAX = 230;
+  var W=600,H=600,cx=300,cy=300,R=270;
+  var last = performance.now();
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function smoothstep(a,b,x){ var t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+
+  function makeParticle(){
+    var ang = rand(0,TWO), rr = Math.sqrt(Math.random())*R*0.92;
+    var isOil = Math.random() < fat/100;
+    var p = {
+      isOil:isOil,
+      x:cx + Math.cos(ang)*rr, y:cy + Math.sin(ang)*rr,
+      vx:0, vy:0,
+      r:rand(2.5,4), tr:3,
+      a:0, ta:1,
+      phase:rand(0,TWO),
+      swirl:rand(0.7,1.15),
+      jitter:rand(0.5,1.4)
+    };
+    return p;
+  }
+  function initParticles(){
+    particles.length = 0;
+    for(var i=0;i<MAX;i++) particles.push(makeParticle());
+  }
+
+  function resize(){
+    var rect = canvas.getBoundingClientRect();
+    var cssW = rect.width || 600;
+    var dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = Math.round(cssW*dpr);
+    canvas.height = Math.round(cssW*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    W = cssW; H = cssW; cx = W/2; cy = H/2; R = W*0.45;
+  }
+
+  function step(dt){
+    ag  += (agTarget  - ag ) * Math.min(1, dt*6);
+    fat += (fatTarget - fat) * Math.min(1, dt*6);
+
+    var need = 1.4 * fat;
+    stability = clamp(50 + (ag - need)*0.85, 0, 100);
+    var brokenT = 1 - smoothstep(34, 58, stability);
+    brokenAmount += (brokenT - brokenAmount) * Math.min(1, dt*4);
+    broken = brokenAmount > 0.5;
+
+    // rotation
+    var omega = (ag/300) * 2.4 * (reduce?0.15:1);
+    var swirl = omega * (1 - brokenAmount*0.7);
+    rotVel += (swirl - rotVel) * Math.min(1, dt*3);
+    rot += rotVel * dt;
+
+    // layer boundary
+    var oilFrac = clamp(fat/100, 0, 1);
+    var targetY = cy + (0.5 - oilFrac) * (2*R);
+    layerY += (targetY - layerY) * Math.min(1, dt*1.6);
+
+    // size targets
+    var baseR = lerp(2.3, 6.2, brokenAmount);
+    var jitterAmp = lerp(1.5, 0.25, brokenAmount);
+
+    // physics
+    for(var i=0;i<particles.length;i++){
+      var p = particles[i];
+      var dx = p.x - cx, dy = p.y - cy;
+      var dist = Math.sqrt(dx*dx+dy*dy) || 0.0001;
+      var nx = dx/dist, ny = dy/dist;
+      var ang = Math.atan2(dy,dx);
+      var swirlMag = swirl * (0.6 + 0.4*(dist/R));
+      var tang = swirlMag * p.swirl;
+      var tx = -Math.sin(ang)*tang, ty = Math.cos(ang)*tang;
+      var jit = jitterAmp * p.jitter;
+      p.vx += (tx - p.vx)*0.12 + (Math.random()-0.5)*jit;
+      p.vy += (ty - p.vy)*0.12 + (Math.random()-0.5)*jit;
+
+      var b = brokenAmount;
+      var r = p.r;
+      var isOil = p.isOil;
+
+      // buoyancy: oil rises, water sinks
+      var buoy = (isOil? -1 : 1) * b * 0.06;
+      p.vy += buoy;
+
+      // horizontal drift toward layer centre
+      var drift = (cx - p.x) * 0.010 * b;
+      p.vx += drift;
+
+      // vertical pull toward layer band
+      var targetBandY = isOil ? (layerY - R*0.20) : (layerY + R*0.20);
+      var pull = (targetBandY - p.y) * 0.018 * b;
+      p.vy += pull;
+
+      // coalescence: grow + attract to same-type neighbours
+      var grow = 0, ax = 0, ay = 0, cnt = 0;
+      for(var j=0;j<particles.length;j++){
+        if(j===i) continue;
+        var q = particles[j];
+        if(q.isOil !== isOil) continue;
+        var ddx = q.x - p.x, ddy = q.y - p.y;
+        var d2 = ddx*ddx + ddy*ddy;
+        var reach = 30 + b*46;
+        if(d2 < reach*reach && d2 > 1){
+          var d = Math.sqrt(d2);
+          var f = (1 - d/reach);
+          ax += (ddx/d) * f * 0.014 * b;
+          ay += (ddy/d) * f * 0.014 * b;
+          grow += f * b;
+          cnt++;
+        }
+      }
+      p.vx += ax; p.vy += ay;
+
+      // target radius
+      var tr = baseR + grow*0.55;
+      tr *= (isOil ? 1 : 0.9);
+      p.tr += (tr - p.tr) * Math.min(1, dt*2.2);
+      p.r  += (p.tr - p.r) * Math.min(1, dt*2.2);
+
+      // opacity: cream when mixed, distinct when broken
+      var ta = lerp(0.55, 1.0, brokenAmount);
+      p.a += (ta - p.a) * Math.min(1, dt*3);
+
+      // integrate
+      p.x += p.vx * dt * 60;
+      p.y += p.vy * dt * 60;
+
+      // containment
+      var dx2 = p.x - cx, dy2 = p.y - cy;
+      var dist2 = Math.sqrt(dx2*dx2+dy2*dy2);
+      var maxR = R - p.r*0.4;
+      if(dist2 > maxR){
+        var nx2 = dx2/dist2, ny2 = dy2/dist2;
+        p.x = cx + nx2*maxR; p.y = cy + ny2*maxR;
+        var dot = p.vx*nx2 + p.vy*ny2;
+        p.vx -= 1.4*dot*nx2; p.vy -= 1.4*dot*ny2;
+        p.vx *= 0.6; p.vy *= 0.6;
+      }
+    }
+  }
+
+  function draw(){
+    var b = brokenAmount;
+    ctx.clearRect(0,0,W,H);
+
+    // clip to bowl
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TWO);
+    ctx.clip();
+
+    // base fill
+    ctx.fillStyle = '#2C2C2C';
+    ctx.fillRect(0,0,W,H);
+
+    // mixed creamy body
+    var cream = 'rgba(140,158,122,' + (0.5*(1-b)).toFixed(3) + ')';
+    ctx.fillStyle = cream;
+    ctx.fillRect(0,0,W,H);
+
+    // separated layers
+    if(b > 0.01){
+      var oilCol = 'rgba(212,175,55,' + (0.5*b).toFixed(3) + ')';
+      var watCol = 'rgba(245,245,240,' + (0.12*b).toFixed(3) + ')';
+      ctx.fillStyle = oilCol;
+      ctx.fillRect(0,0,W,layerY);
+      ctx.fillStyle = watCol;
+      ctx.fillRect(0,layerY,W,H-layerY);
+      // interface
+      ctx.fillStyle = 'rgba(212,175,55,' + (0.25*b).toFixed(3) + ')';
+      ctx.fillRect(0,layerY-1,W,2);
+    }
+
+    // particles
+    for(var i=0;i<particles.length;i++){
+      var p = particles[i];
+      var col = p.isOil ? '212,175,55' : '245,245,240';
+      var r = p.r;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, TWO);
+      ctx.fillStyle = 'rgba(' + col + ',' + p.a.toFixed(3) + ')';
+      ctx.fill();
+      // specular sheen for larger droplets
+      if(r > 5){
+        ctx.beginPath();
+        ctx.arc(p.x - r*0.28, p.y - r*0.28, r*0.32, 0, TWO);
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.18*p.a).toFixed(3) + ')';
+        ctx.fill();
+      }
+    }
+
+    // glass highlight + rim shading
+    var g = ctx.createRadialGradient(cx - R*0.3, cy - R*0.35, R*0.05, cx, cy, R);
+    g.addColorStop(0, 'rgba(245,245,240,0.10)');
+    g.addColorStop(0.5, 'rgba(245,245,240,0.0)');
+    g.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    ctx.restore();
+
+    // rim ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, TWO);
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(245,245,240,0.10)';
+    ctx.stroke();
+  }
+
+  // ---- readouts (throttled) ----
+  var elStab = document.getElementById('stabVal');
+  var elFill = document.getElementById('stabFill');
+  var elState = document.getElementById('stateTxt');
+  var elStatus = document.getElementById('status');
+  var elPhase = document.getElementById('phaseTag');
+  var elRdis = document.getElementById('rDis');
+  var elRcoh = document.getElementById('rCoh');
+  var elNdro = document.getElementById('nDro');
+  var elEnergy = document.getElementById('energy');
+  var lastRead = 0;
+
+  function updateReadouts(){
+    var s = Math.round(stability);
+    elStab.textContent = s;
+    elFill.style.width = s + '%';
+    elState.textContent = broken ? 'Broken' : (stability < 62 ? 'Marginal' : 'Emulsified');
+    elStatus.classList.toggle('broken', broken);
+    elPhase.textContent = broken ? 'SPLIT' : 'O/W';
+    elRdis.textContent = Math.round(lerp(2.4, 6.5, brokenAmount)*10)/10 + ' µm';
+    elRcoh.textContent = Math.round(lerp(3, 42, brokenAmount)) + ' µm';
+    elNdro.textContent = particles.length;
+    elEnergy.textContent = Math.round(ag) + ' rpm';
+  }
+
+  // ---- controls ----
+  var agSlider = document.getElementById('ag');
+  var fatSlider = document.getElementById('fat');
+  var agVal = document.getElementById('agVal');
+  var fatVal = document.getElementById('fatVal');
+
+  function syncAg(){ agTarget = +agSlider.value; agVal.textContent = agSlider.value; }
+  function syncFat(){ fatTarget = +fatSlider.value; fatVal.textContent = fatSlider.value; }
+  agSlider.addEventListener('input', syncAg);
+  fatSlider.addEventListener('input', syncFat);
+
+  var btns = document.querySelectorAll('.prow button');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click', function(){
+      var a = this.getAttribute('data-ag'), f = this.getAttribute('data-fat');
+      agSlider.value = a; fatSlider.value = f;
+      syncAg(); syncFat();
+    });
+  }
+
+  // ---- clock ----
+  var clockEl = document.getElementById('clock');
+  function tickClock(){
+    var d = new Date();
+    function p(n){ return (n<10?'0':'')+n; }
+    clockEl.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  // ---- loop ----
+  function frame(now){
+    var dt = (now - last)/1000; last = now;
+    if(dt > 0.05) dt = 0.05;
+    step(dt);
+    draw();
+    if(now - lastRead > 90){ updateReadouts(); lastRead = now; }
+    requestAnimationFrame(frame);
+  }
+
+  // ---- boot ----
+  resize();
+  initParticles();
+  updateReadouts();
+  requestAnimationFrame(function(t){ last = t; requestAnimationFrame(frame); });
+
+  window.addEventListener('resize', function(){ resize(); });
+
+  setTimeout(function(){ document.body.classList.add('ready'); }, 40);
+})();
+</script>
+</body>
+</html>

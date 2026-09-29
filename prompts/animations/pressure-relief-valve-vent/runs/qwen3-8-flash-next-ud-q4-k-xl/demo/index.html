@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pressure Relief Valve — Vent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505; --brass:#B5A642; --brass-lo:#5a5320; --brass-hi:#e8db82;
+  --danger:#CC0000; --safe:#00CC00; --needle:#fff; --steam:#fff;
+  --ink:#e9e6d9; --dim:#7b7a70; --line:rgba(255,255,255,.12);
+  --disp:'Anton',sans-serif; --mono:'IBM Plex Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--mono);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+/* atmosphere */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(120% 90% at 28% 60%, rgba(181,166,66,.10), transparent 55%),
+    radial-gradient(140% 120% at 78% 40%, rgba(120,140,160,.06), transparent 60%),
+    radial-gradient(120% 120% at 50% 120%, rgba(0,0,0,.6), transparent 60%),
+    #050505;
+}
+.bg::after{ /* vignette */
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 120% at 50% 45%, transparent 40%, rgba(0,0,0,.85) 100%);
+}
+.grain{
+  position:fixed;inset:-20%;z-index:6;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 5s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+
+/* layout */
+.stage{position:relative;z-index:2;height:100vh;width:100vw}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* HUD */
+.hud{position:absolute;inset:0;z-index:3;pointer-events:none;padding:clamp(18px,3.4vw,46px);display:flex;flex-direction:column;justify-content:space-between}
+.top,.bottom{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.wordmark{font-family:var(--disp);font-size:clamp(30px,4.6vw,58px);line-height:.86;letter-spacing:.01em;color:var(--ink);text-transform:uppercase}
+.wordmark .thin{color:var(--brass);display:block;font-size:.42em;letter-spacing:.42em;margin-bottom:.35em;font-family:var(--mono);font-weight:500}
+.wordmark .u{color:var(--danger)}
+.tag{font-size:11px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;margin-top:12px;max-width:34ch}
+.status{display:flex;flex-direction:column;align-items:flex-end;gap:10px;text-align:right}
+.state{font-family:var(--disp);font-size:clamp(20px,2.6vw,34px);letter-spacing:.04em;text-transform:uppercase;color:var(--danger);transition:color .35s}
+.state.is-safe{color:var(--safe)}
+.readout{display:flex;gap:18px;align-items:baseline;font-size:12px;letter-spacing:.14em;color:var(--dim)}
+.readout b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.led{width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 10px var(--danger);animation:pulse 1s infinite}
+.led.is-safe{background:var(--safe);box-shadow:0 0 10px var(--safe)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* controls */
+.controls{display:flex;flex-direction:column;gap:14px;pointer-events:auto}
+.btn{
+  pointer-events:auto;cursor:pointer;font-family:var(--mono);font-weight:600;
+  font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:#0b0b0b;
+  background:linear-gradient(180deg,var(--brass-hi),var(--brass));
+  border:1px solid #2a2610;border-radius:2px;padding:13px 26px;
+  box-shadow:0 6px 20px rgba(181,166,66,.18), inset 0 1px 0 rgba(255,255,255,.4);
+  transition:transform .12s ease, box-shadow .2s ease, filter .2s ease;
+  position:relative;overflow:hidden;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(181,166,66,.3), inset 0 1px 0 rgba(255,255,255,.5)}
+.btn:active{transform:translateY(1px)}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);transform:translateX(-120%);transition:transform .5s}
+.btn:hover::after{transform:translateX(120%)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;filter:grayscale(.4)}
+.btn:disabled::after{display:none}
+.legend{display:flex;gap:20px;font-size:10.5px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.legend span{display:flex;align-items:center;gap:7px}
+.sw{width:22px;height:6px;border-radius:1px}
+.sw.d{background:var(--danger)}.sw.s{background:var(--safe)}
+.foot{font-size:10px;letter-spacing:.2em;color:#4a4a44;text-transform:uppercase}
+
+@media (max-width:760px){
+  .hud{padding:16px}
+  .tag{display:none}
+  .readout{gap:12px;font-size:11px}
+  .legend{gap:12px}
+  .foot{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .grain{animation:none}
+  .led{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grain"></div>
+
+<div class="stage">
+  <canvas id="scene"></canvas>
+
+  <div class="hud">
+    <div class="top">
+      <div>
+        <div class="wordmark">
+          <span class="thin">System · PRV-07</span>
+          Pressure<br><span class="u">Relief</span> Valve
+        </div>
+        <div class="tag">Automatic depressurization cycle — hot vapor against cold air.</div>
+      </div>
+      <div class="status">
+        <div class="state" id="state">Overpressure</div>
+        <div class="readout">
+          <span><b id="psi">185.0</b> PSI</span>
+          <span><b id="pct">93</b>%</span>
+          <span class="led" id="led"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="controls">
+        <button class="btn" id="vent">Vent Valve ▸</button>
+        <div class="legend">
+          <span><i class="sw d"></i> Danger</span>
+          <span><i class="sw s"></i> Safe</span>
+        </div>
+      </div>
+      <div class="foot">Brass #B5A642 · Iron · Steam #FFFFFF</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const COL = {
+    brassHi:'#e8db82', brass:'#B5A642', brassMid:'#96893a', brassLo:'#5a5320',
+    ironHi:'#4a4d52', ironMid:'#2b2e33', ironLo:'#141619',
+    steam:'#ffffff', danger:'#CC0000', safe:'#00CC00'
+  };
+
+  let W=0,H=0,DPR=1;
+  // geometry (device px)
+  let cx, cy, R, pipeW, pipeTop, pipeBot, spoutX, spoutY, spoutH;
+  let capX, capW, capH, capBaseY;
+  let capLift = 0;      // 0..1
+  let shakeX = 0, shakeY = 0;
+
+  // state machine
+  const S = { IDLE:'IDLE', VENT:'VENT', DISSIPATE:'DISSIPATE', RESEAT:'RESEAT' };
+  let state = S.IDLE;
+  let t = 0, ventTime = 0, dissTime = 0;
+  const VENT_DUR = 2.6, DISS_DUR = 2.4;
+  let flow = 0;         // 0..1 steam density
+  let pressure = 185;   // PSI
+  let needle = -120;    // deg, -120 red .. +120 green
+  let emitting = false;
+
+  // particles
+  let parts = [];
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    const s = Math.min(W,H);
+    cx = W*0.27;
+    cy = H*0.60;
+    R = s*0.155;
+    pipeW = R*0.62;
+    pipeTop = cy - R*0.12;
+    pipeBot = H*0.90;
+    spoutX = cx + pipeW*0.5;
+    spoutY = cy - R*0.62;
+    spoutH = R*0.42;
+    capW = R*0.72;
+    capH = R*0.5;
+    capX = cx - capW/2;
+    capBaseY = cy - R*0.95;
+
+    // seed a couple of resting wisps for atmosphere
+    parts.length = 0;
+  }
+  window.addEventListener('resize', resize);
+
+  // ---- helpers ----
+  function rr(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function lerp(a,b,k){return a+(b-a)*k;}
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+
+  // ---- particle system (volumetric steam) ----
+  function spawn(n, hot){
+    for(let i=0;i<n;i++){
+      const spread = (Math.random()-0.5);
+      const ang = -0.12 + spread*0.55; // mostly rightward, slight fan
+      const speed = (hot? 3.4:1.4) * (0.7+Math.random()*0.9);
+      parts.push({
+        x: spoutX + Math.random()*4,
+        y: spoutY + (Math.random()-0.5)*spoutH*0.9,
+        vx: Math.cos(ang)*speed,
+        vy: Math.sin(ang)*speed - 0.15,
+        r: (R*0.10)*(0.6+Math.random()*1.4),
+        grow: 0.35 + Math.random()*0.55,
+        life: 0,
+        max: (hot? 55:95)*(0.7+Math.random()*0.7),
+        alpha: 0.5+Math.random()*0.5,
+        drift: (Math.random()-0.5)*0.06,
+        spin: (Math.random()-0.5)*0.02
+      });
+    }
+    if(parts.length>720) parts.splice(0, parts.length-720);
+  }
+  function updateParticles(){
+    for(let i=parts.length-1;i>=0;i--){
+      const p = parts[i];
+      p.life++;
+      p.vx *= 0.985;
+      p.vy += p.drift;          // turbulence
+      p.vy -= 0.02;             // hot steam rises
+      p.x += p.vx; p.y += p.vy;
+      p.r += p.grow;
+      if(p.life>p.max || p.x>W+120 || p.y<-120) parts.splice(i,1);
+    }
+  }
+  function drawParticles(){
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for(const p of parts){
+      const k = p.life/p.max;
+      const fade = Math.sin(Math.min(k,1)*Math.PI); // in-out
+      const a = p.alpha * fade * (0.35 + 0.65*flow);
+      const g = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      g.addColorStop(0, `rgba(255,255,255,${a})`);
+      g.addColorStop(0.5, `rgba(226,230,235,${a*0.5})`);
+      g.addColorStop(1, `rgba(180,190,200,0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // ---- draw hardware ----
+  function drawPipe(){
+    const x0 = cx - pipeW/2, x1 = cx + pipeW/2;
+    const g = ctx.createLinearGradient(x0,0,x1,0);
+    g.addColorStop(0,'#0c0d0f'); g.addColorStop(0.18,COL.ironLo);
+    g.addColorStop(0.42,COL.ironHi); g.addColorStop(0.6,COL.ironMid);
+    g.addColorStop(1,'#0a0b0c');
+    ctx.fillStyle = g; rr(x0,pipeTop,pipeW,pipeBot-pipeTop,6); ctx.fill();
+
+    // pipe specular reacting to steam light
+    if(flow>0.02){
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      const sg = ctx.createLinearGradient(x0,0,x1,0);
+      sg.addColorStop(0,'rgba(255,255,255,0)');
+      sg.addColorStop(0.4,`rgba(255,255,255,${0.10*flow})`);
+      sg.addColorStop(0.6,`rgba(200,210,220,${0.05*flow})`);
+      sg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle = sg; rr(x0,pipeTop,pipeW,pipeBot-pipeTop,6); ctx.fill();
+      ctx.restore();
+    }
+    // flange near valve
+    ctx.fillStyle = '#1a1c1f';
+    rr(cx-pipeW*0.72, pipeTop+R*0.02, pipeW*1.44, R*0.14, 4); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    rr(cx-pipeW*0.72, pipeTop+R*0.02, pipeW*1.44, R*0.04, 4); ctx.fill();
+  }
+
+  function brassGrad(x0,x1){
+    const g = ctx.createLinearGradient(x0,0,x1,0);
+    g.addColorStop(0,COL.brassLo); g.addColorStop(0.3,COL.brassMid);
+    g.addColorStop(0.5,COL.brass); g.addColorStop(0.72,COL.brassHi);
+    g.addColorStop(1,COL.brassLo);
+    return g;
+  }
+  function drawBrass(x,y,w,h,r){
+    ctx.fillStyle = brassGrad(x,x+w); rr(x,y,w,h,r); ctx.fill();
+    // aged speckle
+    ctx.save(); ctx.globalCompositeOperation='multiply';
+    for(let i=0;i<10;i++){
+      const sx = x+Math.random()*w, sy=y+Math.random()*h;
+      ctx.fillStyle = 'rgba(60,50,20,'+(0.05+Math.random()*0.12)+')';
+      ctx.beginPath(); ctx.arc(sx,sy,Math.random()*r*0.6+1,0,7); ctx.fill();
+    }
+    ctx.restore();
+    // top light edge
+    ctx.strokeStyle = 'rgba(255,245,200,.35)'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(x+r,y+1); ctx.lineTo(x+w-r,y+1); ctx.stroke();
+  }
+
+  function drawValveBody(){
+    // main hex-ish body block
+    drawBrass(cx-pipeW*0.62, cy-R*0.55, pipeW*1.24, R*1.0, 8);
+    // horizontal ribs (aged)
+    ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=2;
+    for(let i=1;i<=3;i++){
+      const yy = cy-R*0.55 + (R*1.0)*(i/4);
+      ctx.beginPath(); ctx.moveTo(cx-pipeW*0.6, yy); ctx.lineTo(cx+pipeW*0.6, yy); ctx.stroke();
+    }
+    // side spout
+    drawBrass(cx+pipeW*0.4, spoutY-spoutH/2, pipeW*0.75, spoutH, 6);
+    // spout nozzle ring
+    ctx.fillStyle = '#3a3410';
+    rr(spoutX+pipeW*0.62, spoutY-spoutH*0.62, 10, spoutH*1.24, 3); ctx.fill();
+
+    // steam glow on brass when venting
+    if(flow>0.03){
+      ctx.save(); ctx.globalCompositeOperation='lighter';
+      const gg = ctx.createRadialGradient(spoutX,spoutY,0,spoutX,spoutY,R*2.2);
+      gg.addColorStop(0,`rgba(255,255,255,${0.22*flow})`);
+      gg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=gg; rr(cx-pipeW*0.62,cy-R*0.55,pipeW*1.24,R*1.0,8); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawCap(){
+    const lift = capLift * (R*0.10) + shakeY;
+    const y = capBaseY - lift;
+    const x = capX + shakeX;
+    drawBrass(x, y, capW, capH, 6);
+    // cap top plate
+    ctx.fillStyle = brassGrad(x, x+capW);
+    rr(x-capW*0.08, y-capH*0.28, capW*1.16, capH*0.34, 5); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x+2,y+capH*0.4); ctx.lineTo(x+capW-2,y+capH*0.4); ctx.stroke();
+    // little lift ring
+    ctx.strokeStyle = 'rgba(255,245,200,.5)'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(x+capW/2, y-capH*0.1, capW*0.16, Math.PI*0.15, Math.PI*0.85); ctx.stroke();
+  }
+
+  function drawGauge(){
+    const gx = cx, gy = capBaseY - capH - R*0.02 - R*0.9;
+    // stem
+    ctx.fillStyle = '#2a2610';
+    rr(gx-R*0.07, gy+R*0.5, R*0.14, R*0.5, 3); ctx.fill();
+
+    // bezel (aged brass ring)
+    const bg = ctx.createRadialGradient(gx-R*0.3,gy-R*0.3,R*0.2,gx,gy,R*1.05);
+    bg.addColorStop(0,COL.brassHi); bg.addColorStop(0.5,COL.brass); bg.addColorStop(1,COL.brassLo);
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(gx,gy,R,0,7); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.4)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(gx,gy,R*0.9,0,7); ctx.stroke();
+
+    // dial face
+    const fg = ctx.createRadialGradient(gx-R*0.2,gy-R*0.2,R*0.1,gx,gy,R*0.85);
+    fg.addColorStop(0,'#f4f1e6'); fg.addColorStop(0.7,'#e6e2d3'); fg.addColorStop(1,'#c9c4b2');
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.arc(gx,gy,R*0.82,0,7); ctx.fill();
+
+    // zones: -120..0 danger, 0..120 safe
+    const r0 = R*0.66;
+    ctx.lineWidth = R*0.13;
+    ctx.strokeStyle = COL.danger;
+    ctx.beginPath(); ctx.arc(gx,gy,r0, deg(-120), deg(0)); ctx.stroke();
+    ctx.strokeStyle = COL.safe;
+    ctx.beginPath(); ctx.arc(gx,gy,r0, deg(0), deg(120)); ctx.stroke();
+
+    // ticks
+    ctx.strokeStyle='#3a3a30'; ctx.lineWidth=1.6;
+    for(let a=-120;a<=120;a+=15){
+      const rad = deg(a);
+      const big = a%30===0;
+      const r1 = R*0.5, r2 = R*(big?0.58:0.55);
+      ctx.beginPath();
+      ctx.moveTo(gx+Math.cos(rad)*r1, gy+Math.sin(rad)*r1);
+      ctx.lineTo(gx+Math.cos(rad)*r2, gy+Math.sin(rad)*r2);
+      ctx.stroke();
+    }
+    // labels
+    ctx.fillStyle='#5a564a'; ctx.font=`${R*0.11}px 'IBM Plex Mono'`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('0', gx+Math.cos(deg(-120))*R*0.42, gy+Math.sin(deg(-120))*R*0.42);
+    ctx.fillText('MAX', gx+Math.cos(deg(0))*R*0.42, gy+Math.sin(deg(0))*R*0.42);
+    ctx.fillText('SAFE', gx+Math.cos(deg(120))*R*0.42, gy+Math.sin(deg(120))*R*0.42);
+    ctx.fillStyle='#8a857a'; ctx.font=`${R*0.09}px 'IBM Plex Mono'`;
+    ctx.fillText('PSI', gx, gy+R*0.3);
+
+    // needle
+    const nr = deg(needle);
+    ctx.save();
+    ctx.translate(gx,gy); ctx.rotate(nr);
+    ctx.strokeStyle = '#111'; ctx.lineWidth = R*0.045; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-R*0.12,0); ctx.lineTo(R*0.6,0); ctx.stroke();
+    ctx.strokeStyle = COL.danger; ctx.lineWidth = R*0.02;
+    ctx.beginPath(); ctx.moveTo(R*0.6,0); ctx.lineTo(R*0.66,0); ctx.stroke();
+    ctx.restore();
+    // hub
+    ctx.fillStyle='#2a2a22'; ctx.beginPath(); ctx.arc(gx,gy,R*0.09,0,7); ctx.fill();
+    ctx.fillStyle='#888'; ctx.beginPath(); ctx.arc(gx,gy,R*0.04,0,7); ctx.fill();
+  }
+  function deg(d){ return (d-90)*Math.PI/180; }
+
+  // ---- scene render ----
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    drawPipe();
+    drawValveBody();
+    drawGauge();
+    drawCap();
+    drawParticles();
+  }
+
+  // ---- HUD ----
+  const elState = document.getElementById('state');
+  const elPsi = document.getElementById('psi');
+  const elPct = document.getElementById('pct');
+  const elLed = document.getElementById('led');
+  const elBtn = document.getElementById('vent');
+  let hudTick = 0;
+  function updateHUD(){
+    if(hudTick++ % 3) return;
+    elPsi.textContent = pressure.toFixed(1);
+    elPct.textContent = Math.round((pressure/200)*100);
+    const safe = pressure < 95;
+    elState.classList.toggle('is-safe', safe);
+    elLed.classList.toggle('is-safe', safe);
+    if(state===S.IDLE) elState.textContent = safe?'Vent Complete':'Overpressure';
+    else if(state===S.VENT) elState.textContent = 'Venting';
+    else if(state===S.DISSIPATE) elState.textContent = 'Releasing';
+    else elState.textContent = 'Seating';
+  }
+
+  // ---- state logic ----
+  function trigger(){
+    if(state!==S.IDLE) return;
+    state = S.VENT; ventTime = 0; emitting = true;
+    elBtn.disabled = true;
+  }
+  elBtn.addEventListener('click', trigger);
+
+  function step(dt){
+    t += dt;
+    // idle stress vibration
+    if(state===S.IDLE && pressure>=95 && !reduce){
+      shakeX = Math.sin(t*70)*0.6; shakeY = Math.cos(t*63)*0.5;
+    } else if(state===S.VENT && !reduce){
+      shakeX = Math.sin(t*55)*1.1*flow; shakeY = Math.cos(t*48)*0.9*flow;
+    } else { shakeX = lerp(shakeX,0,0.3); shakeY = lerp(shakeY,0,0.3); }
+
+    if(state===S.VENT){
+      ventTime += dt;
+      capLift = clamp(ventTime/0.12,0,1);
+      flow = clamp(ventTime/0.25,0,1);
+      emitting = true;
+      pressure = Math.max(40, pressure - flow*55*dt);
+      needle = lerp(needle, 118, clamp(flow*2.4*dt,0,1)); // sweeps toward green
+      if(ventTime>=VENT_DUR){ state=S.DISSIPATE; dissTime=0; }
+    } else if(state===S.DISSIPATE){
+      dissTime += dt;
+      const k = dissTime/DISS_DUR;
+      flow = clamp(1 - k*1.15, 0, 1);
+      emitting = flow>0.05;
+      pressure = Math.max(38, pressure - flow*40*dt);
+      needle = lerp(needle, 118, clamp(flow*1.6*dt,0,1)); // ease-out deceleration
+      if(dissTime>=DISS_DUR){ state=S.RESEAT; }
+    } else if(state===S.RESEAT){
+      emitting = false; flow = Math.max(0, flow-0.06);
+      capLift = lerp(capLift,0,0.5);
+      // metallic thunk recoil
+      if(!reduce) shakeY = Math.sin(t*120)*2.2;
+      if(capLift<0.02){ capLift=0; state=S.IDLE; elBtn.disabled=false; }
+    }
+
+    // emission rate scales with flow
+    if(emitting){
+      const hot = flow>0.6;
+      spawn(Math.round(flow*(hot?9:5)), hot);
+    }
+    updateParticles();
+  }
+
+  // ---- loop ----
+  let last = performance.now();
+  function loop(now){
+    let dt = (now-last)/1000; last = now;
+    dt = Math.min(dt, 0.05);
+    if(!reduce) step(dt);
+    render();
+    updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  // reduced motion: show a calm static vented state
+  if(reduce){
+    resize();
+    pressure = 42; needle = 118; flow = 0;
+    for(let i=0;i<40;i++){ spawn(1,false); }
+    updateParticles(); render(); updateHUD();
+  } else {
+    resize();
+    // pre-charge a little so first frame has a hint of stress
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>

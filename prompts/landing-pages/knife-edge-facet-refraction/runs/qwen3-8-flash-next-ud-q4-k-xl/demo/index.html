@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Steel — The Edge, Perfected</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#000000;
+    --silver:#C0C0C0;
+    --silver-lo:#8A8A8A;
+    --silver-hi:#E0E0E0;
+    --white:#FFFFFF;
+    --line:rgba(255,255,255,.10);
+    --line-2:rgba(255,255,255,.05);
+    --muted:rgba(224,224,224,.55);
+    --muted-2:rgba(224,224,224,.35);
+    --edge:rgba(255,255,255,.14);
+    --sans:'Lato',system-ui,-apple-system,sans-serif;
+    --serif:'Cormorant Garamond',Georgia,serif;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --pad:clamp(20px,5vw,80px);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--void);
+    color:var(--silver-hi);
+    font-family:var(--sans);
+    font-weight:300;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--silver-hi);color:#000}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+
+  /* ---------- fixed atmospheric layers ---------- */
+  .grain{
+    position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:55;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 42%,transparent 55%,rgba(0,0,0,.55) 100%);
+  }
+  .cursor{
+    position:fixed;top:0;left:0;z-index:70;width:180px;height:180px;margin:-90px 0 0 -90px;
+    border-radius:50%;pointer-events:none;opacity:0;transition:opacity .5s ease;
+    background:radial-gradient(circle,rgba(255,255,255,.06),transparent 62%);
+    mix-blend-mode:screen;
+  }
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px var(--pad);
+    border-bottom:1px solid transparent;
+    transition:border-color .5s ease,background .5s ease,padding .5s ease;
+  }
+  .nav.scrolled{border-bottom-color:var(--line);background:rgba(0,0,0,.6);backdrop-filter:blur(8px);padding-top:16px;padding-bottom:16px}
+  .wordmark{
+    font-family:var(--serif);font-weight:500;font-size:1.35rem;letter-spacing:.34em;
+    color:var(--silver-hi);text-transform:uppercase;
+  }
+  .wordmark b{font-weight:300;color:var(--muted)}
+  .nav-links{display:flex;gap:clamp(18px,3vw,42px);list-style:none}
+  .nav-links a{
+    font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+    position:relative;padding:4px 0;transition:color .4s ease;
+  }
+  .nav-links a::after{
+    content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;
+    background:var(--silver-hi);transform:scaleX(0);transform-origin:left;
+    transition:transform .5s var(--ease);
+  }
+  .nav-links a:hover{color:var(--white)}
+  .nav-links a:hover::after{transform:scaleX(1)}
+  .nav-cta{
+    font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--silver-hi);
+    border:1px solid var(--line);padding:9px 20px;transition:border-color .4s,background .4s,color .4s;
+  }
+  .nav-cta:hover{background:var(--silver-hi);color:#000;border-color:var(--silver-hi)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:120px var(--pad) 90px;overflow:hidden;
+  }
+  .hero-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .hero-inner{position:relative;z-index:2;max-width:1400px;margin:0 auto;width:100%}
+  .hero-topline{
+    font-size:.72rem;letter-spacing:.42em;text-transform:uppercase;color:var(--muted);
+    margin-bottom:clamp(24px,5vh,54px);
+  }
+  .hero-title{
+    font-family:var(--serif);font-weight:300;line-height:.9;letter-spacing:-.01em;
+    color:var(--white);
+    font-size:clamp(3.6rem,15.5vw,15rem);
+    text-shadow:0 0 60px rgba(255,255,255,.06);
+  }
+  .hero-title .ln{display:block;overflow:hidden;padding-bottom:.04em}
+  .hero-title .ln>span{display:block;transform:translateY(108%);transition:transform 1.15s var(--ease)}
+  .hero-title .ln:nth-child(2)>span{transition-delay:.12s}
+  .hero-title .ln:nth-child(3)>span{transition-delay:.24s}
+  .hero-title em{font-style:italic;font-weight:300;color:var(--silver)}
+  .hero-sub{
+    margin-top:clamp(28px,5vh,52px);max-width:34ch;
+    font-size:clamp(1rem,1.4vw,1.18rem);color:var(--muted);font-weight:300;
+    border-left:1px solid var(--edge);padding-left:22px;
+  }
+  .hero-meta{
+    display:flex;flex-wrap:wrap;gap:clamp(24px,5vw,70px);
+    margin-top:clamp(34px,6vh,64px);
+  }
+  .hero-meta div{display:flex;flex-direction:column;gap:8px}
+  .hero-meta dt{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted-2)}
+  .hero-meta dd{font-family:var(--serif);font-size:1.5rem;color:var(--silver-hi);font-weight:400}
+  .hero-corner{
+    position:absolute;z-index:2;bottom:34px;right:var(--pad);
+    font-size:.66rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted-2);
+    display:flex;align-items:center;gap:12px;
+  }
+  .scroll-line{width:1px;height:46px;background:linear-gradient(var(--silver-hi),transparent);position:relative;overflow:hidden}
+  .scroll-line::after{content:"";position:absolute;top:-100%;left:0;width:100%;height:100%;background:var(--white);animation:drip 2.4s var(--ease) infinite}
+  @keyframes drip{0%{top:-100%}60%,100%{top:100%}}
+  .hero.enter .hero-title .ln>span{transform:none}
+
+  /* ---------- section shell ---------- */
+  section{position:relative;z-index:2}
+  .wrap{max-width:1400px;margin:0 auto;padding:clamp(80px,13vh,160px) var(--pad)}
+  .eyebrow{
+    font-size:.68rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted-2);
+    display:flex;align-items:center;gap:16px;margin-bottom:34px;
+  }
+  .eyebrow::before{content:"";width:44px;height:1px;background:var(--edge)}
+  .sec-title{
+    font-family:var(--serif);font-weight:300;color:var(--white);
+    font-size:clamp(2.2rem,5.4vw,4.6rem);line-height:1.02;letter-spacing:-.01em;
+  }
+  .sec-title em{font-style:italic;color:var(--silver)}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity 1s ease,transform 1s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+
+  /* ---------- the edge (sticky) ---------- */
+  .edge-sec{border-top:1px solid var(--line-2)}
+  .edge-grid{display:grid;grid-template-columns:1fr;gap:clamp(40px,6vw,90px)}
+  @media(min-width:900px){.edge-grid{grid-template-columns:1.05fr .95fr}}
+  .edge-visual{position:relative}
+  @media(min-width:900px){
+    .edge-sticky{position:sticky;top:0;height:100vh;display:flex;align-items:center}
+  }
+  .edge-sticky .stage{position:relative;width:100%}
+  .edge-sticky img{
+    width:100%;height:auto;filter:contrast(1.05) brightness(.96);
+    -webkit-mask-image:linear-gradient(90deg,#000 70%,transparent 100%);
+            mask-image:linear-gradient(90deg,#000 70%,transparent 100%);
+  }
+  .edge-sticky .flare{
+    position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.22) 48%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.22) 52%,transparent 70%);
+    transform:translateX(var(--fx,0));opacity:.7;
+  }
+  .edge-sticky .cap{
+    position:absolute;left:0;bottom:-6px;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted-2)
+  }
+  .edge-copy{display:flex;flex-direction:column;gap:clamp(48px,8vh,110px)}
+  .edge-copy .block h3{
+    font-family:var(--serif);font-weight:400;color:var(--white);
+    font-size:clamp(1.5rem,2.6vw,2.3rem);line-height:1.1;margin-bottom:16px;
+  }
+  .edge-copy .block p{color:var(--muted);max-width:44ch;font-size:1.02rem}
+  .edge-copy .block .idx{font-size:.66rem;letter-spacing:.3em;color:var(--muted-2);margin-bottom:14px;display:block}
+
+  /* ---------- anatomy ---------- */
+  .anatomy-sec{border-top:1px solid var(--line-2)}
+  .anatomy-fig{position:relative;margin-top:clamp(40px,6vw,70px)}
+  .anatomy-fig img{width:100%;height:auto;filter:contrast(1.05) brightness(.9)}
+  .hotspot{position:absolute;width:14px;height:14px;transform:translate(-50%,-50%);cursor:pointer;z-index:3}
+  .hotspot .ring{
+    position:absolute;inset:0;border:1px solid var(--silver-hi);border-radius:50%;
+    transition:transform .4s var(--ease),background .4s;
+  }
+  .hotspot .dot{position:absolute;inset:5px;background:var(--silver-hi);border-radius:50%;transition:transform .4s var(--ease)}
+  .hotspot::after{content:"";position:absolute;top:50%;left:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border:1px solid var(--edge);border-radius:50%;animation:pulse 3s ease-out infinite}
+  @keyframes pulse{0%{transform:scale(.4);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+  .hotspot.active .ring{transform:scale(1.7);background:rgba(255,255,255,.12)}
+  .hotspot.active .dot{transform:scale(.6)}
+  .hotspot .tip{
+    position:absolute;left:20px;top:50%;transform:translateY(-50%) translateX(-6px);
+    white-space:nowrap;background:rgba(0,0,0,.85);border:1px solid var(--line);
+    padding:8px 14px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s var(--ease);
+  }
+  .hotspot .tip b{display:block;font-family:var(--serif);font-weight:500;font-size:.95rem;color:var(--white);letter-spacing:.02em}
+  .hotspot .tip span{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .hotspot.active .tip{opacity:1;transform:translateY(-50%) translateX(0)}
+  .anatomy-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line-2);border:1px solid var(--line-2);margin-top:clamp(40px,6vw,70px)}
+  .anatomy-list button{
+    background:#000;border:0;color:var(--muted);text-align:left;cursor:pointer;
+    padding:22px 20px;font-family:var(--sans);transition:background .4s,color .4s;
+  }
+  .anatomy-list button .n{font-family:var(--serif);font-size:.9rem;color:var(--muted-2);display:block;margin-bottom:10px}
+  .anatomy-list button .t{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase}
+  .anatomy-list button.active{background:#0d0d0d;color:var(--white)}
+  .anatomy-list button.active .n{color:var(--silver-hi)}
+
+  /* ---------- collection ---------- */
+  .collection-sec{border-top:1px solid var(--line-2)}
+  .collection-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:24px}
+  .collection-head p{color:var(--muted);max-width:38ch;font-size:.98rem}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line-2);border:1px solid var(--line-2);margin-top:clamp(46px,7vw,80px)}
+  .card{
+    position:relative;background:#000;padding:clamp(28px,4vw,52px);cursor:pointer;
+    display:flex;flex-direction:column;min-height:clamp(320px,42vw,460px);
+    transition:background .5s ease;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
+    background:linear-gradient(120deg,transparent 42%,rgba(255,255,255,.06) 50%,transparent 58%);
+  }
+  .card:hover{background:#080808}
+  .card:hover::before{opacity:1}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-2)}
+  .card .sil{flex:1;display:flex;align-items:center;justify-content:center;margin:22px 0}
+  .card .sil img{width:100%;height:auto;filter:contrast(1.08) brightness(.92);transition:transform .8s var(--ease)}
+  .card:hover .sil img{transform:scale(1.03)}
+  .card .meas{position:relative;height:26px;margin-bottom:14px}
+  .card .meas .bar{position:absolute;left:0;right:0;top:12px;height:1px;background:var(--line)}
+  .card .meas .bar::before,.card .meas .bar::after{content:"";position:absolute;top:-4px;width:1px;height:9px;background:var(--silver-hi)}
+  .card .meas .bar::before{left:0}.card .meas .bar::after{right:0}
+  .card .meas .len{position:absolute;left:50%;top:16px;transform:translateX(-50%);font-size:.6rem;letter-spacing:.2em;color:var(--muted);background:#000;padding:0 10px}
+  .card .name{font-family:var(--serif);font-weight:400;font-size:clamp(1.3rem,2.4vw,1.9rem);color:var(--white);line-height:1.05}
+  .card .sub{font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+  .card .price{position:absolute;top:clamp(28px,4vw,52px);right:clamp(28px,4vw,52px);font-family:var(--serif);font-size:1.15rem;color:var(--silver-hi)}
+
+  /* ---------- process ---------- */
+  .process-sec{border-top:1px solid var(--line-2)}
+  .steps{margin-top:clamp(46px,7vw,80px);border-top:1px solid var(--line-2)}
+  .step{
+    display:grid;grid-template-columns:auto 1fr auto;gap:clamp(20px,4vw,60px);
+    align-items:baseline;padding:clamp(26px,4vw,44px) 0;border-bottom:1px solid var(--line-2);
+    transition:padding-left .5s var(--ease);
+  }
+  .step:hover{padding-left:14px}
+  .step .num{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.6rem);color:var(--muted-2);font-weight:300;transition:color .5s}
+  .step:hover .num{color:var(--silver-hi)}
+  .step .body h4{font-family:var(--serif);font-weight:400;font-size:clamp(1.3rem,2.4vw,2rem);color:var(--white);margin-bottom:8px}
+  .step .body p{color:var(--muted);max-width:52ch}
+  .step .temp{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--silver);white-space:nowrap}
+
+  /* ---------- quote ---------- */
+  .quote-sec{border-top:1px solid var(--line-2);text-align:center}
+  .quote-sec blockquote{
+    font-family:var(--serif);font-weight:300;font-style:italic;color:var(--white);
+    font-size:clamp(1.7rem,4.4vw,3.6rem);line-height:1.2;max-width:20ch;margin:0 auto;
+  }
+  .quote-sec cite{display:block;margin-top:34px;font-style:normal;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---------- spec table ---------- */
+  .spec-sec{border-top:1px solid var(--line-2)}
+  .spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,80px);align-items:start}
+  .spec-table{width:100%;border-collapse:collapse;margin-top:34px}
+  .spec-table tr{border-bottom:1px solid var(--line-2)}
+  .spec-table td{padding:16px 0;font-size:.9rem}
+  .spec-table td:first-child{color:var(--muted-2);letter-spacing:.14em;text-transform:uppercase;font-size:.68rem;width:46%}
+  .spec-table td:last-child{color:var(--silver-hi);font-family:var(--serif);font-size:1.05rem;text-align:right}
+  .spec-fig{position:relative}
+  .spec-fig img{width:100%;height:auto;filter:contrast(1.05) brightness(.92)}
+  .spec-fig .flare{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.5;
+    background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.3) 50%,transparent 60%);
+    animation:breathe 9s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:translateX(-14%);opacity:.25}50%{transform:translateX(14%);opacity:.6}}
+
+  /* ---------- journal ---------- */
+  .journal-sec{border-top:1px solid var(--line-2)}
+  .posts{margin-top:clamp(40px,6vw,70px);border-top:1px solid var(--line-2)}
+  .post{
+    display:grid;grid-template-columns:auto 1fr auto;gap:clamp(16px,3vw,40px);align-items:baseline;
+    padding:clamp(22px,3vw,34px) 0;border-bottom:1px solid var(--line-2);cursor:pointer;
+    transition:background .4s,padding-left .5s var(--ease);
+  }
+  .post:hover{padding-left:12px}
+  .post .date{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);white-space:nowrap}
+  .post h4{font-family:var(--serif);font-weight:400;font-size:clamp(1.2rem,2.2vw,1.7rem);color:var(--silver-hi);transition:color .4s}
+  .post:hover h4{color:var(--white)}
+  .post .arrow{font-size:1.2rem;color:var(--muted-2);transition:transform .4s var(--ease),color .4s}
+  .post:hover .arrow{transform:translateX(6px);color:var(--white)}
+
+  /* ---------- cta ---------- */
+  .cta-sec{border-top:1px solid var(--line-2);text-align:center;position:relative;overflow:hidden}
+  .cta-sec .glint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.4;
+    background:linear-gradient(115deg,transparent 44%,rgba(255,255,255,.16) 50%,transparent 56%);
+    animation:breathe 11s ease-in-out infinite}
+  .cta-sec h2{font-family:var(--serif);font-weight:300;color:var(--white);font-size:clamp(2.2rem,6vw,5rem);line-height:1.02;position:relative}
+  .cta-sec h2 em{font-style:italic;color:var(--silver)}
+  .cta-sec p{color:var(--muted);max-width:40ch;margin:26px auto 0;position:relative}
+  .btn{
+    display:inline-block;margin-top:44px;position:relative;
+    font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--white);
+    border:1px solid var(--line);padding:18px 44px;overflow:hidden;transition:color .5s;
+  }
+  .btn span{position:relative;z-index:2}
+  .btn::before{content:"";position:absolute;inset:0;background:var(--silver-hi);transform:translateY(101%);transition:transform .5s var(--ease);z-index:1}
+  .btn:hover{color:#000}
+  .btn:hover::before{transform:translateY(0)}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:clamp(60px,9vh,110px) var(--pad) 40px;position:relative;z-index:2}
+  .foot-grid{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px}
+  .foot-brand .wordmark{font-size:1.6rem}
+  .foot-brand p{color:var(--muted);max-width:32ch;margin-top:20px;font-size:.92rem}
+  .foot-col h5{font-size:.66rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted-2);margin-bottom:20px}
+  .foot-col a{display:block;color:var(--muted);font-size:.88rem;padding:6px 0;transition:color .4s}
+  .foot-col a:hover{color:var(--white)}
+  .foot-bottom{max-width:1400px;margin:60px auto 0;padding-top:28px;border-top:1px solid var(--line-2);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2)}
+
+  /* ---------- lightbox ---------- */
+  .lightbox{
+    position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.94);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:6vw;
+    opacity:0;pointer-events:none;transition:opacity .5s ease;
+  }
+  .lightbox.open{opacity:1;pointer-events:auto}
+  .lb-inner{max-width:1000px;width:100%;text-align:center;transform:scale(.96);transition:transform .5s var(--ease)}
+  .lightbox.open .lb-inner{transform:none}
+  .lb-inner img{width:100%;height:auto;filter:contrast(1.08) brightness(.95);
+    -webkit-mask-image:radial-gradient(120% 120% at 50% 50%,#000 60%,transparent 100%);mask-image:radial-gradient(120% 120% at 50% 50%,#000 60%,transparent 100%)}
+  .lb-inner .lb-flare{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.6;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);animation:breathe 6s ease-in-out infinite}
+  .lb-meta{margin-top:30px}
+  .lb-meta h3{font-family:var(--serif);font-weight:400;color:var(--white);font-size:clamp(1.6rem,3vw,2.4rem)}
+  .lb-meta p{color:var(--muted);font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;margin-top:10px}
+  .lb-close{position:absolute;top:26px;right:30px;background:none;border:1px solid var(--line);color:var(--silver-hi);
+    width:44px;height:44px;cursor:pointer;font-size:1.1rem;transition:background .4s,color .4s}
+  .lb-close:hover{background:var(--silver-hi);color:#000}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:860px){
+    .nav-links{display:none}
+    .grid{grid-template-columns:1fr}
+    .spec-grid{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr 1fr}
+    .foot-brand{grid-column:1/-1}
+    .step{grid-template-columns:auto 1fr}
+    .step .temp{grid-column:2;margin-top:8px}
+    .post{grid-template-columns:auto 1fr}
+    .post .arrow{display:none}
+    .hero{justify-content:flex-end}
+    .hero-corner{bottom:24px}
+    .edge-sticky img{-webkit-mask-image:linear-gradient(180deg,#000 60%,transparent 100%);mask-image:linear-gradient(180deg,#000 60%,transparent 100%)}
+  }
+  @media(max-width:520px){
+    .foot-grid{grid-template-columns:1fr}
+    .hero-meta{gap:26px}
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+    .hero-title .ln>span{transform:none}
+    .cursor{display:none}
+    .hotspot::after{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="cursor" id="cursor"></div>
+
+<header class="nav" id="nav">
+  <a href="#top" class="wordmark">APEX<b>&nbsp;STEEL</b></a>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="#collection">Collection</a></li>
+      <li><a href="#edge">The Edge</a></li>
+      <li><a href="#process">Process</a></li>
+      <li><a href="#journal">Journal</a></li>
+    </ul>
+  </nav>
+  <a href="#reserve" class="nav-cta">Reserve</a>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <canvas class="hero-canvas" id="heroCanvas"></canvas>
+    <div class="hero-inner">
+      <p class="hero-topline reveal">Apex Steel — Kyoto · Est. 2014</p>
+      <h1 class="hero-title">
+        <span class="ln"><span>Light</span></span>
+        <span class="ln"><span>is the only</span></span>
+        <span class="ln"><span><em>proof</em> of the edge.</span></span>
+      </h1>
+      <p class="hero-sub reveal d2">A blade is measured not by what it is made of, but by how it returns light. We grind to the point where the edge disappears — and the reflection tells the truth.</p>
+      <dl class="hero-meta reveal d3">
+        <div><dt>Core</dt><dd>SG2 · 67 HRC</dd></div>
+        <div><dt>Bevel</dt><dd>15° single</dd></div>
+        <div><dt>Finish</dt><dd>Kasumi mirror</dd></div>
+      </dl>
+    </div>
+    <div class="hero-corner">
+      <span>Move to catch the light</span>
+      <span class="scroll-line"></span>
+    </div>
+  </section>
+
+  <!-- THE EDGE -->
+  <section class="edge-sec" id="edge">
+    <div class="wrap">
+      <div class="edge-grid">
+        <div class="edge-visual">
+          <div class="edge-sticky">
+            <div class="stage">
+              <img src="https://picsum.photos/seed/knife-edge-macro-steel/1000/1200" alt="Macro of the knife cutting edge">
+              <div class="flare" id="edgeFlare"></div>
+              <span class="cap">Kiss of the edge · 0.2 µm</span>
+            </div>
+          </div>
+        </div>
+        <div class="edge-copy">
+          <div class="block reveal">
+            <span class="idx">01 — The Kiss</span>
+            <h3>Where two faces meet, the metal forgets itself.</h3>
+            <p>At the very apex, the steel is ground to a point finer than the wavelength of visible light. There is no surface left to see — only the moment a ray bends and leaves. What you perceive as the edge is light itself, arrested.</p>
+          </div>
+          <div class="block reveal">
+            <span class="idx">02 — The Test</span>
+            <h3>Turn the blade. Read the reflection.</h3>
+            <p>A dull edge scatters light into a grey smear. A keen edge throws a single, hard line of fire across the face. Sharpeners do not measure sharpness with a ruler; they watch for the glint. We build our grinds to answer that gaze.</p>
+          </div>
+          <div class="block reveal">
+            <span class="idx">03 — The Geometry</span>
+            <h3>Convex, not flat. Curved, not straight.</h3>
+            <p>A flat bevel bites and stops. A convex bevel rolls through the cut, keeping contact with the board for a fraction of a millimetre longer — and holding its polish far longer in return. The curve is invisible. The cut is unforgettable.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANATOMY -->
+  <section class="anatomy-sec" id="anatomy">
+    <div class="wrap">
+      <p class="eyebrow reveal">Anatomy of a single blade</p>
+      <h2 class="sec-title reveal d1">Every millimetre, <em>named.</em></h2>
+      <div class="anatomy-fig reveal d2">
+        <img src="https://picsum.photos/seed/knife-blade-profile-steel/1400/700" alt="Knife blade profile with hotspots">
+        <button class="hotspot" data-part="0" style="left:16%;top:30%"><span class="ring"></span><span class="dot"></span><span class="tip"><b>Tip</b><span>Point · 2.5 mm</span></span></button>
+        <button class="hotspot" data-part="1" style="left:34%;top:62%"><span class="ring"></span><span class="dot"></span><span class="tip"><b>Apex</b><span>Edge · 0.2 µm</span></span></button>
+        <button class="hotspot" data-part="2" style="left:52%;top:48%"><span class="ring"></span><span class="dot"></span><span class="tip"><b>Heel</b><span>Base · 4 mm</span></span></button>
+        <button class="hotspot" data-part="3" style="left:70%;top:34%"><span class="ring"></span><span class="dot"></span><span class="tip"><b>Spine</b><span>Back · 2.6 mm</span></span></button>
+        <button class="hotspot" data-part="4" style="left:88%;top:56%"><span class="ring"></span><span class="dot"></span><span class="tip"><b>Tang</b><span>Full · 3.2 mm</span></span></button>
+      </div>
+      <div class="anatomy-list reveal d3" id="anatomyList">
+        <button data-part="0"><span class="n">01</span><span class="t">Tip</span></button>
+        <button data-part="1"><span class="n">02</span><span class="t">Apex</span></button>
+        <button data-part="2"><span class="n">03</span><span class="t">Heel</span></button>
+        <button data-part="3"><span class="n">04</span><span class="t">Spine</span></button>
+        <button data-part="4"><span class="n">05</span><span class="t">Tang</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="collection-sec" id="collection">
+    <div class="wrap">
+      <div class="collection-head">
+        <div>
+          <p class="eyebrow reveal">The collection — four grinds</p>
+          <h2 class="sec-title reveal d1">Silhouettes in <em>steel.</em></h2>
+        </div>
+        <p class="reveal d2">Each form is a single decision about the cut. Click any blade to look down the length of its edge.</p>
+      </div>
+      <div class="grid">
+        <article class="card reveal" data-name="Koketsu" data-len="180 mm · 178 g" data-img="knife-koketsu-gyuto-steel">
+          <div class="top"><span>01 / Gyuto</span><span>SG2</span></div>
+          <div class="sil"><img src="https://picsum.photos/seed/knife-koketsu-gyuto-steel/700/420" alt="Koketsu chef's knife"></div>
+          <div class="meas"><span class="bar"></span><span class="len">210 mm</span></div>
+          <h3 class="name">Koketsu</h3>
+          <p class="sub">Chef's · 210 mm · 178 g</p>
+          <span class="price">¥ 48,000</span>
+        </article>
+        <article class="card reveal d1" data-name="Murasaki" data-len="240 mm · 132 g" data-img="knife-murasaki-sujihiki-steel">
+          <div class="top"><span>02 / Sujihiki</span><span>SG2</span></div>
+          <div class="sil"><img src="https://picsum.photos/seed/knife-murasaki-sujihiki-steel/700/420" alt="Murasaki slicing knife"></div>
+          <div class="meas"><span class="bar"></span><span class="len">270 mm</span></div>
+          <h3 class="name">Murasaki</h3>
+          <p class="sub">Slicer · 270 mm · 132 g</p>
+          <span class="price">¥ 56,000</span>
+        </article>
+        <article class="card reveal d2" data-name="Hagane" data-len="165 mm · 154 g" data-img="knife-hagane-santoku-steel">
+          <div class="top"><span>03 / Santoku</span><span>SG2</span></div>
+          <div class="sil"><img src="https://picsum.photos/seed/knife-hagane-santoku-steel/700/420" alt="Hagane santoku knife"></div>
+          <div class="meas"><span class="bar"></span><span class="len">165 mm</span></div>
+          <h3 class="name">Hagane</h3>
+          <p class="sub">All-purpose · 165 mm · 154 g</p>
+          <span class="price">¥ 44,000</span>
+        </article>
+        <article class="card reveal d3" data-name="Kiri" data-len="180 mm · 120 g" data-img="knife-kiri-nakiri-steel">
+          <div class="top"><span>04 / Nakiri</span><span>SG2</span></div>
+          <div class="sil"><img src="https://picsum.photos/seed/knife-kiri-nakiri-steel/700/420" alt="Kiri nakiri knife"></div>
+          <div class="meas"><span class="bar"></span><span class="len">180 mm</span></div>
+          <h3 class="name">Kiri</h3>
+          <p class="sub">Vegetable · 180 mm · 120 g</p>
+          <span class="price">¥ 42,000</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section class="process-sec" id="process">
+    <div class="wrap">
+      <p class="eyebrow reveal">From billet to edge</p>
+      <h2 class="sec-title reveal d1">Six steps, <em>no shortcuts.</em></h2>
+      <div class="steps">
+        <div class="step reveal"><span class="num">01</span><div class="body"><h4>Forge</h4><p>Three layers — a hardened SG2 core folded between two softer jackets — are joined under pressure and heat, giving the blade both edge retention and forgiveness.</p></div><span class="temp">1050 °C</span></div>
+        <div class="step reveal"><span class="num">02</span><div class="body"><h4>Grind</h4><p>The blank is drawn across a slow belt at a fixed angle. The convex bevel is shaped by hand, not by template, so each face curves toward the same invisible apex.</p></div><span class="temp">15°</span></div>
+        <div class="step reveal"><span class="num">03</span><div class="body"><h4>Harden</h4><p>The blade is brought to critical temperature and quenched in oil, locking the crystal structure into its hardest, most brittle state — before it is asked to be anything else.</p></div><span class="temp">1020 °C</span></div>
+        <div class="step reveal"><span class="num">04</span><div class="body"><h4>Temper</h4><p>Two cycles in a low oven trade a little hardness for toughness. The steel learns to flex without failing — the difference between a blade and a shard of glass.</p></div><span class="temp">210 °C ×2</span></div>
+        <div class="step reveal"><span class="num">05</span><div class="body"><h4>Polish</h4><p>Up to twenty-four grits, from coarse stone to mirror film. The kasumi haze is left deliberately — a fog that lets the reflection travel across the face.</p></div><span class="temp">24 grit</span></div>
+        <div class="step reveal"><span class="num">06</span><div class="body"><h4>Strop</h4><p>The final pass is drawn along leather charged with diamond paste, folding the microscopic burr away until the edge reflects a single, unbroken line.</p></div><span class="temp">0.5 µm</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="quote-sec">
+    <div class="wrap">
+      <blockquote class="reveal">"We don't sell sharpness. We sell the light that proves it."</blockquote>
+      <cite class="reveal d1">— Kenji Aoyama, Master Sharpener</cite>
+    </div>
+  </section>
+
+  <!-- SPEC -->
+  <section class="spec-sec">
+    <div class="wrap">
+      <div class="spec-grid">
+        <div>
+          <p class="eyebrow reveal">The Koketsu, measured</p>
+          <h2 class="sec-title reveal d1">A blade, <em>quantified.</em></h2>
+          <table class="spec-table reveal d2">
+            <tr><td>Core steel</td><td>SG2 powder stainless</td></tr>
+            <tr><td>Jacket</td><td>Stainless, 67 layers</td></tr>
+            <tr><td>Hardness</td><td>67 HRC</td></tr>
+            <tr><td>Edge geometry</td><td>15° single bevel</td></tr>
+            <tr><td>Blade length</td><td>210 mm</td></tr>
+            <tr><td>Weight</td><td>178 g</td></tr>
+            <tr><td>Finish</td><td>Kasumi mirror</td></tr>
+            <tr><td>Handle</td><td>Micarta, octagonal</td></tr>
+          </table>
+        </div>
+        <div class="spec-fig reveal d2">
+          <img src="https://picsum.photos/seed/knife-steel-detail-reflection/900/900" alt="Steel blade detail">
+          <div class="flare"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section class="journal-sec" id="journal">
+    <div class="wrap">
+      <p class="eyebrow reveal">From the workshop</p>
+      <h2 class="sec-title reveal d1">Notes on <em>the cut.</em></h2>
+      <div class="posts">
+        <a class="post reveal"><span class="date">Mar 2024</span><h4>Why a convex edge outlasts a flat one</h4><span class="arrow">→</span></a>
+        <a class="post reveal"><span class="date">Jan 2024</span><h4>Reading the glint: a sharpener's field guide</h4><span class="arrow">→</span></a>
+        <a class="post reveal"><span class="date">Nov 2023</span><h4>The physics of a cut that leaves no bruise</h4><span class="arrow">→</span></a>
+        <a class="post reveal"><span class="date">Sep 2023</span><h4>SG2 explained: why powder steel holds an edge</h4><span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-sec" id="reserve">
+    <div class="glint"></div>
+    <div class="wrap">
+      <h2 class="reveal">Find the edge that <em>catches your light.</em></h2>
+      <p class="reveal d1">Every Apex blade is finished to order and signed by its maker. Reserve a fitting, or watch a single knife take its final strop.</p>
+      <a href="#" class="btn reveal d2"><span>Reserve a fitting</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <span class="wordmark">APEX<b>&nbsp;STEEL</b></span>
+      <p>Kyoto, Japan. Knives for professionals who read the reflection before they trust the edge.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Collection</h5>
+      <a href="#collection">Koketsu</a><a href="#collection">Murasaki</a><a href="#collection">Hagane</a><a href="#collection">Kiri</a>
+    </div>
+    <div class="foot-col">
+      <h5>Workshop</h5>
+      <a href="#process">Process</a><a href="#edge">The Edge</a><a href="#anatomy">Anatomy</a><a href="#journal">Journal</a>
+    </div>
+    <div class="foot-col">
+      <h5>Contact</h5>
+      <a href="#">Reserve a fitting</a><a href="#">Sharpening service</a><a href="#">Trade enquiries</a><a href="#">Instagram</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2024 Apex Steel Co.</span>
+    <span>Light is the only proof of the edge</span>
+  </div>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+  <div class="lb-inner">
+    <div style="position:relative">
+      <img id="lbImg" src="" alt="">
+      <div class="lb-flare"></div>
+    </div>
+    <div class="lb-meta"><h3 id="lbName"></h3><p id="lbLen"></p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- nav scroll state ---------- */
+  var nav = document.getElementById('nav');
+  function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 40); }
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ---------- hero entrance ---------- */
+  requestAnimationFrame(function(){ document.getElementById('hero').classList.add('enter'); });
+
+  /* ---------- hero canvas: the knife edge + specular flare ---------- */
+  var canvas = document.getElementById('heroCanvas');
+  var ctx = canvas.getContext('2d');
+  var W=0,H=0,DPR=1, edgePts=[];
+  var target={x:0.5,y:0.4}, light={x:0.5,y:0.4};
+  var baseAngle = -0.34; // radians, diagonal edge
+  var scrollShift = 0;
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    buildEdge();
+  }
+  function buildEdge(){
+    edgePts = [];
+    var cx = W*0.66, cy = H*0.5;
+    var len = Math.max(W,H)*1.4;
+    var a = baseAngle + scrollShift;
+    var dx = Math.cos(a), dy = Math.sin(a);
+    var nx = -dy, ny = dx;
+    for(var i=0;i<=120;i++){
+      var t = i/120;
+      var px = cx + dx*(t-0.5)*len;
+      var py = cy + dy*(t-0.5)*len;
+      // gentle curve so the edge is a blade, not a ruler
+      var bow = Math.sin(t*Math.PI)*38;
+      edgePts.push({x:px+nx*bow, y:py+ny*bow});
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    if(!edgePts.length) return;
+    // breathing light source
+    var breath = reduce ? 0 : Math.sin(Date.now()*0.0006);
+    var lx = (light.x + breath*0.06) * W;
+    var ly = (light.y + breath*0.04) * H;
+
+    // 1. soft body glow behind the blade (metallic, subtle)
+    var g = ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,'rgba(138,138,138,0)');
+    g.addColorStop(0.5,'rgba(138,138,138,0.05)');
+    g.addColorStop(1,'rgba(224,224,224,0.02)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+
+    // 2. the edge line itself — thin, silver
+    ctx.beginPath();
+    ctx.moveTo(edgePts[0].x, edgePts[0].y);
+    for(var i=1;i<edgePts.length;i++) ctx.lineTo(edgePts[i].x, edgePts[i].y);
+    ctx.strokeStyle = 'rgba(224,224,224,0.16)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 3. find the point on the edge nearest the light -> specular flare
+    var best=-1, bestD=Infinity;
+    for(var j=0;j<edgePts.length;j++){
+      var d = (edgePts[j].x-lx)*(edgePts[j].x-lx) + (edgePts[j].y-ly)*(edgePts[j].y-ly);
+      if(d<bestD){ bestD=d; best=j; }
+    }
+    var p = edgePts[best];
+
+    // radial bloom at the glint
+    var bloom = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,180);
+    bloom.addColorStop(0,'rgba(255,255,255,0.55)');
+    bloom.addColorStop(0.18,'rgba(224,224,224,0.22)');
+    bloom.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = bloom;
+    ctx.fillRect(p.x-200,p.y-200,400,400);
+
+    // 4. the streak along the edge, brightest at the glint
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.beginPath();
+    ctx.moveTo(edgePts[0].x, edgePts[0].y);
+    for(var k=1;k<edgePts.length;k++) ctx.lineTo(edgePts[k].x, edgePts[k].y);
+    var streak = ctx.createLinearGradient(edgePts[0].x,edgePts[0].y,edgePts[edgePts.length-1].x,edgePts[edgePts.length-1].y);
+    var pos = best/(edgePts.length-1);
+    streak.addColorStop(Math.max(0,pos-0.18),'rgba(255,255,255,0)');
+    streak.addColorStop(pos,'rgba(255,255,255,0.95)');
+    streak.addColorStop(Math.min(1,pos+0.18),'rgba(255,255,255,0)');
+    ctx.strokeStyle = streak;
+    ctx.lineWidth = 1.4;
+    ctx.shadowColor = 'rgba(255,255,255,0.8)';
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+    ctx.restore();
+
+    // animate light toward target
+    light.x += (target.x-light.x)*0.08;
+    light.y += (target.y-light.y)*0.08;
+  }
+
+  function loop(){ draw(); requestAnimationFrame(loop); }
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  if(reduce){
+    // static frame: one glint, no animation loop
+    target.x=0.62; target.y=0.42; light.x=0.62; light.y=0.42;
+    draw();
+  } else {
+    // entrance sweep of the flare
+    var start = Date.now();
+    (function sweep(){
+      var t = (Date.now()-start)/1400;
+      if(t<1){ target.x = 0.15 + t*0.7; requestAnimationFrame(sweep); }
+      else { loop(); }
+    })();
+  }
+
+  /* ---------- mouse: light follows cursor ---------- */
+  var cursor = document.getElementById('cursor');
+  if(!reduce){
+    window.addEventListener('mousemove', function(e){
+      target.x = e.clientX / window.innerWidth;
+      target.y = e.clientY / window.innerHeight;
+      cursor.style.opacity = '1';
+      cursor.style.transform = 'translate('+e.clientX+'px,'+e.clientY+'px)';
+    });
+    window.addEventListener('mouseleave', function(){ cursor.style.opacity='0'; });
+
+    // hero parallax on text
+    var heroInner = document.querySelector('.hero-inner');
+    window.addEventListener('mousemove', function(e){
+      var nx = (e.clientX/window.innerWidth - 0.5);
+      var ny = (e.clientY/window.innerHeight - 0.5);
+      heroInner.style.transform = 'translate('+(nx*-14)+'px,'+(ny*-8)+'px)';
+    });
+
+    // scroll changes edge angle + flare on edge section
+    var edgeFlare = document.getElementById('edgeFlare');
+    window.addEventListener('scroll', function(){
+      var y = window.scrollY;
+      scrollShift = Math.min(y*0.0006, 0.5);
+      buildEdge();
+      var pct = Math.max(-40, Math.min(40, (y - window.innerHeight*0.5)*0.04));
+      edgeFlare.style.setProperty('--fx', pct+'%');
+    }, {passive:true});
+  }
+
+  /* ---------- anatomy hotspots ---------- */
+  var hotspots = document.querySelectorAll('.hotspot');
+  var listBtns = document.querySelectorAll('#anatomyList button');
+  function setPart(idx){
+    hotspots.forEach(function(h){ h.classList.toggle('active', h.dataset.part===idx); });
+    listBtns.forEach(function(b){ b.classList.toggle('active', b.dataset.part===idx); });
+  }
+  hotspots.forEach(function(h){ h.addEventListener('click', function(){ setPart(h.dataset.part); }); });
+  listBtns.forEach(function(b){ b.addEventListener('click', function(){ setPart(b.dataset.part); }); });
+  setPart('1');
+
+  /* ---------- lightbox ---------- */
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lbImg');
+  var lbName = document.getElementById('lbName');
+  var lbLen = document.getElementById('lbLen');
+  function openLb(name,len,img){
+    lbImg.src = 'https://picsum.photos/seed/'+img+'/1200/760';
+    lbImg.alt = name;
+    lbName.textContent = name;
+    lbLen.textContent = len;
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  }
+  function closeLb(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  document.querySelectorAll('.card').forEach(function(c){
+    c.addEventListener('click', function(){
+      openLb(c.dataset.name, c.dataset.len, c.dataset.img);
+    });
+  });
+  document.getElementById('lbClose').addEventListener('click', closeLb);
+  lb.addEventListener('click', function(e){ if(e.target===lb) closeLb(); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeLb(); });
+})();
+</script>
+</body>
+</html>

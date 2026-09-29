@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Saline Crystal Growth Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Roboto+Slab:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1e1b4b;
+    --indigo:#6366f1;
+    --liquid:#e0e7ff;
+    --paper:#eef1f8;
+    --paper-2:#e6eaf4;
+    --line:rgba(30,27,75,.14);
+    --line-strong:rgba(30,27,75,.24);
+    --mono:"Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    --slab:"Roboto Slab", Georgia, "Times New Roman", serif;
+    --accent:#4f46e5;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--slab);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 15% -10%, #ffffff 0%, rgba(255,255,255,0) 55%),
+      radial-gradient(90% 80% at 100% 110%, #f4f6fc 0%, rgba(244,246,252,0) 60%),
+      linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow:hidden;
+  }
+  /* faint engineering grid */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 92%);
+            mask-image:radial-gradient(120% 100% at 50% 40%, #000 30%, transparent 92%);
+    opacity:.5;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(130% 120% at 50% 45%, transparent 55%, rgba(30,27,75,.10) 100%);
+  }
+
+  .app{
+    position:relative;z-index:1;
+    height:100dvh;
+    display:grid;
+    grid-template-columns:1.02fr .98fr;
+    grid-template-rows:auto 1fr;
+    grid-template-areas:
+      "top    top"
+      "stage  panel";
+    gap:clamp(16px,2.4vw,40px);
+    padding:clamp(14px,2.2vw,30px) clamp(16px,3vw,44px);
+  }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{grid-area:top;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:14px}
+  .mark{width:42px;height:42px;flex:0 0 auto;filter:drop-shadow(0 6px 14px rgba(79,70,229,.28))}
+  .mark .ring{fill:none;stroke:var(--ink);stroke-width:1.4}
+  .mark .c1{fill:var(--indigo)}
+  .mark .c2{fill:var(--liquid)}
+  .mark .c3{fill:var(--ink)}
+  .wordmark{font-family:var(--slab);font-weight:700;font-size:clamp(15px,1.5vw,19px);letter-spacing:.02em;line-height:1.05}
+  .wordmark .thin{font-weight:300;color:rgba(30,27,75,.55)}
+  .topmeta{display:flex;align-items:center;gap:clamp(14px,2vw,30px);font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(30,27,75,.55)}
+  .topmeta .item{display:flex;flex-direction:column;gap:3px}
+  .topmeta .k{color:rgba(30,27,75,.4)}
+  .topmeta .v{color:var(--ink);font-weight:700}
+  .status{display:flex;align-items:center;gap:8px;font-weight:700}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:var(--indigo);box-shadow:0 0 0 0 rgba(99,102,241,.5);animation:pulse 2.4s ease-out infinite}
+  body[data-state="paused"] .status .dot{background:rgba(30,27,75,.4);animation:none}
+  body[data-state="complete"] .status .dot{background:var(--ink);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(99,102,241,.5)}70%{box-shadow:0 0 0 9px rgba(99,102,241,0)}100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}}
+
+  /* ---------- STAGE ---------- */
+  .stage{grid-area:stage;position:relative;display:flex;align-items:center;justify-content:center;min-height:0}
+  .tank{position:relative;width:min(74vh, 100%);aspect-ratio:1/1;max-width:640px}
+  canvas#c{position:absolute;inset:0;width:100%;height:100%;border-radius:6px;touch-action:none;cursor:crosshair}
+
+  .readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;z-index:3}
+  .phase{font-family:var(--mono);font-size:11px;letter-spacing:.34em;text-transform:uppercase;font-weight:700;color:var(--ink);opacity:.78;margin-bottom:6px}
+  .clock{font-family:var(--mono);font-weight:700;font-size:clamp(46px,8.4vw,104px);line-height:.9;letter-spacing:-.02em;color:var(--ink);text-shadow:0 2px 22px rgba(255,255,255,.65), 0 1px 0 rgba(255,255,255,.9)}
+  .clock .ms{font-size:.32em;opacity:.5;letter-spacing:.02em}
+  .caption{font-family:var(--slab);font-weight:300;font-size:clamp(11px,1.15vw,14px);letter-spacing:.04em;color:rgba(30,27,75,.62);margin-top:10px;max-width:22ch}
+  .hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(30,27,75,.5);display:flex;align-items:center;gap:8px;pointer-events:none;transition:opacity .5s}
+  .hint svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+
+  /* ---------- PANEL ---------- */
+  .panel{grid-area:panel;display:flex;flex-direction:column;gap:clamp(14px,1.8vw,22px);min-height:0;justify-content:center}
+  .eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:rgba(30,27,75,.45)}
+  .title{font-family:var(--slab);font-weight:300;font-size:clamp(30px,3.6vw,50px);line-height:.98;letter-spacing:-.01em}
+  .title b{font-weight:700}
+  .title .hl{color:var(--indigo)}
+  .lede{font-family:var(--slab);font-weight:300;font-size:clamp(13px,1.3vw,15.5px);line-height:1.6;color:rgba(30,27,75,.72);max-width:46ch}
+
+  .meter{display:flex;flex-direction:column;gap:8px}
+  .meter .row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(30,27,75,.55)}
+  .meter .row .pct{font-weight:700;font-size:14px;color:var(--ink);letter-spacing:0}
+  .track{height:10px;background:rgba(30,27,75,.1);border:1px solid var(--line);border-radius:2px;overflow:hidden;position:relative}
+  .fill{height:100%;width:0%;background:linear-gradient(90deg,#6366f1 0%,#4338ca 60%,#1e1b4b 100%);transition:width .12s linear;position:relative}
+  .fill::after{content:"";position:absolute;right:0;top:0;bottom:0;width:2px;background:#fff;opacity:.7}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden}
+  .stat{background:var(--paper);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+  .stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:rgba(30,27,75,.45)}
+  .stat .v{font-family:var(--mono);font-weight:700;font-size:clamp(15px,1.7vw,20px);color:var(--ink);line-height:1}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px 20px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(30,27,75,.6)}
+  .legend .li{display:flex;align-items:center;gap:8px}
+  .swatch{width:14px;height:14px;border-radius:2px;border:1px solid var(--line-strong)}
+  .sw-liquid{background:var(--liquid)}
+  .sw-front{background:var(--indigo)}
+  .sw-solid{background:var(--ink)}
+
+  .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:2px}
+  .btn{font-family:var(--slab);font-weight:500;font-size:13px;letter-spacing:.02em;border:1px solid var(--line-strong);background:#fff;color:var(--ink);padding:11px 16px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:transform .12s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease}
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(30,27,75,.14);border-color:var(--indigo)}
+  .btn:active{transform:translateY(0)}
+  .btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .btn.primary:hover{background:var(--indigo);border-color:var(--indigo)}
+  .btn.agitate{background:linear-gradient(180deg,#6366f1,#4f46e5);color:#fff;border-color:#4f46e5}
+  .btn.agitate:hover{box-shadow:0 10px 24px rgba(79,70,229,.38)}
+  .btn.agitate.armed{background:linear-gradient(180deg,#4338ca,#312e81);box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+  .btn.agitate.armed svg{animation:wig 1s ease-in-out infinite}
+  @keyframes wig{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+  .btn:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+
+  .presets{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .presets .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(30,27,75,.45);margin-right:2px}
+  .chip{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;border:1px solid var(--line-strong);background:#fff;color:rgba(30,27,75,.7);padding:7px 12px;border-radius:2px;cursor:pointer;transition:all .15s ease}
+  .chip:hover{border-color:var(--indigo);color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+
+  .footnote{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(30,27,75,.38);border-top:1px solid var(--line);padding-top:12px}
+
+  /* ---------- COMPLETE OVERLAY ---------- */
+  .flash{position:fixed;inset:0;background:#fff;z-index:40;opacity:0;pointer-events:none}
+  .flash.go{animation:flash .9s ease-out}
+  @keyframes flash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+  .seal{position:absolute;top:clamp(12px,3vw,26px);left:clamp(12px,3vw,26px);z-index:4;display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink);background:#fff;border:1px solid var(--ink);padding:8px 12px;border-radius:2px;opacity:0;transform:translateY(-6px);transition:opacity .6s ease .25s, transform .6s ease .25s;pointer-events:none}
+  .seal svg{width:15px;height:15px;stroke:var(--indigo);fill:none;stroke-width:2}
+  body[data-state="complete"] .seal{opacity:1;transform:none}
+  .seal .code{color:var(--indigo)}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    body{overflow:auto}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto auto;grid-template-areas:"top" "stage" "panel";height:auto;min-height:100dvh;align-items:start}
+    .stage{padding:6px 0}
+    .tank{width:min(94vw, 560px)}
+    .panel{gap:18px}
+    .clock{font-size:clamp(44px,15vw,74px)}
+    .topmeta{display:none}
+  }
+  @media (max-width:520px){
+    .stats{grid-template-columns:repeat(3,1fr)}
+    .stat{padding:10px}
+    .lede{display:none}
+    .controls{width:100%}
+    .btn{flex:1 1 auto;justify-content:center}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+    .status .dot{animation:none}
+  }
+</style>
+</head>
+<body data-state="running">
+  <div class="app">
+    <!-- TOP -->
+    <header class="topbar">
+      <div class="brand">
+        <svg class="mark" viewBox="0 0 44 44" aria-hidden="true">
+          <circle class="ring" cx="22" cy="22" r="20"/>
+          <polygon class="c1" points="22,7 31,22 22,37 13,22"/>
+          <polygon class="c2" points="22,14 27,22 22,30 17,22"/>
+          <polygon class="c3" points="22,19 24.5,22 22,25 19.5,22"/>
+        </svg>
+        <div class="wordmark">Saline <span class="thin">/ Crystal Growth</span></div>
+      </div>
+      <div class="topmeta">
+        <div class="item"><span class="k">Specimen</span><span class="v">NaCl · 0.9%</span></div>
+        <div class="item"><span class="k">Vessel</span><span class="v">01 · Isothermal</span></div>
+        <div class="item status"><span class="dot"></span><span id="statusText">Crystallizing</span></div>
+      </div>
+    </header>
+
+    <!-- STAGE -->
+    <main class="stage">
+      <div class="tank">
+        <canvas id="c"></canvas>
+
+        <div class="readout">
+          <div class="phase" id="phase">Ordering</div>
+          <div class="clock"><span id="mm">01</span>:<span id="ss">00</span><span class="ms" id="ms">.0</span></div>
+          <div class="caption" id="caption">Nucleation at the boundaries. The solution is settling.</div>
+        </div>
+
+        <div class="seal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+          Solidified · <span class="code" id="sealCode">NACL-0000</span>
+        </div>
+
+        <div class="hint" id="hint">
+          <svg viewBox="0 0 24 24"><path d="M12 2v6M12 16v6M2 12h6M16 12h6"/><circle cx="12" cy="12" r="3"/></svg>
+          Drag across the pool to agitate
+        </div>
+      </div>
+    </main>
+
+    <!-- PANEL -->
+    <section class="panel">
+      <div>
+        <div class="eyebrow">Time as a state change</div>
+        <h1 class="title">Liquid to <b>lattice</b>,<br>one <span class="hl">facet</span> at a time.</h1>
+      </div>
+      <p class="lede">This countdown is not a bar — it is occupation. Halite crystals nucleate at the tank's edges and grow inward, narrowing the open liquid until the whole vessel locks into a single, faceted solid.</p>
+
+      <div class="meter">
+        <div class="row"><span>Solidification</span><span class="pct" id="pct">0%</span></div>
+        <div class="track"><div class="fill" id="fill"></div></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="k">Nuclei</span><span class="v" id="nuclei">0</span></div>
+        <div class="stat"><span class="k">Fronts</span><span class="v" id="fronts">0</span></div>
+        <div class="stat"><span class="k">Entropy</span><span class="v" id="entropy">0.00</span></div>
+      </div>
+
+      <div class="legend">
+        <div class="li"><span class="swatch sw-liquid"></span>Liquid</div>
+        <div class="li"><span class="swatch sw-front"></span>Growth front</div>
+        <div class="li"><span class="swatch sw-solid"></span>Solid crystal</div>
+      </div>
+
+      <div class="presets">
+        <span class="lbl">Duration</span>
+        <button class="chip" data-sec="30">00:30</button>
+        <button class="chip on" data-sec="60">01:00</button>
+        <button class="chip" data-sec="120">02:00</button>
+      </div>
+
+      <div class="controls">
+        <button class="btn primary" id="pauseBtn"><svg id="pauseIcon" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span id="pauseLabel">Pause</span></button>
+        <button class="btn agitate" id="agitateBtn"><svg viewBox="0 0 24 24"><path d="M3 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M3 18c2-4 4-4 6 0s4 4 6 0 4-4 6 0" opacity=".55"/></svg><span>Agitate</span></button>
+        <button class="btn" id="resetBtn"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span>Reset</span></button>
+      </div>
+
+      <div class="footnote">Halite model · deterministic lattice · press A to agitate</div>
+    </section>
+  </div>
+
+  <div class="flash" id="flash"></div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- DOM refs ----
+  const el = {
+    mm:document.getElementById('mm'), ss:document.getElementById('ss'), ms:document.getElementById('ms'),
+    phase:document.getElementById('phase'), caption:document.getElementById('caption'),
+    pct:document.getElementById('pct'), fill:document.getElementById('fill'),
+    nuclei:document.getElementById('nuclei'), fronts:document.getElementById('fronts'),
+    entropy:document.getElementById('entropy'), statusText:document.getElementById('statusText'),
+    pauseBtn:document.getElementById('pauseBtn'), pauseIcon:document.getElementById('pauseIcon'),
+    pauseLabel:document.getElementById('pauseLabel'), agitateBtn:document.getElementById('agitateBtn'),
+    resetBtn:document.getElementById('resetBtn'), hint:document.getElementById('hint'),
+    flash:document.getElementById('flash'), sealCode:document.getElementById('sealCode'),
+  };
+
+  const PLAY = '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+  const PAUSEI = '<path d="M8 5l11 7-11 7z"/>';
+
+  // ---- constants ----
+  const COLS=64, ROWS=64, N=COLS*ROWS;
+  const TAU=Math.PI*2;
+  const DIRS=[[-1,0],[1,0],[0,-1],[0,1]]; // 4-neighborhood → faceted, geometric
+  const FACES=[
+    {a:0,b:1},{a:1,b:2},{a:2,b:3},{a:3,b:0},
+    {a:4,b:5},{a:5,b:6},{a:6,b:7},{a:7,b:4},
+    {a:0,b:4},{a:1,b:5},{a:2,b:6},{a:3,b:7}
+  ];
+  const V8=[[-1,-1],[1,-1],[1,1],[-1,1],[-1.4,-1.4],[1.4,-1.4],[1.4,1.4],[-1.4,1.4]];
+
+  // ---- state ----
+  let W=0,H=0,cx=0,cy=0,cell=1;
+  let liquid=null, crystals=null, growth=null, occupied=null;
+  let nucleated=null, nucleatedCount=0;
+  let frontList=[];
+  let crystalsCount=0;
+  let total=60, remaining=60, solidFrac=0;
+  let running=true, completed=false, agitateActive=false, agitatePulse=0;
+  let lastT=performance.now(), elapsed=0, settleT=0;
+  let pointer={x:0,y:0,inside:false};
+  let particles=[];
+  let ripples=[];
+  let shatterCd=0;
+  let uiAcc=0;
+  let seed=Math.floor(Math.random()*1e9);
+  let rngState=seed;
+  let lastSolid=0;
+
+  function rnd(){ rngState=(rngState*1664525+1013904223)>>>0; return rngState/4294967296; }
+
+  // ---- grid ----
+  function alloc(){
+    liquid=new Float32Array(N);
+    crystals=new Float32Array(N);
+    growth=new Uint8Array(N);
+    occupied=new Uint8Array(N);
+    nucleated=new Uint8Array(N);
+  }
+  function idx(c,r){return r*COLS+c;}
+  function isOcc(i){return occupied[i]>0;}
+
+  function initField(){
+    rngState=seed;
+    crystals.fill(0); growth.fill(0); occupied.fill(0); nucleated.fill(0); nucleatedCount=0;
+    particles.length=0; ripples.length=0; crystalsCount=0; lastSolid=0;
+    // liquid fill
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      const i=idx(c,r);
+      liquid[i]=0.5+0.5*Math.sin(c*0.34+seed*0.001)+0.35*Math.sin(r*0.27-seed*0.002);
+    }
+    // nucleation seeds along the boundary
+    const seeds=[];
+    for(let c=1;c<COLS-1;c++){ seeds.push(idx(c,0)); seeds.push(idx(c,ROWS-1)); }
+    for(let r=1;r<ROWS-1;r++){ seeds.push(idx(0,r)); seeds.push(idx(COLS-1,r)); }
+    for(const i of seeds){ if(rnd()<0.30){ crystals[i]=0.02; occupied[i]=1; crystalsCount++; nucleated[i]=1; nucleatedCount++; } }
+    // ensure corners seeded for a strong frame
+    [idx(0,0),idx(COLS-1,0),idx(0,ROWS-1),idx(COLS-1,ROWS-1)].forEach(i=>{ if(!occupied[i]){crystals[i]=0.02;occupied[i]=1;crystalsCount++;nucleated[i]=1;nucleatedCount++;} });
+    buildFront();
+  }
+
+  function buildFront(){
+    frontList=[];
+    for(let i=0;i<N;i++){ if(occupied[i]) continue;
+      let adj=false;
+      for(let d=0;d<4;d++){ const nc=(i%COLS)+DIRS[d][0], nr=((i/COLS)|0)+DIRS[d][1]; if(nc<0||nc>=COLS||nr<0||nr>=ROWS) continue; if(occupied[nr*COLS+nc]){adj=true;break;} }
+      if(adj) frontList.push(i);
+    }
+  }
+
+  // ---- geometry ----
+  function cellCenter(i){ const c=i%COLS, r=(i/COLS)|0; return {x:(c+0.5)*cell, y:(r+0.5)*cell}; }
+  function pointInDiamond(px,py,ccx,ccy,h){ return Math.abs(px-ccx)+Math.abs(py-ccy)<=h; }
+
+  function shatterAt(px,py){
+    let best=-1,bd=1e9;
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const i=idx(c,r); if(!occupied[i])continue;
+      const cc=cellCenter(i); const dx=px-cc.x, dy=py-cc.y, d=dx*dx+dy*dy; if(d<bd){bd=d;best=i;} }
+    if(best<0||bd>cell*cell*6) return;
+    const cc=cellCenter(best);
+    crystals[best]=0; occupied[best]=0; crystalsCount--;
+    const col=160+((best*2654435761)>>>0)%80;
+    for(let k=0;k<6;k++){
+      const a=Math.random()*TAU, sp=30+Math.random()*70;
+      particles.push({x:cc.x,y:cc.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-20,life:0,max:0.55+Math.random()*0.4,size:cell*(0.16+Math.random()*0.16),col});
+    }
+    ripples.push({x:px,y:py,r:cell*0.4,max:cell*5,life:0});
+  }
+
+  // ---- sim ----
+  function simulate(dt){
+    const speed=1.7;
+    let changed=false;
+    const list=frontList;
+    for(let k=list.length-1;k>=0;k--){
+      const i=list[k];
+      let occ=0, best=0;
+      for(let d=0;d<4;d++){ const nc=(i%COLS)+DIRS[d][0], nr=((i/COLS)|0)+DIRS[d][1]; if(nc<0||nc>=COLS||nr<0||nr>=ROWS) continue; const j=nr*COLS+nc; if(occupied[j]){occ++; if(crystals[j]>best)best=crystals[j];} }
+      const cc=cellCenter(i);
+      let rate=0.10+0.16*occ+0.05*(1-crystals[i]);
+      if(best>0.45) rate+=0.22;
+      rate*=speed;
+      if(agitateActive && pointer.inside){
+        const dx=pointer.x-cc.x, dy=pointer.y-cc.y, d2=dx*dx+dy*dy, rad=cell*6;
+        if(d2<rad*rad){ const f=1-Math.sqrt(d2)/rad; rate*=(1-0.95*f); }
+      }
+      rate*=(0.55+0.9*Math.random());
+      growth[i]+=rate*dt;
+      if(growth[i]>=1){
+        crystals[i]=Math.min(1, best+0.09+0.05*Math.random());
+        occupied[i]=1; crystalsCount++; growth[i]=0; changed=true;
+      }
+    }
+    if(changed) buildFront();
+    // entropy decay
+    if(agitatePulse>0) agitatePulse=Math.max(0,agitatePulse-dt*0.55);
+    // particles
+    for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.life+=dt; p.vy+=140*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; if(p.life>=p.max) particles.splice(i,1); }
+    // ripples
+    for(let i=ripples.length-1;i>=0;i--){ const rp=ripples[i]; rp.life+=dt; rp.r+=(rp.max-rp.r)*Math.min(1,dt*4)+cell*2*dt; if(rp.r>=rp.max) ripples.splice(i,1); }
+    // settle timer for nucleation phase
+    if(settleT<1) settleT=Math.min(1,settleT+dt*0.7);
+  }
+
+  // ---- render ----
+  function drawLiquid(){
+    const t=elapsed;
+    const g=ctx.createRadialGradient(cx,cy*0.85,cell, cx,cy, Math.max(W,H)*0.75);
+    g.addColorStop(0,'#f3f6ff'); g.addColorStop(0.55,'#e0e7ff'); g.addColorStop(1,'#c6d1f7');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // shimmer
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    for(let k=0;k<3;k++){
+      const sx=cx+Math.cos(t*0.5+k*2.1)*W*0.22, sy=cy+Math.sin(t*0.42+k*1.7)*H*0.2;
+      const rg=ctx.createRadialGradient(sx,sy,0,sx,sy,W*0.28);
+      rg.addColorStop(0,'rgba(255,255,255,0.30)'); rg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    }
+    ctx.restore();
+    // caustics
+    ctx.save(); ctx.globalCompositeOperation='soft-light';
+    ctx.strokeStyle='rgba(99,102,241,0.16)'; ctx.lineWidth=Math.max(1,cell*0.14);
+    const step=cell*1.6;
+    for(let y=-step;y<H+step;y+=step){
+      ctx.beginPath();
+      for(let x=-step;x<=W+step;x+=step*0.5){
+        const yy=y+Math.sin(x*0.02+t*0.8+y*0.01)*cell*0.7+Math.sin(x*0.05-t*0.5)*cell*0.4;
+        if(x<=-step) ctx.moveTo(x,yy); else ctx.lineTo(x,yy);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+    // settle ripples (entrance)
+    if(settleT<1){
+      ctx.save(); ctx.globalCompositeOperation='screen';
+      for(let k=0;k<3;k++){ const pr=(settleT+k*0.14); if(pr>1)continue; const rr=pr*Math.max(W,H)*0.6;
+        ctx.strokeStyle='rgba(255,255,255,'+(0.5*(1-pr))+')'; ctx.lineWidth=cell*0.5; ctx.beginPath(); ctx.arc(cx,cy,rr,0,TAU); ctx.stroke(); }
+      ctx.restore();
+    }
+  }
+
+  function drawCrystals(){
+    const t=elapsed, lightAng=t*0.18;
+    const lx=Math.cos(lightAng), ly=Math.sin(lightAng);
+    // soft shadow pass
+    ctx.save(); ctx.globalCompositeOperation='multiply'; ctx.globalAlpha=0.55;
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const i=idx(c,r); if(!occupied[i])continue;
+      const cc=cellCenter(i), s=cell*(0.62+0.38*crystals[i]), o=cell*0.18;
+      ctx.fillStyle='rgba(30,27,75,0.16)';
+      diamond(cc.x+o,cc.y+o,s); ctx.fill();
+    }
+    ctx.restore();
+    // main pass
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ const i=idx(c,r); if(!occupied[i])continue;
+      const cc=cellCenter(i), s=cell*(0.62+0.38*crystals[i]);
+      // body gradient (core -> edge)
+      const bg=ctx.createRadialGradient(cc.x-s*0.2,cc.y-s*0.2,0,cc.x,cc.y,s*1.3);
+      bg.addColorStop(0,'#8b8cf8'); bg.addColorStop(0.45,'#6366f1'); bg.addColorStop(1,'#1e1b4b');
+      ctx.fillStyle=bg; diamond(cc.x,cc.y,s); ctx.fill();
+      // facets
+      const hue=160+((i*2654435761)>>>0)%90;
+      for(let f=0;f<FACES.length;f++){
+        const fa=V8[FACES[f].a], fb=V8[FACES[f].b];
+        const nx=(fa[0]+fb[0])*0.5, ny=(fa[1]+fb[1])*0.5, nl=Math.hypot(nx,ny)||1;
+        const light=Math.max(0,(nx/nl)*lx+(ny/nl)*ly);
+        const lum=46+light*40+crystals[i]*8;
+        ctx.fillStyle='hsla('+hue+',68%,'+lum.toFixed(1)+'%,0.55)';
+        ctx.beginPath();
+        ctx.moveTo(cc.x+fa[0]*s*0.72,cc.y+fa[1]*s*0.72);
+        ctx.lineTo(cc.x+fb[0]*s*0.72,cc.y+fb[1]*s*0.72);
+        ctx.lineTo(cc.x,cc.y);
+        ctx.closePath(); ctx.fill();
+      }
+      // active growth front glow
+      if(crystals[i]<0.5){
+        ctx.strokeStyle='rgba(165,170,255,'+(0.5+0.4*Math.sin(t*3+i))+')'; ctx.lineWidth=Math.max(1,cell*0.12);
+        diamond(cc.x,cc.y,s); ctx.stroke();
+      }
+      // top facet highlight
+      ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=Math.max(1,cell*0.06);
+      ctx.beginPath(); ctx.moveTo(cc.x-V8[4][0]*s*0.72,cc.y-V8[4][1]*s*0.72); ctx.lineTo(cc.x+V8[5][0]*s*0.72,cc.y+V8[5][1]*s*0.72); ctx.stroke();
+    }
+    // edge frame (dense border crystal wall)
+    ctx.strokeStyle='rgba(30,27,75,0.9)'; ctx.lineWidth=cell*0.5; ctx.strokeRect(cell*0.25,cell*0.25,W-cell*0.5,H-cell*0.5);
+  }
+
+  function drawParticles(){
+    for(const p of particles){
+      const a=1-p.life/p.max;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.life*4);
+      ctx.fillStyle='hsla('+p.col+',70%,62%,'+(a*0.9)+')';
+      diamond(0,0,p.size); ctx.fill(); ctx.restore();
+    }
+  }
+  function drawRipples(){
+    ctx.save(); ctx.globalCompositeOperation='screen';
+    for(const rp of ripples){ const a=1-rp.life*1.2; if(a<=0)continue;
+      ctx.strokeStyle='rgba(255,255,255,'+(a*0.5)+')'; ctx.lineWidth=cell*0.4; ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,TAU); ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawAgitate(){
+    if(!(agitateActive&&pointer.inside)) return;
+    const rad=cell*6, t=elapsed;
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    const g=ctx.createRadialGradient(pointer.x,pointer.y,0,pointer.x,pointer.y,rad);
+    g.addColorStop(0,'rgba(199,210,254,0.35)'); g.addColorStop(1,'rgba(199,210,254,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(pointer.x,pointer.y,rad,0,TAU); ctx.fill();
+    ctx.strokeStyle='rgba(99,102,241,0.5)'; ctx.lineWidth=1.4;
+    for(let k=0;k<3;k++){ const rr=(rad*0.4)+((t*60+k*rad*0.33)%rad); ctx.globalAlpha=1-rr/rad; ctx.beginPath(); ctx.arc(pointer.x,pointer.y,rr,0,TAU); ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawGlass(){
+    // vignette + inner shadow for depth
+    const g=ctx.createRadialGradient(cx,cy,Math.min(W,H)*0.35,cx,cy,Math.max(W,H)*0.72);
+    g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(30,27,75,0.14)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    // corner ticks (engineering)
+    ctx.strokeStyle='rgba(30,27,75,0.35)'; ctx.lineWidth=1.2; const m=cell*1.2, L=cell*2.4;
+    const corners=[[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]];
+    for(const [x,y,sx,sy] of corners){ ctx.beginPath(); ctx.moveTo(x+sx*m+sx*L,y+sy*m); ctx.lineTo(x+sx*m,y+sy*m); ctx.lineTo(x+sx*m,y+sy*m+sy*L); ctx.stroke(); }
+  }
+
+  function diamond(x,y,s){
+    ctx.beginPath();
+    ctx.moveTo(x,y-s); ctx.lineTo(x+s*0.85,y-s*0.5); ctx.lineTo(x+s,y);
+    ctx.lineTo(x+s*0.85,y+s*0.5); ctx.lineTo(x,y+s); ctx.lineTo(x-s*0.85,y+s*0.5);
+    ctx.lineTo(x-s,y); ctx.lineTo(x-s*0.85,y-s*0.5); ctx.closePath();
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    drawLiquid();
+    drawCrystals();
+    drawParticles();
+    drawRipples();
+    drawAgitate();
+    drawGlass();
+  }
+
+  // ---- UI ----
+  function fmt(sec){ sec=Math.max(0,sec); const m=Math.floor(sec/60), s=Math.floor(sec%60), d=Math.floor((sec*10)%10); return {m:pad(m),s:pad(s),d}; }
+  function pad(n){ return (n<10?'0':'')+n; }
+  function phaseFor(f){
+    if(f<0.04) return {p:'Nucleation', c:'Nucleation at the boundaries. The solution is settling.'};
+    if(f<0.45) return {p:'Ordering', c:'Halite facets propagate inward. Entropy is falling.'};
+    if(f<0.85) return {p:'Consolidating', c:'The lattice thickens. Open liquid narrows toward the core.'};
+    if(f<1) return {p:'Freezing', c:'Final fronts closing. The vessel is nearly solid.'};
+    return {p:'Solidified', c:'Complete. The structure is locked — a finished object.'};
+  }
+  function updateUI(){
+    const f=fmt(remaining);
+    el.mm.textContent=f.m; el.ss.textContent=f.s; el.ms.textContent='.'+f.d;
+    const pct=Math.round(solidFrac*100);
+    el.pct.textContent=pct+'%'; el.fill.style.width=pct+'%';
+    el.nuclei.textContent=nucleatedCount; el.fronts.textContent=frontList.length;
+    el.entropy.textContent=(agitateActive?0.85+agitatePulse*0.15:Math.max(0,0.02+agitatePulse)).toFixed(2);
+    const ph=phaseFor(solidFrac); el.phase.textContent=ph.p; el.caption.textContent=ph.c;
+    if(solidFrac>0.02 && el.hint.style.opacity!=='0'){ el.hint.style.opacity='0'; }
+  }
+
+  function computeSolid(){
+    let occ=0; for(let i=0;i<N;i++) if(occupied[i]) occ++;
+    solidFrac=occ/N;
+  }
+
+  function complete(){
+    completed=true; running=false; solidFrac=1;
+    document.body.dataset.state='complete';
+    el.statusText.textContent='Solidified';
+    el.pauseLabel.textContent='Reset'; el.pauseIcon.innerHTML=PAUSEI;
+    el.flash.classList.remove('go'); void el.flash.offsetWidth; el.flash.classList.add('go');
+    el.sealCode.textContent='NACL-'+pad(Math.floor(seed%10000));
+    updateUI();
+  }
+
+  function setRunning(v){
+    if(completed) return;
+    running=v;
+    document.body.dataset.state=v?'running':'paused';
+    el.statusText.textContent=v?'Crystallizing':'Paused';
+    el.pauseLabel.textContent=v?'Pause':'Resume';
+    el.pauseIcon.innerHTML=v?PLAY:PAUSEI;
+  }
+
+  function reset(newTotal){
+    if(newTotal!=null) total=newTotal;
+    remaining=total; completed=false; settleT=0; elapsed=0;
+    seed=Math.floor(Math.random()*1e9);
+    alloc(); initField(); computeSolid();
+    document.body.dataset.state='running';
+    el.statusText.textContent='Crystallizing';
+    el.pauseLabel.textContent='Pause'; el.pauseIcon.innerHTML=PLAY;
+    el.hint.style.opacity='1';
+    el.flash.classList.remove('go');
+    updateUI();
+  }
+
+  // ---- loop ----
+  function loop(now){
+    let dt=(now-lastT)/1000; lastT=now;
+    if(dt>0.05) dt=0.05;
+    if(!reduce) elapsed+=dt; else elapsed+=dt*0.35;
+    if(running && !completed){
+      remaining-=dt;
+      simulate(dt);
+      computeSolid();
+      // shatter near pointer while agitating
+      if(agitateActive && pointer.inside){ shatterCd-=dt; if(shatterCd<=0){ shatterAt(pointer.x,pointer.y); shatterCd=0.05; } }
+      if(remaining<=0 || solidFrac>=0.999){ remaining=0; complete(); }
+    } else if(!completed){
+      // keep particles/ripples alive when paused
+      for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.life+=dt; p.vy+=140*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; if(p.life>=p.max) particles.splice(i,1); }
+      for(let i=ripples.length-1;i>=0;i--){ const rp=ripples[i]; rp.life+=dt; rp.r+=(rp.max-rp.r)*Math.min(1,dt*4); if(rp.r>=rp.max) ripples.splice(i,1); }
+      if(agitatePulse>0) agitatePulse=Math.max(0,agitatePulse-dt*0.55);
+    }
+    render();
+    uiAcc+=dt; if(uiAcc>0.06){ uiAcc=0; if(!completed) updateUI(); }
+    requestAnimationFrame(loop);
+  }
+
+  // ---- resize ----
+  function resize(){
+    const rect=canvas.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    W=rect.width; H=rect.height;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    cx=W/2; cy=H/2; cell=Math.min(W,H)/COLS;
+  }
+
+  // ---- input ----
+  function toLocal(e){ const rect=canvas.getBoundingClientRect(); return {x:(e.clientX-rect.left), y:(e.clientY-rect.top)}; }
+  function doAgitate(e){
+    if(completed) return;
+    const p=toLocal(e); pointer.x=p.x; pointer.y=p.y; pointer.inside=true;
+    if(!agitateActive){ agitateActive=true; agitateBtnArmed(true); }
+    agitatePulse=1;
+    ripples.push({x:p.x,y:p.y,r:cell*0.3,max:cell*4,life:0});
+    if(el.hint.style.opacity!=='0') el.hint.style.opacity='0';
+  }
+  function endAgitate(){ agitateActive=false; pointer.inside=false; agitateBtnArmed(false); }
+  function agitateBtnArmed(on){ el.agitateBtn.classList.toggle('armed',on); }
+
+  canvas.addEventListener('pointerdown',e=>{ e.preventDefault(); canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId); doAgitate(e); });
+  canvas.addEventListener('pointermove',e=>{ if(agitateActive||e.buttons) doAgitate(e); else { const p=toLocal(e); pointer.x=p.x; pointer.y=p.y; pointer.inside=true; } });
+  canvas.addEventListener('pointerup',endAgitate);
+  canvas.addEventListener('pointercancel',endAgitate);
+  canvas.addEventListener('pointerleave',()=>{ if(!agitateActive) pointer.inside=false; });
+
+  el.pauseBtn.addEventListener('click',()=>{ if(completed){ reset(); return; } setRunning(!running); });
+  el.resetBtn.addEventListener('click',()=>reset());
+  el.agitateBtn.addEventListener('pointerdown',e=>{ e.preventDefault(); if(completed) return; agitateActive=true; agitatePulse=1; agitateBtnArmed(true); pointer.x=cx; pointer.y=cy; pointer.inside=true;
+    const iv=setInterval(()=>{ if(!agitateActive){clearInterval(iv);return;} const a=Math.random()*TAU, rr=cell*(1+Math.random()*4); shatterAt(cx+Math.cos(a)*rr, cy+Math.sin(a)*rr); },90);
+    setTimeout(()=>{ clearInterval(iv); endAgitate(); },1400);
+  });
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Space'){ e.preventDefault(); if(completed) reset(); else setRunning(!running); }
+    else if(e.key==='r'||e.key==='R'){ reset(); }
+    else if(e.key==='a'||e.key==='A'){ if(!completed){ agitateActive=true; agitatePulse=1; agitateBtnArmed(true); setTimeout(endAgitate,1200);} }
+  });
+
+  document.querySelectorAll('.chip').forEach(ch=>{
+    ch.addEventListener('click',()=>{ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); ch.classList.add('on'); reset(parseInt(ch.dataset.sec,10)); });
+  });
+
+  window.addEventListener('resize',resize);
+
+  // ---- boot ----
+  alloc(); resize(); initField(); computeSolid(); updateUI();
+  lastT=performance.now();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

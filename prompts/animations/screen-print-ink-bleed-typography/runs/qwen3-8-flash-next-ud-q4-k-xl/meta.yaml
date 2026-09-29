@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 166153
+gen_ms: 166153
+ttft_ms: 354
+queue_wait_ms: 107
+wall_ms: 166670
+rejected_at: "2026-09-29T04:54:12.031Z"
+last_review_score: 2
+last_review_summary: "The screenshot shows the page layout and texture but completely fails to render the primary subject: the large monumental letter."
+last_reject_reason: "score_2_below_5"
+review_score: 9
+review_summary: "Excellent execution of the screen-print aesthetic, perfectly capturing the misregistration, paper texture, and monumental typography brief."
+reviewed_at: "2026-09-29T04:59:05.106Z"
+review_issues:
+  - "The cyan underlayer misregistration is very sharp and distinct; the brief requested a 'faint' underlayer, whereas this reads as a bold offset print."

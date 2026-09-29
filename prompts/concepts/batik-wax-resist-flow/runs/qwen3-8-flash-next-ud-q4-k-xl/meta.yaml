@@ -1,0 +1,25 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 368126
+gen_ms: 368126
+ttft_ms: 1808
+queue_wait_ms: 134
+wall_ms: 370127
+review_score: 8
+review_summary: "A highly functional and aesthetically pleasing implementation that perfectly captures the 'Batik' theme with a warm, earthy palette and authentic texture."
+reviewed_at: "2026-09-29T01:19:20.091Z"
+review_issues:
+  - "The 'Save Pattern' button is cut off at the bottom of the viewport, requiring scrolling to access a key feature."

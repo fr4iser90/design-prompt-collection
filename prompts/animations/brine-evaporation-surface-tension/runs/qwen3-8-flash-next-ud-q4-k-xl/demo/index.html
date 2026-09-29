@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brine Evaporation Surface Tension</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --white:#ffffff;
+    --saline:#e6f0f2;
+    --glass:#b0c4de;
+    --salt-shadow:#8899a6;
+    --deep:#4a5568;
+    --ink:#384453;
+    --ink-soft:#7c8794;
+    --hair:rgba(74,85,104,.14);
+    --hair-strong:rgba(74,85,104,.24);
+    --bg:#eef2f4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    background:var(--bg);
+    color:var(--ink);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  a{color:inherit;text-decoration:none}
+
+  /* ---------- ambient lab background ---------- */
+  .ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .ambient .glow{
+    position:absolute;inset:-15%;
+    background:
+      radial-gradient(58% 52% at 68% 16%, rgba(255,255,255,.95), rgba(255,255,255,0) 62%),
+      radial-gradient(52% 60% at 14% 88%, rgba(176,196,222,.28), rgba(255,255,255,0) 60%),
+      radial-gradient(70% 70% at 50% 45%, rgba(230,240,242,.6), rgba(238,242,244,0) 70%);
+  }
+  .ambient .grain{
+    position:absolute;inset:0;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .ambient .grid{
+    position:absolute;inset:0;opacity:.5;
+    background-image:
+      linear-gradient(rgba(74,85,104,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(74,85,104,.05) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 0%,#000 40%,transparent 92%);
+            mask-image:radial-gradient(120% 100% at 50% 0%,#000 40%,transparent 92%);
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:relative;z-index:5;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px clamp(20px,5vw,64px);
+    border-bottom:1px solid var(--hair);
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .brand{display:flex;align-items:center;gap:12px;color:var(--ink);font-weight:600;letter-spacing:.22em}
+  .brand .mark{width:22px;height:22px;flex:0 0 auto}
+  .brand .mark rect{fill:var(--deep)}
+  .nav{display:flex;gap:26px}
+  .nav a{transition:color .25s ease}
+  .nav a:hover{color:var(--ink)}
+  .live{display:flex;align-items:center;gap:9px}
+  .live .dot{width:7px;height:7px;border-radius:50%;background:var(--salt-shadow);box-shadow:0 0 0 0 rgba(136,153,166,.5);animation:pulse 2.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(136,153,166,.55)}70%{box-shadow:0 0 0 8px rgba(136,153,166,0)}100%{box-shadow:0 0 0 0 rgba(136,153,166,0)}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;z-index:2;
+    display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,4vw,60px);
+    align-items:center;
+    padding:clamp(30px,5vw,72px) clamp(20px,5vw,64px) clamp(40px,6vw,90px);
+    min-height:calc(100vh - 66px);
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:12px;
+    font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-soft);
+    margin-bottom:26px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--hair-strong)}
+  h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:500;
+    font-size:clamp(2.9rem,7.4vw,5.7rem);
+    line-height:.94;letter-spacing:-.035em;color:var(--deep);
+    text-wrap:balance;
+  }
+  h1 .thin{font-weight:300;color:var(--ink-soft)}
+  h1 em{font-style:normal;color:var(--salt-shadow)}
+  .lede{
+    margin-top:26px;max-width:44ch;
+    font-size:clamp(.92rem,1.4vw,1.02rem);line-height:1.7;color:var(--ink);
+  }
+  .lede b{font-weight:600;color:var(--deep)}
+
+  .metrics{
+    margin-top:34px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;
+    background:var(--hair);border:1px solid var(--hair);max-width:520px;
+  }
+  .metric{background:rgba(255,255,255,.55);padding:14px 16px}
+  .metric .k{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  .metric .v{font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:1.5rem;margin-top:6px;color:var(--deep);font-variant-numeric:tabular-nums}
+  .metric .v small{font-size:.72rem;color:var(--ink-soft);font-weight:400;margin-left:3px}
+
+  .controls{margin-top:30px;display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+  .btn{
+    font-family:inherit;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    padding:11px 18px;border:1px solid var(--hair-strong);background:rgba(255,255,255,.6);
+    color:var(--ink);cursor:pointer;transition:background .25s ease,border-color .25s ease,color .25s ease,transform .2s ease;
+    display:inline-flex;align-items:center;gap:9px;
+  }
+  .btn:hover{background:#fff;border-color:var(--salt-shadow);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .btn .ic{width:9px;height:9px;border-radius:2px;background:var(--salt-shadow);transition:background .25s}
+  .btn[aria-pressed="true"] .ic{background:var(--deep)}
+  .btn:focus-visible{outline:2px solid var(--glass);outline-offset:2px}
+
+  /* ---------- specimen stage ---------- */
+  .stage{position:relative}
+  .stage-inner{position:relative;width:100%;max-width:640px;margin-inline:auto}
+  .stage-inner::before{ /* soft cast shadow */
+    content:"";position:absolute;left:6%;right:6%;bottom:-26px;height:60px;
+    background:radial-gradient(50% 60% at 50% 50%,rgba(74,85,104,.16),rgba(74,85,104,0) 72%);
+    filter:blur(6px);z-index:-1;
+  }
+  .frame{position:relative;background:#fff;border:1px solid var(--hair-strong);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 24px 60px -30px rgba(74,85,104,.4)}
+  .frame canvas{display:block;width:100%;height:auto;aspect-ratio:1/1}
+
+  /* reticle */
+  .reticle{position:absolute;inset:0;pointer-events:none}
+  .reticle .corner{position:absolute;width:20px;height:20px;border:1px solid var(--hair-strong)}
+  .reticle .tl{top:10px;left:10px;border-right:0;border-bottom:0}
+  .reticle .tr{top:10px;right:10px;border-left:0;border-bottom:0}
+  .reticle .bl{bottom:10px;left:10px;border-right:0;border-top:0}
+  .reticle .br{bottom:10px;right:10px;border-left:0;border-top:0}
+  .reticle .cross{position:absolute;top:50%;left:50%;width:26px;height:26px;transform:translate(-50%,-50%);opacity:.5}
+  .reticle .cross::before,.reticle .cross::after{content:"";position:absolute;background:var(--hair-strong)}
+  .reticle .cross::before{left:50%;top:0;bottom:0;width:1px;transform:translateX(-.5px)}
+  .reticle .cross::after{top:50%;left:0;right:0;height:1px;transform:translateY(-.5px)}
+  .scale{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:var(--ink-soft)}
+  .scale .bar{width:56px;height:6px;border:1px solid var(--hair-strong);border-top:0;position:relative}
+  .scale .bar::before{content:"";position:absolute;left:50%;top:0;height:4px;width:1px;background:var(--hair-strong)}
+  .hud{position:absolute;top:14px;left:38px;font-size:9.5px;letter-spacing:.14em;color:var(--ink-soft);text-transform:uppercase}
+  .hud b{color:var(--deep);font-weight:600}
+
+  /* ---------- phase timeline ---------- */
+  .phases{
+    position:relative;z-index:2;
+    margin:0 clamp(20px,5vw,64px) clamp(40px,6vw,80px);
+    border-top:1px solid var(--hair);padding-top:26px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);
+  }
+  .phase{background:rgba(255,255,255,.5);padding:18px 20px;transition:background .4s ease}
+  .phase .no{font-size:10px;letter-spacing:.2em;color:var(--ink-soft)}
+  .phase .name{font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:1.05rem;margin-top:8px;color:var(--deep)}
+  .phase .desc{font-size:11px;line-height:1.55;color:var(--ink-soft);margin-top:8px}
+  .phase.active{background:#fff}
+  .phase.active .name{color:var(--deep)}
+  .phase .bar{height:2px;background:var(--hair);margin-top:14px;overflow:hidden}
+  .phase .bar i{display:block;height:100%;width:0;background:var(--salt-shadow)}
+  .phase.active .bar i{animation:fill 1s linear forwards}
+  @keyframes fill{from{width:0}to{width:100%}}
+
+  /* ---------- footer ---------- */
+  footer{
+    position:relative;z-index:2;
+    border-top:1px solid var(--hair);
+    padding:22px clamp(20px,5vw,64px);
+    display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;
+    font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  footer .tags{display:flex;flex-wrap:wrap;gap:8px}
+  footer .tags span{border:1px solid var(--hair);padding:5px 10px}
+
+  /* reveal */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;min-height:auto;padding-top:34px}
+    .stage{order:-1}
+    .nav{display:none}
+    .phases{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:520px){
+    .phases{grid-template-columns:1fr}
+    .metrics{grid-template-columns:1fr 1fr}
+    .hud{left:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .live .dot{animation:none}
+    .phase.active .bar i{animation:none;width:100%}
+  }
+</style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="grain"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8" opacity=".55"/>
+        <rect x="3" y="13" width="8" height="8" opacity=".55"/><rect x="13" y="13" width="8" height="8"/>
+      </svg>
+      BRINE
+    </div>
+    <nav class="nav">
+      <a href="#">Specimen</a><a href="#">Method</a><a href="#">Archive</a>
+    </nav>
+    <div class="live"><span class="dot"></span> LIVE · 1080×1080</div>
+  </header>
+
+  <main class="hero">
+    <div class="copy">
+      <span class="eyebrow reveal">Macro Study · No. 04 — NaCl / H₂O</span>
+      <h1 class="reveal">Brine<br><span class="thin">Evaporation</span><br><em>Surface Tension</em></h1>
+      <p class="lede reveal">A time-lapse of saline retreating across glass. Watch the <b>meniscus cling and stretch</b> as the water level drops — then crystalline order nucleates at the edge and branches outward in sharp, fractal bursts.</p>
+
+      <div class="metrics reveal">
+        <div class="metric"><div class="k">Salinity</div><div class="v" id="mSal">3.5<small>%</small></div></div>
+        <div class="metric"><div class="k">Relative Humidity</div><div class="v" id="mRH">42<small>%</small></div></div>
+        <div class="metric"><div class="k">Meniscus Radius</div><div class="v" id="mMen">0.42<small>mm</small></div></div>
+        <div class="metric"><div class="k">Crystals</div><div class="v" id="mCry">0</div></div>
+      </div>
+
+      <div class="controls reveal">
+        <button class="btn" id="playBtn" aria-pressed="true"><span class="ic"></span> Pause</button>
+        <button class="btn" id="reBtn">Re-run Cycle</button>
+        <button class="btn" id="speedBtn"><span class="ic"></span> Speed ×1</button>
+      </div>
+    </div>
+
+    <div class="stage reveal">
+      <div class="stage-inner">
+        <div class="frame">
+          <canvas id="cv" width="1080" height="1080" role="img" aria-label="Macro animation of saline water evaporating on glass with salt crystals nucleating and growing at the meniscus."></canvas>
+        </div>
+        <div class="reticle" aria-hidden="true">
+          <span class="corner tl"></span><span class="corner tr"></span>
+          <span class="corner bl"></span><span class="corner br"></span>
+          <span class="cross"></span>
+          <div class="hud">EDGE · <b id="hudPhase">RIPPLE</b></div>
+          <div class="scale"><span>0</span><span class="bar"></span><span>2 mm</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="phases reveal" id="phases" aria-label="Evaporation phases">
+    <div class="phase" data-i="0"><div class="no">01 / RIPPLE</div><div class="name">Liquid Chaos</div><div class="desc">A calm saline pool, surface tension holding the edge taut.</div><div class="bar"><i></i></div></div>
+    <div class="phase" data-i="1"><div class="no">02 / RECEDING</div><div class="name">Meniscus Clings</div><div class="desc">Water level drops; the edge stretches and trembles on glass.</div><div class="bar"><i></i></div></div>
+    <div class="phase" data-i="2"><div class="no">03 / NUCLEATION</div><div class="name">Order Emerges</div><div class="desc">A seed crystal forms, then bursts outward in dendritic arms.</div><div class="bar"><i></i></div></div>
+    <div class="phase" data-i="3"><div class="no">04 / CRYSTALLINE</div><div class="name">Dry &amp; Sharp</div><div class="desc">Salt stands crisp in hard light; only a thin film remains.</div><div class="bar"><i></i></div></div>
+  </section>
+
+  <footer>
+    <div>© Surface Tension Lab — Brine Archive</div>
+    <div class="tags">
+      <span>fluid-sim</span><span>saline</span><span>macro</span><span>surface-tension</span><span>crystal-nucleation</span><span>evaporation</span><span>high-key</span>
+    </div>
+  </footer>
+
+<script>
+(() => {
+  "use strict";
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- palette ----------
+  const C = {
+    white:'#ffffff', saline:'#e6f0f2', glass:'#b0c4de',
+    salt:'#d7e2e8', saltShadow:'#8899a6', deep:'#4a5568'
+  };
+
+  // ---------- canvas ----------
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const W = 1080, H = 1080;
+
+  // offscreen for water surface
+  const off = document.createElement('canvas');
+  off.width = W; off.height = H;
+  const octx = off.getContext('2d');
+
+  // ---------- deterministic rng ----------
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+  // ---------- state ----------
+  const S = {
+    running: !reduce,
+    speed: 1,
+    t: 0,
+    cycle: 0,
+    phase: 0,
+    lastTs: 0,
+    hudAcc: 0
+  };
+
+  // ---------- helpers ----------
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const smooth=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t);};
+  const easeOut=p=>1-Math.pow(1-p,3);
+  const easeIn =p=>p*p*p;
+  const easeInOut=p=>p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+
+  // ---------- cycle timing (seconds) ----------
+  const T = {
+    ripple:   {start:0,  end:3.0},
+    recede:   {start:3.0,end:6.5},
+    nucleate: {start:6.5,end:13.0},
+    dry:      {start:13.0,end:18.0},
+    reset:    18.0
+  };
+
+  // ---------- crystal seeds ----------
+  const SEEDS = [
+    {x:0.40,y:0.52,ang:-0.5,len:0.150,branches:3,depth:3,seed:11,style:'cubic',pop:0.00},
+    {x:0.60,y:0.46,ang: 0.3,len:0.120,branches:4,depth:2,seed:27,style:'dendrite',pop:0.16},
+    {x:0.50,y:0.66,ang: 1.4,len:0.110,branches:3,depth:3,seed:43,style:'cubic',pop:0.34},
+    {x:0.30,y:0.62,ang: 2.4,len:0.085,branches:4,depth:2,seed:58,style:'dendrite',pop:0.52},
+    {x:0.70,y:0.62,ang:-1.3,len:0.095,branches:3,depth:3,seed:71,style:'cubic',pop:0.68}
+  ];
+
+  // ---------- water edge (meniscus) ----------
+  function edgeY(x, t, level){
+    // gentle ripples; receding tremble
+    const amp = S.phase>=1 ? 3.2 : 1.6;
+    let y = level;
+    y += Math.sin(x*0.018 + t*0.9)*amp;
+    y += Math.sin(x*0.041 - t*1.4)*amp*0.5;
+    y += Math.sin(x*0.006 + t*0.5)*amp*0.8;
+    return y;
+  }
+
+  // ---------- draw crystal (recursive) ----------
+  function drawCrystal(cx, cy, seed, prog){
+    if(prog<=0) return;
+    const rnd = mulberry32(seed.seed);
+    const baseLen = seed.len * W * easeOut(prog);
+    const lw = clamp(baseLen*0.16, 2.2, 16);
+
+    function branch(x,y,ang,len,depth){
+      if(depth<0 || len<3) return;
+      const ex = x + Math.cos(ang)*len;
+      const ey = y + Math.sin(ang)*len;
+      // shadow (hard, offset)
+      ctx.strokeStyle = 'rgba(74,85,104,'+(0.30+0.25*(prog))+')';
+      ctx.lineWidth = lw;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(x+4,y+5); ctx.lineTo(ex+4,ey+5); ctx.stroke();
+      // body
+      ctx.strokeStyle = C.salt;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(ex,ey); ctx.stroke();
+      // bright top facet
+      ctx.strokeStyle = 'rgba(255,255,255,'+(0.55*prog)+')';
+      ctx.lineWidth = lw*0.45;
+      ctx.beginPath(); ctx.moveTo(x-0.6,y-0.8); ctx.lineTo(ex-0.6,ey-0.8); ctx.stroke();
+
+      const nb = seed.branches;
+      const spread = seed.style==='dendrite' ? 0.55 : 0.9;
+      for(let i=0;i<nb;i++){
+        const side = (i%2===0?1:-1);
+        const a = ang + side*spread*(0.6+0.5*rnd());
+        branch(ex, ey, a, len*0.62, depth-1);
+      }
+      // tip cap
+      if(depth===0){
+        ctx.fillStyle='rgba(255,255,255,'+(0.8*prog)+')';
+        ctx.beginPath();ctx.arc(ex,ey,lw*0.55,0,7);ctx.fill();
+      }
+    }
+    branch(cx, cy, seed.ang, baseLen, seed.depth);
+    // nucleation node
+    ctx.fillStyle='rgba(255,255,255,'+(0.9*prog)+')';
+    ctx.beginPath();ctx.arc(cx,cy,lw*0.9,0,7);ctx.fill();
+    ctx.strokeStyle='rgba(136,153,166,'+(0.5*prog)+')';
+    ctx.lineWidth=1.4;ctx.stroke();
+  }
+
+  // ---------- draw water surface to offscreen ----------
+  function drawWater(t){
+    octx.clearRect(0,0,W,H);
+    // base pool
+    const g = octx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#eef5f7');
+    g.addColorStop(0.5,'#e2edf1');
+    g.addColorStop(1,'#d5e3ea');
+    octx.fillStyle=g;
+    octx.fillRect(0,0,W,H);
+
+    // subtle caustic shimmer
+    octx.save();
+    octx.globalCompositeOperation='overlay';
+    for(let i=0;i<4;i++){
+      const yy = H*(0.25+i*0.18) + Math.sin(t*0.6+i)*14;
+      const cg = octx.createLinearGradient(0,yy-30,0,yy+30);
+      cg.addColorStop(0,'rgba(255,255,255,0)');
+      cg.addColorStop(0.5,'rgba(255,255,255,'+(0.22+0.05*Math.sin(t+i*2))+')');
+      cg.addColorStop(1,'rgba(255,255,255,0)');
+      octx.fillStyle=cg;
+      octx.fillRect(0,yy-30,W,60);
+    }
+    octx.restore();
+
+    // meniscus: draw the water body as a shape whose top edge is edgeY
+    octx.save();
+    octx.beginPath();
+    octx.moveTo(0,H);
+    octx.lineTo(0, edgeY(0,t, S.level));
+    for(let x=0;x<=W;x+=6){ octx.lineTo(x, edgeY(x,t,S.level)); }
+    octx.lineTo(W,H);
+    octx.closePath();
+    octx.clip();
+    // wet sheen inside water
+    const sg=octx.createRadialGradient(W*0.5,H*0.9,10,W*0.5,H*0.9,H*0.9);
+    sg.addColorStop(0,'rgba(255,255,255,.5)');
+    sg.addColorStop(1,'rgba(255,255,255,0)');
+    octx.fillStyle=sg;octx.fillRect(0,0,W,H);
+    octx.restore();
+  }
+
+  // ---------- main render ----------
+  function render(){
+    const t = S.t;
+    const p = S.phase;
+
+    // background: dry glass plate
+    ctx.clearRect(0,0,W,H);
+    const bg = ctx.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#f4f8f9');
+    bg.addColorStop(0.55,'#eaf1f3');
+    bg.addColorStop(1,'#e0eaee');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+    // faint dry-salt residue texture (revealed as water recedes)
+    const resid = smooth(4.5, 12, t);
+    if(resid>0){
+      const rr = mulberry32(90210);
+      ctx.save();
+      for(let i=0;i<260;i++){
+        const x=rr()*W, y=rr()*H;
+        if(y < S.level+20) continue; // only where dry
+        const s=rr()*2.2+0.6;
+        ctx.fillStyle='rgba(176,196,222,'+(0.18*resid*(0.4+rr()))+')';
+        ctx.fillRect(x,y,s,s);
+      }
+      ctx.restore();
+    }
+
+    // water
+    drawWater(t);
+    // composite water onto main
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.drawImage(off,0,0);
+    ctx.restore();
+
+    // meniscus highlight line (sharp, trembling)
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, edgeY(0,t,S.level));
+    for(let x=0;x<=W;x+=6) ctx.lineTo(x, edgeY(x,t,S.level));
+    ctx.strokeStyle='rgba(255,255,255,.85)';
+    ctx.lineWidth=2.4;ctx.stroke();
+    // thin shadow under edge for the "clinging" curve
+    ctx.beginPath();
+    ctx.moveTo(0, edgeY(0,t,S.level)+5);
+    for(let x=0;x<=W;x+=6) ctx.lineTo(x, edgeY(x,t,S.level)+5);
+    ctx.strokeStyle='rgba(136,153,166,.35)';
+    ctx.lineWidth=3;ctx.stroke();
+    ctx.restore();
+
+    // crystals (drawn above water; near edge they sit on the boundary)
+    const nucleateStart = T.nucleate.start;
+    const nucleateSpan = T.nucleate.end - T.nucleate.start;
+    let count=0;
+    for(const seed of SEEDS){
+      const local = (t - (nucleateStart + seed.pop*nucleateSpan)) / (nucleateSpan*0.34);
+      if(local<=0) continue;
+      const prog = clamp(local,0,1);
+      if(prog>0) count++;
+      const cx = seed.x*W, cy = clamp(edgeY(seed.x*W,t,S.level)+18, 0, H);
+      drawCrystal(cx, cy, seed, prog);
+    }
+
+    // specular sparkle only on crystals (subtle, no magic)
+    // (handled via facet highlights above)
+
+    // vignette / depth (shallow DOF feel at edges)
+    const vg = ctx.createRadialGradient(W/2,H*0.45,H*0.28,W/2,H*0.5,H*0.78);
+    vg.addColorStop(0,'rgba(255,255,255,0)');
+    vg.addColorStop(1,'rgba(74,85,104,.10)');
+    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+
+    return count;
+  }
+
+  // ---------- update ----------
+  function update(dt){
+    S.t += dt;
+    const t = S.t;
+
+    // water level: high -> low
+    const hi = H*0.62, lo = H*0.80;
+    if(t < T.recede.start) S.level = hi;
+    else if(t < T.dry.start) S.level = lerp(hi, lo, easeInOut((t-T.recede.start)/(T.dry.start-T.recede.start)));
+    else S.level = lo;
+
+    // phase index
+    let ph=0;
+    if(t>=T.nucleate.start) ph=2;
+    if(t>=T.dry.start) ph=3;
+    if(t>=T.recede.start && t<T.nucleate.start) ph=1;
+    S.phase=ph;
+
+    // cycle loop
+    if(t>=T.reset){
+      S.t=0; S.cycle++;
+    }
+
+    // HUD + metrics (throttled)
+    S.hudAcc+=dt;
+    if(S.hudAcc>0.12){
+      S.hudAcc=0;
+      const names=['RIPPLE','RECEDING','NUCLEATION','CRYSTALLINE'];
+      hudPhase.textContent=names[ph];
+      const frac = clamp((t-T.recede.start)/(T.dry.start-T.recede.start),0,1);
+      mSal.textContent = (3.5 + frac*1.4).toFixed(1);
+      mRH.textContent = Math.round(42 - frac*22);
+      mMen.textContent = (0.42 - frac*0.26).toFixed(2);
+      mCry.textContent = currentCount;
+      // active phase highlight
+      phaseEls.forEach((el,i)=>el.classList.toggle('active', i===ph));
+    }
+  }
+
+  // ---------- loop ----------
+  let currentCount=0;
+  function frame(ts){
+    if(!S.lastTs) S.lastTs=ts;
+    let dt=(ts-S.lastTs)/1000; S.lastTs=ts;
+    dt=Math.min(dt,0.05);
+    if(S.running){ update(dt*S.speed); }
+    currentCount = render();
+    if(S.running) requestAnimationFrame(frame);
+  }
+
+  // ---------- DOM refs ----------
+  const hudPhase=document.getElementById('hudPhase');
+  const mSal=document.getElementById('mSal');
+  const mRH=document.getElementById('mRH');
+  const mMen=document.getElementById('mMen');
+  const mCry=document.getElementById('mCry');
+  const phaseEls=[...document.querySelectorAll('.phase')];
+
+  // ---------- controls ----------
+  const playBtn=document.getElementById('playBtn');
+  const reBtn=document.getElementById('reBtn');
+  const speedBtn=document.getElementById('speedBtn');
+
+  function setPlay(on){
+    S.running=on;
+    playBtn.setAttribute('aria-pressed', String(on));
+    playBtn.innerHTML = '<span class="ic"></span> ' + (on?'Pause':'Play');
+    if(on){ S.lastTs=0; requestAnimationFrame(frame); }
+  }
+  playBtn.addEventListener('click',()=>setPlay(!S.running));
+  reBtn.addEventListener('click',()=>{ S.t=0; if(!S.running){render();} });
+  const speeds=[1,1.6,2.4,0.6];
+  let si=0;
+  speedBtn.addEventListener('click',()=>{ si=(si+1)%speeds.length; S.speed=speeds[si]; speedBtn.innerHTML='<span class="ic"></span> Speed ×'+speeds[si]; });
+
+  // ---------- reveal on scroll ----------
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.15});
+  document.querySelectorAll('.reveal').forEach((el,i)=>{el.style.transitionDelay=(i*70)+'ms';io.observe(el);});
+
+  // ---------- init ----------
+  // place level for first paint
+  S.level = H*0.62;
+  render();
+  if(!reduce){ setPlay(true); }
+  else {
+    // reduced motion: show a meaningful crystalline frame
+    S.t = T.dry.start + 1;
+    update(0); render();
+    hudPhase.textContent='CRYSTALLINE';
+    phaseEls.forEach((el,i)=>el.classList.toggle('active', i===3));
+    playBtn.innerHTML='<span class="ic"></span> Play';
+    playBtn.setAttribute('aria-pressed','false');
+  }
+})();
+</script>
+</body>
+</html>

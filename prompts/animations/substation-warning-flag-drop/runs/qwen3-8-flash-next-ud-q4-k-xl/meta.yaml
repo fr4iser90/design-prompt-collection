@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 453189
+gen_ms: 453189
+ttft_ms: 1413
+queue_wait_ms: 108
+wall_ms: 454781
+review_score: 8
+review_summary: "Strong atmospheric composition with excellent adherence to the 'utility' and 'safety' brief, featuring a well-rendered flag and pole."
+reviewed_at: "2026-09-29T04:25:23.720Z"
+review_issues:
+  - "Flag color is slightly lighter than the requested #FF5733 (appears closer to #FF7F50)"
+  - "Flag texture looks somewhat flat/digital rather than heavy-duty synthetic mesh"

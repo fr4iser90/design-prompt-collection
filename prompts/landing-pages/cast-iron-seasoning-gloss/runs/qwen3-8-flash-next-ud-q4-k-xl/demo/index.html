@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iron & Fire — The Seasoning Gloss</title>
+<meta name="description" content="Iron & Fire premium cast iron cookware. The ritual of the perfect seasoning — deep black, non-stick, with a subtle oily sheen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#1A1A1A;
+    --black-deep:#0F0F0F;
+    --charcoal:#333333;
+    --charcoal-soft:#262626;
+    --white:#E0E0E0;
+    --white-dim:#9A9A95;
+    --orange:#CC5500;
+    --orange-glow:#ff7a1a;
+    --display:'Oswald', sans-serif;
+    --mono:'Source Code Pro', monospace;
+    --ease:cubic-bezier(.22,.61,.36,1);
+    --pad:clamp(1.25rem,5vw,5.5rem);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--black-deep);
+    color:var(--white);
+    font-family:var(--mono);
+    font-size:15px;
+    line-height:1.7;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--orange);color:#0b0b0b}
+  a{color:inherit;text-decoration:none}
+  img{display:block;max-width:100%}
+
+  /* ---------- global grain ---------- */
+  .grain{
+    position:fixed;inset:0;z-index:900;pointer-events:none;
+    opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- nav ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:500;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:1.15rem var(--pad);
+    transition:background .5s var(--ease),padding .5s var(--ease),border-color .5s var(--ease);
+    border-bottom:1px solid transparent;
+  }
+  header.scrolled{
+    background:rgba(15,15,15,.82);
+    backdrop-filter:blur(9px);
+    -webkit-backdrop-filter:blur(9px);
+    border-bottom:1px solid #242424;
+    padding-top:.8rem;padding-bottom:.8rem;
+  }
+  .brand{
+    display:flex;align-items:baseline;gap:.55rem;
+    font-family:var(--display);font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;
+    font-size:1.15rem;
+  }
+  .brand .amp{color:var(--orange);font-weight:400}
+  .brand .mark{
+    width:11px;height:11px;border-radius:50%;
+    background:radial-gradient(circle at 32% 30%,#ff9a4d,var(--orange) 55%,#5a2400);
+    box-shadow:0 0 14px rgba(204,85,0,.55);
+    align-self:center;
+  }
+  nav.links{display:flex;gap:2rem;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--white-dim)}
+  nav.links a{position:relative;transition:color .3s}
+  nav.links a::after{content:"";position:absolute;left:0;bottom:-6px;height:1px;width:0;background:var(--orange);transition:width .35s var(--ease)}
+  nav.links a:hover{color:var(--white)}
+  nav.links a:hover::after{width:100%}
+  .nav-cta{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    padding:.6rem 1.15rem;border:1px solid #3a3a3a;color:var(--white);
+    background:transparent;cursor:pointer;transition:.35s var(--ease);
+  }
+  .nav-cta:hover{border-color:var(--orange);color:var(--orange);box-shadow:0 0 22px rgba(204,85,0,.28) inset}
+  .menu-btn{display:none}
+
+  /* ---------- hero ---------- */
+  .hero{
+    position:relative;min-height:100svh;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:var(--pad);
+    overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 50% 118%, #241c16 0%, #171717 42%, #0f0f0f 78%);
+  }
+  /* cast-iron pan surface */
+  .pan-surface{
+    position:absolute;inset:0;z-index:1;
+    background:
+      radial-gradient(140% 120% at 50% 130%, rgba(51,51,51,.55) 0%, rgba(26,26,26,0) 55%),
+      #1a1a1a;
+  }
+  .pan-surface::after{
+    content:"";position:absolute;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    opacity:.16;mix-blend-mode:overlay;
+  }
+  /* specular light that follows cursor */
+  .specular{
+    position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
+    pointer-events:none;
+    background:radial-gradient(340px circle at var(--mx,50%) var(--my,40%),
+        rgba(255,240,225,.22) 0%,
+        rgba(255,220,190,.10) 18%,
+        rgba(204,85,0,.05) 34%,
+        rgba(0,0,0,0) 60%);
+    mix-blend-mode:screen;
+    will-change:background;
+    transition:opacity .6s var(--ease);
+  }
+  /* preheat edge glow */
+  .preheat{
+    position:absolute;inset:0;z-index:2;pointer-events:none;
+    box-shadow:inset 0 0 120px 30px rgba(204,85,0,.0);
+    animation:preheat 2.4s var(--ease) forwards;
+  }
+  @keyframes preheat{
+    0%{box-shadow:inset 0 0 160px 40px rgba(204,85,0,0)}
+    45%{box-shadow:inset 0 0 160px 40px rgba(204,85,0,.42)}
+    100%{box-shadow:inset 0 0 130px 24px rgba(204,85,0,.14)}
+  }
+  .vignette{
+    position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 40%, rgba(0,0,0,0) 45%, rgba(0,0,0,.55) 100%);
+  }
+
+  .hero-inner{position:relative;z-index:4;max-width:1400px;width:100%;margin:0 auto}
+  .hero-top{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:1.5rem;flex-wrap:wrap;margin-bottom:auto;
+    padding-top:2.5rem;
+  }
+  .hero-tag{
+    font-size:.7rem;letter-spacing:.32em;text-transform:uppercase;color:var(--white-dim);
+    border-left:2px solid var(--orange);padding-left:.8rem;
+  }
+  .hero-tag b{color:var(--orange);font-weight:500}
+  .hero-coords{font-size:.66rem;letter-spacing:.18em;color:#5f5f5b;text-align:right}
+
+  .hero-headline{
+    font-family:var(--display);font-weight:700;
+    text-transform:uppercase;
+    font-size:clamp(3rem,12.5vw,11rem);
+    line-height:.86;letter-spacing:-.01em;
+    margin:.4rem 0 1.4rem;
+    text-shadow:0 2px 40px rgba(0,0,0,.6);
+  }
+  .hero-headline .line{display:block;overflow:hidden}
+  .hero-headline .line span{display:block;transform:translateY(105%);animation:rise 1s var(--ease) forwards}
+  .hero-headline .line:nth-child(2) span{animation-delay:.12s}
+  .hero-headline .line:nth-child(3) span{animation-delay:.24s}
+  .hero-headline em{font-style:normal;color:transparent;-webkit-text-stroke:1.5px var(--orange);text-stroke:1.5px var(--orange)}
+  @keyframes rise{to{transform:translateY(0)}}
+
+  .hero-bottom{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:2rem;flex-wrap:wrap;
+    border-top:1px solid #2a2a2a;padding-top:1.4rem;
+  }
+  .hero-lead{max-width:34ch;color:var(--white-dim);font-size:.92rem}
+  .hero-lead b{color:var(--white);font-weight:500}
+  .hero-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+  .btn{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;font-weight:600;
+    font-size:.9rem;padding:.95rem 1.9rem;cursor:pointer;border:1px solid var(--orange);
+    background:var(--orange);color:#120a04;transition:.4s var(--ease);position:relative;overflow:hidden;
+  }
+  .btn:hover{box-shadow:0 0 34px rgba(204,85,0,.5);transform:translateY(-2px)}
+  .btn.ghost{background:transparent;color:var(--white);border-color:#3a3a3a}
+  .btn.ghost:hover{border-color:var(--orange);color:var(--orange);box-shadow:0 0 24px rgba(204,85,0,.25)}
+  .scroll-hint{
+    position:absolute;left:50%;bottom:1.1rem;transform:translateX(-50%);z-index:4;
+    font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:#6a6a66;
+    display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  }
+  .scroll-hint .bar{width:1px;height:34px;background:linear-gradient(var(--orange),transparent);animation:drop 1.8s var(--ease) infinite}
+  @keyframes drop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  /* ---------- cast-iron divider ---------- */
+  .divider{
+    position:relative;height:56px;
+    background:
+      linear-gradient(#0d0d0d,#0d0d0d);
+    border-top:3px solid #050505;border-bottom:3px solid #2a2a2a;
+    overflow:hidden;
+  }
+  .divider::before{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle at 20% 40%,#000 0 1.4px,transparent 2px),
+      radial-gradient(circle at 62% 60%,#000 0 1.2px,transparent 2px),
+      radial-gradient(circle at 84% 30%,#000 0 1px,transparent 2px),
+      radial-gradient(circle at 40% 75%,#3a3a3a 0 1px,transparent 2px),
+      radial-gradient(circle at 12% 80%,#3a3a3a 0 1px,transparent 2px);
+    background-size:120px 56px;opacity:.8;
+  }
+  .divider::after{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,rgba(204,85,0,.5),transparent);
+    opacity:0;transition:opacity 1s var(--ease);
+  }
+  .divider.in::after{opacity:1}
+
+  /* ---------- section shell ---------- */
+  section{position:relative;padding:clamp(4rem,9vw,8rem) var(--pad)}
+  .wrap{max-width:1400px;margin:0 auto}
+  .kicker{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--orange);display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:var(--orange)}
+  .sec-title{
+    font-family:var(--display);font-weight:600;text-transform:uppercase;
+    font-size:clamp(2rem,5.4vw,4.4rem);line-height:.98;letter-spacing:-.005em;
+  }
+  .sec-title .dim{color:#5c5c58}
+  .lead{max-width:52ch;color:var(--white-dim);margin-top:1.4rem;font-size:.95rem}
+
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ---------- ritual (sticky two-column) ---------- */
+  #ritual{background:linear-gradient(#0f0f0f,#141414)}
+  .ritual-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:clamp(2rem,6vw,6rem);align-items:start}
+  .ritual-sticky{position:sticky;top:110px}
+  .ritual-note{
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:#6a6a66;
+    border:1px solid #262626;padding:1.1rem 1.2rem;margin-top:1.8rem;line-height:1.9;
+    background:#111;
+  }
+  .ritual-note b{color:var(--orange);font-weight:500}
+  .ritual-list{display:flex;flex-direction:column;gap:1px;background:#242424;border:1px solid #242424}
+  .ritual-step{
+    background:#0f0f0f;padding:2rem 1.8rem;display:grid;grid-template-columns:auto 1fr;gap:1.4rem;
+    transition:background .5s var(--ease);position:relative;
+  }
+  .ritual-step:hover{background:#161210}
+  .ritual-step .num{
+    font-family:var(--display);font-weight:700;font-size:2.6rem;line-height:1;
+    color:#2c2c2c;transition:color .5s var(--ease);
+  }
+  .ritual-step:hover .num{color:var(--orange)}
+  .ritual-step h3{font-family:var(--display);text-transform:uppercase;font-weight:500;font-size:1.4rem;letter-spacing:.02em;margin-bottom:.5rem}
+  .ritual-step p{color:var(--white-dim);font-size:.86rem}
+  .ritual-step .temp{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;color:#6a6a66;margin-top:.7rem;display:block}
+  .ritual-step .temp b{color:var(--orange);font-weight:500}
+
+  /* ---------- features (cast badges) ---------- */
+  #features{background:#0f0f0f}
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#242424;border:1px solid #242424;margin-top:3rem}
+  .badge{
+    background:#111;padding:2.4rem 1.9rem;position:relative;overflow:hidden;
+    transition:background .5s var(--ease);
+  }
+  .badge::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(120% 120% at 50% 130%, rgba(204,85,0,.16),transparent 60%);
+    opacity:0;transition:opacity .55s var(--ease);
+  }
+  .badge:hover::before{opacity:1}
+  .badge:hover{background:#171310}
+  .badge .ico{
+    width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+    border:1px solid #333;background:#0d0d0d;margin-bottom:1.6rem;
+    box-shadow:inset 0 1px 0 #2a2a2a;transition:.5s var(--ease);
+  }
+  .badge:hover .ico{border-color:var(--orange);box-shadow:inset 0 0 18px rgba(204,85,0,.4),0 0 20px rgba(204,85,0,.25)}
+  .badge .ico svg{width:24px;height:24px;stroke:var(--white-dim);fill:none;stroke-width:1.6;transition:stroke .5s var(--ease)}
+  .badge:hover .ico svg{stroke:var(--orange)}
+  .badge h3{font-family:var(--display);text-transform:uppercase;font-weight:500;font-size:1.25rem;letter-spacing:.03em;margin-bottom:.6rem}
+  .badge p{color:var(--white-dim);font-size:.84rem}
+  .badge .code{position:absolute;top:1.4rem;right:1.6rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.16em;color:#3d3d3a}
+
+  /* ---------- gallery (scattered postcards) ---------- */
+  #gallery{background:linear-gradient(#141414,#0f0f0f)}
+  .gallery-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(1rem,2.5vw,2rem);margin-top:3.2rem}
+  .card{
+    position:relative;overflow:hidden;background:#111;border:1px solid #242424;
+    transition:transform .6s var(--ease),box-shadow .6s var(--ease),border-color .6s var(--ease);
+    will-change:transform;
+  }
+  .card .kb{position:relative;overflow:hidden;aspect-ratio:4/5}
+  .card .kb img{width:100%;height:100%;object-fit:cover;filter:grayscale(.35) contrast(1.05) brightness(.82);transition:transform 1.4s var(--ease),filter .6s var(--ease)}
+  .card:hover .kb img{transform:scale(1.08);filter:grayscale(0) contrast(1.08) brightness(.95)}
+  .card .kb::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(10,10,10,.85));}
+  .card .meta{position:absolute;left:1.2rem;right:1.2rem;bottom:1.1rem;z-index:2}
+  .card .meta .cap{font-family:var(--display);text-transform:uppercase;font-weight:500;font-size:1.15rem;letter-spacing:.03em}
+  .card .meta .sub{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;color:var(--white-dim);margin-top:.3rem}
+  .card .meta .sub b{color:var(--orange);font-weight:500}
+  .c1{grid-column:1/6;transform:rotate(-1.4deg)}
+  .c2{grid-column:6/9;transform:rotate(1.2deg);margin-top:3.5rem}
+  .c3{grid-column:9/13;transform:rotate(-.6deg)}
+  .c4{grid-column:1/5;transform:rotate(1deg);margin-top:-1rem}
+  .c5{grid-column:5/10;transform:rotate(-1deg)}
+  .c6{grid-column:10/13;transform:rotate(1.4deg);margin-top:2rem}
+  .card:hover{transform:rotate(0) translateY(-6px);box-shadow:0 24px 50px rgba(0,0,0,.6);border-color:var(--orange);z-index:5}
+
+  /* ---------- specs ---------- */
+  #specs{background:#0f0f0f}
+  .specs-top{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:end}
+  .spec-table{width:100%;border-collapse:collapse;margin-top:3.4rem;font-family:var(--mono);font-size:.82rem}
+  .spec-table tr{border-bottom:1px solid #222}
+  .spec-table td{padding:1.1rem 0;vertical-align:top}
+  .spec-table td:first-child{color:#6a6a66;letter-spacing:.14em;text-transform:uppercase;font-size:.7rem;width:42%}
+  .spec-table td:last-child{color:var(--white)}
+  .spec-table td b{color:var(--orange);font-weight:500}
+  .spec-visual{position:relative;aspect-ratio:1/1;max-width:420px;justify-self:end;width:100%}
+  .spec-visual img{width:100%;height:100%;object-fit:cover;border-radius:50%;filter:grayscale(.3) brightness(.85) contrast(1.1);border:1px solid #2a2a2a}
+  .spec-visual::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 60px 10px rgba(0,0,0,.7)}
+  .spec-visual .ring{position:absolute;inset:-14px;border:1px dashed #2a2a2a;border-radius:50%;animation:spin 40s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- process / timeline ---------- */
+  #process{background:linear-gradient(#0f0f0f,#131313)}
+  .timeline{margin-top:3.4rem;position:relative;padding-left:2rem}
+  .timeline::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:linear-gradient(var(--orange),#2a2a2a 40%,#2a2a2a)}
+  .t-item{position:relative;padding:0 0 2.6rem 1.6rem}
+  .t-item::before{content:"";position:absolute;left:-2rem;top:5px;width:11px;height:11px;border-radius:50%;background:var(--black-deep);border:2px solid #3a3a3a;transition:.4s var(--ease)}
+  .t-item:hover::before{border-color:var(--orange);box-shadow:0 0 16px rgba(204,85,0,.5)}
+  .t-item .yr{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;color:var(--orange)}
+  .t-item h4{font-family:var(--display);text-transform:uppercase;font-weight:500;font-size:1.35rem;margin:.3rem 0 .4rem;letter-spacing:.02em}
+  .t-item p{color:var(--white-dim);font-size:.86rem;max-width:60ch}
+
+  /* ---------- testimonials ---------- */
+  #voices{background:#0f0f0f}
+  .quote-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:#242424;border:1px solid #242424;margin-top:3rem}
+  .quote{background:#111;padding:2.4rem 2.2rem;transition:background .5s var(--ease)}
+  .quote:hover{background:#161210}
+  .quote .mark{font-family:var(--display);font-size:3rem;line-height:.5;color:var(--orange);opacity:.6}
+  .quote p{font-size:1rem;color:var(--white);margin:.6rem 0 1.4rem;line-height:1.75}
+  .quote .who{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;color:#6a6a66;text-transform:uppercase}
+  .quote .who b{color:var(--orange);font-weight:500}
+
+  /* ---------- final CTA ---------- */
+  #cta{
+    background:radial-gradient(120% 130% at 50% 120%, #2a1a10 0%, #141414 45%, #0f0f0f 80%);
+    text-align:center;position:relative;overflow:hidden;
+  }
+  #cta .preheat{animation:none;box-shadow:inset 0 0 160px 40px rgba(204,85,0,.16)}
+  #cta .sec-title{font-size:clamp(2.4rem,8vw,7rem);line-height:.9}
+  #cta .lead{margin:1.6rem auto 2.4rem;text-align:center}
+  .cta-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:3}
+  .cta-fine{margin-top:1.6rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.18em;color:#5f5f5b;text-transform:uppercase}
+
+  /* ---------- footer ---------- */
+  footer{background:#0b0b0b;padding:clamp(3rem,6vw,5rem) var(--pad) 2rem;border-top:1px solid #1c1c1c}
+  .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;max-width:1400px;margin:0 auto}
+  .foot-brand .brand{font-size:1.6rem;margin-bottom:1rem}
+  .foot-brand p{color:var(--white-dim);font-size:.82rem;max-width:34ch}
+  .foot-col h5{font-family:var(--display);text-transform:uppercase;font-weight:500;font-size:.85rem;letter-spacing:.14em;margin-bottom:1.2rem;color:var(--white)}
+  .foot-col a{display:block;color:var(--white-dim);font-size:.8rem;padding:.35rem 0;transition:color .3s,padding-left .3s}
+  .foot-col a:hover{color:var(--orange);padding-left:.4rem}
+  .foot-bottom{max-width:1400px;margin:3rem auto 0;padding-top:1.6rem;border-top:1px solid #1c1c1c;display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;color:#5f5f5b;text-transform:uppercase}
+  .foot-bottom b{color:var(--orange);font-weight:500}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:960px){
+    nav.links{display:none}
+    .ritual-grid{grid-template-columns:1fr;gap:2.5rem}
+    .ritual-sticky{position:static}
+    .feat-grid{grid-template-columns:1fr 1fr}
+    .quote-grid{grid-template-columns:1fr}
+    .specs-top{grid-template-columns:1fr}
+    .spec-visual{justify-self:start;max-width:300px}
+    .foot-grid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:640px){
+    .gallery-grid{grid-template-columns:1fr 1fr}
+    .c1,.c2,.c3,.c4,.c5,.c6{grid-column:auto;transform:none;margin-top:0}
+    .feat-grid{grid-template-columns:1fr}
+    .foot-grid{grid-template-columns:1fr}
+    .hero-bottom{flex-direction:column;align-items:flex-start}
+    .hero-coords{display:none}
+    .btn{width:100%;text-align:center}
+    .hero-actions{width:100%}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .reveal{opacity:1;transform:none}
+    .hero-headline .line span{transform:none}
+    .card{transform:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header id="hdr">
+  <a href="#top" class="brand"><span class="mark"></span>Iron <span class="amp">&amp;</span> Fire</a>
+  <nav class="links">
+    <a href="#ritual">The Ritual</a>
+    <a href="#features">Craft</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#specs">Specs</a>
+    <a href="#process">Heritage</a>
+  </nav>
+  <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView()">Reserve a Pan</button>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="pan-surface" aria-hidden="true"></div>
+  <div class="specular" id="spec" aria-hidden="true"></div>
+  <div class="preheat" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div class="hero-tag">Cast Iron Cookware<br><b>Seasoned to a Mirror Black</b></div>
+      <div class="hero-coords">41.8781° N — 87.6298° W<br>FOUNDED 1974 · CHICAGO FOUNDRY</div>
+    </div>
+
+    <h1 class="hero-headline">
+      <span class="line"><span>The Gloss</span></span>
+      <span class="line"><span>of a <em>Well-</em></span></span>
+      <span class="line"><span>Seasoned Pan</span></span>
+    </h1>
+
+    <div class="hero-bottom">
+      <p class="hero-lead"><b>Iron &amp; Fire</b> builds cookware for the long game — sand-cast, hand-finished, and pre-seasoned in flaxseed oil until the surface takes a deep, oily sheen that only gets better with heat.</p>
+      <div class="hero-actions">
+        <button class="btn" onclick="document.getElementById('cta').scrollIntoView()">Reserve a Pan</button>
+        <button class="btn ghost" onclick="document.getElementById('ritual').scrollIntoView()">Watch the Ritual</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint"><span>Move the Light</span><span class="bar"></span></div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ RITUAL ============ -->
+<section id="ritual">
+  <div class="wrap ritual-grid">
+    <div class="ritual-sticky reveal">
+      <div class="kicker">The Ritual</div>
+      <h2 class="sec-title">Seasoning is<br><span class="dim">not a coating.</span><br>It's chemistry.</h2>
+      <p class="lead">Every Iron &amp; Fire pan leaves the foundry with a polymerised base coat — but the true gloss is built by you, layer by layer, in your own kitchen. Heat, oil, and time fuse into a hard, slick, naturally non-stick surface.</p>
+      <div class="ritual-note">
+        <b>FOUNDRY NOTE —</b><br>
+        Our base coat is baked at <b>480°F</b> in flaxseed oil for six hours. It arrives ready. What follows is yours.
+      </div>
+    </div>
+
+    <div class="ritual-list reveal">
+      <div class="ritual-step">
+        <div class="num">01</div>
+        <div>
+          <h3>Strip &amp; Clean</h3>
+          <p>Begin with bare, dry iron. A single drop of neutral oil, buffed until the surface looks almost dry — the sheen you can't quite see is the one that works.</p>
+          <span class="temp">STATE · <b>BARE IRON</b> · ROOM TEMP</span>
+        </div>
+      </div>
+      <div class="ritual-step">
+        <div class="num">02</div>
+        <div>
+          <h3>Heat to Smoke</h3>
+          <p>Bring the pan past its oil's smoke point. This is the moment the oil breaks down and begins to cross-link — the pan will whisper before it sings.</p>
+          <span class="temp">TARGET · <b>450–500°F</b> · UNTIL SMOKING</span>
+        </div>
+      </div>
+      <div class="ritual-step">
+        <div class="num">03</div>
+        <div>
+          <h3>Flip &amp; Repeat</h3>
+          <p>Let it cool, wipe, and go again. Five passes. Each layer darkens the surface and pushes the gloss from matte charcoal toward a true, oily black.</p>
+          <span class="temp">PASSES · <b>×5</b> · ~20 MIN EACH</span>
+        </div>
+      </div>
+      <div class="ritual-step">
+        <div class="num">04</div>
+        <div>
+          <h3>Cook Through</h3>
+          <p>The real seasoning is a life of searing. Fats, sugars, and Maillard crusts feed the surface. An old Iron &amp; Fire pan holds light like a dark mirror.</p>
+          <span class="temp">GOAL · <b>MIRROR BLACK</b> · LIFETIME</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ FEATURES ============ -->
+<section id="features">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">The Craft</div>
+      <h2 class="sec-title">Built like it<br><span class="dim">outlives you.</span></h2>
+      <p class="lead">Six decisions made in the foundry that turn a slab of iron into a piece you'll hand down.</p>
+    </div>
+
+    <div class="feat-grid reveal">
+      <div class="badge">
+        <span class="code">SPEC / 01</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg></div>
+        <h3>Sand-Cast Body</h3>
+        <p>Poured into green-sand moulds, not stamped. The grain is irregular, heavy, and unmistakably real under the hand.</p>
+      </div>
+      <div class="badge">
+        <span class="code">SPEC / 02</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12a4 4 0 018 0"/></svg></div>
+        <h3>Flaxseed Base Coat</h3>
+        <p>Pre-seasoned at 480°F in cold-pressed flaxseed oil — a polymerised foundation that arrives slick and ready to cook.</p>
+      </div>
+      <div class="badge">
+        <span class="code">SPEC / 03</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3c4 4 6 7 6 11a6 6 0 01-12 0c0-4 2-7 6-11z"/></svg></div>
+        <h3>Even Heat Retention</h3>
+        <p>Thick walls hold temperature like memory. Sear a steak edge-to-edge and the pan barely notices the cold meat.</p>
+      </div>
+      <div class="badge">
+        <span class="code">SPEC / 04</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 7h16M6 7v12h12V7M9 4h6"/></svg></div>
+        <h3>Stove, Oven, Fire</h3>
+        <p>Induction to open flame, 300°F to 900°F. One pan crosses every heat source without a second thought.</p>
+      </div>
+      <div class="badge">
+        <span class="code">SPEC / 05</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 6 1-4.5 4 1 6-5.5-3-5.5 3 1-6L3 9l6-1z"/></svg></div>
+        <h3>Cast-Found Finish</h3>
+        <p>Smoothed, not polished. A tactile, slightly pebbled surface that grips seasoning and releases food when it's hot enough.</p>
+      </div>
+      <div class="badge">
+        <span class="code">SPEC / 06</span>
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22c5-3 8-7 8-12a8 8 0 00-16 0c0 5 3 9 8 12z"/><circle cx="12" cy="10" r="2"/></svg></div>
+        <h3>Lifetime Guarantee</h3>
+        <p>Re-seasoned free, forever. Cracks, warps, rust — bring it back to the foundry and we'll make it right.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ GALLERY ============ -->
+<section id="gallery">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Field Notes</div>
+      <h2 class="sec-title">Light on<br><span class="dim">the surface.</span></h2>
+      <p class="lead">Photographed in the foundry and on the burner. The gloss only appears when the pan is hot — so we waited for the light.</p>
+    </div>
+
+    <div class="gallery-grid">
+      <figure class="card c1 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/cast-iron-sear/700/875" alt="Cast iron pan searing"></div>
+        <figcaption class="meta"><div class="cap">The First Sear</div><div class="sub">SKILLET Nº.1 · <b>500°F</b></div></figcaption>
+      </figure>
+      <figure class="card c2 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/iron-pour-foundry/520/650" alt="Molten iron pour"></div>
+        <figcaption class="meta"><div class="cap">The Pour</div><div class="sub">FOUNDRY · <b>2,800°F</b></div></figcaption>
+      </figure>
+      <figure class="card c3 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/seasoning-oil-gloss/620/775" alt="Seasoning oil sheen"></div>
+        <figcaption class="meta"><div class="cap">Mirror Black</div><div class="sub">PASS Nº.5 · <b>FLAXSEED</b></div></figcaption>
+      </figure>
+      <figure class="card c4 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/open-flame-skillet/620/775" alt="Pan over open flame"></div>
+        <figcaption class="meta"><div class="cap">Over Fire</div><div class="sub">CAMP · <b>OPEN FLAME</b></div></figcaption>
+      </figure>
+      <figure class="card c5 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/cast-iron-detail-grain/800/620" alt="Cast iron grain detail"></div>
+        <figcaption class="meta"><div class="cap">The Grain</div><div class="sub">MACRO · <b>SAND-CAST</b></div></figcaption>
+      </figure>
+      <figure class="card c6 reveal">
+        <div class="kb"><img src="https://picsum.photos/seed/handling-hot-pan/520/650" alt="Hand lifting hot pan"></div>
+        <figcaption class="meta"><div class="cap">The Grip</div><div class="sub">HAND-FINISHED</div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ SPECS ============ -->
+<section id="specs">
+  <div class="wrap">
+    <div class="specs-top">
+      <div class="reveal">
+        <div class="kicker">The Number</div>
+        <h2 class="sec-title">Skillet<br><span class="dim">Nº. 1 — 10.5"</span></h2>
+        <p class="lead">The workhorse. Sand-cast, 4.2 lbs of iron, seasoned to a deep mirror black before it ever meets your stove.</p>
+      </div>
+      <div class="spec-visual reveal">
+        <div class="ring"></div>
+        <img src="https://picsum.photos/seed/iron-skillet-topdown/500/500" alt="Top down view of cast iron skillet">
+      </div>
+    </div>
+
+    <table class="spec-table reveal">
+      <tr><td>Cast Method</td><td>Green-sand mould · hand-deburred</td></tr>
+      <tr><td>Total Weight</td><td><b>4.2 lbs</b> (1.9 kg) with handle</td></tr>
+      <tr><td>Cooking Surface</td><td>10.5 in / 266 mm</td></tr>
+      <tr><td>Wall Thickness</td><td>4.5 mm uniform</td></tr>
+      <tr><td>Base Seasoning</td><td>Flaxseed oil · <b>480°F</b> · 6 hr polymerised</td></tr>
+      <tr><td>Heat Range</td><td>Induction · Gas · Electric · Oven <b>900°F</b> · Open flame</td></tr>
+      <tr><td>Finish</td><td>Cast-smooth, pebbled grain</td></tr>
+      <tr><td>Warranty</td><td>Lifetime · free re-seasoning forever</td></tr>
+    </table>
+  </div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ PROCESS / HERITAGE ============ -->
+<section id="process">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Heritage</div>
+      <h2 class="sec-title">Fifty years<br><span class="dim">in the same fire.</span></h2>
+      <p class="lead">Iron &amp; Fire has poured from one foundry since 1974. The furnace never really went cold.</p>
+    </div>
+
+    <div class="timeline reveal">
+      <div class="t-item">
+        <div class="yr">1974</div>
+        <h4>The First Pour</h4>
+        <p>Three brothers open a sand-casting shop on Chicago's South Side, making skillets for a single neighbourhood diner.</p>
+      </div>
+      <div class="t-item">
+        <div class="yr">1989</div>
+        <h4>The Flaxseed Standard</h4>
+        <p>We abandon synthetic coatings for good, committing to a single flaxseed base coat baked at 480°F — the standard still in use today.</p>
+      </div>
+      <div class="t-item">
+        <div class="yr">2003</div>
+        <h4>The Lifetime Re-Seasoning</h4>
+        <p>Every pan can return to the foundry for free re-seasoning, forever. It's the cheapest guarantee we can offer and the one we stand behind.</p>
+      </div>
+      <div class="t-item">
+        <div class="yr">2019</div>
+        <h4>The Mirror Black</h4>
+        <p>A reworked finishing line pushes the base coat to a true oily gloss — the surface you see in the hero above.</p>
+      </div>
+      <div class="t-item">
+        <div class="yr">2024</div>
+        <h4>Still Hot</h4>
+        <p>Fifty years on, the same furnace, the same sand, the same promise: a pan that gets better the longer you cook on it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" data-div></div>
+
+<!-- ============ VOICES ============ -->
+<section id="voices">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">From the Kitchen</div>
+      <h2 class="sec-title">People who<br><span class="dim">cook loud.</span></h2>
+    </div>
+
+    <div class="quote-grid reveal">
+      <div class="quote">
+        <div class="mark">"</div>
+        <p>The gloss on this thing is unreal. An egg slides across it like it's on ice, and it's been two years of daily abuse. This is the pan my grandmother would've recognised.</p>
+        <div class="who">Marisol Vega · <b>Line Cook, 14 yrs</b></div>
+      </div>
+      <div class="quote">
+        <div class="mark">"</div>
+        <p>I bought one for the sear and kept it for the heirloom. The base seasoning is so good you barely notice you're building on it — then one day it's just perfect.</p>
+        <div class="who">Daniel Okafor · <b>Home Chef</b></div>
+      </div>
+      <div class="quote">
+        <div class="mark">"</div>
+        <p>It holds heat like a grudge. Cornbread, smash burgers, cast-iron apple pie — nothing else in the kitchen behaves the same way. Heavy in the best sense.</p>
+        <div class="who">Priya Raman · <b>Food Writer</b></div>
+      </div>
+      <div class="quote">
+        <div class="mark">"</div>
+        <p>They re-seasoned mine for free after I let it rust through a winter. Sent it back, got it back mirror-black. That's not customer service, that's craft pride.</p>
+        <div class="who">Tom Beckett · <b>Restaurateur</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section id="cta">
+  <div class="preheat" aria-hidden="true"></div>
+  <div class="wrap reveal">
+    <div class="kicker" style="justify-content:center">Ready the Fire</div>
+    <h2 class="sec-title">Build your<br>own <em style="font-style:normal;color:var(--orange)">gloss.</em></h2>
+    <p class="lead">Reserve a Skillet Nº.1 from the current pour. Ships pre-seasoned, ready for your first sear — and guaranteed for the rest of your life.</p>
+    <div class="cta-actions">
+      <button class="btn">Reserve a Pan — $189</button>
+      <button class="btn ghost">Read the Seasoning Guide</button>
+    </div>
+    <div class="cta-fine">Free re-seasoning forever · 100-night trial · Ships from the Chicago foundry</div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <div class="brand"><span class="mark"></span>Iron <span class="amp">&amp;</span> Fire</div>
+      <p>Sand-cast cast iron cookware, seasoned to a mirror black. Poured in Chicago since 1974.</p>
+    </div>
+    <div class="foot-col">
+      <h5>Product</h5>
+      <a href="#specs">Skillet Nº.1</a>
+      <a href="#features">The Craft</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#cta">Reserve</a>
+    </div>
+    <div class="foot-col">
+      <h5>Care</h5>
+      <a href="#ritual">Seasoning Guide</a>
+      <a href="#process">Re-Seasoning</a>
+      <a href="#specs">Spec Sheet</a>
+      <a href="#voices">Reviews</a>
+    </div>
+    <div class="foot-col">
+      <h5>Foundry</h5>
+      <a href="#process">Heritage</a>
+      <a href="#top">Visit the Shop</a>
+      <a href="#cta">Warranty</a>
+      <a href="#top">Contact</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span>© 2024 Iron &amp; Fire Foundry Co. — All heat reserved.</span>
+    <span>41.8781° N — 87.6298° W · <b>FOUNDED 1974</b></span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- specular light follows pointer (transform-free, bg position) ---- */
+  var spec = document.getElementById('spec');
+  var hero = document.getElementById('top');
+  if (spec && hero && !reduce){
+    var tx=50, ty=40, cx=50, cy=40, raf=null;
+    function loop(){
+      cx += (tx-cx)*0.12;
+      cy += (ty-cy)*0.12;
+      spec.style.setProperty('--mx', cx.toFixed(2)+'%');
+      spec.style.setProperty('--my', cy.toFixed(2)+'%');
+      if(Math.abs(tx-cx)>0.1 || Math.abs(ty-cy)>0.1){ raf=requestAnimationFrame(loop); }
+      else { raf=null; }
+    }
+    function set(x,y){
+      var r = hero.getBoundingClientRect();
+      tx = ((x-r.left)/r.width)*100;
+      ty = ((y-r.top)/r.height)*100;
+      if(!raf) raf=requestAnimationFrame(loop);
+    }
+    hero.addEventListener('pointermove', function(e){ set(e.clientX, e.clientY); });
+    hero.addEventListener('pointerleave', function(){ tx=50; ty=40; if(!raf) raf=requestAnimationFrame(loop); });
+    /* touch support */
+    hero.addEventListener('touchmove', function(e){ if(e.touches[0]) set(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  }
+
+  /* ---- header scroll state ---- */
+  var hdr = document.getElementById('hdr');
+  function onScroll(){
+    if(window.scrollY > 40) hdr.classList.add('scrolled');
+    else hdr.classList.remove('scrolled');
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---- reveal on scroll ---- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal, [data-div]').forEach(function(el){ io.observe(el); });
+
+  /* ---- gentle parallax on scattered cards (subtle, transform only) ---- */
+  if(!reduce){
+    var cards = document.querySelectorAll('.card');
+    var ticking=false;
+    function parallax(){
+      var vh = window.innerHeight;
+      cards.forEach(function(c){
+        var r = c.getBoundingClientRect();
+        var mid = (r.top + r.height/2 - vh/2)/vh; // -1..1
+        var base = parseFloat(c.dataset.base || 0);
+        if(c.dataset.base===undefined){
+          var m = (c.style.transform.match(/rotate\(([-\d.]+)deg\)/));
+          c.dataset.base = m ? parseFloat(m[1]) : 0;
+        }
+        var shift = mid * 18;
+        c.style.transform = 'translateY('+shift.toFixed(1)+'px) rotate('+c.dataset.base+'deg)';
+      });
+      ticking=false;
+    }
+    window.addEventListener('scroll', function(){
+      if(!ticking){ requestAnimationFrame(parallax); ticking=true; }
+    }, {passive:true});
+    parallax();
+  }
+})();
+</script>
+</body>
+</html>

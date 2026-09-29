@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger Line Justification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f4f0;
+    --ink:#1a1a1a;
+    --ink-soft:rgba(26,26,26,.55);
+    --ink-faint:rgba(26,26,26,.34);
+    --guide:#8c92a3;
+    --guide-soft:rgba(140,146,163,.30);
+    --guide-faint:rgba(140,146,163,.14);
+    --flash:#e8e9eb;
+    --ease:cubic-bezier(.25,1,.5,1);
+    --mono:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+    --serif:'IBM Plex Serif',Georgia,'Times New Roman',serif;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* ---------- atmospheric paper ---------- */
+  .paper{
+    position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(120% 90% at 30% 0%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+      radial-gradient(120% 120% at 85% 100%, rgba(140,146,163,.10), rgba(140,146,163,0) 60%),
+      var(--paper);
+  }
+  .grain{
+    position:fixed;inset:-60%;z-index:-1;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.5;mix-blend-mode:multiply;
+    animation:drift 46s linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translate(0,0);}
+    50%{transform:translate(-16px,12px);}
+    100%{transform:translate(0,0);}
+  }
+
+  /* ---------- layout ---------- */
+  .frame{
+    max-width:1120px;margin:0 auto;
+    padding:clamp(28px,5vw,72px) clamp(20px,5vw,64px) 56px;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    gap:24px;flex-wrap:wrap;
+    border-bottom:1px solid var(--guide-soft);
+    padding-bottom:clamp(18px,3vw,30px);
+  }
+  .brand{
+    font-family:var(--mono);
+    font-weight:600;
+    font-size:clamp(2rem,5.4vw,3.5rem);
+    letter-spacing:-.02em;
+    line-height:.92;
+    color:var(--ink);
+    text-transform:uppercase;
+  }
+  .brand .sub{
+    display:block;
+    font-family:var(--serif);
+    font-weight:400;
+    font-style:italic;
+    font-size:clamp(.95rem,2vw,1.15rem);
+    letter-spacing:.01em;
+    color:var(--ink-soft);
+    text-transform:none;
+    margin-top:.35em;
+  }
+  .meta{
+    font-family:var(--mono);
+    font-size:.68rem;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    text-align:right;
+    line-height:1.9;
+  }
+  .meta .k{color:var(--guide);}
+
+  /* ---------- ledger ---------- */
+  .ledger{
+    flex:1;
+    margin-top:clamp(30px,5vw,58px);
+    position:relative;
+    --col:clamp(300px,58vw,620px);
+    width:min(100%,var(--col));
+  }
+  .ledger-head{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-faint);
+    padding-left:clamp(30px,7vw,54px);
+    margin-bottom:14px;
+  }
+
+  .rule{
+    position:absolute;left:clamp(30px,7vw,54px);right:0;height:0;
+    border-top:1px dashed var(--guide-soft);
+    top:var(--y);
+    opacity:0;
+    transition:opacity .5s var(--ease);
+  }
+  .rule.active{opacity:.85;}
+
+  .line{
+    position:relative;
+    padding-left:clamp(30px,7vw,54px);
+    min-height:1.5em;
+    cursor:default;
+    isolation:isolate;
+  }
+  .line::before{ /* hover flash */
+    content:"";position:absolute;left:0;right:0;top:-2px;bottom:-2px;z-index:-1;
+    background:var(--flash);opacity:0;transition:opacity .3s var(--ease);
+  }
+  .line:hover::before{opacity:.7;}
+
+  .idx{
+    position:absolute;left:0;top:0;line-height:1.5;
+    font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;
+    color:var(--guide);opacity:0;transform:translateX(-4px);
+    transition:opacity .3s var(--ease),transform .3s var(--ease);
+    user-select:none;
+  }
+  .line:hover .idx{opacity:1;transform:translateX(0);}
+
+  .content{
+    display:block;
+    font-family:var(--mono);
+    font-size:clamp(.82rem,2.4vw,1rem);
+    font-weight:500;
+    line-height:1.5;
+    white-space:nowrap;
+    color:var(--ink);
+    transform-origin:left center;
+    transform:scaleX(var(--s,1));
+    transition:transform .6s var(--ease);
+  }
+  .content .w{
+    display:inline-block;
+    transform:translateX(var(--x,0));
+    transition:transform .6s var(--ease);
+  }
+  .content .sp{
+    display:inline-block;
+    transform:scaleX(var(--k,1));
+    transform-origin:left center;
+    transition:transform .6s var(--ease);
+  }
+
+  /* entrance */
+  .line{
+    opacity:0;
+    transform:translateX(-26px);
+    transition:opacity .5s var(--ease),transform .5s var(--ease);
+    transition-delay:var(--d,0ms);
+  }
+  .line.in{opacity:1;transform:translateX(0);}
+
+  /* ---------- footer ---------- */
+  .foot{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+    margin-top:clamp(26px,4vw,46px);
+    border-top:1px solid var(--guide-soft);
+    padding-top:18px;
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-soft);
+  }
+  .legend{display:flex;gap:22px;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:8px;}
+  .swatch{width:22px;height:0;border-top:1px dashed var(--guide);display:inline-block;}
+  .swatch.solid{border-top:1px solid var(--ink);}
+
+  .btn{
+    font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;border:1px solid var(--guide);color:var(--ink);
+    padding:9px 16px;cursor:pointer;transition:background .25s var(--ease),color .25s var(--ease);
+  }
+  .btn:hover{background:var(--ink);color:var(--paper);}
+  .btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    .grain{animation:none;}
+    .line{opacity:1 !important;transform:none !important;transition:none !important;}
+    .content,.content .w,.content .sp{transition:none !important;}
+    .rule{transition:none;}
+    .idx{transition:none;}
+  }
+
+  @media (max-width:640px){
+    .ledger{width:100%;}
+    .meta{text-align:left;}
+    .masthead{align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+  <div class="paper" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <main class="frame">
+    <header class="masthead">
+      <div class="brand">Ledger
+        <span class="sub">Line Justification — an archival alignment study</span>
+      </div>
+      <div class="meta">
+        <div><span class="k">Folio</span> 04 · Recto</div>
+        <div><span class="k">Plate</span> 12 / 30</div>
+        <div><span class="k">Light</span> North · Diffuse</div>
+      </div>
+    </header>
+
+    <section class="ledger" id="ledger" aria-label="Ledger column">
+      <div class="ledger-head">
+        <span>Index</span>
+        <span>Margin &mdash; justified right</span>
+      </div>
+      <div id="lines"></div>
+    </section>
+
+    <footer class="foot">
+      <div class="legend">
+        <span><i class="swatch"></i> Alignment guide</span>
+        <span><i class="swatch solid"></i> Ink line</span>
+      </div>
+      <button class="btn" id="replay" type="button">Re-align &nbsp;↺</button>
+    </footer>
+  </main>
+
+<script>
+(function(){
+  const TEXTS = [
+    "The morning light arrives without shadow, and every mark it touches becomes a fact.",
+    "We record what is true, and we set it straight against the margin, line by patient line.",
+    "No flourish survives here; only the plain sentence, measured, counted, and filed.",
+    "Each word holds its place, and the space between them breathes to an even measure.",
+    "The ledger asks nothing of the hand but steadiness, and gives back clarity in return.",
+    "What was scattered at first settles, at last, into a column of quiet and exact order."
+  ];
+
+  const container = document.getElementById('lines');
+  const ledger = document.getElementById('ledger');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const lines = [];
+
+  // build DOM
+  TEXTS.forEach((text, i) => {
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.style.setProperty('--d', (i*55) + 'ms');
+
+    const idx = document.createElement('span');
+    idx.className = 'idx';
+    idx.textContent = String(i+1).padStart(2,'0');
+
+    const content = document.createElement('span');
+    content.className = 'content';
+
+    const words = text.split(' ');
+    const spans = [];
+    words.forEach((w, wi) => {
+      const ws = document.createElement('span');
+      ws.className = 'w';
+      ws.textContent = w;
+      content.appendChild(ws);
+      spans.push(ws);
+      if (wi < words.length - 1){
+        const sp = document.createElement('span');
+        sp.className = 'sp';
+        sp.textContent = ' ';
+        content.appendChild(sp);
+      }
+    });
+
+    line.appendChild(idx);
+    line.appendChild(content);
+    container.appendChild(line);
+
+    lines.push({ el: line, content, spans });
+  });
+
+  const contentEls = lines.map(l => l.content);
+  let rules = [];
+
+  function measure(){
+    const colW = ledger.clientWidth;
+    lines.forEach((l, i) => {
+      const natural = l.content.scrollWidth;
+      l.natural = natural;
+      l.target = colW;
+      l.colW = colW;
+    });
+  }
+
+  function scatter(){
+    lines.forEach((l, i) => {
+      const jitter = 0.5 + Math.random()*0.42; // ragged right edge
+      l.target = l.natural * jitter;
+    });
+  }
+
+  function apply(){
+    lines.forEach((l, i) => {
+      const s = l.target / l.natural;
+      l.content.style.setProperty('--s', s.toFixed(4));
+      const extra = l.target - l.natural;
+      const n = l.spans.length - 1;
+      const gap = n > 0 ? extra / n : 0;
+      l.spans.forEach((sp, k) => {
+        sp.style.setProperty('--x', (gap*k).toFixed(2) + 'px');
+      });
+    });
+  }
+
+  function buildRules(){
+    rules.forEach(r => r.remove());
+    rules = [];
+    lines.forEach(l => {
+      const r = document.createElement('div');
+      r.className = 'rule';
+      r.style.setProperty('--y', (l.el.offsetTop + l.el.offsetHeight/2) + 'px');
+      ledger.appendChild(r);
+      rules.push(r);
+    });
+  }
+
+  function revealRules(on){
+    rules.forEach(r => r.classList.toggle('active', on));
+  }
+
+  function run(){
+    measure();
+    scatter();
+    buildRules();
+    revealRules(true);
+
+    // reset entrance
+    lines.forEach(l => l.el.classList.remove('in'));
+    apply();
+
+    if (reduce){
+      // static aligned state immediately
+      lines.forEach(l => {
+        l.el.classList.add('in');
+        l.content.style.setProperty('--s','1');
+        l.spans.forEach(sp => sp.style.setProperty('--x','0'));
+      });
+      revealRules(false);
+      return;
+    }
+
+    // entrance
+    requestAnimationFrame(() => {
+      lines.forEach(l => l.el.classList.add('in'));
+    });
+
+    // justify sequence
+    setTimeout(() => {
+      lines.forEach(l => {
+        l.target = l.colW;
+      });
+      apply();
+    }, 420);
+
+    // fade guides once aligned
+    setTimeout(() => revealRules(false), 420 + 600 + 260);
+  }
+
+  // initial paint: aligned static so first frame is clean, then animate
+  measure();
+  lines.forEach(l => { l.target = l.colW; });
+  apply();
+  buildRules();
+
+  let raf;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      measure();
+      lines.forEach(l => { l.target = l.colW; });
+      apply();
+      buildRules();
+    });
+  });
+
+  document.getElementById('replay').addEventListener('click', run);
+
+  // kick off after fonts settle for accurate widths
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(() => setTimeout(run, 120));
+  } else {
+    setTimeout(run, 200);
+  }
+})();
+</script>
+</body>
+</html>

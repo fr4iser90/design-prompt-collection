@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 817682
+gen_ms: 817682
+ttft_ms: 3265
+queue_wait_ms: 100
+wall_ms: 821103
+review_score: 8
+review_summary: "Excellent execution of the 'laboratory-meets-kitchen' aesthetic with strong typography and a clean, sterile layout."
+reviewed_at: "2026-09-29T05:37:16.661Z"
+review_issues:
+  - "Hero visual is abstract vector waves rather than the requested macro-view of extruded dough"
+  - "Headline font is a geometric sans-serif (likely Space Grotesk) rather than the requested high-contrast serif"

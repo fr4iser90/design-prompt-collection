@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Catalog Drawer Slide — Library of Ashworth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wood-dark:#2a1a10;
+    --wood-mid:#5a3a22;
+    --wood-light:#8b5a2b;
+    --cream:#f0e6d2;
+    --cream-dim:#c9b896;
+    --brass:#b08d57;
+    --brass-hi:#e8cf9a;
+    --brass-lo:#5f4626;
+    --glow:#ffce7c;
+    --ink:#2a1a10;
+    --paper:#f2e8d5;
+    --paper-dim:#d8c8a6;
+    --bg:#120d09;
+    --ease-drawer:cubic-bezier(.45,.03,.25,1);
+    --ease-glow:cubic-bezier(.4,.05,.25,1);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html,body{height:100%}
+
+  body{
+    font-family:'Fraunces',Georgia,serif;
+    color:var(--paper);
+    background:
+      radial-gradient(120% 90% at 50% -12%, #2a1c12 0%, #1a120b 42%, #0d0805 100%);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Atmosphere layers ---------- */
+  .grain{
+    position:fixed;inset:0;z-index:5;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.05;mix-blend-mode:soft-light;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:6;pointer-events:none;
+    background:radial-gradient(115% 100% at 50% 42%, transparent 46%, rgba(0,0,0,.55) 100%);
+  }
+  .dust{
+    position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;
+  }
+  .mote{
+    position:absolute;bottom:-10px;width:3px;height:3px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,220,160,.9),rgba(255,220,160,0));
+    filter:blur(.4px);opacity:0;
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translate3d(0,0,0);opacity:0}
+    12%{opacity:.7}
+    88%{opacity:.5}
+    100%{transform:translate3d(24px,-108vh,0);opacity:0}
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    position:relative;z-index:10;
+    max-width:1200px;width:100%;margin:0 auto;
+    padding:clamp(22px,4vw,44px) clamp(20px,4vw,48px) 6px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .masthead .kicker{
+    font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--brass);opacity:.85;
+  }
+  .wordmark{
+    font-weight:900;
+    font-size:clamp(2.4rem,7vw,4.6rem);
+    line-height:.94;letter-spacing:-.02em;
+    color:var(--paper);
+    text-shadow:0 2px 0 rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.5);
+  }
+  .wordmark em{
+    font-style:italic;font-weight:500;color:var(--brass-hi);
+    display:block;font-size:.42em;letter-spacing:.02em;margin-top:.35em;
+  }
+  .rule{
+    height:1px;max-width:100%;
+    background:linear-gradient(90deg,var(--brass) 0%,rgba(176,141,87,.15) 60%,transparent 100%);
+  }
+  .lede{
+    max-width:56ch;font-size:clamp(.95rem,1.6vw,1.12rem);
+    line-height:1.55;color:var(--paper-dim);font-weight:400;
+  }
+  .lede b{color:var(--cream);font-weight:600}
+
+  /* ---------- Stage ---------- */
+  .stage{
+    position:relative;z-index:10;flex:1;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:clamp(14px,3vw,34px) clamp(14px,4vw,48px) clamp(20px,4vw,40px);
+    gap:clamp(16px,3vw,30px);
+  }
+
+  .cabinet{
+    position:relative;
+    width:min(94vw,860px);
+    aspect-ratio:16/9;
+    min-height:280px;
+    perspective:1700px;
+    perspective-origin:50% 26%;
+    --depth:150px;
+    --open:0;
+  }
+
+  /* ---------- Cabinet body (mahogany) ---------- */
+  .cab-body{
+    position:absolute;inset:0;border-radius:14px;
+    background:
+      linear-gradient(180deg, rgba(255,220,170,.10), rgba(0,0,0,.35)),
+      repeating-linear-gradient(92deg,
+        rgba(0,0,0,.10) 0 2px, rgba(255,255,255,.03) 2px 4px, rgba(0,0,0,.05) 4px 9px),
+      linear-gradient(180deg,#6b4526 0%,#4d3018 45%,#3a2412 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255,225,180,.25),
+      inset 0 -20px 40px rgba(0,0,0,.5),
+      inset 0 0 0 1px rgba(0,0,0,.4),
+      0 40px 80px rgba(0,0,0,.6);
+  }
+  /* recessed opening */
+  .opening{
+    position:absolute;left:4%;right:4%;top:16%;bottom:12%;
+    border-radius:6px;
+    background:#0d0805;
+    box-shadow:
+      inset 0 10px 22px rgba(0,0,0,.85),
+      inset 0 -6px 14px rgba(0,0,0,.6),
+      inset 0 0 0 2px rgba(0,0,0,.5);
+  }
+  /* brass rail strips */
+  .rail{
+    position:absolute;height:5px;border-radius:3px;
+    background:linear-gradient(180deg,var(--brass-hi),var(--brass) 45%,var(--brass-lo));
+    box-shadow:0 1px 3px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .rail.l{left:4%;width:calc(92% * var(--open));top:calc(16% + 8px);transform-origin:left center}
+  .rail.r{right:4%;width:calc(92% * var(--open));top:calc(16% + 8px);transform-origin:right center}
+  .rail.l2{left:4%;width:calc(92% * var(--open));bottom:calc(12% + 8px);transform-origin:left center}
+  .rail.r2{right:4%;width:calc(92% * var(--open));bottom:calc(12% + 8px);transform-origin:right center}
+
+  /* corner brass fittings */
+  .fit{position:absolute;width:26px;height:26px;border-radius:5px;
+    background:linear-gradient(135deg,var(--brass-hi),var(--brass) 40%,var(--brass-lo));
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.5),0 3px 6px rgba(0,0,0,.5);}
+  .fit::after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#fff8e6,#6b4f28);}
+  .fit.tl{top:10px;left:10px}.fit.tr{top:10px;right:10px}
+  .fit.bl{bottom:10px;left:10px}.fit.br{bottom:10px;right:10px}
+
+  /* engraved brass plaque */
+  .plaque{
+    position:absolute;top:4%;left:50%;transform:translateX(-50%);
+    padding:5px 20px;border-radius:4px;
+    background:linear-gradient(180deg,var(--brass-hi),var(--brass) 55%,var(--brass-lo));
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.55),inset 0 -1px 1px rgba(0,0,0,.4),0 3px 8px rgba(0,0,0,.5);
+    font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.3em;
+    color:#3a2610;text-transform:uppercase;white-space:nowrap;
+  }
+
+  /* ---------- Drawer ---------- */
+  .drawer{
+    position:absolute;left:5%;right:5%;top:18%;bottom:14%;
+    transform-style:preserve-3d;
+    transform:translateZ(calc(var(--depth) * var(--open)));
+    will-change:transform;
+  }
+  .drawer-face{
+    position:absolute;inset:0;transform-style:preserve-3d;
+    transform:translateZ(var(--depth));
+  }
+  .face{
+    position:absolute;inset:0;border-radius:8px;
+    background:
+      linear-gradient(180deg, rgba(255,225,180,.14), rgba(0,0,0,.28)),
+      repeating-linear-gradient(90deg,
+        rgba(0,0,0,.10) 0 3px, rgba(255,255,255,.04) 3px 6px, rgba(0,0,0,.06) 6px 13px),
+      linear-gradient(180deg,#8a5a2c 0%,#6a4423 42%,#4a2e17 100%);
+    box-shadow:
+      inset 0 2px 2px rgba(255,230,185,.3),
+      inset 0 -8px 18px rgba(0,0,0,.45),
+      inset 0 0 0 2px rgba(0,0,0,.35),
+      0 14px 26px rgba(0,0,0,.5);
+  }
+  /* label plate on face */
+  .label{
+    position:absolute;top:14%;left:50%;transform:translateX(-50%);
+    width:46%;height:26%;min-height:34px;border-radius:3px;
+    background:linear-gradient(180deg,var(--paper),var(--paper-dim));
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.25),0 2px 4px rgba(0,0,0,.4);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .label span{
+    font-family:'Space Mono',monospace;font-size:clamp(.5rem,1.4vw,.66rem);
+    letter-spacing:.18em;color:#5a3a22;text-transform:uppercase;
+  }
+  /* brass pull */
+  .pull{
+    position:absolute;bottom:16%;left:50%;transform:translateX(-50%);
+    width:24%;height:12%;min-height:20px;border-radius:12px;
+    background:linear-gradient(180deg,var(--brass-hi),var(--brass) 50%,var(--brass-lo));
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.6),inset 0 -2px 3px rgba(0,0,0,.4),0 4px 8px rgba(0,0,0,.5);
+  }
+  .pull::before,.pull::after{content:"";position:absolute;top:50%;transform:translateY(-50%);
+    width:12px;height:12px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%,#fff2d0,#5f4626);
+    box-shadow:0 2px 3px rgba(0,0,0,.5);}
+  .pull::before{left:-4px}.pull::after{right:-4px}
+
+  /* drawer interior side walls */
+  .side{position:absolute;top:0;bottom:0;width:var(--depth);transform-style:preserve-3d;}
+  .side.left{left:0;transform-origin:left center;transform:rotateY(-90deg);
+    background:linear-gradient(90deg,#1c1109,#2c1a0e);}
+  .side.right{right:0;transform-origin:right center;transform:rotateY(90deg);
+    background:linear-gradient(270deg,#1c1109,#2c1a0e);}
+  .side.bottom{left:0;right:0;bottom:0;height:var(--depth);transform-origin:center bottom;
+    transform:rotateX(90deg);
+    background:linear-gradient(180deg,#160d07,#241408);}
+  .side.top{left:0;right:0;top:0;height:var(--depth);transform-origin:center top;
+    transform:rotateX(-90deg);
+    background:linear-gradient(0deg,#0c0704,#1a0f08);}
+
+  /* interior lighting (darker toward back) */
+  .interior-light{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 0%, rgba(255,210,150,.35), transparent 55%);
+    opacity:var(--open);
+    mix-blend-mode:screen;
+  }
+
+  /* ---------- Card stacks ---------- */
+  .row{
+    position:absolute;left:5%;right:5%;height:15%;
+    transform-style:preserve-3d;
+    transform:translateZ(calc(var(--depth) * .92));
+  }
+  .row.r1{top:14%}
+  .row.r2{top:37%}
+  .row.r3{top:60%}
+  .row.r4{top:83%}
+  .card{
+    position:absolute;bottom:0;width:15px;height:100%;
+    transform-origin:bottom center;
+    background:linear-gradient(180deg,var(--cream) 0%,var(--cream-dim) 100%);
+    border-radius:1px 1px 0 0;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5),1px 0 1px rgba(0,0,0,.25);
+  }
+  /* faint ruled lines on the frontmost visible card */
+  .card::before{content:"";position:absolute;left:2px;right:2px;top:14%;height:1px;
+    background:rgba(90,58,34,.35);box-shadow:0 5px 0 rgba(90,58,34,.28),0 10px 0 rgba(90,58,34,.22);}
+
+  /* the highlighted / active card (middle row) */
+  .card.active{
+    width:16px;
+    background:linear-gradient(180deg,#fff4dd 0%,#f4e6c8 100%);
+    transform:translateZ(14px);
+    box-shadow:0 0 14px 4px rgba(255,206,124,calc(.9 * var(--glow))),
+               0 0 30px 10px rgba(255,190,110,calc(.5 * var(--glow))),
+               inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .card.active::before{background:rgba(120,70,30,.5);box-shadow:0 5px 0 rgba(120,70,30,.4),0 10px 0 rgba(120,70,30,.32)}
+
+  /* ---------- Status readout ---------- */
+  .readout{
+    position:relative;z-index:10;
+    font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.16em;
+    color:var(--brass);text-transform:uppercase;
+    display:flex;align-items:center;gap:10px;
+    padding:8px 16px;border-radius:20px;
+    background:rgba(0,0,0,.35);
+    box-shadow:inset 0 0 0 1px rgba(176,141,87,.25);
+  }
+  .readout .dot{width:8px;height:8px;border-radius:50%;background:var(--brass);
+    box-shadow:0 0 8px var(--glow);animation:blink 2.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+  .readout b{color:var(--cream);font-weight:700}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    position:relative;z-index:10;
+    max-width:1200px;width:100%;margin:0 auto;
+    padding:0 clamp(20px,4vw,48px) clamp(24px,4vw,40px);
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    font-family:'Space Mono',monospace;font-size:.66rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--paper-dim);
+  }
+  .footer .hint{display:flex;align-items:center;gap:8px}
+  .footer .hint svg{width:14px;height:14px;stroke:var(--brass);fill:none;stroke-width:1.6}
+
+  /* ---------- Animations ---------- */
+  @keyframes drawerCycle{
+    0%,10%   {--open:0}
+    34%,52%  {--open:1}
+    82%,100% {--open:0}
+  }
+  @keyframes glowCycle{
+    0%,26%   {--glow:0}
+    38%,44%  {--glow:1}
+    48%      {--glow:.45}
+    52%      {--glow:1}
+    60%,100% {--glow:0}
+  }
+  .cabinet{animation:drawerCycle 6s var(--ease-drawer) infinite}
+  .card.active{animation:glowCycle 6s var(--ease-glow) infinite}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:560px){
+    .cabinet{--depth:110px;min-height:240px}
+    .plaque{font-size:.5rem;padding:4px 12px}
+    .readout{font-size:.6rem}
+    .footer{font-size:.58rem}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    .cabinet{animation:none;--open:.72}
+    .card.active{animation:none;--glow:.8}
+    .mote{animation:none;opacity:.35}
+    .readout .dot{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="dust" id="dust" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header class="masthead">
+    <span class="kicker">Indexing · Mechanical · Archival</span>
+    <h1 class="wordmark">Card Catalog<em>Drawer Slide — Library of Ashworth</em></h1>
+    <div class="rule"></div>
+    <p class="lede">The search bar is a metaphor. This restores the tactile satisfaction of finding information — a mahogany drawer gliding out, a single card <b>illuminating from within</b> as the digital index points to the physical artifact.</p>
+  </header>
+
+  <main class="stage">
+    <div class="cabinet" id="cabinet" role="img" aria-label="Animated wooden library card catalog drawer opening and closing, revealing fanned index cards with one glowing card.">
+      <div class="cab-body"></div>
+      <div class="plaque">Catalog · Drawer 04</div>
+
+      <div class="opening"></div>
+      <span class="rail l"></span><span class="rail r"></span>
+      <span class="rail l2"></span><span class="rail r2"></span>
+
+      <span class="fit tl"></span><span class="fit tr"></span>
+      <span class="fit bl"></span><span class="fit br"></span>
+
+      <div class="drawer">
+        <div class="side left"></div>
+        <div class="side right"></div>
+        <div class="side top"></div>
+        <div class="side bottom"></div>
+        <div class="interior-light"></div>
+        <div class="row r1" data-row="1"></div>
+        <div class="row r2" data-row="2"></div>
+        <div class="row r3" data-row="3"></div>
+        <div class="row r4" data-row="4"></div>
+        <div class="drawer-face">
+          <div class="face"></div>
+          <div class="label"><span>000 · 199</span></div>
+          <div class="pull"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="readout"><span class="dot"></span> Drawer · <b id="phase">Closed</b></div>
+  </main>
+
+  <footer class="footer">
+    <span>Ashworth Reference · Est. 1897</span>
+    <span class="hint">
+      <svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+      Seamless mechanical loop
+    </span>
+  </footer>
+
+<script>
+  // Build fanned card stacks with deterministic pseudo-randomness
+  function buildRow(rowEl, opts){
+    const N = opts.count;
+    const activeIndex = opts.active ?? -1;
+    for(let i=0;i<N;i++){
+      const c = document.createElement('div');
+      c.className = 'card' + (i===activeIndex ? ' active' : '');
+      const p = i/(N-1);
+      // fan: edges splay outward, center stays near vertical
+      const fan = (p-0.5)*2;
+      const rot = fan*7 + (Math.sin(i*12.9898)*43758.5453 % 1)*1.6 - 0.8;
+      const z = Math.round(-p*26);                 // depth into drawer
+      const y = Math.round(-p*7);                  // slight rise toward back
+      c.style.left = (p*100) + '%';
+      c.style.transform = `translateZ(${z}px) translateY(${y}px) rotate(${rot.toFixed(2)}deg)`;
+      c.style.filter = `brightness(${(0.92 - p*0.12).toFixed(3)})`;
+      rowEl.appendChild(c);
+    }
+  }
+
+  const rows = document.querySelectorAll('.row');
+  rows.forEach(r=>{
+    const idx = +r.dataset.row;
+    const opts = {count: 46, active: (idx===3 ? 23 : -1)};
+    buildRow(r, opts);
+  });
+
+  // Phase readout synced to the 6s loop
+  const phaseEl = document.getElementById('phase');
+  const phases = [
+    {t:0.00, label:'Closed'},
+    {t:0.10, label:'Sliding out'},
+    {t:0.34, label:'Open · 20%'},
+    {t:0.52, label:'Illuminating'},
+    {t:0.60, label:'Returning'},
+    {t:0.82, label:'Closed'}
+  ];
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    const start = performance.now();
+    (function tick(now){
+      const t = ((now - start) % 6000) / 6000;
+      let cur = phases[0].label;
+      for(const p of phases){ if(t >= p.t) cur = p.label; }
+      if(phaseEl.textContent !== cur) phaseEl.textContent = cur;
+      requestAnimationFrame(tick);
+    })(start);
+  } else {
+    phaseEl.textContent = 'Open · 20%';
+  }
+
+  // Dust motes
+  const dust = document.getElementById('dust');
+  if(!reduce){
+    for(let i=0;i<16;i++){
+      const m = document.createElement('span');
+      m.className = 'mote';
+      m.style.left = (Math.random()*100) + '%';
+      m.style.animationDuration = (11 + Math.random()*12) + 's';
+      m.style.animationDelay = (-Math.random()*18) + 's';
+      const s = 2 + Math.random()*2;
+      m.style.width = m.style.height = s + 'px';
+      dust.appendChild(m);
+    }
+  }
+</script>
+</body>
+</html>

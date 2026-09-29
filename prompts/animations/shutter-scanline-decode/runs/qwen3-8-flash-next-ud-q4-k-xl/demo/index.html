@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shutter Scanline Decode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#000000;
+    --tint:#001100;
+    --phos:#4af626;
+    --phos-dim:#1f7a12;
+    --line:#00ff41;
+    --amber:#ffb000;
+    --cyan:#31e6ff;
+    --red:#ff2d55;
+    --mono:'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+    --disp:'VT323', 'Courier New', monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    background:var(--void);
+    color:var(--phos);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+
+  /* ---------- CRT STAGE ---------- */
+  .stage{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:clamp(20px,5vw,64px);
+    background:
+      radial-gradient(120% 90% at 50% 42%, #0a180a 0%, #050c05 45%, #010301 100%);
+    perspective:1400px;
+  }
+
+  /* phosphor grain texture */
+  .stage::before{
+    content:"";
+    position:fixed; inset:0; z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.05;
+    mix-blend-mode:screen;
+    pointer-events:none;
+    animation:grain 5s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%{background-position:0 0} 20%{background-position:-30px 10px}
+    40%{background-position:20px -20px} 60%{background-position:-10px 30px}
+    80%{background-position:30px 20px} 100%{background-position:0 0}
+  }
+
+  /* vignette */
+  .stage::after{
+    content:"";
+    position:fixed; inset:0; z-index:40;
+    pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,.75) 100%);
+    box-shadow:inset 0 0 200px rgba(0,0,0,.9);
+  }
+
+  /* ---------- MONITOR ---------- */
+  .monitor{
+    position:relative;
+    z-index:5;
+    width:min(1080px, 100%);
+    transform:rotateX(2deg);
+    transform-style:preserve-3d;
+  }
+
+  .screen{
+    position:relative;
+    border-radius:18px;
+    padding:clamp(22px,4vw,44px);
+    background:
+      linear-gradient(180deg, rgba(0,17,0,.6), rgba(0,6,0,.9)),
+      #010501;
+    border:1px solid rgba(74,246,38,.18);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.8),
+      0 40px 90px -30px rgba(0,0,0,.9),
+      inset 0 0 60px rgba(0,20,0,.6),
+      inset 0 0 120px rgba(0,40,0,.25);
+    overflow:hidden;
+    animation:flicker 6s steps(1) infinite;
+  }
+  @keyframes flicker{
+    0%,97%{opacity:1} 97.5%{opacity:.86} 98%{opacity:1} 98.5%{opacity:.93} 99%{opacity:1}
+  }
+
+  /* ---------- HUD ---------- */
+  .hud{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:16px; flex-wrap:wrap;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--phos-dim);
+    margin-bottom:clamp(16px,3vw,28px);
+  }
+  .hud .brand{
+    font-family:var(--disp);
+    font-size:clamp(15px,2.2vw,20px);
+    letter-spacing:.28em;
+    color:var(--phos);
+    text-shadow:0 0 8px rgba(74,246,38,.6);
+  }
+  .hud .meta{ text-align:right; line-height:1.9; }
+  .hud .meta b{ color:var(--phos); font-weight:500; }
+  .dot{ display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--phos); box-shadow:0 0 8px var(--phos); margin-right:6px;
+    animation:pulse 1.6s ease-in-out infinite; vertical-align:middle;}
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  .signal{
+    display:inline-flex; gap:2px; align-items:flex-end; height:12px; margin-left:8px; vertical-align:middle;
+  }
+  .signal i{ width:3px; background:var(--phos-dim); display:block; }
+  .signal i:nth-child(1){height:4px} .signal i:nth-child(2){height:7px}
+  .signal i:nth-child(3){height:10px} .signal i:nth-child(4){height:12px}
+  .live .signal i{ background:var(--phos); box-shadow:0 0 6px var(--phos); animation:sig 1s ease-in-out infinite; }
+  .live .signal i:nth-child(2){animation-delay:.15s}
+  .live .signal i:nth-child(3){animation-delay:.3s}
+  .live .signal i:nth-child(4){animation-delay:.45s}
+  @keyframes sig{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+
+  /* ---------- DISPLAY ---------- */
+  .display{
+    position:relative;
+    min-height:clamp(300px, 52vh, 460px);
+    display:flex; align-items:center;
+    overflow:hidden;
+  }
+
+  .text-wrap{
+    width:100%;
+    animation:drift 7s ease-in-out infinite;
+  }
+  @keyframes drift{
+    0%,100%{transform:translateX(0)}
+    48%{transform:translateX(0)}
+    49%{transform:translateX(1.5px)}
+    50%{transform:translateX(-1px)}
+    51%{transform:translateX(0)}
+    86%{transform:translateX(0)}
+    87%{transform:translateX(-2px)}
+    88%{transform:translateX(0)}
+  }
+
+  .title{
+    font-family:var(--disp);
+    font-weight:400;
+    font-size:clamp(52px, 12vw, 132px);
+    line-height:.9;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    color:var(--phos);
+    text-shadow:
+      0 0 4px rgba(74,246,38,.9),
+      0 0 14px rgba(74,246,38,.55),
+      0 0 34px rgba(0,255,65,.28);
+    margin:0;
+  }
+  .title .row2{ display:block; }
+  .title .thin{ color:var(--phos-dim); text-shadow:0 0 6px rgba(74,246,38,.35); }
+
+  .subline{
+    margin-top:clamp(14px,2.5vw,22px);
+    font-size:clamp(11px,1.6vw,15px);
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--phos-dim);
+  }
+  .subline b{ color:var(--phos); font-weight:500; text-shadow:0 0 8px rgba(74,246,38,.5); }
+
+  .readout{
+    margin-top:clamp(10px,2vw,16px);
+    font-size:12px; letter-spacing:.12em;
+    color:rgba(74,246,38,.4);
+    min-height:1.2em;
+  }
+
+  /* ---------- NOISE OVERLAY (unresolved signal) ---------- */
+  .noise{
+    position:absolute; inset:0; z-index:2;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.29 0 0 0 0 0.96 0 0 0 0 0.15 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:200px 200px;
+    mix-blend-mode:screen;
+    animation:noiseShift .18s steps(4) infinite;
+    -webkit-mask-image:linear-gradient(180deg,
+      transparent 0%, transparent calc(var(--y) - 2px),
+      #000 calc(var(--y) + 2px), #000 100%);
+    mask-image:linear-gradient(180deg,
+      transparent 0%, transparent calc(var(--y) - 2px),
+      #000 calc(var(--y) + 2px), #000 100%);
+    opacity:.55;
+  }
+  @keyframes noiseShift{
+    0%{background-position:0 0} 25%{background-position:-40px 30px}
+    50%{background-position:30px -25px} 75%{background-position:-20px -40px} 100%{background-position:0 0}
+  }
+
+  /* ---------- SCANLINE ---------- */
+  .scan{
+    position:absolute; left:0; right:0; top:0; z-index:3;
+    height:120px;
+    transform:translateY(calc(var(--y) - 60px));
+    pointer-events:none;
+    background:linear-gradient(180deg,
+      rgba(0,255,65,0) 0%,
+      rgba(0,255,65,.06) 40%,
+      rgba(0,255,65,.22) 48%,
+      rgba(200,255,200,.9) 50%,
+      rgba(0,255,65,.22) 52%,
+      rgba(0,255,65,.06) 60%,
+      rgba(0,255,65,0) 100%);
+    mix-blend-mode:screen;
+  }
+  .scan::before{
+    content:"";
+    position:absolute; left:0; right:0; top:50%;
+    height:1.5px; transform:translateY(-50%);
+    background:#eaffea;
+    box-shadow:0 0 6px #fff, 0 0 16px var(--line), 0 0 30px var(--line);
+  }
+  .scan::after{
+    content:"";
+    position:absolute; left:0; right:0; top:50%;
+    height:26px; transform:translateY(-50%);
+    background:
+      linear-gradient(90deg, transparent, rgba(49,230,255,.18), transparent);
+    mix-blend-mode:overlay;
+    opacity:.6;
+  }
+
+  /* global CRT scanlines + moving band */
+  .crt-lines{
+    position:absolute; inset:0; z-index:6; pointer-events:none;
+    background:repeating-linear-gradient(180deg,
+      rgba(0,0,0,.35) 0px, rgba(0,0,0,.35) 1px, transparent 2px, transparent 4px);
+    opacity:.5;
+  }
+  .crt-band{
+    position:absolute; left:0; right:0; top:0; z-index:6; height:180px;
+    pointer-events:none;
+    background:linear-gradient(180deg, transparent, rgba(120,255,140,.05), transparent);
+    animation:band 4.5s linear infinite;
+    mix-blend-mode:screen;
+  }
+  @keyframes band{ 0%{transform:translateY(-180px)} 100%{transform:translateY(100vh)} }
+
+  /* glitch slices */
+  .glitch{
+    position:absolute; inset:0; z-index:7; pointer-events:none; overflow:hidden;
+  }
+  .glitch span{
+    position:absolute; left:0; right:0; height:14px;
+    background:rgba(74,246,38,.08);
+    border-top:1px solid rgba(200,255,200,.25);
+    border-bottom:1px solid rgba(49,230,255,.18);
+    opacity:0;
+  }
+  .glitch span:nth-child(1){ top:22%; animation:gl 6.2s linear infinite; }
+  .glitch span:nth-child(2){ top:58%; animation:gl 5.1s linear infinite .8s; }
+  .glitch span:nth-child(3){ top:80%; animation:gl 7.4s linear infinite 1.6s; }
+  @keyframes gl{
+    0%,96%{opacity:0; transform:translateX(0)}
+    97%{opacity:1; transform:translateX(14px)}
+    98%{opacity:1; transform:translateX(-18px)}
+    99%{opacity:1; transform:translateX(6px)}
+    100%{opacity:0; transform:translateX(0)}
+  }
+
+  /* ---------- CONTROLS ---------- */
+  .controls{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    margin-top:clamp(22px,4vw,34px);
+    padding-top:clamp(16px,2.5vw,22px);
+    border-top:1px dashed rgba(74,246,38,.18);
+  }
+  .controls .lbl{
+    font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--phos-dim); margin-right:4px;
+  }
+  .btn{
+    font-family:var(--mono);
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--phos-dim);
+    background:rgba(74,246,38,.04);
+    border:1px solid rgba(74,246,38,.25);
+    padding:8px 14px; border-radius:4px; cursor:pointer;
+    transition:all .18s ease;
+  }
+  .btn:hover{ color:var(--phos); border-color:var(--phos);
+    box-shadow:0 0 12px rgba(74,246,38,.3), inset 0 0 12px rgba(74,246,38,.12); }
+  .btn.active{ color:#010301; background:var(--phos); border-color:var(--phos);
+    box-shadow:0 0 16px rgba(74,246,38,.5); }
+  .btn.amber.active{ background:var(--amber); border-color:var(--amber); box-shadow:0 0 16px rgba(255,176,0,.5); }
+  .btn.cyan.active{ background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 16px rgba(49,230,255,.5); }
+
+  .status{
+    margin-left:auto; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--phos);
+    display:flex; align-items:center; gap:8px;
+  }
+  .status .st-dot{ width:8px; height:8px; border-radius:50%; background:var(--phos);
+    box-shadow:0 0 10px var(--phos); animation:pulse 1.2s infinite; }
+  .status.locked .st-dot{ background:var(--cyan); box-shadow:0 0 12px var(--cyan); animation:none; }
+  .status.locked{ color:var(--cyan); }
+  .status.paused .st-dot{ background:var(--amber); box-shadow:0 0 10px var(--amber); animation:none; }
+  .status.paused{ color:var(--amber); }
+
+  .hint{
+    margin-top:16px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(74,246,38,.35);
+  }
+  .hint kbd{
+    font-family:var(--mono); color:var(--phos); border:1px solid rgba(74,246,38,.3);
+    padding:1px 6px; border-radius:3px; font-size:10px;
+  }
+
+  /* ---------- PHOSPHOR VARIANTS ---------- */
+  .screen.amber{ --phos:var(--amber); --phos-dim:#8a6000; --line:var(--amber); }
+  .screen.amber .title{ text-shadow:0 0 4px rgba(255,176,0,.9),0 0 14px rgba(255,176,0,.5),0 0 34px rgba(255,176,0,.25); }
+  .screen.cyan{ --phos:var(--cyan); --phos-dim:#1a7a8a; --line:var(--cyan); }
+  .screen.cyan .title{ text-shadow:0 0 4px rgba(49,230,255,.9),0 0 14px rgba(49,230,255,.5),0 0 34px rgba(49,230,255,.25); }
+
+  /* LOCKED state: kill noise, freeze scanline, full reveal */
+  .screen.locked .noise{ opacity:0; }
+  .screen.locked .scan{ opacity:0; }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .noise, .scan, .crt-band, .glitch span, .text-wrap, .screen,
+    .stage::before, .dot, .live .signal i, .status .st-dot{
+      animation:none !important;
+    }
+    .noise{ opacity:0; }
+    .scan{ opacity:0; }
+  }
+
+  @media (max-width:560px){
+    .hud .meta{ text-align:left; }
+    .status{ margin-left:0; width:100%; }
+    .monitor{ transform:none; }
+  }
+</style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="staticBlur"><feGaussianBlur stdDeviation="0.4"/></filter>
+  </svg>
+
+  <main class="stage">
+    <div class="monitor">
+      <section class="screen" id="screen" style="--y:0px">
+
+        <header class="hud">
+          <div class="brand">▚ SHUTTER//DECODE</div>
+          <div class="meta">
+            <div><span class="dot"></span>SIGNAL <b id="sigState">LIVE</b>
+              <span class="signal"><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div>CH <b>07</b> · 60Hz · <b id="clock">00:00:00</b></div>
+          </div>
+        </header>
+
+        <div class="display" id="display">
+          <div class="text-wrap">
+            <h1 class="title">
+              <span class="row1">SHUTTER</span>
+              <span class="row2"><span class="thin">SCANLINE</span> DECODE</span>
+            </h1>
+            <p class="subline">ANALOG SIGNAL RESOLUTION · <b>CRT PHOSPHOR</b> · CH-07</p>
+            <p class="readout" id="readout">&gt; awaiting beam sweep…</p>
+          </div>
+
+          <div class="noise" id="noise"></div>
+          <div class="scan" id="scan"></div>
+        </div>
+
+        <div class="crt-lines"></div>
+        <div class="crt-band"></div>
+        <div class="glitch"><span></span><span></span><span></span></div>
+
+        <div class="controls">
+          <span class="lbl">Phosphor</span>
+          <button class="btn active" data-phos="green">Green</button>
+          <button class="btn amber" data-phos="amber">Amber</button>
+          <button class="btn cyan" data-phos="cyan">Cyan</button>
+
+          <span class="status live" id="status"><span class="st-dot"></span><span id="statusText">Decoding</span></span>
+        </div>
+
+        <p class="hint">Hover the screen to <kbd>hold</kbd> the beam · Click to <kbd>lock</kbd> sync · Click again to resume</p>
+
+      </section>
+    </div>
+  </main>
+
+<script>
+(function(){
+  const screenEl = document.getElementById('screen');
+  const display  = document.getElementById('display');
+  const statusEl = document.getElementById('status');
+  const statusText = document.getElementById('statusText');
+  const sigState = document.getElementById('sigState');
+  const readout  = document.getElementById('readout');
+  const clock    = document.getElementById('clock');
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let locked = false;
+  let paused = false;
+  let manualY = null;
+  let rafId = null;
+  let startTime = performance.now();
+  const DURATION = 2400; // ms per sweep
+
+  const phrases = [
+    '> awaiting beam sweep…',
+    '> resolving carrier wave',
+    '> sync drift detected',
+    '> locking horizontal hold',
+    '> phosphor persistence ok',
+    '> frame buffer clean'
+  ];
+  let pIdx = 0;
+
+  function setStatus(mode){
+    statusEl.classList.remove('live','paused','locked');
+    if(mode==='locked'){ statusEl.classList.add('locked'); statusText.textContent='Locked · Synced'; sigState.textContent='LOCKED'; }
+    else if(mode==='paused'){ statusEl.classList.add('paused'); statusText.textContent='Beam Held'; sigState.textContent='HOLD'; }
+    else { statusEl.classList.add('live'); statusText.textContent='Decoding'; sigState.textContent='LIVE'; }
+  }
+
+  function loop(now){
+    if(locked){ return; }
+    const h = display.offsetHeight;
+    let y;
+    if(paused && manualY!=null){
+      y = manualY;
+    } else {
+      const t = ((now - startTime) % DURATION) / DURATION;
+      y = t * h;
+    }
+    screenEl.style.setProperty('--y', y.toFixed(1)+'px');
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function startLoop(){
+    if(reduce) return;
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function lock(){
+    locked = true;
+    cancelAnimationFrame(rafId);
+    screenEl.classList.add('locked');
+    setStatus('locked');
+    readout.textContent = '> SIGNAL LOCKED · FULL RESOLUTION';
+  }
+
+  function unlock(){
+    locked = false;
+    paused = false;
+    manualY = null;
+    screenEl.classList.remove('locked');
+    setStatus('live');
+    readout.textContent = phrases[0];
+    startTime = performance.now();
+    startLoop();
+  }
+
+  // Interaction: hover holds beam, click toggles lock
+  display.addEventListener('mousemove', (e)=>{
+    if(locked) return;
+    const r = display.getBoundingClientRect();
+    manualY = Math.max(0, Math.min(r.height, e.clientY - r.top));
+    paused = true;
+    setStatus('paused');
+  });
+  display.addEventListener('mouseleave', ()=>{
+    if(locked) return;
+    paused = false;
+    manualY = null;
+    setStatus('live');
+  });
+  display.addEventListener('click', ()=>{
+    if(locked) unlock(); else lock();
+  });
+
+  // Keyboard: space toggles lock
+  window.addEventListener('keydown', (e)=>{
+    if(e.code==='Space'){ e.preventDefault(); locked?unlock():lock(); }
+  });
+
+  // Phosphor variants
+  document.querySelectorAll('.btn[data-phos]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.btn[data-phos]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const p = btn.dataset.phos;
+      screenEl.classList.remove('amber','cyan');
+      if(p!=='green') screenEl.classList.add(p);
+    });
+  });
+
+  // Readout cycling
+  setInterval(()=>{
+    if(locked) return;
+    pIdx = (pIdx+1) % phrases.length;
+    readout.textContent = phrases[pIdx];
+  }, 1800);
+
+  // Clock
+  function tick(){
+    const d = new Date();
+    const p = n=>String(n).padStart(2,'0');
+    clock.textContent = p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  if(reduce){
+    screenEl.style.setProperty('--y','100%');
+    setStatus('locked');
+    statusText.textContent='Static · Reduced';
+    sigState.textContent='STATIC';
+    readout.textContent = '> reduced motion · signal resolved';
+  } else {
+    startLoop();
+  }
+})();
+</script>
+</body>
+</html>

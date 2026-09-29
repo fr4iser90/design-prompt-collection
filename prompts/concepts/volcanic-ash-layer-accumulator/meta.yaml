@@ -1,0 +1,26 @@
+id: volcanic-ash-layer-accumulator
+title: "Volcanic Ash Layer Accumulator"
+category: concepts
+tags:
+  - volcanic
+  - particle-system
+  - accumulation
+  - gray-scale
+  - texture
+  - slow-motion
+  - geology
+status: polished
+summary: "A slow-motion visualization of volcanic ash falling and settling in distinct strata, creating a textured, gray-scale topography over time."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

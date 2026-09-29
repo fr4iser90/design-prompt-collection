@@ -1,0 +1,27 @@
+id: moroccan-tadelakt-polish
+title: "Moroccan Tadelakt Polish"
+category: concepts
+tags:
+  - tadelakt
+  - morocco
+  - plaster
+  - polish
+  - stone
+  - texture
+  - interactive
+  - material
+status: polished
+summary: "An interactive material study of Tadelakt, Moroccan lime plaster. Users 'polish' rough stone with a river stone to reveal a smooth, water-resistant, glossy surface."
+preview: runs/legacy/preview.png
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: legacy
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 281944
+gen_ms: 281944
+ttft_ms: 2081
+queue_wait_ms: 155
+wall_ms: 284248
+review_score: 8
+review_summary: "Excellent static representation of the 'OFF' state, perfectly matching the dark, matte aesthetic and layout requirements."
+reviewed_at: "2026-09-29T05:37:35.796Z"
+review_issues:
+  - "Static screenshot cannot display the core 'ferrofluid deformation' or 'spike' effects (expected for this category)."
+  - "The main typography is very low-contrast against the background, which is accurate to the brief but risks visibility issues."

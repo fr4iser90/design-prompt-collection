@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porcelain Insulator Hysteresis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Sora:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#2d3436;
+    --void-deep:#20262a;
+    --porcelain:#f8f9fa;
+    --porcelain-shadow:#dfe6e9;
+    --energy:#00b894;
+    --type:#b2bec3;
+    --type-dim:#7f8c8d;
+    --type-faint:#596a6b;
+    --line:rgba(178,190,195,0.16);
+    --sans:'Sora','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--void);
+    color:var(--type);
+    font-family:var(--sans);
+    font-weight:300;
+    overflow:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---- ambient layers ---- */
+  .vignette{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(130% 120% at 50% 44%,
+      #353e40 0%, #2d3436 42%, #262c2e 72%, #1d2326 100%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+  }
+
+  /* ---- stage ---- */
+  .stage{
+    position:relative;z-index:2;
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;
+    padding:clamp(22px,4vw,52px);
+    gap:clamp(14px,2.4vw,26px);
+  }
+
+  /* ---- header ---- */
+  header{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    gap:24px;flex-wrap:wrap;
+  }
+  .brand{display:flex;align-items:center;gap:16px}
+  .mark{width:46px;height:46px;flex:none;color:var(--porcelain);opacity:.9}
+  .mark svg{display:block;width:100%;height:100%}
+  .brand .txt{display:flex;flex-direction:column;line-height:1}
+  .brand .name{
+    font-family:var(--sans);font-weight:600;
+    font-size:clamp(1.15rem,2.4vw,1.7rem);letter-spacing:-0.02em;
+    color:var(--porcelain);
+  }
+  .brand .sub{
+    font-family:var(--mono);font-size:0.62rem;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--type-dim);margin-top:8px;
+  }
+  .meta{
+    display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+    font-family:var(--mono);font-size:0.6rem;letter-spacing:0.22em;
+    text-transform:uppercase;color:var(--type-faint);text-align:right;
+  }
+  .meta .row{display:flex;gap:10px;align-items:center}
+  .meta .dot{width:6px;height:6px;border-radius:50%;background:var(--energy);
+    box-shadow:0 0 10px rgba(0,184,148,.5);animation:pulse 3.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+  /* ---- main ---- */
+  main{
+    flex:1;min-height:0;
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,320px);
+    gap:clamp(20px,3vw,48px);align-items:center;
+  }
+
+  /* ---- insulator ---- */
+  .insulator-wrap{
+    position:relative;height:100%;min-height:0;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;opacity:0;transition:opacity 2s ease-in-out;
+  }
+  .insulator-wrap.in{opacity:1}
+  .insulator-wrap::before{
+    content:"";position:absolute;left:50%;bottom:6%;transform:translateX(-50%);
+    width:52%;height:26%;
+    background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.5),transparent 70%);
+    filter:blur(6px);opacity:.7;pointer-events:none;
+  }
+  #insulator{
+    height:100%;max-height:100%;width:auto;display:block;
+    will-change:opacity;
+  }
+  .hit{cursor:pointer}
+
+  .tooltip{
+    position:absolute;z-index:5;pointer-events:none;
+    transform:translate(-50%,-100%);
+    background:rgba(28,33,35,0.92);border:1px solid var(--line);
+    border-radius:2px;padding:6px 9px;
+    font-family:var(--mono);font-size:0.66rem;letter-spacing:0.04em;
+    color:var(--porcelain);white-space:nowrap;
+    opacity:0;transition:opacity .25s ease;
+    box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  .tooltip.show{opacity:1}
+  .tooltip b{color:var(--energy);font-weight:500}
+  .tooltip::after{
+    content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%) rotate(45deg);
+    width:8px;height:8px;background:rgba(28,33,35,0.92);
+    border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  }
+
+  /* ---- readouts ---- */
+  .readouts{display:flex;flex-direction:column;gap:26px;align-self:center}
+  .readouts .head{
+    font-family:var(--mono);font-size:0.6rem;letter-spacing:0.28em;
+    text-transform:uppercase;color:var(--type-faint);
+    padding-bottom:14px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .readouts .head span:last-child{color:var(--energy)}
+  .read{display:flex;flex-direction:column;gap:7px}
+  .read .k{
+    font-family:var(--mono);font-size:0.6rem;letter-spacing:0.2em;
+    text-transform:uppercase;color:var(--type-dim);display:flex;gap:8px;align-items:baseline;
+  }
+  .read .k em{font-style:normal;color:var(--type-faint)}
+  .read .v{
+    font-family:var(--mono);font-weight:400;
+    font-size:clamp(1.5rem,2.6vw,2.15rem);color:var(--porcelain);
+    font-variant-numeric:tabular-nums;letter-spacing:-0.01em;line-height:1;
+  }
+  .read .v .u{font-size:0.62em;color:var(--type-dim);margin-left:6px;letter-spacing:0.08em}
+  .bar{height:2px;background:rgba(178,190,195,0.12);position:relative;overflow:hidden;margin-top:4px}
+  .bar i{position:absolute;top:0;bottom:0;left:0;background:var(--energy);
+    box-shadow:0 0 8px rgba(0,184,148,.4);transition:width .12s linear}
+
+  .status{
+    margin-top:6px;padding:12px 0 0;border-top:1px solid var(--line);
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .status .lbl{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.24em;
+    text-transform:uppercase;color:var(--type-faint)}
+  .status .val{font-family:var(--sans);font-weight:400;font-size:0.98rem;color:var(--porcelain)}
+
+  /* ---- footer ---- */
+  footer{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:0.6rem;letter-spacing:0.14em;
+    text-transform:uppercase;color:var(--type-faint);
+  }
+  .legend{display:flex;gap:22px;flex-wrap:wrap}
+  .legend span{display:flex;align-items:center;gap:9px}
+  .legend .sw{width:22px;height:2px;border-radius:2px}
+  .legend .sw.a{background:var(--energy);box-shadow:0 0 8px rgba(0,184,148,.5)}
+  .legend .sw.b{background:var(--porcelain);opacity:.5}
+  .legend .sw.c{background:var(--type-faint)}
+  .hint{color:var(--type-dim);text-align:right;letter-spacing:0.1em}
+  .hint b{color:var(--porcelain);font-weight:500}
+
+  /* ---- responsive ---- */
+  @media (max-width:860px){
+    body{overflow:auto}
+    .stage{min-height:auto}
+    main{grid-template-columns:1fr;gap:26px}
+    .insulator-wrap{height:60vh;min-height:340px}
+    .readouts{align-self:stretch}
+    .readouts .grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px 24px}
+    footer{flex-direction:column;align-items:flex-start;gap:16px}
+    .hint{text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .meta .dot{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="stage">
+    <header>
+      <div class="brand">
+        <div class="mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M24 4v40" stroke="currentColor" stroke-width="1.4" opacity=".55"/>
+            <path d="M24 12c6 0 8 2.5 8 5s-2 5-8 5-8-2.5-8-5 2-5 8-5Z" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M24 24c6 0 8 2.5 8 5s-2 5-8 5-8-2.5-8-5 2-5 8-5Z" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="24" cy="4" r="2.4" fill="currentColor"/>
+            <circle cx="24" cy="44" r="2.4" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="txt">
+          <span class="name">Porcelain Insulator Hysteresis</span>
+          <span class="sub">Dielectric B–H Response</span>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="row"><span class="dot"></span><span>Live Trace</span></div>
+        <div>Specimen · Al₂O₃ 95%</div>
+        <div>Field 50 Hz · 25 °C</div>
+      </div>
+    </header>
+
+    <main>
+      <div class="insulator-wrap" id="wrap">
+        <svg id="insulator" viewBox="0 0 340 760" role="img" aria-label="Ribbed porcelain insulator with a glowing hysteresis loop traced across its surface">
+          <defs>
+            <linearGradient id="body" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#aeb9bd"/>
+              <stop offset="0.14" stop-color="#dde4e6"/>
+              <stop offset="0.34" stop-color="#f8f9fa"/>
+              <stop offset="0.5" stop-color="#ffffff"/>
+              <stop offset="0.66" stop-color="#f1f5f5"/>
+              <stop offset="0.84" stop-color="#cfd8da"/>
+              <stop offset="1" stop-color="#9aa6ab"/>
+            </linearGradient>
+            <linearGradient id="cap" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#333b3e"/>
+              <stop offset="0.22" stop-color="#5c666a"/>
+              <stop offset="0.44" stop-color="#93a0a4"/>
+              <stop offset="0.5" stop-color="#a7b4b8"/>
+              <stop offset="0.6" stop-color="#7d888c"/>
+              <stop offset="0.82" stop-color="#454e52"/>
+              <stop offset="1" stop-color="#2b3235"/>
+            </linearGradient>
+            <linearGradient id="capTop" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#6b767a"/>
+              <stop offset="0.45" stop-color="#c2cccf"/>
+              <stop offset="0.55" stop-color="#aab5b8"/>
+              <stop offset="1" stop-color="#525b5e"/>
+            </linearGradient>
+            <radialGradient id="sss" cx="0.4" cy="0.28" r="0.85">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+              <stop offset="0.45" stop-color="#dfe6e9" stop-opacity="0.12"/>
+              <stop offset="1" stop-color="#2d3436" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="core" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="#00b894" stop-opacity="0.42"/>
+              <stop offset="0.5" stop-color="#00b894" stop-opacity="0.14"/>
+              <stop offset="1" stop-color="#00b894" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="4.5"/>
+            </filter>
+            <filter id="soft2" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="10"/>
+            </filter>
+            <filter id="dotGlow" x="-200%" y="-200%" width="500%" height="500%">
+              <feGaussianBlur stdDeviation="3.2"/>
+            </filter>
+            <clipPath id="bodyClip"><path id="bodyPath"/></clipPath>
+          </defs>
+
+          <!-- metal end caps -->
+          <g id="caps"></g>
+
+          <!-- porcelain body -->
+          <path id="bodyFill" fill="url(#body)"/>
+          <path id="bodySss" fill="url(#sss)"/>
+
+          <!-- energy core behind the loop -->
+          <ellipse id="coreEl" cx="170" cy="380" rx="70" ry="230" fill="url(#core)" opacity="0"/>
+
+          <!-- hysteresis loop, clipped to the porcelain -->
+          <g clip-path="url(#bodyClip)">
+            <path id="loopGhost" fill="none" stroke="#00b894" stroke-width="6" opacity="0.1" filter="url(#soft2)"/>
+            <path id="loopGlow" fill="none" stroke="#00b894" stroke-width="5" opacity="0.4" filter="url(#soft)" stroke-linecap="round"/>
+            <path id="loop" fill="none" stroke="#00b894" stroke-width="2" opacity="0.95" stroke-linecap="round"/>
+          </g>
+
+          <!-- moving dot -->
+          <g id="dotGlowG" opacity="0.55">
+            <circle id="dotGlow" cx="0" cy="0" r="9" fill="#00b894" filter="url(#dotGlow)"/>
+          </g>
+          <circle id="dot" cx="0" cy="0" r="3.4" fill="#eafff9"/>
+
+          <!-- axis + saturation / coercivity markers -->
+          <g id="markers" font-family="'JetBrains Mono',monospace" font-size="12.5" letter-spacing="0.04em"></g>
+
+          <!-- crisp outline -->
+          <path id="bodyOutline" fill="none" stroke="#ffffff" stroke-width="1.1" opacity="0.55"/>
+          <path id="bodyOutline2" fill="none" stroke="#2d3436" stroke-width="0.6" opacity="0.12"/>
+
+          <!-- interaction hit area -->
+          <rect class="hit" x="70" y="0" width="200" height="760" fill="transparent"/>
+        </svg>
+        <div class="tooltip" id="tooltip"><span>H = <b id="ttH">0.00</b> A/m</span></div>
+      </div>
+
+      <aside class="readouts">
+        <div class="head"><span>Instrumentation</span><span>● REC</span></div>
+        <div class="grid2">
+          <div class="read">
+            <div class="k">H-field <em>· horizontal</em></div>
+            <div class="v"><span id="vH">0.00</span><span class="u">×10³ A/m</span></div>
+            <div class="bar"><i id="bH" style="width:50%"></i></div>
+          </div>
+          <div class="read">
+            <div class="k">B-flux <em>· vertical</em></div>
+            <div class="v"><span id="vB">0.00</span><span class="u">T</span></div>
+            <div class="bar"><i id="bB" style="width:50%"></i></div>
+          </div>
+        </div>
+        <div class="status">
+          <span class="lbl">Cycle State</span>
+          <span class="val" id="vState">Rising · magnetising</span>
+        </div>
+        <div class="status">
+          <span class="lbl">Trace Speed</span>
+          <span class="val" id="vSpeed">10.0 s / cycle</span>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      <div class="legend">
+        <span><i class="sw a"></i>Energy Trace · B–H</span>
+        <span><i class="sw b"></i>Porcelain Body</span>
+        <span><i class="sw c"></i>Coercivity · Saturation</span>
+      </div>
+      <div class="hint"><b>Hover</b> to slow the trace &nbsp;·&nbsp; <b>Click</b> to erase &amp; redraw</div>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const svgNS="http://www.w3.org/2000/svg";
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- geometry constants ----
+  const CX=170, TOP=64, BOT=696, R=108, RIN=30;
+  const SKIRT=[112,220,330,440,550,656];
+  const RIBW=100;
+  const A=150, B=140;               // loop half extents
+  const HMAX=1.6, BMAX=0.9;         // physical ranges
+
+  function smoothClosed(p){
+    const n=p.length; let d=`M ${p[0].x.toFixed(2)} ${p[0].y.toFixed(2)} `;
+    for(let i=0;i<n;i++){
+      const p0=p[(i-1+n)%n], p1=p[i], p2=p[(i+1)%n], p3=p[(i+2)%n];
+      const c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6;
+      const c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
+      d+=`C ${c1x.toFixed(2)} ${c1y.toFixed(2)} ${c2x.toFixed(2)} ${c2y.toFixed(2)} ${p2.x.toFixed(2)} ${p2.y.toFixed(2)} `;
+    }
+    return d+"Z";
+  }
+
+  // ---- build porcelain profile ----
+  const pts=[];
+  pts.push({x:CX-R,y:TOP});
+  pts.push({x:CX-RIN,y:TOP});
+  SKIRT.forEach(cy=>{
+    pts.push({x:CX-RIN,y:cy-RIBW/2});
+    pts.push({x:CX-R,  y:cy});
+    pts.push({x:CX-RIN,y:cy+RIBW/2});
+  });
+  pts.push({x:CX-RIN,y:BOT});
+  pts.push({x:CX-R,  y:BOT});
+  const profile=smoothClosed(pts);
+  document.getElementById("bodyPath").setAttribute("d",profile);
+  document.getElementById("bodyFill").setAttribute("d",profile);
+  document.getElementById("bodySss").setAttribute("d",profile);
+  document.getElementById("bodyOutline").setAttribute("d",profile);
+  document.getElementById("bodyOutline2").setAttribute("d",profile);
+
+  // ---- metal caps ----
+  const caps=document.getElementById("caps");
+  function cap(top){
+    const g=document.createElementNS(svgNS,"g");
+    const r=document.createElementNS(svgNS,"rect");
+    r.setAttribute("x",CX-72); r.setAttribute("width",144);
+    r.setAttribute("y", top? TOP-40 : BOT); r.setAttribute("height",40);
+    r.setAttribute("rx",6); r.setAttribute("fill","url(#cap)");
+    g.appendChild(r);
+    const line=document.createElementNS(svgNS,"line");
+    line.setAttribute("x1",CX-72);line.setAttribute("x2",CX+72);
+    line.setAttribute("y1", top? TOP : BOT);line.setAttribute("y2", top? TOP : BOT);
+    line.setAttribute("stroke","#1b2022");line.setAttribute("stroke-width","1.5");line.setAttribute("opacity","0.5");
+    g.appendChild(line);
+    const shank=document.createElementNS(svgNS,"rect");
+    shank.setAttribute("x",CX-16);shank.setAttribute("width",32);
+    shank.setAttribute("y", top? TOP-58 : BOT+38);shank.setAttribute("height",22);
+    shank.setAttribute("rx",5);shank.setAttribute("fill","url(#capTop)");
+    g.appendChild(shank);
+    return g;
+  }
+  caps.appendChild(cap(true)); caps.appendChild(cap(false));
+
+  // ---- hysteresis loop ----
+  function loopPt(t){
+    const a=t*Math.PI*2;
+    const H=A*Math.sin(a)+0.16*A*Math.sin(3*a);
+    const Bv=B*Math.sin(a);
+    return {x:CX+H, y:400-Bv};
+  }
+  const N=280, lp=[];
+  for(let i=0;i<N;i++) lp.push(loopPt(i/N));
+  const loopD=smoothClosed(lp);
+  ["loopGhost","loopGlow","loop"].forEach(id=>document.getElementById(id).setAttribute("d",loopD));
+
+  // ---- axis + markers ----
+  const mk=document.getElementById("markers");
+  function el(tag,attrs,txt){
+    const e=document.createElementNS(svgNS,tag);
+    for(const k in attrs) e.setAttribute(k,attrs[k]);
+    if(txt!=null) e.textContent=txt;
+    mk.appendChild(e); return e;
+  }
+  // axes
+  el("line",{x1:CX,y1:400-B-16,x2:CX,y2:400+B+16,stroke:"#b2bec3","stroke-width":1,opacity:0.22});
+  el("line",{x1:CX-A-16,y1:400,x2:CX+A+16,y2:400,stroke:"#b2bec3","stroke-width":1,opacity:0.22});
+  el("text",{x:CX+A+20,y:404,fill:"#7f8c8d","font-size":11},"H");
+  el("text",{x:CX+8,y:400-B-20,fill:"#7f8c8d","font-size":11},"B");
+
+  // markers (revealed when the trace reaches them)
+  const mkSatR=el("g",{opacity:0});
+  const mkSatL=el("g",{opacity:0});
+  const mkCoer=el("g",{opacity:0});
+  function marker(g,x,y,tx,ty,anchor,txt){
+    const c=document.createElementNS(svgNS,"circle");
+    c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",3);
+    c.setAttribute("fill","none");c.setAttribute("stroke","#00b894");c.setAttribute("stroke-width",1.4);
+    g.appendChild(c);
+    const t=document.createElementNS(svgNS,"text");
+    t.setAttribute("x",tx);t.setAttribute("y",ty);t.setAttribute("fill","#b2bec3");
+    t.setAttribute("font-size","11.5");t.setAttribute("letter-spacing","0.06em");
+    if(anchor) t.setAttribute("text-anchor",anchor);
+    t.textContent=txt; g.appendChild(t);
+  }
+  const pSatR=loopPt(0.25), pSatL=loopPt(0.75), pCoer=loopPt(0.5);
+  marker(mkSatR,pSatR.x,pSatR.y,pSatR.x+12,pSatR.y-8,"start","Saturation");
+  marker(mkSatL,pSatL.x,pSatL.y,pSatL.x-12,pSatL.y-8,"end","Saturation");
+  marker(mkCoer,pCoer.x,pCoer.y,pCoer.x-12,pCoer.y+18,"end","Coercivity");
+
+  // ---- state ----
+  const loopEl=document.getElementById("loop");
+  const glowEl=document.getElementById("loopGlow");
+  const dot=document.getElementById("dot");
+  const dotGlowG=document.getElementById("dotGlowG");
+  const coreEl=document.getElementById("coreEl");
+  const total=loopEl.getTotalLength();
+  loopEl.style.strokeDasharray=total;
+  glowEl.style.strokeDasharray=total;
+
+  const BASE=reduce?0.055:0.1;
+  const target=reduce?BASE:1;
+  let speed=BASE, phase=0, reveal=0;
+  let hovering=false, clickStart=-1;
+
+  const wrap=document.getElementById("wrap");
+  const tooltip=document.getElementById("tooltip");
+  const ttH=document.getElementById("ttH");
+
+  const vH=document.getElementById("vH"), vB=document.getElementById("vB");
+  const bH=document.getElementById("bH"), bB=document.getElementById("bB");
+  const vState=document.getElementById("vState"), vSpeed=document.getElementById("vSpeed");
+
+  // entrance
+  requestAnimationFrame(()=>wrap.classList.add("in"));
+  const startReveal=performance.now();
+  const revealDur=reduce?0:2000;
+
+  function loopState(t){
+    if(t<0.25) return "Rising · magnetising";
+    if(t<0.5)  return "Saturation · upper knee";
+    if(t<0.75) return "Reversing · coercivity";
+    return "Lower knee · demagnetising";
+  }
+
+  let last=performance.now();
+  function frame(now){
+    const dt=Math.min(0.05,(now-last)/1000); last=now;
+
+    // reveal
+    if(revealDur>0){
+      const p=Math.min(1,(now-startReveal)/revealDur);
+      reveal=p<1?(1-Math.pow(1-p,3)):1;
+    } else reveal=1;
+
+    // speed easing (hover halves)
+    const tgt=hovering?target*0.5:target;
+    speed+=(tgt-speed)*Math.min(1,dt*6);
+
+    // click reset
+    if(clickStart>=0){
+      const p=(now-clickStart)/900;
+      if(p>=1){ clickStart=-1; reveal=1; }
+      else reveal=1-Math.pow(1-p,3);
+    }
+
+    phase+=speed*dt; if(phase>=1) phase-=1;
+
+    // draw
+    const drawn=Math.max(0.0001, reveal*total);
+    loopEl.style.strokeDashoffset=(total-drawn).toFixed(2);
+    glowEl.style.strokeDashoffset=(total-drawn).toFixed(2);
+    const head=reveal>=0.999;
+    loopEl.setAttribute("opacity",head?0.95:0.9);
+    glowEl.setAttribute("opacity",head?0.4:0.28);
+
+    // dot
+    const pt=loopPt(phase);
+    dot.setAttribute("cx",pt.x.toFixed(2)); dot.setAttribute("cy",pt.y.toFixed(2));
+    dotGlowG.setAttribute("transform",`translate(${pt.x.toFixed(2)} ${pt.y.toFixed(2)})`);
+    const vis=head?1:Math.min(1,reveal*1.4);
+    dot.setAttribute("opacity",vis); dotGlowG.setAttribute("opacity",(0.55*vis).toFixed(3));
+
+    // core breathing
+    const breath=0.32+0.14*Math.sin(phase*Math.PI*4);
+    coreEl.setAttribute("opacity",(breath*reveal).toFixed(3));
+
+    // markers reveal
+    const near=(a,b)=>Math.min(Math.abs(a-b),1-Math.abs(a-b));
+    const fade=(d)=>Math.max(0,1-d/0.05);
+    mkSatR.setAttribute("opacity",(fade(near(phase,0.25))*reveal).toFixed(3));
+    mkSatL.setAttribute("opacity",(fade(near(phase,0.75))*reveal).toFixed(3));
+    mkCoer.setAttribute("opacity",(fade(near(phase,0.5))*reveal).toFixed(3));
+
+    // readouts
+    const Hv=(pt.x-CX)/A*HMAX, Bv=(400-pt.y)/B*BMAX;
+    vH.textContent=Hv.toFixed(2);
+    vB.textContent=Bv.toFixed(2);
+    bH.style.width=((Hv/HMAX*0.5+0.5)*100).toFixed(1)+"%";
+    bB.style.width=((Bv/BMAX*0.5+0.5)*100).toFixed(1)+"%";
+    vState.textContent=loopState(phase);
+    vSpeed.textContent=(1/speed).toFixed(1)+" s / cycle";
+
+    // tooltip
+    if(hovering){
+      ttH.textContent=Hv.toFixed(2);
+      tooltip.style.left=pt.x+"px";
+      tooltip.style.top=(pt.y-14)+"px";
+      tooltip.classList.add("show");
+    } else tooltip.classList.remove("show");
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // ---- interaction ----
+  wrap.addEventListener("pointerenter",()=>{hovering=true;});
+  wrap.addEventListener("pointerleave",()=>{hovering=false;});
+  wrap.addEventListener("click",()=>{ clickStart=performance.now(); phase=0; });
+  // keyboard accessibility
+  wrap.setAttribute("tabindex","0");
+  wrap.addEventListener("keydown",e=>{
+    if(e.key==="Enter"||e.key===" "){ e.preventDefault(); clickStart=performance.now(); phase=0; }
+  });
+})();
+</script>
+</body>
+</html>

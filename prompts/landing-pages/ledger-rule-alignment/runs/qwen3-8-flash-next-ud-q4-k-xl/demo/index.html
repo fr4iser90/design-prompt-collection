@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balanced Books — Every Penny Accounted For</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f9f9f9;
+    --paper-edge:#f0f0f0;
+    --blue:#003366;
+    --red:#cc0000;
+    --rule:#e0e0e0;
+    --rule-soft:#eaeaea;
+    --blue-rule:#cfe0f0;
+    --highlight:#e6f2ff;
+    --ink:#003366;
+    --muted:#5c6b7a;
+    --rule-h:40px;
+    --col-left:150px;
+    --col-right:170px;
+    --shadow:0 1px 0 rgba(0,51,102,.04), 0 14px 34px rgba(0,51,102,.07);
+    --serif:'Lora', Georgia, 'Times New Roman', serif;
+    --sans:'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background-color:var(--paper);
+    /* ruled ledger paper: horizontal blue rules + faint column dividers */
+    background-image:
+      repeating-linear-gradient(to right, transparent, transparent calc(100% - 1px), rgba(0,51,102,.055) calc(100% - 1px), rgba(0,51,102,.055) 100%),
+      repeating-linear-gradient(to bottom, transparent, transparent calc(var(--rule-h) - 1px), rgba(0,51,102,.085) calc(var(--rule-h) - 1px), rgba(0,51,102,.085) var(--rule-h));
+    background-size:100% 100%, 100% var(--rule-h);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  /* faint watermark of the company logo */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-repeat:repeat;
+    background-size:230px 230px;
+    background-position:60px 40px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='230' height='230' viewBox='0 0 230 230'%3E%3Cg fill='none' stroke='%23003366' stroke-width='2.2'%3E%3Cpath d='M115 40 L115 172'/%3E%3Cpath d='M52 64 L178 64'/%3E%3Cpath d='M52 64 L30 116 L74 116 Z'/%3E%3Cpath d='M178 64 L156 116 L200 116 Z'/%3E%3Cpath d='M30 116 Q52 132 74 116'/%3E%3Cpath d='M156 116 Q178 132 200 116'/%3E%3Cpath d='M96 172 L134 172'/%3E%3C/g%3E%3C/svg%3E");
+    opacity:.05;
+  }
+
+  .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 28px;}
+
+  .num{font-family:var(--serif);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:-.01em;}
+  .label{font-family:var(--sans);text-transform:uppercase;letter-spacing:.14em;font-weight:600;font-size:.7rem;color:var(--muted);}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:rgba(249,249,249,.82);
+    backdrop-filter:blur(7px);
+    border-bottom:1px solid var(--blue);
+  }
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-weight:700;font-size:1.18rem;letter-spacing:.01em;}
+  .brand svg{display:block;}
+  .nav{display:flex;gap:26px;align-items:center;}
+  .nav a{color:var(--blue);text-decoration:none;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;position:relative;padding:4px 0;}
+  .nav a::after{content:"";position:absolute;left:0;bottom:-2px;height:1px;width:0;background:var(--blue);transition:width .25s ease;}
+  .nav a:hover::after{width:100%;}
+  .btn{
+    font-family:var(--sans);font-weight:600;font-size:.76rem;letter-spacing:.1em;text-transform:uppercase;
+    border:1px solid var(--blue);background:var(--blue);color:#fff;padding:9px 16px;cursor:pointer;
+    transition:background .2s ease,color .2s ease,transform .15s ease;
+  }
+  .btn:hover{background:#fff;color:var(--blue);}
+  .btn:active{transform:translateY(1px);}
+  .btn.ghost{background:transparent;color:var(--blue);}
+  .btn.ghost:hover{background:var(--blue);color:#fff;}
+  .btn.danger{background:var(--red);border-color:var(--red);}
+  .btn.danger:hover{background:#fff;color:var(--red);}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:70px 0 40px;}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:end;}
+  .kicker{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+  .kicker .dot{width:9px;height:9px;background:var(--red);border-radius:50%;box-shadow:0 0 0 3px rgba(204,0,0,.12);}
+  h1.headline{
+    font-family:var(--serif);font-weight:700;line-height:.98;letter-spacing:-.015em;
+    font-size:clamp(2.7rem,6.4vw,4.9rem);margin:0 0 20px;color:var(--blue);
+    text-shadow:0 0 0 rgba(0,51,102,0);
+  }
+  h1.headline .em{font-style:italic;font-weight:500;}
+  .hero p.lede{font-size:1.05rem;line-height:1.6;color:var(--muted);max-width:44ch;margin:0 0 26px;}
+  .hero .cta{display:flex;gap:14px;flex-wrap:wrap;}
+  .hero .cta .btn{padding:13px 22px;font-size:.8rem;}
+
+  /* ---------- Ledger card ---------- */
+  .ledger{
+    background:var(--paper);
+    border:1px solid var(--blue);
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .ledger::before{
+    content:"";position:absolute;left:0;top:0;height:100%;width:1px;background:var(--red);opacity:.35;
+  }
+  .ledger__head{
+    display:grid;grid-template-columns:var(--col-left) 1fr var(--col-right);
+    border-bottom:1px solid var(--blue);
+  }
+  .ledger__head .h{padding:12px 16px;}
+  .ledger__head .h.amount{text-align:right;}
+  .ledger__head .h .label{display:block;}
+  .ledger__head .h .sub{font-family:var(--serif);font-style:italic;font-size:.82rem;color:var(--muted);margin-top:2px;}
+
+  .ledger__rows{position:relative;}
+  /* animated rule overlay */
+  .rule-overlay{position:absolute;inset:0;pointer-events:none;z-index:1;}
+  .rule-overlay i{
+    position:absolute;left:0;right:0;height:1px;background:var(--rule);
+    transform:scaleX(0);transform-origin:left center;
+  }
+  .ledger.animate .rule-overlay i{animation:drawRule .7s cubic-bezier(.22,.61,.36,1) forwards;}
+  @keyframes drawRule{to{transform:scaleX(1);}}
+
+  .row{
+    position:relative;z-index:2;
+    display:grid;grid-template-columns:var(--col-left) 1fr var(--col-right);
+    border-bottom:1px solid var(--rule-soft);
+    transition:background .16s ease;
+  }
+  .row .cell{padding:13px 16px;display:flex;align-items:center;}
+  .row .cell.amount{justify-content:flex-end;}
+  .row .date{font-family:var(--serif);font-size:.92rem;color:var(--blue);}
+  .row .desc{font-size:.9rem;color:var(--ink);line-height:1.35;}
+  .row .desc .acct{display:block;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:2px;}
+  .row .amt{font-family:var(--serif);font-variant-numeric:tabular-nums;font-weight:600;font-size:1.02rem;color:var(--blue);}
+  .row .amt.neg{color:var(--red);}
+  .row .amt.neg::before{content:"(";color:var(--red);}
+  .row .amt.neg::after{content:")";color:var(--red);}
+  .row:hover{background:var(--highlight);}
+  .row:hover .cell{background:linear-gradient(90deg,rgba(0,51,102,.03),transparent 40%);}
+
+  .ledger__total{
+    display:grid;grid-template-columns:var(--col-left) 1fr var(--col-right);
+    border-top:2px solid var(--blue);background:#fff;
+  }
+  .ledger__total .cell{padding:15px 16px;}
+  .ledger__total .desc{font-family:var(--sans);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.74rem;color:var(--blue);}
+  .ledger__total .cell.amount{justify-content:flex-end;}
+  .ledger__total .amt{font-family:var(--serif);font-weight:700;font-size:1.45rem;color:var(--blue);font-variant-numeric:tabular-nums;}
+  .ledger__total .amt::before{content:"$";font-weight:500;margin-right:2px;}
+  .ledger__total .amt.neg{color:var(--red);}
+  .ledger__foot{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 16px;border-top:1px solid var(--rule);font-size:.72rem;color:var(--muted);letter-spacing:.06em;
+  }
+  .ledger__foot .balanced{display:flex;align-items:center;gap:7px;color:var(--blue);font-weight:600;}
+  .ledger__foot .balanced .tick{width:15px;height:15px;border:1px solid var(--blue);border-radius:50%;display:grid;place-items:center;font-size:.6rem;}
+
+  /* ---------- Ticker band ---------- */
+  .ticker{border-top:1px solid var(--blue);border-bottom:1px solid var(--blue);background:rgba(255,255,255,.55);}
+  .ticker .wrap{display:grid;grid-template-columns:repeat(4,1fr);}
+  .tk{padding:26px 18px;border-right:1px solid var(--rule);text-align:right;}
+  .tk:last-child{border-right:none;}
+  .tk .val{font-family:var(--serif);font-weight:700;font-variant-numeric:tabular-nums;font-size:clamp(1.7rem,3.4vw,2.5rem);color:var(--blue);line-height:1;}
+  .tk .val .pfx{font-weight:500;color:var(--muted);}
+  .tk .cap{margin-top:9px;font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+
+  /* ---------- Section header ---------- */
+  .sec{padding:78px 0;}
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:8px;flex-wrap:wrap;}
+  .sec-head h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.7rem,3.6vw,2.5rem);margin:0;color:var(--blue);letter-spacing:-.01em;}
+  .sec-head .no{font-family:var(--serif);font-style:italic;color:var(--red);font-size:1.1rem;}
+  .sec-head .rule-line{flex:1;height:1px;background:var(--blue);opacity:.25;min-width:40px;}
+  .sec-sub{color:var(--muted);max-width:60ch;margin:0 0 34px;line-height:1.6;}
+
+  /* ---------- Features ledger ---------- */
+  .feat{background:var(--paper);border:1px solid var(--blue);box-shadow:var(--shadow);}
+  .feat .fhead{display:grid;grid-template-columns:200px 1fr 150px;border-bottom:1px solid var(--blue);}
+  .feat .fhead .h{padding:12px 20px;}
+  .feat .fhead .h.status{text-align:right;}
+  .frow{
+    display:grid;grid-template-columns:200px 1fr 150px;align-items:center;
+    border-bottom:1px solid var(--rule-soft);transition:background .16s ease;
+  }
+  .frow:last-child{border-bottom:none;}
+  .frow:hover{background:var(--highlight);}
+  .frow .c{padding:20px;}
+  .frow .c.name{display:flex;align-items:center;gap:13px;}
+  .frow .c.name .ic{width:34px;height:34px;border:1px solid var(--blue);display:grid;place-items:center;flex:none;color:var(--blue);background:#fff;}
+  .frow .c.name .t{font-family:var(--serif);font-weight:600;font-size:1.05rem;color:var(--blue);}
+  .frow .c.body{font-size:.9rem;color:var(--muted);line-height:1.5;}
+  .frow .c.status{text-align:right;}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:600;letter-spacing:.06em;padding:5px 11px;border:1px solid var(--blue);color:var(--blue);}
+  .badge.red{border-color:var(--red);color:var(--red);}
+  .badge .d{width:7px;height:7px;border-radius:50%;background:currentColor;}
+
+  /* ---------- Compare / debit credit ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--blue);box-shadow:var(--shadow);background:#fff;}
+  .split .col{padding:34px 30px;}
+  .split .col.credit{border-right:1px solid var(--blue);}
+  .split .col h3{font-family:var(--serif);font-weight:700;font-size:1.3rem;margin:0 0 4px;}
+  .split .col.credit h3{color:var(--blue);}
+  .split .col.debit h3{color:var(--red);}
+  .split .col .tag{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--muted);margin-bottom:20px;}
+  .split ul{list-style:none;margin:0;padding:0;}
+  .split li{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px dashed var(--rule);font-size:.92rem;}
+  .split li:last-child{border-bottom:none;}
+  .split li .k{color:var(--ink);}
+  .split li .v{font-family:var(--serif);font-variant-numeric:tabular-nums;font-weight:600;}
+  .split .col.credit .v{color:var(--blue);}
+  .split .col.debit .v{color:var(--red);}
+
+  /* ---------- Quote ---------- */
+  .quote{border-top:1px solid var(--blue);border-bottom:1px solid var(--blue);background:rgba(255,255,255,.5);}
+  .quote .wrap{padding:64px 28px;text-align:center;}
+  .quote blockquote{font-family:var(--serif);font-style:italic;font-size:clamp(1.4rem,3vw,2.1rem);line-height:1.35;color:var(--blue);margin:0 auto;max-width:22ch;font-weight:500;}
+  .quote cite{display:block;margin-top:22px;font-style:normal;font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+
+  /* ---------- CTA ---------- */
+  .cta-final{padding:88px 0;text-align:center;}
+  .cta-final h2{font-family:var(--serif);font-weight:700;font-size:clamp(2rem,4.6vw,3.2rem);margin:0 0 14px;color:var(--blue);letter-spacing:-.015em;}
+  .cta-final p{color:var(--muted);margin:0 auto 30px;max-width:46ch;line-height:1.6;}
+  .cta-final .btn{padding:15px 30px;font-size:.82rem;}
+  .cta-final .fine{margin-top:18px;font-size:.72rem;color:var(--muted);letter-spacing:.08em;}
+
+  /* ---------- Footer ---------- */
+  footer{border-top:1px solid var(--blue);background:rgba(255,255,255,.55);}
+  footer .wrap{padding:44px 28px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:34px;}
+  footer .brand{margin-bottom:12px;}
+  footer .about{font-size:.85rem;color:var(--muted);line-height:1.6;max-width:34ch;}
+  footer h4{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin:0 0 14px;}
+  footer ul{list-style:none;margin:0;padding:0;}
+  footer li{margin-bottom:9px;}
+  footer a{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .18s;}
+  footer a:hover{color:var(--blue);}
+  .colophon{border-top:1px solid var(--rule);}
+  .colophon .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:18px 28px;font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
+
+  /* ---------- Motion: entrance ---------- */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  .ink{animation:inkDry 1.4s ease forwards;}
+  @keyframes inkDry{
+    0%{opacity:.8;filter:blur(0.4px);}
+    100%{opacity:1;filter:blur(0);}
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:900px){
+    .hero .wrap{grid-template-columns:1fr;gap:40px;}
+    .hero{padding:48px 0 20px;}
+    .ticker .wrap{grid-template-columns:1fr 1fr;}
+    .tk:nth-child(2){border-right:none;}
+    .tk:nth-child(1),.tk:nth-child(2){border-bottom:1px solid var(--rule);}
+    .nav{display:none;}
+    footer .wrap{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:640px){
+    :root{--col-left:1fr;--col-right:auto;}
+    .wrap{padding:0 18px;}
+    /* collapse ledger rows to stacked cards, keep rules */
+    .ledger__head{display:none;}
+    .row{grid-template-columns:1fr;gap:2px;padding:14px 16px;border-bottom:1px solid var(--rule);}
+    .row .cell{padding:0;}
+    .row .cell.amount{justify-content:flex-start;margin-top:4px;}
+    .row .date{font-weight:600;}
+    .ledger__total{grid-template-columns:1fr;gap:4px;padding:14px 16px;}
+    .ledger__total .cell{padding:0;}
+    .ledger__total .cell.amount{justify-content:flex-start;}
+    .feat .fhead{display:none;}
+    .frow{grid-template-columns:1fr;gap:6px;padding:16px;border-bottom:1px solid var(--rule);}
+    .frow .c{padding:0;}
+    .frow .c.status{text-align:left;}
+    .split{grid-template-columns:1fr;}
+    .split .col.credit{border-right:none;border-bottom:1px solid var(--blue);}
+    footer .wrap{grid-template-columns:1fr;}
+    .sec{padding:56px 0;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+    .reveal{opacity:1;transform:none;}
+    .rule-overlay i{transform:scaleX(1);}
+    .ink{opacity:1;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true">
+          <g fill="none" stroke="#003366" stroke-width="1.6">
+            <path d="M13 3 L13 22"/><path d="M4 7 L22 7"/>
+            <path d="M4 7 L1 14 L7 14 Z"/><path d="M22 7 L19 14 L25 14 Z"/>
+            <path d="M1 14 Q4 17 7 14"/><path d="M19 14 Q22 17 25 14"/>
+            <path d="M9 22 L17 22"/>
+          </g>
+        </svg>
+        Balanced Books
+      </div>
+      <nav class="nav">
+        <a href="#ledger">Ledger</a>
+        <a href="#features">Features</a>
+        <a href="#balance">Balance</a>
+        <a href="#start">Pricing</a>
+      </nav>
+      <button class="btn">Open a ledger</button>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="reveal in">
+        <div class="kicker">
+          <span class="dot"></span>
+          <span class="label">Double-entry, reimagined</span>
+        </div>
+        <h1 class="headline ink">Every penny<br>accounted <span class="em">for.</span></h1>
+        <p class="lede">Balanced Books keeps every transaction on the rule — debit, credit, and total aligned to the last cent. No floating numbers. No drift. Just a clean sheet that balances itself.</p>
+        <div class="cta">
+          <button class="btn">Start balancing — free</button>
+          <button class="btn ghost">See a sample ledger</button>
+        </div>
+      </div>
+
+      <!-- Mock ledger entry -->
+      <div class="ledger reveal" id="ledger">
+        <div class="ledger__head">
+          <div class="h"><span class="label">Date</span><span class="sub">Posting</span></div>
+          <div class="h"><span class="label">Description</span><span class="sub">Account</span></div>
+          <div class="h amount"><span class="label">Amount</span><span class="sub">Dr / Cr</span></div>
+        </div>
+        <div class="ledger__rows" id="rows">
+          <div class="rule-overlay" aria-hidden="true"></div>
+          <div class="row">
+            <div class="cell date">04/01</div>
+            <div class="cell desc">Client retainer received<span class="acct">Accounts Receivable</span></div>
+            <div class="cell amount"><span class="amt" data-val="4200">0</span></div>
+          </div>
+          <div class="row">
+            <div class="cell date">04/03</div>
+            <div class="cell desc">Cloud hosting — April<span class="acct">Operating Expense</span></div>
+            <div class="cell amount"><span class="amt neg" data-val="-180">0</span></div>
+          </div>
+          <div class="row">
+            <div class="cell date">04/05</div>
+            <div class="cell desc">Payroll — design team<span class="acct">Payroll Expense</span></div>
+            <div class="cell amount"><span class="amt neg" data-val="-6400">0</span></div>
+          </div>
+          <div class="row">
+            <div class="cell date">04/08</div>
+            <div class="cell desc">Invoice #2291 paid<span class="acct">Cash &amp; Equivalents</span></div>
+            <div class="cell amount"><span class="amt" data-val="9150">0</span></div>
+          </div>
+          <div class="row">
+            <div class="cell date">04/12</div>
+            <div class="cell desc">Software licenses<span class="acct">Operating Expense</span></div>
+            <div class="cell amount"><span class="amt neg" data-val="-320">0</span></div>
+          </div>
+          <div class="row">
+            <div class="cell date">04/15</div>
+            <div class="cell desc">Interest earned — reserve<span class="acct">Interest Income</span></div>
+            <div class="cell amount"><span class="amt" data-val="145">0</span></div>
+          </div>
+        </div>
+        <div class="ledger__total">
+          <div class="cell"></div>
+          <div class="cell desc">Net balance</div>
+          <div class="cell amount"><span class="amt" id="total" data-val="6395">0</span></div>
+        </div>
+        <div class="ledger__foot">
+          <span class="balanced"><span class="tick">✓</span> Debits = Credits · Balanced</span>
+          <span>Period: April 2024 · 6 entries</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TICKER BAND ============ -->
+  <section class="ticker">
+    <div class="wrap">
+      <div class="tk"><div class="val"><span class="pfx">$</span><span data-count="128400000" data-fmt="money">0</span></div><div class="cap">Reconciled monthly</div></div>
+      <div class="tk"><div class="val"><span data-count="99.99" data-fmt="pct">0</span></div><div class="cap">Match rate</div></div>
+      <div class="tk"><div class="val"><span data-count="41000" data-fmt="int">0</span></div><div class="cap">Books balanced</div></div>
+      <div class="tk"><div class="val"><span data-count="0.0001" data-fmt="micro">0</span></div><div class="cap">Rounding drift</div></div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="sec" id="features">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="no">01</span>
+        <h2>Features, posted in order</h2>
+        <span class="rule-line"></span>
+      </div>
+      <p class="sec-sub reveal">Every capability lands on its own rule — label left, description center, status right. The grid holds them accountable.</p>
+
+      <div class="feat reveal">
+        <div class="fhead">
+          <div class="h"><span class="label">Capability</span></div>
+          <div class="h"><span class="label">What it does</span></div>
+          <div class="h status"><span class="label">Status</span></div>
+        </div>
+
+        <div class="frow">
+          <div class="c name"><span class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="8" cy="6" r="1.4" fill="currentColor"/><circle cx="16" cy="12" r="1.4" fill="currentColor"/><circle cx="11" cy="18" r="1.4" fill="currentColor"/></svg>
+          </span><span class="t">Auto-reconciliation</span></div>
+          <div class="c body">Bank feeds, invoices, and receipts snap to matching entries. Unmatched rows surface in red; matched rows settle to blue.</div>
+          <div class="c status"><span class="badge"><span class="d"></span>Live</span></div>
+        </div>
+
+        <div class="frow">
+          <div class="c name"><span class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4v16h16"/><path d="M8 15l3-4 3 3 4-6"/></svg>
+          </span><span class="t">Real-time balance</span></div>
+          <div class="c body">Debits and credits roll up continuously. The total row recomputes on every posting — never a stale number.</div>
+          <div class="c status"><span class="badge"><span class="d"></span>Live</span></div>
+        </div>
+
+        <div class="frow">
+          <div class="c name"><span class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          </span><span class="t">Audit trail</span></div>
+          <div class="c body">Immutable, timestamped history for every adjustment. Who posted it, when, and against which account.</div>
+          <div class="c status"><span class="badge"><span class="d"></span>Live</span></div>
+        </div>
+
+        <div class="frow">
+          <div class="c name"><span class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 13h6M9 17h6"/></svg>
+          </span><span class="t">Statement exports</span></div>
+          <div class="c body">One-click PDF and CSV that mirror the on-screen ledger — same rules, same alignment, print-ready.</div>
+          <div class="c status"><span class="badge"><span class="d"></span>Live</span></div>
+        </div>
+
+        <div class="frow">
+          <div class="c name"><span class="ic">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span><span class="t">Period close</span></div>
+          <div class="c body">Lock a month once it balances. Late edits are flagged before they can unbalance a closed period.</div>
+          <div class="c status"><span class="badge red"><span class="d"></span>Beta</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEBIT / CREDIT ============ -->
+  <section class="sec" id="balance" style="padding-top:0;">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="no">02</span>
+        <h2>The two sides of every entry</h2>
+        <span class="rule-line"></span>
+      </div>
+      <p class="sec-sub reveal">Blue for what you own and earn. Red for what you owe and spend. Kept apart, so a glance tells the whole story.</p>
+
+      <div class="split reveal">
+        <div class="col credit">
+          <h3>Credits &amp; Assets</h3>
+          <div class="tag">Blue · Where value lives</div>
+          <ul>
+            <li><span class="k">Cash &amp; equivalents</span><span class="v">$184,200</span></li>
+            <li><span class="k">Accounts receivable</span><span class="v">$62,500</span></li>
+            <li><span class="k">Revenue recognized</span><span class="v">$128,400</span></li>
+            <li><span class="k">Interest &amp; gains</span><span class="v">$3,145</span></li>
+          </ul>
+        </div>
+        <div class="col debit">
+          <h3>Debits &amp; Liabilities</h3>
+          <div class="tag">Red · Where value goes</div>
+          <ul>
+            <li><span class="k">Operating expenses</span><span class="v">$41,900</span></li>
+            <li><span class="k">Payroll</span><span class="v">$76,300</span></li>
+            <li><span class="k">Loans payable</span><span class="v">$54,000</span></li>
+            <li><span class="k">Accruals</span><span class="v">$9,200</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUOTE ============ -->
+  <section class="quote">
+    <div class="wrap">
+      <blockquote>“It finally looks like the ledger I grew up trusting — only it balances itself.”</blockquote>
+      <cite>Marta V. — Controller, Northgate Studio</cite>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="cta-final" id="start">
+    <div class="wrap reveal">
+      <h2>Bring your books onto the rule.</h2>
+      <p>Import a month, watch it align, and keep it balanced. No setup fee, no floating numbers.</p>
+      <button class="btn">Open a ledger</button>
+      <div class="fine">Free for 30 days · Cancel anytime · SOC 2 Type II</div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="wrap">
+      <div>
+        <div class="brand">
+          <svg width="24" height="24" viewBox="0 0 26 26" aria-hidden="true">
+            <g fill="none" stroke="#003366" stroke-width="1.6">
+              <path d="M13 3 L13 22"/><path d="M4 7 L22 7"/>
+              <path d="M4 7 L1 14 L7 14 Z"/><path d="M22 7 L19 14 L25 14 Z"/>
+              <path d="M1 14 Q4 17 7 14"/><path d="M19 14 Q22 17 25 14"/>
+              <path d="M9 22 L17 22"/>
+            </g>
+          </svg>
+          Balanced Books
+        </div>
+        <p class="about">A modern accounting SaaS built on the discipline of the double-entry ledger. Every number has its place.</p>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#ledger">Ledger</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#balance">Reconciliation</a></li>
+          <li><a href="#start">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Security</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Documentation</a></li>
+          <li><a href="#">Import guide</a></li>
+          <li><a href="#">Status</a></li>
+          <li><a href="#">Changelog</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="colophon">
+      <div class="wrap">
+        <span>© 2024 Balanced Books, Inc.</span>
+        <span>Set in Lora &amp; Inter · Tabular figures throughout</span>
+      </div>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- build animated rule overlay lines inside ledger rows ---- */
+  var rows = document.getElementById('rows');
+  if(rows){
+    var overlay = rows.querySelector('.rule-overlay');
+    var rowCount = rows.querySelectorAll('.row').length;
+    for(var i=1;i<rowCount;i++){
+      var line = document.createElement('i');
+      line.style.top = (i * 100 / rowCount) + '%';
+      line.style.animationDelay = (0.15 + i*0.09) + 's';
+      overlay.appendChild(line);
+    }
+  }
+
+  /* ---- number formatting ---- */
+  function fmtMoney(v){ return Math.round(v).toLocaleString('en-US'); }
+  function fmtInt(v){ return Math.round(v).toLocaleString('en-US'); }
+  function fmtPct(v){ return v.toFixed(2) + '%'; }
+  function fmtMicro(v){ return '$' + v.toFixed(4); }
+  function fmtAmt(v){ return Math.abs(Math.round(v)).toLocaleString('en-US'); }
+
+  function animateCount(el, target, formatter, dur){
+    if(reduce){ el.textContent = formatter(target); return; }
+    var start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts - start)/dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = formatter(target * eased);
+      if(p < 1) requestAnimationFrame(step);
+      else el.textContent = formatter(target);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---- ticker band counters ---- */
+  function runTicker(){
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      var target = parseFloat(el.getAttribute('data-count'));
+      var type = el.getAttribute('data-fmt');
+      var f = type==='money'?fmtMoney : type==='pct'?fmtPct : type==='micro'?fmtMicro : fmtInt;
+      animateCount(el, target, f, 1600);
+    });
+  }
+
+  /* ---- ledger amount + total counters ---- */
+  function runLedger(){
+    var ledger = document.getElementById('ledger');
+    if(ledger) ledger.classList.add('animate');
+
+    var totalEl = document.getElementById('total');
+    var totalTarget = parseFloat(totalEl.getAttribute('data-val'));
+
+    document.querySelectorAll('.amt[data-val]').forEach(function(el){
+      var target = parseFloat(el.getAttribute('data-val'));
+      if(el === totalEl){
+        animateCount(el, target, fmtAmt, 1700);
+      } else {
+        animateCount(el, target, fmtAmt, 1200);
+      }
+    });
+  }
+
+  /* ---- dynamic total from visible rows ---- */
+  function computeTotal(){
+    var sum = 0;
+    document.querySelectorAll('#rows .amt[data-val]').forEach(function(el){
+      sum += parseFloat(el.getAttribute('data-val'));
+    });
+    var totalEl = document.getElementById('total');
+    totalEl.setAttribute('data-val', sum);
+    totalEl.classList.toggle('neg', sum < 0);
+    if(reduce) totalEl.textContent = fmtAmt(sum);
+  }
+  computeTotal();
+
+  /* ---- reveal + trigger on view ---- */
+  function onVisible(el, cb){
+    if(reduce){ cb(); el.classList.add('in'); return; }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          e.target.classList.add('in');
+          cb();
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.25});
+    io.observe(el);
+  }
+
+  var heroLedger = document.getElementById('ledger');
+  onVisible(heroLedger, runLedger);
+
+  var ticker = document.querySelector('.ticker');
+  if(ticker){ onVisible(ticker, runTicker); }
+
+  document.querySelectorAll('.reveal:not(.in)').forEach(function(el){
+    onVisible(el, function(){});
+  });
+
+})();
+</script>
+</body>
+</html>
