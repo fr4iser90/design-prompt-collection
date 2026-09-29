@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extruded Narrative — Die &amp; Dough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EDF2F4;
+    --ink:#2B2D42;
+    --accent:#D4A373;
+    --accent-deep:#A87B45;
+    --secondary:#8D99AE;
+    --hair:#C7D0D8;
+    --hair-soft:rgba(141,153,174,.35);
+    --shadow:rgba(43,45,66,.16);
+    --shadow-deep:rgba(43,45,66,.30);
+    --strand-gap:clamp(1.5rem,4vw,3.5rem);
+    --ease:cubic-bezier(.16,1,.3,1);
+    --die:64px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Fira Code',ui-monospace,monospace;
+    font-weight:400;
+    line-height:1.7;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* ---------- Atmospheric background: engineering blueprint ---------- */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background-image:
+      linear-gradient(var(--hair-soft) 1px,transparent 1px),
+      linear-gradient(90deg,var(--hair-soft) 1px,transparent 1px);
+    background-size:48px 48px;
+    background-position:center top;
+    opacity:.5;
+    -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 55%,transparent 92%);
+            mask-image:linear-gradient(to bottom,#000 0,#000 55%,transparent 92%);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:radial-gradient(120% 80% at 50% -10%,rgba(212,163,115,.10),transparent 60%);
+  }
+
+  /* ---------- Fixed brass extrusion rail (the die) ---------- */
+  .rail{
+    position:fixed;
+    left:0;top:0;bottom:0;
+    width:34px;
+    z-index:5;
+    background:linear-gradient(90deg,
+      var(--accent-deep) 0%,
+      var(--accent) 45%,
+      #E8C79A 52%,
+      var(--accent) 60%,
+      var(--accent-deep) 100%);
+    box-shadow:2px 0 12px rgba(43,45,66,.25),inset -1px 0 2px rgba(255,255,255,.4);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 0;
+  }
+  .rail::after{
+    content:"";
+    position:absolute;
+    top:0;right:-1px;bottom:0;
+    width:2px;
+    background:repeating-linear-gradient(to bottom,
+      var(--ink) 0 10px,transparent 10px 14px);
+    opacity:.25;
+  }
+  .rail__mark{
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+    font-size:.62rem;
+    letter-spacing:.35em;
+    color:var(--ink);
+    font-weight:600;
+    text-transform:uppercase;
+    opacity:.75;
+  }
+  .rail__hole{
+    width:12px;height:12px;border-radius:50%;
+    background:var(--ink);
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.35);
+    flex:none;
+  }
+
+  /* ---------- Header / Die stamp ---------- */
+  header.die{
+    position:sticky;
+    top:0;
+    z-index:40;
+    margin-left:34px;
+    background:linear-gradient(180deg,var(--bg) 60%,rgba(237,242,244,.85));
+    border-bottom:1px solid var(--hair);
+    box-shadow:0 1px 0 rgba(255,255,255,.6),0 6px 18px -12px var(--shadow);
+    backdrop-filter:blur(4px);
+  }
+  .die__bar{
+    max-width:1180px;
+    margin:0 auto;
+    padding:14px clamp(1.1rem,4vw,2.4rem);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+  }
+  .stamp{
+    display:inline-flex;
+    align-items:center;
+    gap:.7rem;
+    border:2px solid var(--accent);
+    padding:.35rem .85rem;
+    background:
+      linear-gradient(180deg,rgba(212,163,115,.12),rgba(212,163,115,.02));
+    box-shadow:inset 0 0 0 3px var(--bg),inset 0 0 0 4px var(--accent);
+    position:relative;
+    transform:rotate(-1.2deg);
+  }
+  .stamp::before{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:1px solid var(--accent);
+    opacity:.55;
+    pointer-events:none;
+  }
+  .stamp__glyph{
+    font-family:'Bodoni Moda',serif;
+    font-weight:900;
+    font-size:1.35rem;
+    color:var(--accent-deep);
+    line-height:1;
+    letter-spacing:.02em;
+  }
+  .stamp__text{
+    font-family:'Bodoni Moda',serif;
+    font-weight:800;
+    font-size:clamp(.95rem,2.4vw,1.15rem);
+    letter-spacing:.02em;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .die__meta{
+    display:flex;
+    align-items:center;
+    gap:1.1rem;
+    font-size:.62rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--secondary);
+  }
+  .die__meta b{color:var(--ink);font-weight:600}
+  .live{
+    display:inline-flex;align-items:center;gap:.45rem;
+  }
+  .live__dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 0 rgba(212,163,115,.6);
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(212,163,115,.55)}
+    70%{box-shadow:0 0 0 7px rgba(212,163,115,0)}
+    100%{box-shadow:0 0 0 0 rgba(212,163,115,0)}
+  }
+  @media(max-width:640px){
+    .die__meta span.opt{display:none}
+  }
+
+  /* ---------- Hero ---------- */
+  main{position:relative;z-index:1;margin-left:34px}
+  .hero{
+    max-width:1180px;
+    margin:0 auto;
+    padding:clamp(3rem,8vw,6.5rem) clamp(1.1rem,4vw,2.4rem) clamp(2rem,5vw,4rem);
+    position:relative;
+  }
+  .hero__kicker{
+    font-size:.72rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    font-weight:500;
+    display:flex;align-items:center;gap:.8rem;
+    margin-bottom:1.6rem;
+  }
+  .hero__kicker::before{
+    content:"";width:44px;height:1px;background:var(--accent);
+  }
+  .hero__title{
+    font-family:'Bodoni Moda',serif;
+    font-weight:900;
+    font-size:clamp(3.2rem,13vw,9.5rem);
+    line-height:.86;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    margin-bottom:.15em;
+  }
+  .hero__title .word{display:block}
+  .hero__title .word--accent{
+    color:var(--accent-deep);
+    font-style:italic;
+    font-weight:700;
+    padding-left:.06em;
+  }
+  .hero__sub{
+    max-width:46ch;
+    font-size:clamp(.85rem,1.6vw,1rem);
+    color:var(--secondary);
+    line-height:1.9;
+    margin-top:1.8rem;
+    border-left:2px solid var(--accent);
+    padding-left:1.2rem;
+  }
+  .hero__specs{
+    display:flex;flex-wrap:wrap;gap:1.6rem 2.4rem;
+    margin-top:2.6rem;
+    padding-top:1.6rem;
+    border-top:1px solid var(--hair);
+  }
+  .spec{display:flex;flex-direction:column;gap:.35rem}
+  .spec__k{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--secondary)}
+  .spec__v{font-size:.95rem;color:var(--ink);font-weight:500}
+  .spec__v em{color:var(--accent-deep);font-style:normal;font-weight:600}
+
+  /* extrusion gauge on hero */
+  .hero__gauge{
+    position:absolute;
+    right:clamp(1.1rem,4vw,2.4rem);
+    top:clamp(3rem,8vw,6.5rem);
+    display:flex;flex-direction:column;align-items:center;gap:.4rem;
+    font-size:.55rem;letter-spacing:.2em;color:var(--secondary);
+    text-transform:uppercase;
+  }
+  .hero__gauge .tube{
+    width:1px;height:120px;
+    background:linear-gradient(var(--accent),transparent);
+    position:relative;
+  }
+  .hero__gauge .tube::after{
+    content:"";position:absolute;left:-3px;bottom:0;
+    width:7px;height:7px;border-radius:50%;
+    background:var(--accent);
+    animation:drop 2.4s var(--ease) infinite;
+  }
+  @keyframes drop{
+    0%{transform:translateY(0);opacity:0}
+    20%{opacity:1}
+    100%{transform:translateY(110px);opacity:0}
+  }
+  @media(max-width:820px){.hero__gauge{display:none}}
+
+  /* ---------- Strands (essay) ---------- */
+  .strands{
+    max-width:1180px;
+    margin:0 auto;
+    padding:clamp(1rem,3vw,2.5rem) clamp(1.1rem,4vw,2.4rem) 6rem;
+    display:flex;
+    flex-direction:column;
+    gap:var(--strand-gap);
+    will-change:transform;
+  }
+
+  .strand{
+    position:relative;
+    padding:1.4rem 1.6rem 1.6rem 1.9rem;
+    border-left:2px solid var(--accent);
+    background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.15));
+    box-shadow:0 1px 0 rgba(255,255,255,.6),0 14px 30px -22px var(--shadow);
+    border-radius:0 2px 2px 0;
+    max-width:60ch;
+    transition:max-width .6s var(--ease),padding .6s var(--ease),
+      line-height .6s var(--ease),letter-spacing .6s var(--ease),
+      gap .6s var(--ease),border-radius .6s var(--ease);
+    /* Spaghetti mode defaults */
+    line-height:1.8;
+    letter-spacing:0;
+  }
+  .strand::before{
+    content:attr(data-index);
+    position:absolute;
+    left:-2px;top:-11px;
+    transform:translateX(-50%);
+    width:22px;height:22px;border-radius:50%;
+    background:var(--bg);
+    border:2px solid var(--accent);
+    color:var(--accent-deep);
+    font-size:.6rem;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 6px var(--shadow);
+  }
+  .strand p{margin-bottom:1.15rem}
+  .strand p:last-child{margin-bottom:0}
+  .strand strong{color:var(--accent-deep);font-weight:600}
+  .strand .lead{
+    font-family:'Bodoni Moda',serif;
+    font-size:1.15rem;
+    line-height:1.5;
+    color:var(--ink);
+    font-weight:500;
+    margin-bottom:1.2rem;
+  }
+  .strand h2{
+    font-family:'Bodoni Moda',serif;
+    font-weight:800;
+    font-size:clamp(1.4rem,3.4vw,2.1rem);
+    line-height:1.05;
+    letter-spacing:-.01em;
+    margin-bottom:1rem;
+    color:var(--ink);
+  }
+  .strand h2 .num{
+    color:var(--accent);
+    font-weight:900;
+    margin-right:.35em;
+  }
+
+  /* ---------- Pull-quote "knots" ---------- */
+  .knot{
+    position:relative;
+    align-self:center;
+    width:min(720px,100%);
+    margin:0 auto;
+    padding:2.2rem clamp(1.4rem,4vw,3rem);
+    text-align:center;
+    background:
+      linear-gradient(180deg,rgba(212,163,115,.10),rgba(212,163,115,.02));
+    border-top:2px solid var(--accent);
+    border-bottom:2px solid var(--accent);
+    box-shadow:0 20px 40px -30px var(--shadow-deep);
+  }
+  .knot::before,.knot::after{
+    content:"";
+    position:absolute;left:50%;transform:translateX(-50%);
+    width:2px;height:26px;background:var(--accent);
+  }
+  .knot::before{top:-26px}
+  .knot::after{bottom:-26px}
+  .knot blockquote{
+    font-family:'Bodoni Moda',serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:clamp(1.5rem,4.6vw,2.6rem);
+    line-height:1.25;
+    color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  .knot cite{
+    display:block;
+    margin-top:1.2rem;
+    font-family:'Fira Code',monospace;
+    font-style:normal;
+    font-size:.66rem;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--secondary);
+  }
+
+  /* ---------- Rigatoni mode overrides ---------- */
+  body.mode-rigatoni .strand{
+    max-width:100%;
+    line-height:1.4;
+    letter-spacing:-.005em;
+    padding:1.6rem 2rem 1.8rem 2rem;
+    border-left-width:4px;
+    border-radius:2px;
+    background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.3));
+    box-shadow:0 1px 0 rgba(255,255,255,.7),0 18px 36px -24px var(--shadow-deep);
+  }
+  body.mode-rigatoni .strand p{margin-bottom:.85rem}
+  body.mode-rigatoni .strand .lead{font-size:1.05rem;line-height:1.45}
+  body.mode-rigatoni .strands{gap:1.1rem}
+  body.mode-rigatoni .knot{width:min(900px,100%);padding:1.8rem 2rem}
+  body.mode-rigatoni .knot::before,body.mode-rigatoni .knot::after{height:16px}
+  body.mode-rigatoni .knot::before{top:-16px}
+  body.mode-rigatoni .knot::after{bottom:-16px}
+
+  /* ---------- Footer ---------- */
+  footer{
+    position:relative;z-index:1;
+    margin-left:34px;
+    border-top:1px solid var(--hair);
+    background:linear-gradient(180deg,transparent,rgba(141,153,174,.08));
+  }
+  .foot{
+    max-width:1180px;margin:0 auto;
+    padding:2.4rem clamp(1.1rem,4vw,2.4rem) 5rem;
+    display:flex;flex-wrap:wrap;justify-content:space-between;
+    gap:1.4rem;align-items:flex-end;
+  }
+  .foot__brand{
+    font-family:'Bodoni Moda',serif;font-weight:800;
+    font-size:1.4rem;color:var(--ink);
+  }
+  .foot__brand span{color:var(--accent-deep)}
+  .foot__note{
+    font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--secondary);max-width:40ch;line-height:1.9;
+  }
+
+  /* ---------- Die toggle (fixed) ---------- */
+  .die-toggle{
+    position:fixed;
+    right:22px;bottom:22px;
+    z-index:60;
+    width:var(--die);height:var(--die);
+    border-radius:16px;
+    border:2px solid var(--accent-deep);
+    background:linear-gradient(150deg,#E8C79A,var(--accent) 40%,var(--accent-deep));
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;
+    box-shadow:0 10px 26px -8px var(--shadow-deep),inset 0 1px 0 rgba(255,255,255,.5);
+    transition:transform .5s var(--ease),box-shadow .3s var(--ease),border-radius .5s var(--ease);
+    font-family:'Fira Code',monospace;
+  }
+  .die-toggle:hover{transform:translateY(-3px) rotate(-4deg);box-shadow:0 16px 32px -8px var(--shadow-deep),inset 0 1px 0 rgba(255,255,255,.6)}
+  .die-toggle:active{transform:translateY(0) scale(.96)}
+  .die-toggle:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+  .die-toggle__icon{
+    width:26px;height:26px;
+    transition:transform .5s var(--ease);
+  }
+  .die-toggle__icon rect{fill:var(--ink)}
+  .die-toggle__label{
+    font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  }
+  body.mode-rigatoni .die-toggle{border-radius:8px;transform:rotate(90deg)}
+  body.mode-rigatoni .die-toggle:hover{transform:rotate(90deg) translateY(-3px)}
+  body.mode-rigatoni .die-toggle__icon{transform:rotate(-45deg)}
+
+  /* ---------- Punch entrance ---------- */
+  .punch{opacity:0}
+  .punch.in{animation:punch .7s var(--ease) forwards}
+  @keyframes punch{
+    0%{opacity:0;transform:scale(.82) translateY(-6px);
+       text-shadow:0 0 0 rgba(212,163,115,0),0 0 0 rgba(43,45,66,0)}
+    55%{opacity:1;transform:scale(1.04) translateY(0)}
+    75%{transform:scale(.985)}
+    100%{opacity:1;transform:scale(1) translateY(0);
+       text-shadow:0 1px 0 rgba(255,255,255,.7),0 3px 6px rgba(43,45,66,.14)}
+  }
+  .reveal{opacity:0;transform:translateY(22px)}
+  .reveal.in{opacity:1;transform:none;transition:opacity .8s var(--ease),transform .8s var(--ease)}
+
+  /* ---------- Ambient extruder vibration ---------- */
+  @media (prefers-reduced-motion:no-preference){
+    .strand{animation:vibe 0.62s ease-in-out infinite alternate}
+    .strand:nth-child(2n){animation-duration:.74s;animation-delay:-.2s}
+    .strand:nth-child(3n){animation-duration:.55s;animation-delay:-.35s}
+    .strand:nth-child(4n){animation-duration:.68s;animation-delay:-.12s}
+    @keyframes vibe{
+      from{transform:translateY(-1px)}
+      to{transform:translateY(1px)}
+    }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:640px){
+    :root{--die:56px}
+    .rail{width:22px}
+    header.die,main,footer{margin-left:22px}
+    .rail__mark{display:none}
+    .strand{padding:1.2rem 1.1rem 1.3rem 1.4rem}
+    .die-toggle{right:14px;bottom:14px}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    .punch{opacity:1}
+    .reveal{opacity:1;transform:none}
+    .hero__gauge .tube::after{display:none}
+    .live__dot{animation:none}
+  }
+</style>
+</head>
+<body class="mode-spaghetti">
+
+  <!-- Extrusion rail / die housing -->
+  <aside class="rail" aria-hidden="true">
+    <div class="rail__hole"></div>
+    <div class="rail__mark">DIE&nbsp;·&nbsp;DUGH&nbsp;·&nbsp;04</div>
+    <div class="rail__hole"></div>
+  </aside>
+
+  <!-- Header: the die stamp -->
+  <header class="die">
+    <div class="die__bar">
+      <div class="stamp">
+        <span class="stamp__glyph">D</span>
+        <span class="stamp__text">Die&nbsp;&amp;&nbsp;Dough</span>
+      </div>
+      <div class="die__meta">
+        <span class="live"><span class="live__dot"></span> Extruding</span>
+        <span class="opt">Issue&nbsp;<b>№&nbsp;04</b></span>
+        <span class="opt">Brass&nbsp;<b>#D4A373</b></span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero__gauge" aria-hidden="true">
+        <span>Tension</span>
+        <span class="tube"></span>
+        <span>0.4&nbsp;MPa</span>
+      </div>
+
+      <p class="hero__kicker reveal">Technical essay · Material flow</p>
+
+      <h1 class="hero__title">
+        <span class="word punch">Extruded</span>
+        <span class="word word--accent punch">Narrative</span>
+      </h1>
+
+      <p class="hero__sub reveal">
+        A long-form study of pasta as a manufacturing problem — where every
+        strand you read is being pulled, thinned, and stamped into shape.
+        The medium is the machine. Scroll to feel the die.
+      </p>
+
+      <div class="hero__specs reveal">
+        <div class="spec"><span class="spec__k">Substrate</span><span class="spec__v">Durum semolina</span></div>
+        <div class="spec"><span class="spec__k">Die</span><span class="spec__v"><em>Brass</em> · Ø 1.8 mm</span></div>
+        <div class="spec"><span class="spec__k">Barrel</span><span class="spec__v">38 °C</span></div>
+        <div class="spec"><span class="spec__k">Pressure</span><span class="spec__v">140 bar</span></div>
+        <div class="spec"><span class="spec__k">Hydration</span><span class="spec__v">31 %</span></div>
+      </div>
+    </section>
+
+    <!-- Strands -->
+    <div class="strands" id="strands">
+
+      <article class="strand reveal" data-index="01">
+        <h2 class="punch"><span class="num">01</span>Feed</h2>
+        <p class="lead">Every extrusion begins as a refusal to flow.</p>
+        <p>
+          Durum semolina is not a flour. It is a coarse, amber grit — the
+          <strong>heart</strong> of the wheat kernel, milled hard enough to
+          resist water. Hydrated to thirty-one percent, it becomes a paste
+          that wants to hold its shape against every force you apply.
+        </p>
+        <p>
+          In the feed chamber, the screw does two jobs at once: it conveys
+          the mass forward and it <strong>compresses</strong> it. Volume
+          collapses. Air is driven out through a vacuum port. What leaves the
+          throat of the barrel is no longer loose grain — it is a dense,
+          homogeneous slug, ready to be forced through a hole it cannot
+          naturally fit.
+        </p>
+      </article>
+
+      <div class="knot reveal">
+        <blockquote>“The die does not create the shape. It reveals the shape the pressure was always trying to make.”</blockquote>
+        <cite>— Process note, line 04</cite>
+      </div>
+
+      <article class="strand reveal" data-index="02">
+        <h2 class="punch"><span class="num">02</span>Compression</h2>
+        <p class="lead">Under load, starch and protein negotiate a truce.</p>
+        <p>
+          The barrel is a pressure vessel. As the screw advances, resistance
+          climbs toward <strong>140 bar</strong>. In that squeeze, the two
+          proteins of durum — glutenin and gliadin — uncoil and knit into a
+          continuous network: the gluten matrix. Starch granules are packed
+          into its mesh like aggregate in concrete.
+        </p>
+        <p>
+          Temperature is the third variable. Too cold and the dough fractures;
+          too hot and the proteins denature before they can bind. The
+          extruder holds the mass at a precise <strong>38&nbsp;°C</strong>,
+          the narrow band where the material behaves like a plastic solid
+          rather than a liquid or a crumb.
+        </p>
+      </article>
+
+      <div class="knot reveal">
+        <blockquote>“Reading this page is extrusion. Your attention is the pressure; the text is the dough.”</blockquote>
+        <cite>— On the medium</cite>
+      </div>
+
+      <article class="strand reveal" data-index="03">
+        <h2 class="punch"><span class="num">03</span>The Die</h2>
+        <p class="lead">A brass plate, perforated, decides everything.</p>
+        <p>
+          The die is the soul of the machine. A single disc of
+          <strong>brass</strong> — chosen because it grips the dough just
+          enough to polish the surface as it passes. Its perforations are
+          machined to tolerances measured in hundredths of a millimetre.
+        </p>
+        <p>
+          For spaghetti, the holes are round. For rigatoni, they are
+          rectangular and paired with a central pin. For penne, the pin sits
+          at an angle, so the strand shears into a tube with a bevelled
+          mouth. The die is a grammar: <strong>one plate, one sentence of
+          geometry</strong>, repeated forever.
+        </p>
+      </article>
+
+      <div class="knot reveal">
+        <blockquote>“Tension is not a flaw in the line. Tension is what keeps the line from snapping.”</blockquote>
+        <cite>— On the strands below</cite>
+      </div>
+
+      <article class="strand reveal" data-index="04">
+        <h2 class="punch"><span class="num">04</span>Extrusion</h2>
+        <p class="lead">The moment the impossible shape becomes a line.</p>
+        <p>
+          The slug meets the die and has nowhere else to go. It is <strong>forced</strong>
+          through apertures narrower than the dough itself — and emerges,
+          impossibly, as a continuous strand. This is the paradox at the heart
+          of extrusion: matter that cannot fit, made to fit, without tearing.
+        </p>
+        <p>
+          Downstream, the strands are stretched by a pulling belt. The
+          tension aligns the gluten, straightens the tube, and thins the wall.
+          <strong>Read down this column and you feel it</strong> — the
+          letter-spacing opening, the line-height pulling taut, the whole
+          page vibrating like a machine under load.
+        </p>
+      </article>
+
+      <div class="knot reveal">
+        <blockquote>“Cut, dry, and the shape is frozen in time. The narrative hardens into product.”</blockquote>
+        <cite>— Final stage</cite>
+      </div>
+
+      <article class="strand reveal" data-index="05">
+        <h2 class="punch"><span class="num">05</span>Setting</h2>
+        <p class="lead">Dryness is the last act of the die.</p>
+        <p>
+          Fresh strands are limp and sticky. They enter a drying tunnel at
+          descending temperature and rising airflow, losing water slowly so
+          the surface does not crack. As moisture falls below twelve percent,
+          the gluten network <strong>sets</strong> — the geometry the die
+          imposed becomes permanent.
+        </p>
+        <p>
+          Then the cutter falls. A rotating blade, timed to the belt, slices
+          the endless line into measured lengths. Spaghetti becomes spaghetti.
+          The story stops being a process and starts being a
+          <strong>thing</strong> — engineered, precise, ready to be boiled
+          back into softness by someone else’s heat.
+        </p>
+      </article>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <div class="foot__brand">Die&nbsp;<span>&amp;</span>&nbsp;Dough</div>
+      <p class="foot__note">
+        Extruded Narrative · Imprint 04 · Set in Bodoni Moda &amp; Fira Code ·
+        Palette: steel white, charcoal, brass, grey.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Die toggle -->
+  <button class="die-toggle" id="dieToggle" aria-pressed="false" aria-label="Toggle layout mode: Spaghetti or Rigatoni">
+    <svg class="die-toggle__icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="2" y="2" width="9" height="9" rx="1"/>
+      <rect x="13" y="2" width="9" height="9" rx="1"/>
+      <rect x="2" y="13" width="9" height="9" rx="1"/>
+      <rect x="13" y="13" width="9" height="9" rx="1"/>
+    </svg>
+    <span class="die-toggle__label" id="dieLabel">Spag</span>
+  </button>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var strands = document.getElementById('strands');
+  var toggle  = document.getElementById('dieToggle');
+  var label   = document.getElementById('dieLabel');
+  var body    = document.body;
+
+  /* ---------- Die toggle ---------- */
+  function setMode(rigatoni){
+    body.classList.toggle('mode-rigatoni', rigatoni);
+    body.classList.toggle('mode-spaghetti', !rigatoni);
+    toggle.setAttribute('aria-pressed', String(rigatoni));
+    label.textContent = rigatoni ? 'Riga' : 'Spag';
+    toggle.setAttribute('aria-label',
+      'Toggle layout mode: currently ' + (rigatoni ? 'Rigatoni' : 'Spaghetti') + '. Activate to switch.');
+  }
+  toggle.addEventListener('click', function(){
+    setMode(!body.classList.contains('mode-rigatoni'));
+  });
+
+  /* ---------- Scroll-driven extrusion stretch ---------- */
+  var ticking = false;
+  function applyStretch(){
+    ticking = false;
+    if (reduce) return;
+    var vh = window.innerHeight;
+    var maxScroll = document.documentElement.scrollHeight - vh;
+    var p = maxScroll > 0 ? Math.min(1, Math.max(0, window.scrollY / maxScroll)) : 0;
+
+    // Whole narrative is pulled taut as it descends through the die
+    var scaleY = 1 + p * 0.06;
+    var letter = p * 0.045;   // em
+    var line   = 1 + p * 0.18;
+    strands.style.transform = 'scaleY(' + scaleY.toFixed(4) + ')';
+    strands.style.letterSpacing = letter.toFixed(3) + 'em';
+    strands.style.lineHeight = String(line.toFixed(3));
+  }
+  function onScroll(){
+    if (!ticking){
+      window.requestAnimationFrame(applyStretch);
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+  applyStretch();
+
+  /* ---------- Reveal / punch entrance ---------- */
+  var targets = document.querySelectorAll('.reveal, .punch');
+  if (reduce){
+    targets.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, {threshold:0.18, rootMargin:'0px 0px -8% 0px'});
+    targets.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

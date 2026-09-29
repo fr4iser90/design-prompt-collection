@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FERRO — Liquid Metal Magnetic Field</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#1A1A1A;
+    --silver:#E0E0E0;
+    --grey:#BDBDBD;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    background:var(--bg);
+    color:var(--silver);
+    font-family:"Source Code Pro", ui-monospace, monospace;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  #stage{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    touch-action:none;
+  }
+  #stage canvas{ display:block; width:100%; height:100%; }
+
+  /* Atmospheric vignette + grain layered above the canvas, below text */
+  .vignette{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:
+      radial-gradient(120% 120% at 50% 42%, rgba(0,0,0,0) 42%, rgba(0,0,0,0.55) 100%),
+      radial-gradient(70% 70% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%);
+    mix-blend-mode:multiply;
+  }
+  .grain{
+    position:fixed; inset:0; z-index:3; pointer-events:none;
+    opacity:0.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Bottom-left HUD — the only chrome */
+  .hud{
+    position:fixed; left:20px; bottom:18px; z-index:5;
+    display:flex; align-items:flex-end; gap:14px;
+    pointer-events:none;
+    animation:hudIn 1.1s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes hudIn{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;} }
+
+  .title{
+    font-family:"Bebas Neue", sans-serif;
+    font-size:12px;
+    line-height:1;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--silver);
+    padding-bottom:1px;
+  }
+  .status{
+    display:flex; align-items:center; gap:8px;
+    font-family:"Source Code Pro", monospace;
+    font-size:10px;
+    line-height:1;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--grey);
+  }
+  .status .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--grey);
+    box-shadow:0 0 0 0 rgba(224,224,224,0.5);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(224,224,224,0.45); opacity:1; }
+    50%{ box-shadow:0 0 0 5px rgba(224,224,224,0); opacity:0.55; }
+  }
+
+  /* Top-right engineering readout */
+  .readout{
+    position:fixed; top:18px; right:20px; z-index:5;
+    font-family:"Source Code Pro", monospace;
+    font-size:10px; line-height:1.7;
+    letter-spacing:0.08em;
+    color:var(--grey);
+    text-align:right;
+    pointer-events:none;
+    animation:hudIn 1.1s .15s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .readout .k{ color:#6f6f6f; }
+  .readout .v{ color:var(--silver); }
+
+  @media (prefers-reduced-motion: reduce){
+    .status .dot{ animation:none; }
+    .hud, .readout{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="hud">
+    <div class="title">FERRO</div>
+    <div class="status"><span class="dot"></span><span>MAGNETIC FIELD: ACTIVE</span></div>
+  </div>
+
+  <div class="readout">
+    <div><span class="k">FLUX</span> <span class="v" id="r-flux">0.00</span></div>
+    <div><span class="k">SOURCE</span> <span class="v" id="r-src">+0.00 +0.00</span></div>
+    <div><span class="k">STATE</span> <span class="v" id="r-state">IDLE</span></div>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const stage = document.getElementById('stage');
+
+/* ---------- Renderer ---------- */
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.18;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+/* ---------- Scene / Camera ---------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1A1A1A);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 5);
+camera.lookAt(0, 0, 0);
+
+/* ---------- Environment (studio reflections) ---------- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = envMap;
+pmrem.dispose();
+
+/* ---------- Lights (no ambient — deep shadows, chrome pop) ---------- */
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(4, 6, 5);
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0xcfe0ff, 1.4);
+rim.position.set(-5, -2, -4);
+scene.add(rim);
+
+/* ---------- Geometry: high-detail icosahedron ---------- */
+const detail = 5;
+const geometry = new THREE.IcosahedronGeometry(1, detail);
+geometry.deleteAttribute('uv'); // not needed; keeps memory lean
+
+/* ---------- Material: chrome + custom vertex displacement ---------- */
+const material = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  metalness: 1.0,
+  roughness: 0.1,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
+  envMap,
+  envMapIntensity: 1.15
+});
+
+const uniforms = {
+  uTime:          { value: 0 },
+  uMouse:         { value: new THREE.Vector3(0, 0, 1) },
+  uAmplitude:     { value: reduce ? 0.45 : 0.0 },
+  uRadius:        { value: 0.72 },
+  uBreath:        { value: 0.0 },
+  uBreathFreq:    { value: 0.5 },
+  uNoiseFreq:     { value: 2.2 },
+  uNoiseAmp:      { value: 0.16 },
+  uExponent:      { value: 3.0 }
+};
+
+const NOISE = `
+vec3 mod289(vec3 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
+vec4 mod289(vec4 x){ return x - floor(x * (1.0/289.0)) * 289.0; }
+vec4 permute(vec4 x){ return mod289(((x*34.0)+1.0)*x); }
+vec4 taylorInvSqrt(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i  = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(
+             i.z + vec4(0.0, i1.z, i2.z, 1.0))
+           + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+           + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0)*2.0 + 1.0;
+  vec4 s1 = floor(b1)*2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}
+`;
+
+material.onBeforeCompile = (shader) => {
+  Object.assign(shader.uniforms, uniforms);
+
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <common>', `
+      #include <common>
+      uniform float uTime;
+      uniform vec3  uMouse;
+      uniform float uAmplitude;
+      uniform float uRadius;
+      uniform float uBreath;
+      uniform float uBreathFreq;
+      uniform float uNoiseFreq;
+      uniform float uNoiseAmp;
+      uniform float uExponent;
+      ${NOISE}
+    `)
+    .replace('#include <begin_vertex>', `
+      vec3 transformed = vec3(position);
+      vec3 baseN = normalize(position);
+      float dist = distance(baseN, normalize(uMouse));
+      float field = pow(max(1.0 - dist / uRadius, 0.0), uExponent);
+      float n = snoise(baseN * uNoiseFreq + vec3(uTime * 0.15));
+      float noiseMod = 1.0 + n * uNoiseAmp;
+      float breath = 1.0 + uBreath * sin(uTime * 6.2831853 * uBreathFreq);
+      float disp = uAmplitude * field * noiseMod;
+      transformed = position * breath + baseN * disp;
+    `);
+
+  // Re-derive normals from a tangent frame so displaced spikes shade correctly.
+  shader.vertexShader = shader.vertexShader
+    .replace('#include <beginnormal_vertex>', `
+      vec3 objectNormal = vec3(0.0, 0.0, 1.0);
+    `)
+    .replace('#include <defaultnormal_vertex>', `
+      vec3 nrm = normalize(position);
+      vec3 up = (abs(nrm.y) < 0.99) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+      vec3 t1 = normalize(cross(nrm, up));
+      vec3 t2 = normalize(cross(nrm, t1));
+      float eps = 0.012;
+      vec3 p0 = nrm;
+      vec3 p1 = normalize(nrm + t1 * eps);
+      vec3 p2 = normalize(nrm + t2 * eps);
+
+      float d0 = distance(p0, normalize(uMouse));
+      float d1 = distance(p1, normalize(uMouse));
+      float d2 = distance(p2, normalize(uMouse));
+      float f0 = pow(max(1.0 - d0 / uRadius, 0.0), uExponent);
+      float f1 = pow(max(1.0 - d1 / uRadius, 0.0), uExponent);
+      float f2 = pow(max(1.0 - d2 / uRadius, 0.0), uExponent);
+
+      float nn0 = snoise(p0 * uNoiseFreq + vec3(uTime * 0.15));
+      float nn1 = snoise(p1 * uNoiseFreq + vec3(uTime * 0.15));
+      float nn2 = snoise(p2 * uNoiseFreq + vec3(uTime * 0.15));
+
+      float disp0 = uAmplitude * f0 * (1.0 + nn0 * uNoiseAmp);
+      float disp1 = uAmplitude * f1 * (1.0 + nn1 * uNoiseAmp);
+      float disp2 = uAmplitude * f2 * (1.0 + nn2 * uNoiseAmp);
+
+      vec3 P0 = p0 + p0 * disp0;
+      vec3 P1 = p1 + p1 * disp1;
+      vec3 P2 = p2 + p2 * disp2;
+
+      vec3 objectNormal = normalize(cross(P1 - P0, P2 - P0));
+      vec3 transformedNormal = objectNormal;
+      #ifdef USE_INSTANCING
+        mat3 im = mat3(instanceMatrix);
+        transformedNormal = im * transformedNormal;
+      #endif
+      transformedNormal = normalMatrix * transformedNormal;
+      #ifdef FLIP_SIDED
+        transformedNormal = -transformedNormal;
+      #endif
+      #ifdef USE_TANGENT
+        vec3 transformedTangent = (modelViewMatrix * vec4(objectTangent, 0.0)).xyz;
+        #ifdef FLIP_SIDED
+          transformedTangent = -transformedTangent;
+        #endif
+      #endif
+    `);
+};
+
+const sphere = new THREE.Mesh(geometry, material);
+scene.add(sphere);
+
+/* ---------- Interaction state ---------- */
+const mouseTarget = new THREE.Vector3(0, 0, 1);
+const mouseCurrent = new THREE.Vector3(0, 0, 1);
+
+let lastMove = performance.now();
+let idle = true;
+
+function updateMouseFromPointer(cx, cy){
+  const nx = (cx / window.innerWidth) * 2 - 1;
+  const ny = -((cy / window.innerHeight) * 2 - 1);
+  const z = Math.sqrt(Math.max(0, 1 - nx*nx - ny*ny));
+  mouseTarget.set(nx, ny, z).normalize();
+  lastMove = performance.now();
+  idle = false;
+}
+
+window.addEventListener('pointermove', (e) => updateMouseFromPointer(e.clientX, e.clientY), { passive:true });
+window.addEventListener('pointerdown', (e) => updateMouseFromPointer(e.clientX, e.clientY), { passive:true });
+
+/* ---------- Readout refs ---------- */
+const rFlux  = document.getElementById('r-flux');
+const rSrc   = document.getElementById('r-src');
+const rState = document.getElementById('r-state');
+
+/* ---------- Entrance ---------- */
+const entrance = { start: performance.now(), dur: 2000, to: 0.5 };
+const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
+
+/* ---------- Loop ---------- */
+const clock = new THREE.Clock();
+let lastReadout = 0;
+
+function animate(){
+  requestAnimationFrame(animate);
+
+  const t = clock.getElapsedTime();
+  uniforms.uTime.value = t;
+
+  // Entrance amplitude ramp
+  if (!reduce){
+    const p = Math.min((performance.now() - entrance.start) / entrance.dur, 1);
+    uniforms.uAmplitude.value = easeOutCubic(p) * entrance.to;
+  }
+
+  // Idle detection -> breathing
+  if (performance.now() - lastMove > 1000) idle = true;
+  const breathTarget = (idle && !reduce) ? 0.02 : 0.0;
+  uniforms.uBreath.value += (breathTarget - uniforms.uBreath.value) * 0.05;
+
+  // Heavy, fluid mouse lag
+  mouseCurrent.lerp(mouseTarget, 0.1);
+  uniforms.uMouse.value.copy(mouseCurrent);
+
+  // Slow ambient rotation for living reflections
+  if (!reduce){
+    sphere.rotation.y += 0.0016;
+    sphere.rotation.x = Math.sin(t * 0.25) * 0.12;
+  }
+
+  // Readout throttle
+  if (t - lastReadout > 0.12){
+    lastReadout = t;
+    rFlux.textContent  = uniforms.uAmplitude.value.toFixed(2);
+    const sx = mouseCurrent.x >= 0 ? '+' : '-';
+    const sy = mouseCurrent.y >= 0 ? '+' : '-';
+    rSrc.textContent = `${sx}${Math.abs(mouseCurrent.x).toFixed(2)} ${sy}${Math.abs(mouseCurrent.y).toFixed(2)}`;
+    rState.textContent = idle ? 'IDLE' : 'ACTIVE';
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ---------- Resize ---------- */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 449544
+gen_ms: 449544
+ttft_ms: 4725
+queue_wait_ms: 108
+wall_ms: 454438
+review_score: 9
+review_summary: "Excellent execution of the physics toy concept with a cohesive dark aesthetic, expressive typography, and clear HUD integration."
+reviewed_at: "2026-09-29T10:50:28.878Z"
+review_issues:
+  - "The instruction text in the bottom left corner overlaps with the slider track and the '200' label, creating a minor visual collision."

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#1E1E24">
+<title>Harmonic Chorus — Pendulum Resonance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1E1E24; --ink:#E0E0E0; --amber:#FFD166; --fail:#FF595E; --ok:#00A86B;
+    --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+    --mono:'Space Mono', 'Courier New', monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;width:100%}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--mono);
+    overflow:hidden; -webkit-user-select:none; user-select:none;
+    -webkit-tap-highlight-color:transparent; touch-action:none;
+  }
+  #stage{position:fixed;inset:0;overflow:hidden}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+
+  .ui{position:absolute;inset:0;z-index:5;pointer-events:none}
+  .ui::before{content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(125% 90% at 50% -12%, rgba(255,209,102,.06), transparent 55%);}
+
+  /* ---- Brand lockup ---- */
+  .brand{position:absolute;top:clamp(14px,2.4vw,26px);left:clamp(14px,2.4vw,26px);max-width:min(48vw,440px)}
+  .kicker{display:inline-flex;align-items:center;gap:.55rem;font-size:10px;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--amber);margin-bottom:.7rem}
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 10px var(--amber);animation:pulse 1.8s ease-in-out infinite}
+  .title{font-family:var(--serif);font-weight:600;line-height:.9;letter-spacing:-.015em;
+    font-size:clamp(34px,6.2vw,66px);color:var(--ink);text-shadow:0 2px 40px rgba(0,0,0,.6)}
+  .title em{font-style:italic;font-weight:500;color:var(--amber)}
+  .subtitle{margin-top:.75rem;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(224,224,224,.55)}
+
+  /* ---- HUD ---- */
+  .hud{position:absolute;top:clamp(14px,2.4vw,26px);right:clamp(14px,2.4vw,26px);
+    display:flex;gap:clamp(14px,2.2vw,30px);align-items:flex-start;
+    padding:14px 18px;border:1px solid rgba(224,224,224,.14);border-radius:3px;
+    background:rgba(30,30,36,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+  .stat{display:flex;flex-direction:column;gap:5px;min-width:44px}
+  .stat .lbl{font-size:9px;letter-spacing:.24em;color:rgba(224,224,224,.5)}
+  .stat .val{font-size:clamp(18px,2.4vw,24px);font-weight:700;color:var(--ink);line-height:1}
+  .stat.time .val{color:var(--amber)}
+  .stat.time.low .val{color:var(--fail);animation:blink .8s steps(2) infinite}
+  .stat.time.low .lbl{color:var(--fail)}
+
+  /* ---- Bottom controls ---- */
+  .bottom{position:absolute;left:0;right:0;bottom:clamp(14px,2.4vw,26px);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+    padding:0 clamp(14px,2.4vw,26px)}
+  .hint{font-size:10px;letter-spacing:.12em;color:rgba(224,224,224,.5);line-height:1.85;max-width:46ch}
+  .hint b{color:var(--ink);font-weight:700}
+  .hint .key{color:var(--amber);font-weight:700}
+  .hint .mobile{display:none}
+  .hint .desktop{display:block}
+  .hint .m-only{display:none}
+  .legend{display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+    font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(224,224,224,.55)}
+  .legend .row{display:flex;align-items:center;gap:8px}
+  .legend .sw{width:11px;height:11px;border-radius:50%}
+  .sw.a{border:2px solid var(--amber)}
+  .sw.b{border:2px solid var(--fail)}
+
+  /* ---- Overlays ---- */
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    padding:24px;pointer-events:auto;opacity:0;visibility:hidden;transition:opacity .45s ease;
+    background:radial-gradient(120% 120% at 50% 40%, rgba(30,30,36,.35), rgba(15,15,19,.82))}
+  .overlay.show{opacity:1;visibility:visible}
+  .panel{position:relative;max-width:560px;width:100%;text-align:center;padding:clamp(26px,4vw,46px);
+    border:1px solid rgba(224,224,224,.14);border-radius:4px;
+    background:linear-gradient(180deg, rgba(37,37,45,.94), rgba(24,24,30,.96));
+    box-shadow:0 30px 90px rgba(0,0,0,.55);
+    transform:translateY(16px) scale(.98);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+  .overlay.show .panel{transform:none}
+  .panel::before{content:'';position:absolute;top:-1px;left:18%;right:18%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--amber),transparent)}
+  .panel h1{font-family:var(--serif);font-weight:600;font-size:clamp(42px,8vw,72px);
+    line-height:.92;letter-spacing:-.02em;color:var(--ink)}
+  .panel h1 em{font-style:italic;font-weight:500;color:var(--amber)}
+  .panel h1.lost{color:var(--fail)}
+  .panel h1.won{color:var(--amber)}
+  .panel .lead{margin-top:1rem;font-size:13px;line-height:1.6;color:rgba(224,224,224,.72);max-width:46ch;margin-inline:auto}
+  .panel .lead .amber{color:var(--amber)} .panel .lead .fail{color:var(--fail)}
+  .howto{margin:1.6rem auto 0;max-width:440px;display:grid;gap:10px;text-align:left}
+  .howto .step{display:flex;gap:12px;align-items:baseline;font-size:12px;line-height:1.5;color:rgba(224,224,224,.78)}
+  .howto .n{font-family:var(--mono);font-weight:700;color:var(--amber);min-width:22px}
+  .howto .step b{color:var(--ink)}
+  .panel .btn{pointer-events:auto;cursor:pointer;margin-top:1.9rem;font-family:var(--mono);
+    font-weight:700;font-size:12px;letter-spacing:.24em;text-transform:uppercase;
+    color:#1E1E24;background:var(--amber);border:none;border-radius:3px;padding:14px 30px;
+    box-shadow:0 0 0 0 rgba(255,209,102,.5);transition:transform .15s, box-shadow .3s}
+  .panel .btn:hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(255,209,102,.45)}
+  .panel .btn:active{transform:translateY(0)}
+  .panel .btn.ghost{background:transparent;color:var(--ink);border:1px solid rgba(224,224,224,.3)}
+  .scoreline{margin-top:1.4rem;font-size:12px;letter-spacing:.16em;color:rgba(224,224,224,.6)}
+  .scoreline b{color:var(--amber);font-size:16px}
+  .soundbtn{pointer-events:auto;cursor:pointer;position:absolute;top:clamp(14px,2.4vw,26px);
+    right:clamp(14px,2.4vw,26px);z-index:7;font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:rgba(224,224,224,.6);background:rgba(30,30,36,.6);
+    border:1px solid rgba(224,224,224,.16);border-radius:3px;padding:8px 12px;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .soundbtn:hover{color:var(--ink);border-color:rgba(224,224,224,.35)}
+  .soundbtn.muted{color:rgba(224,224,224,.35)}
+
+  @keyframes pulse{0%,100%{opacity:.4;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+
+  @media (max-width:720px){
+    .title{font-size:clamp(30px,11vw,44px)}
+    .brand{max-width:60vw}
+    .hud{gap:14px;padding:10px 12px}
+    .stat .val{font-size:18px}
+    .hint .desktop{display:none}
+    .hint .mobile{display:block}
+    .legend{display:none}
+  }
+  @media (max-width:520px){
+    .bottom{flex-direction:column;align-items:flex-start}
+    .brand{max-width:70vw}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .kicker .dot{animation:none}
+    .stat.time.low .val{animation:none}
+    .overlay,.panel{transition:none}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <div class="ui">
+    <div class="brand">
+      <div class="kicker"><span class="dot"></span> Pendulum Wave Sync · Acoustic Resonance</div>
+      <h1 class="title">Harmonic<br><em>Chorus</em></h1>
+      <div class="subtitle">Tune the string · shatter the glass</div>
+    </div>
+
+    <div class="hud">
+      <div class="stat"><span class="lbl">LENGTH</span><span class="val" id="v-len">—</span></div>
+      <div class="stat"><span class="lbl">FREQ</span><span class="val" id="v-freq">—</span></div>
+      <div class="stat"><span class="lbl">SCORE</span><span class="val" id="v-score">0</span></div>
+      <div class="stat time" id="v-time-wrap"><span class="lbl">TIME</span><span class="val" id="v-time">60s</span></div>
+    </div>
+
+    <div class="bottom">
+      <div class="hint">
+        <span class="desktop">
+          <b>DRAG</b> the left slider to set length · <span class="key">SPACE</span> to release the swing<br>
+          Match the glass's hidden resonance — a mismatched strike <b>bounces &amp; costs 5s</b><br>
+          <span style="color:rgba(224,224,224,.35)">The string glows amber as you approach the perfect length.</span>
+        </span>
+        <span class="mobile">
+          <b>DRAG</b> the left slider · <b>TAP</b> the canvas to release<br>
+          Match the glass's hidden resonance to <b>shatter</b> it.<br>
+          <span style="color:rgba(224,224,224,.35)">Amber glow = near resonance.</span>
+        </span>
+      </div>
+      <div class="legend">
+        <div class="row"><span class="sw a"></span> Shatter · Resonant</div>
+        <div class="row"><span class="sw b"></span> Bounce · Detuned</div>
+      </div>
+    </div>
+
+    <button class="soundbtn" id="sound-btn">♪ SOUND ON</button>
+  </div>
+
+  <!-- MENU -->
+  <div class="overlay show" id="ov-menu">
+    <div class="panel">
+      <h1>Harmonic <em>Chorus</em></h1>
+      <p class="lead">A single pendulum hangs from the dark. Each glass target hums at a <span class="amber">secret frequency</span> you cannot see — only feel. Set the string's length, release it, and strike true.</p>
+      <div class="howto">
+        <div class="step"><span class="n">01</span><span><b>Drag</b> the left slider to change the pendulum length (100–400px).</span></div>
+        <div class="step"><span class="n">02</span><span><b>Press Space</b> to release the swing from rest.</span></div>
+        <div class="step"><span class="n">03</span><span>Hit the glass at its <b>resonant frequency</b> (±5%) to shatter it.</span></div>
+        <div class="step"><span class="n">04</span><span>Shatter <b>5 targets</b> before the timer or 3 misses ends the run.</span></div>
+      </div>
+      <button class="btn" id="start-btn">Begin the Chorus</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="overlay" id="ov-over">
+    <div class="panel">
+      <h1 id="over-title" class="lost">Resonance Lost</h1>
+      <p class="lead" id="over-msg">The chorus fell silent.</p>
+      <div class="scoreline">SCORE <b id="over-score">0</b> &nbsp;·&nbsp; TARGETS <b id="over-targets">0/5</b></div>
+      <button class="btn" id="again-btn">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ---------- Constants ---------- */
+  const BG='#1E1E24', INK='#E0E0E0', AMBER='#FFD166', FAIL='#FF595E', OK='#00A86B';
+  const G=900, L_MIN=100, L_MAX=400, TARGET_R=20, MASS_R=15;
+  const TOLERANCE=0.05, TOTAL_TIME=60, WIN_TARGETS=5, MAX_MISSES=3;
+  const RELEASE_AMP=0.85, HIT_AMP=0.55;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const cv=document.getElementById('game'), ctx=cv.getContext('2d');
+  const stage=document.getElementById('stage');
+  const elLen=document.getElementById('v-len'), elFreq=document.getElementById('v-freq'),
+        elScore=document.getElementById('v-score'), elTime=document.getElementById('v-time'),
+        elTimeWrap=document.getElementById('v-time-wrap');
+
+  let W=0,H=0,dpr=1,pivot={x:0,y:0};
+  let slider={x:0,y0:0,y1:0};
+  let scale=1;
+
+  /* ---------- State ---------- */
+  const S={
+    state:'MENU', swingState:'idle',
+    length:220, theta0:RELEASE_AMP, omega:0, theta:0, swingTime:0,
+    target:null,
+    score:0, shatters:0, misses:0, timeLeft:TOTAL_TIME,
+    particles:[], waves:[], popups:[],
+    shake:0, shakeUntil:0,
+    intro:0, introDots:[],
+    sliderDragging:false, canvasTouch:false,
+    muted:false, t:0
+  };
+
+  /* ---------- Audio ---------- */
+  let AC=null, drone=null, droneGain=null;
+  function ensureAudio(){
+    if(S.muted) return;
+    try{
+      if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); }
+      if(AC.state==='suspended') AC.resume();
+    }catch(e){}
+  }
+  function startDrone(){
+    ensureAudio(); if(!AC||drone) return;
+    drone=AC.createOscillator(); droneGain=AC.createGain();
+    drone.type='sine'; drone.frequency.value=110;
+    droneGain.gain.value=0.035;
+    drone.connect(droneGain); droneGain.connect(AC.destination); drone.start();
+  }
+  function updateDrone(){
+    if(drone&&AC){ drone.frequency.value = 110 + (L_MAX - S.length)/(L_MAX-L_MIN)*180; }
+  }
+  function tone(freq,dur,type,vol){
+    if(S.muted||!AC) return;
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.type=type||'sine'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(vol||0.18,AC.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+dur);
+    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime+dur+0.02);
+  }
+  function shatterSound(){
+    if(S.muted||!AC) return;
+    tone(1400,0.5,'sine',0.16); tone(2100,0.4,'sine',0.09); tone(900,0.3,'triangle',0.08);
+    const n=Math.floor(AC.sampleRate*0.12), buf=AC.createBuffer(1,n,AC.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+    const s=AC.createBufferSource(); s.buffer=buf;
+    const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2600; bp.Q.value=0.8;
+    const g=AC.createGain(); g.gain.value=0.14;
+    s.connect(bp); bp.connect(g); g.connect(AC.destination); s.start();
+  }
+  function thudSound(){ tone(120,0.25,'sine',0.22); tone(80,0.3,'sine',0.12); }
+  function missSound(){ tone(220,0.15,'sawtooth',0.08); }
+  function winSound(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,0.5,'sine',0.16),i*120)); }
+
+  /* ---------- Helpers ---------- */
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+  function freqOf(L){ return 1/(2*Math.PI)*Math.sqrt(G/L); }
+  function periodOf(L){ return 2*Math.PI*Math.sqrt(L/G); }
+  function targetPeriod(t){ return t ? periodOf(t.optimalL) : 1; }
+  function nearResonance(){
+    if(!S.target) return 0;
+    return 1 - clamp(Math.abs(S.length-S.target.optimalL)/(L_MAX-L_MIN),0,1);
+  }
+  function massPos(){ return { x:pivot.x + S.length*Math.sin(S.theta), y:pivot.y + S.length*Math.cos(S.theta) }; }
+  function dist(ax,ay,bx,by){ return Math.hypot(ax-bx,ay-by); }
+
+  function computeLayout(){
+    pivot.x = W*0.5; pivot.y = Math.max(96, H*0.14);
+    slider.x = Math.max(34, Math.min(72, W*0.11));
+    slider.y0 = Math.max(112, H*0.2);
+    slider.y1 = Math.min(H-150, H*0.84);
+  }
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=window.innerWidth; H=window.innerHeight;
+    cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    computeLayout();
+  }
+  window.addEventListener('resize', resize);
+
+  /* ---------- Targets ---------- */
+  function spawnTarget(){
+    const opts=[140,180,230,290,350,400];
+    let opt=opts[Math.floor(Math.random()*opts.length)];
+    const optT=periodOf(opt);
+    const L=Math.min(L_MAX, Math.max(L_MIN, optT*Math.sqrt(G)*Math.sin(HIT_AMP)));
+    const halfSpan=2*Math.sqrt(L*L - (L*Math.cos(HIT_AMP))**2);
+    let x = pivot.x + (Math.random()<0.5?-1:1)*rand(halfSpan*0.35, halfSpan*0.92);
+    const gy = pivot.y + L*Math.cos(HIT_AMP);
+    x = clamp(x, slider.x+70, W-60);
+    const y = clamp(gy, pivot.y+50, H-90);
+    S.target={ x, y, optimalL:opt, period:optT, alive:true, vib:0 };
+  }
+
+  /* ---------- Particles / waves / popups ---------- */
+  function spawnParticles(x,y){
+    for(let i=0;i<26;i++){
+      const a=Math.random()*Math.PI*2, sp=rand(1.6,5.4);
+      const tri=Math.random()<0.55;
+      S.particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-rand(0,1.2),
+        size:rand(2.5,6.5),rot:Math.random()*6.28,vr:rand(-0.2,0.2),
+        life:1,decay:rand(0.014,0.03),tri});
+    }
+  }
+  function spawnWave(x,y){
+    S.waves.push({x,y,r:MASS_R+4,maxR:rand(90,150),op:0.55});
+  }
+  function spawnPopup(x,y,text,color){
+    S.popups.push({x,y,text,color,life:1,vy:-0.6});
+  }
+
+  /* ---------- Screen shake ---------- */
+  function triggerShake(px){ S.shake=px; S.shakeUntil=performance.now()+100; }
+
+  /* ---------- Game flow ---------- */
+  function showOv(id){ document.querySelectorAll('.overlay').forEach(o=>o.classList.toggle('show', o.id===id)); }
+  function hideOv(){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show')); }
+
+  function startIntro(){
+    S.state='MENU'; S.intro=0;
+    S.introDots=[{L:140,a:0.95,p:0},{L:220,a:0.8,p:1.1},{L:300,a:0.7,p:2.3},{L:380,a:0.6,p:3.4}];
+    S.target=null; S.particles.length=0; S.waves.length=0; S.popups.length=0;
+    hideOv(); showOv('ov-menu');
+  }
+  function startGame(){
+    ensureAudio(); startDrone();
+    S.state='PLAYING'; S.swingState='idle';
+    S.length=220; S.theta=0; S.theta0=RELEASE_AMP; S.swingTime=0;
+    S.score=0; S.shatters=0; S.misses=0; S.timeLeft=TOTAL_TIME;
+    S.particles.length=0; S.waves.length=0; S.popups.length=0;
+    spawnTarget(); hideOv();
+  }
+  function endGame(win){
+    S.state='GAME_OVER'; S.swingState='idle'; S.target=null;
+    const t=document.getElementById('over-title'), m=document.getElementById('over-msg');
+    if(win){ t.textContent='Harmonic Master'; t.className='won';
+      m.innerHTML='Five glass voices shattered in perfect chorus. The room rings with <span class="amber">resonance</span>.';
+      winSound(); }
+    else{ t.textContent='Resonance Lost'; t.className='lost';
+      m.innerHTML = S.timeLeft<=0 ? 'The timer ran out — the chorus fell <span class="fail">silent</span>.'
+                                  : 'Three detuned strikes — the harmony <span class="fail">broke</span>.';
+      thudSound(); }
+    document.getElementById('over-score').textContent=S.score;
+    document.getElementById('over-targets').textContent=S.shatters+'/'+WIN_TARGETS;
+    showOv('ov-over');
+  }
+
+  function release(){
+    if(S.state!=='PLAYING') return;
+    if(S.swingState==='idle'){
+      S.swingState='swinging'; S.theta0=RELEASE_AMP; S.swingTime=0; S.theta=S.theta0;
+      tone(freqOf(S.length)*60,0.12,'sine',0.06);
+    } else if(S.swingState==='swinging'){
+      S.swingState='idle'; S.theta=0; S.swingTime=0;
+    }
+  }
+  function resetLevel(){
+    if(S.state==='GAME_OVER'){ startGame(); return; }
+    if(S.state!=='PLAYING') return;
+    if(S.swingState==='idle'){ spawnTarget(); }
+    else if(S.swingState==='hit' || S.swingState==='miss'){ S.swingState='idle'; S.theta=0; S.swingTime=0; }
+  }
+  function onSwingComplete(){
+    if(S.swingState!=='swinging') return;
+    if(S.target && S.target.alive){ S.swingState='miss'; S.misses++; missSound(); }
+    else { S.swingState='idle'; S.theta=0; }
+  }
+  function handleHit(x,y,velX,velY){
+    if(!S.target || !S.target.alive) return;
+    const perr=Math.abs(periodOf(S.length)-S.target.period)/S.target.period;
+    if(perr<=TOLERANCE){
+      const acc=Math.round(clamp(100-perr*1000,0,100));
+      const bonus=Math.round(50*(1-perr/TOLERANCE));
+      S.score += 100 + bonus; S.shatters++;
+      spawnParticles(S.target.x,S.target.y);
+      triggerShake(reduceMotion?0:5);
+      shatterSound();
+      spawnPopup(S.target.x,S.target.y-34,'+'+(100+bonus),OK);
+      spawnPopup(S.target.x,S.target.y-54,acc+'% RESONANCE',AMBER);
+      S.target.alive=false; S.swingState='hit'; S.theta=0; S.swingTime=0;
+      if(S.shatters>=WIN_TARGETS){ endGame(true); return; }
+      setTimeout(()=>{ if(S.state==='PLAYING'){ spawnTarget(); S.swingState='idle'; } }, 700);
+    } else {
+      S.swingState='miss'; S.misses++; S.timeLeft-=5;
+      thudSound();
+      spawnPopup(x,y-34,'−5s DETUNED',FAIL);
+      S.theta=0; S.swingTime=0;
+      if(S.timeLeft<=0){ S.timeLeft=0; endGame(false); return; }
+      if(S.misses>=MAX_MISSES){ endGame(false); return; }
+    }
+  }
+
+  /* ---------- Update ---------- */
+  function update(dt){
+    S.t+=dt;
+    if(S.state==='MENU'){
+      S.intro+=dt;
+      for(const d of S.introDots){ d.p+=dt; }
+      return;
+    }
+    if(S.state!=='PLAYING') return;
+
+    if(S.swingState==='swinging'){
+      S.swingTime+=dt;
+      const T=periodOf(S.length), w=2*Math.PI/T;
+      const prevTheta=S.theta;
+      S.theta=S.theta0*Math.cos(w*S.swingTime);
+      const m=massPos();
+      if(!reduceMotion){
+        const vx=(m.x-(pivot.x+S.length*Math.sin(prevTheta)))/dt;
+        const vy=(m.y-(pivot.y+S.length*Math.cos(prevTheta)))/dt;
+        const sp=Math.hypot(vx,vy);
+        if(sp>140 && S.waves.length<6) spawnWave(m.x,m.y);
+      }
+      if(S.target && S.target.alive){
+        const d=dist(m.x,m.y,S.target.x,S.target.y);
+        if(d < TARGET_R+MASS_R){ handleHit(m.x,m.y,vx,vy); }
+      }
+      if(S.swingState==='swinging' && S.swingTime>=T){ onSwingComplete(); }
+    }
+
+    if(S.timeLeft>0){
+      S.timeLeft-=dt;
+      if(S.timeLeft<=0){ S.timeLeft=0; endGame(false); }
+    }
+
+    for(let i=S.particles.length-1;i>=0;i--){ const p=S.particles[i];
+      p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.vx*=0.99; p.rot+=p.vr; p.life-=p.decay;
+      if(p.life<=0) S.particles.splice(i,1); }
+    for(let i=S.waves.length-1;i>=0;i--){ const w=S.waves[i];
+      w.r+=2.2; w.op*=0.94; if(w.r>=w.maxR||w.op<0.02) S.waves.splice(i,1); }
+    for(let i=S.popups.length-1;i>=0;i--){ const p=S.popups[i];
+      p.y+=p.vy; p.life-=0.014; if(p.life<=0) S.popups.splice(i,1); }
+
+    if(S.target && S.target.alive){
+      const m=massPos();
+      const near = clamp(1 - dist(m.x,m.y,S.target.x,S.target.y)/180, 0, 1);
+      const amp = reduceMotion?0:1;
+      S.target.vib = Math.sin(S.t*45)*near*2.4*amp;
+    } else if(S.target){ S.target.vib=0; }
+
+    updateDrone();
+  }
+
+  /* ---------- Render ---------- */
+  function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  function drawBackground(){
+    ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(pivot.x,pivot.y,0,pivot.x,pivot.y,Math.max(W,H)*0.85);
+    g.addColorStop(0,'rgba(255,209,102,0.05)'); g.addColorStop(0.5,'rgba(255,209,102,0.012)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.strokeStyle='rgba(224,224,224,0.035)'; ctx.lineWidth=1;
+    for(let i=1;i<=4;i++){ const r=i*Math.min(W,H)*0.12;
+      ctx.beginPath(); ctx.arc(pivot.x,pivot.y,r,0,Math.PI*2); ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawWaves(){
+    ctx.save();
+    for(const w of S.waves){ ctx.beginPath(); ctx.arc(w.x,w.y,w.r,0,Math.PI*2);
+      ctx.strokeStyle='rgba(224,224,224,'+w.op.toFixed(3)+')'; ctx.lineWidth=1; ctx.stroke(); }
+    ctx.restore();
+  }
+  function drawPendulum(){
+    const m=massPos(), nr=nearResonance(), glow=nr>0.85;
+    ctx.save();
+    ctx.strokeStyle='rgba(224,224,224,0.07)'; ctx.lineWidth=1; ctx.setLineDash([2,6]);
+    ctx.beginPath(); ctx.moveTo(pivot.x,pivot.y); ctx.lineTo(pivot.x,pivot.y+L_MAX); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = glow?AMBER:INK; ctx.lineWidth=2;
+    if(glow){ ctx.shadowColor=AMBER; ctx.shadowBlur=14; }
+    ctx.beginPath(); ctx.moveTo(pivot.x,pivot.y); ctx.lineTo(m.x,m.y); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=glow?AMBER:INK;
+    ctx.beginPath(); ctx.arc(pivot.x,pivot.y,5,0,Math.PI*2); ctx.fill();
+    if(glow){ ctx.shadowColor=AMBER; ctx.shadowBlur=22; }
+    ctx.beginPath(); ctx.arc(m.x,m.y,MASS_R,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(30,30,36,0.5)';
+    ctx.beginPath(); ctx.arc(m.x-4,m.y-4,4,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function drawTarget(){
+    if(!S.target) return;
+    const t=S.target, vx=t.vib||0;
+    ctx.save();
+    if(t.alive){
+      const nr=nearResonance();
+      if(nr>0.85){ ctx.shadowColor=AMBER; ctx.shadowBlur=24; }
+      ctx.strokeStyle=AMBER; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(t.x+vx,t.y,TARGET_R,0,Math.PI*2); ctx.stroke();
+      ctx.shadowBlur=0;
+      ctx.strokeStyle='rgba(255,209,102,0.25)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(t.x+vx,t.y,TARGET_R-6,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(t.x+vx,t.y,TARGET_R-4,-2.4,-1.5); ctx.stroke();
+    } else {
+      ctx.strokeStyle='rgba(255,209,102,0.14)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(t.x,t.y,TARGET_R,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawParticles(){
+    ctx.save();
+    for(const p of S.particles){
+      ctx.globalAlpha=clamp(p.life,0,1);
+      ctx.fillStyle= p.tri?AMBER:INK;
+      if(p.tri){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+        ctx.beginPath(); ctx.moveTo(0,-p.size); ctx.lineTo(p.size,p.size); ctx.lineTo(-p.size,p.size); ctx.closePath(); ctx.fill(); ctx.restore(); }
+      else { ctx.beginPath(); ctx.arc(p.x,p.y,p.size*0.6,0,Math.PI*2); ctx.fill(); }
+    }
+    ctx.globalAlpha=1; ctx.restore();
+  }
+  function drawPopups(){
+    ctx.save(); ctx.textAlign='center'; ctx.font='700 15px "Space Mono", monospace';
+    for(const p of S.popups){ ctx.globalAlpha=clamp(p.life,0,1); ctx.fillStyle=p.color; ctx.fillText(p.text,p.x,p.y); }
+    ctx.globalAlpha=1; ctx.restore();
+  }
+  function drawSlider(){
+    const x=slider.x, y0=slider.y0, y1=slider.y1, trackW=6;
+    ctx.save();
+    ctx.strokeStyle='rgba(224,224,224,0.14)'; ctx.lineWidth=trackW; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1); ctx.stroke();
+    const nr=nearResonance();
+    if(S.target && S.target.alive && nr>0.85){
+      const ty=y0+(1-(S.length-L_MIN)/(L_MAX-L_MIN))*(y1-y0);
+      ctx.strokeStyle='rgba(255,209,102,0.5)'; ctx.lineWidth=trackW;
+      ctx.beginPath(); ctx.moveTo(x,ty-14); ctx.lineTo(x,ty+14); ctx.stroke();
+    }
+    const ty=y0+(1-(S.length-L_MIN)/(L_MAX-L_MIN))*(y1-y0);
+    const glow=nr>0.85;
+    if(glow){ ctx.shadowColor=AMBER; ctx.shadowBlur=18; }
+    ctx.fillStyle=glow?AMBER:INK;
+    ctx.beginPath(); ctx.arc(x,ty,11,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=BG; ctx.beginPath(); ctx.arc(x,ty,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(224,224,224,0.4)'; ctx.font='9px "Space Mono", monospace'; ctx.textAlign='center';
+    ctx.fillText('LENGTH',x,y0-14);
+    ctx.fillText(Math.round(S.length)+'px',x,y1+20);
+    ctx.restore();
+  }
+  function drawIntro(){
+    const dots=S.introDots;
+    ctx.save();
+    ctx.strokeStyle='rgba(224,224,224,0.08)'; ctx.lineWidth=1;
+    for(const d of dots){ const ex=pivot.x+d.L, ey=pivot.y+d.L*0.55;
+      ctx.beginPath(); ctx.arc(pivot.x,pivot.y,Math.hypot(ex-pivot.x,ey-pivot.y),0,Math.PI*2); ctx.stroke(); }
+    for(const d of dots){
+      const th=d.a*Math.cos(S.intro*1.4+d.p);
+      const mx=pivot.x+d.L*Math.sin(th), my=pivot.y+d.L*Math.cos(th);
+      ctx.strokeStyle='rgba(224,224,224,0.3)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(pivot.x,pivot.y); ctx.lineTo(mx,my); ctx.stroke();
+      ctx.fillStyle='rgba(224,224,224,0.85)';
+      ctx.beginPath(); ctx.arc(mx,my,7,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    let ox=0,oy=0;
+    if(performance.now()<S.shakeUntil){ ox=(Math.random()*2-1)*S.shake; oy=(Math.random()*2-1)*S.shake; }
+    ctx.save(); ctx.translate(ox,oy);
+    drawBackground();
+    if(S.state==='MENU'){ drawIntro(); }
+    else { drawWaves(); drawPendulum(); drawTarget(); drawParticles(); drawPopups(); }
+    drawSlider();
+    ctx.restore();
+  }
+
+  /* ---------- HUD ---------- */
+  let lastHUD=0;
+  function updateHUD(){
+    elLen.textContent=Math.round(S.length)+'px';
+    elFreq.textContent=freqOf(S.length).toFixed(2)+'Hz';
+    elScore.textContent=S.score;
+    const tl=Math.max(0,Math.ceil(S.timeLeft));
+    elTime.textContent=tl+'s';
+    elTimeWrap.classList.toggle('low', S.state==='PLAYING' && S.timeLeft<=10);
+  }
+
+  /* ---------- Loop ---------- */
+  let last=performance.now();
+  function loop(now){
+    let dt=(now-last)/1000; last=now; if(dt>0.05) dt=0.05;
+    update(dt); render();
+    if(now-lastHUD>80){ updateHUD(); lastHUD=now; }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- Input ---------- */
+  function sliderYtoLength(y){ return L_MIN + (1-(y-slider.y0)/(slider.y1-slider.y0))*(L_MAX-L_MIN); }
+  function overSlider(px,py){ return px < slider.x+34 && py>slider.y0-30 && py<slider.y1+30; }
+
+  cv.addEventListener('pointerdown', e=>{
+    const px=e.clientX, py=e.clientY;
+    if(S.state!=='PLAYING') return;
+    if(overSlider(px,py)){ S.sliderDragging=true; try{cv.setPointerCapture(e.pointerId);}catch(_){}
+      S.length=clamp(sliderYtoLength(py),L_MIN,L_MAX); }
+    else { S.canvasTouch=true; }
+  });
+  cv.addEventListener('pointermove', e=>{
+    if(S.sliderDragging){ S.length=clamp(sliderYtoLength(e.clientY),L_MIN,L_MAX); }
+  });
+  cv.addEventListener('pointerup', e=>{
+    if(S.sliderDragging){ S.sliderDragging=false; try{cv.releasePointerCapture(e.pointerId);}catch(_){} }
+    else if(S.canvasTouch){ S.canvasTouch=false; release(); }
+  });
+  cv.addEventListener('pointercancel', ()=>{ S.sliderDragging=false; S.canvasTouch=false; });
+
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'){ e.preventDefault();
+      if(S.state==='MENU'){ startGame(); }
+      else if(S.state==='GAME_OVER'){ startGame(); }
+      else { release(); }
+    } else if(e.code==='Enter'){
+      if(S.state==='MENU'||S.state==='GAME_OVER') startGame();
+    }
+  });
+
+  document.getElementById('start-btn').addEventListener('click', startGame);
+  document.getElementById('again-btn').addEventListener('click', startGame);
+  document.getElementById('sound-btn').addEventListener('click', function(){
+    S.muted=!S.muted;
+    this.textContent = S.muted?'♪ SOUND OFF':'♪ SOUND ON';
+    this.classList.toggle('muted', S.muted);
+    if(!S.muted){ ensureAudio(); if(S.state==='PLAYING') startDrone(); }
+  });
+
+  /* ---------- Boot ---------- */
+  resize();
+  startIntro();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

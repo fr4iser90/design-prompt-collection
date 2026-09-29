@@ -1,0 +1,28 @@
+id: shoji-screen-privacy
+title: "Shoji Screen Privacy"
+category: interfaces
+tags:
+  - collaboration
+  - light
+  - japan
+  - architecture
+  - kumiko
+  - presence
+  - html
+  - css
+  - js
+status: polished
+summary: "A team collaboration interface where presence is communicated through the opacity of shoji paper panels and the movement of shadows behind them, replacing status dots with architectural light."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

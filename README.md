@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 194 | 186 | 162 | 32 |
+| 204 | 194 | 172 | 32 |
 
 ## Quick start
 
@@ -3005,6 +3005,20 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 ## Games
 
+### Ferromagnetic Flux
+
+Guide a steel ball to a goal by placing magnets that visualize real-time magnetic field lines. Drag to place, rotate to steer. Fail if the ball hits red hazards or exits bounds.
+
+**Status:** polished · `canvas2d` `physics` `spatial-puzzle` `magnetism` `state-stack` `game` `field-lines` `vector-math` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/ferromagnetic-plate-magnetism/prompt.md) · [extended](prompts/games/ferromagnetic-plate-magnetism/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Gimbal Lock
 
 Rotate gimbals to align a laser with a moving target; fight precession and RPM decay to keep the beam steady.
@@ -3013,9 +3027,11 @@ Rotate gimbals to align a laser with a moving target; fight precession and RPM d
 
 [prompt](prompts/games/gyroscopic-precession/prompt.md) · [extended](prompts/games/gyroscopic-precession/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/gyroscopic-precession/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.2s | 507s | 6 | [open](prompts/games/gyroscopic-precession/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3027,9 +3043,11 @@ Adjust pendulum length to match resonant frequency of glass targets. Release to 
 
 [prompt](prompts/games/pendulum-wave-sync/prompt.md) · [extended](prompts/games/pendulum-wave-sync/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/pendulum-wave-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.7s | 450s | 9 | [open](prompts/games/pendulum-wave-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3041,9 +3059,11 @@ Build truss bridges with rigid-body physics. Place nodes, connect beams, test ag
 
 [prompt](prompts/games/suspension-bridge-tension/prompt.md) · [extended](prompts/games/suspension-bridge-tension/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/suspension-bridge-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.9s | 419s | 9 | [open](prompts/games/suspension-bridge-tension/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3057,9 +3077,11 @@ Interactive 3D aurora curtain built with vertex-displaced planes and additive bl
 
 [prompt](prompts/webgl/aurora-borealis-shader-veil/prompt.md) · [extended](prompts/webgl/aurora-borealis-shader-veil/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.8s | 308s | 2 | [open](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3071,9 +3093,11 @@ GPU-accelerated Navier-Stokes fluid simulation. Drag mouse to inject sumi ink in
 
 [prompt](prompts/webgl/ink-in-water-shader-simulation/prompt.md) · [extended](prompts/webgl/ink-in-water-shader-simulation/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.4s | 324s | 1 | [open](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3085,6 +3109,22 @@ High-gloss liquid chrome sphere morphing from smooth to spiked via mouse-control
 
 [prompt](prompts/webgl/liquid-metal-morphing-vertex/prompt.md) · [extended](prompts/webgl/liquid-metal-morphing-vertex/prompt.full.md)
 
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/liquid-metal-morphing-vertex/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.1s | 197s | 1 | [open](prompts/webgl/liquid-metal-morphing-vertex/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Brush & Nap
+
+Interactive 3D velvet cushion where mouse drag physically deforms the mesh and rotates tangent vectors, revealing embossed typography through shifting anisotropic sheen.
+
+**Status:** polished · `webgl` `three-js` `soft-body-physics` `anisotropic-material` `velvet` `tactile` `deformation` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/satin-velvet-brush-deform/prompt.md) · [extended](prompts/webgl/satin-velvet-brush-deform/prompt.full.md)
+
 _No shot preview yet._
 
 _No model runs yet — `npm run ai:build` then `npm run shots`._
@@ -3092,6 +3132,48 @@ _No model runs yet — `npm run ai:build` then `npm run shots`._
 ---
 
 ## Editorial
+
+### The Chef's Fold
+
+A recipe journal where the layout behaves like a folded linen napkin. Scrolling unfolds the cloth to reveal nested chapters, with crisp creases acting as visual dividers and tactile interaction.
+
+**Status:** polished · `editorial` `textile` `craft` `geometry` `culinary` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/linen-fold-accordion/prompt.md) · [extended](prompts/editorial/linen-fold-accordion/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### The Vacuum Seal Protocol
+
+High-fidelity editorial experience for 'Chef & Vacuum' molecular gastronomy. Sterile lab aesthetic with vacuum seal scroll physics, strict tri-color palette, and monospace typography. Single-file HTML/CSS/JS.
+
+**Status:** polished · `molecular` `vacuum` `tension` `editorial` `physics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/sous-vide-bubble-alignment/prompt.md) · [extended](prompts/editorial/sous-vide-bubble-alignment/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Hot Plate
+
+A high-end editorial web experience titled 'Hot Plate' for the fictional fine-dining publication 'Service'. The interface simulates a kitchen pass, using a steam mechanic that dissipates to reveal a meticulously…
+
+**Status:** polished · `steam` `reveal` `menu` `atmosphere` `editorial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/steam-condensation-read/prompt.md) · [extended](prompts/editorial/steam-condensation-read/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
 
 ### Condensation Index
 
@@ -3101,9 +3183,11 @@ A beverage pairing annual where a foggy glass surface obscures content. Cursor m
 
 [prompt](prompts/editorial/steam-visibility-layer/prompt.md) · [extended](prompts/editorial/steam-visibility-layer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/steam-visibility-layer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 12s | 317s | 8 | [open](prompts/editorial/steam-visibility-layer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3114,6 +3198,80 @@ A long-form essay on pasta engineering where text strands stretch, thin, and vib
 **Status:** polished · `material` `physics` `typography` `craft` `verticality` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/editorial/steel-pasta-extrusion/prompt.md) · [extended](prompts/editorial/steel-pasta-extrusion/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/steel-pasta-extrusion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 6.6s | 305s | 7 | [open](prompts/editorial/steel-pasta-extrusion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+## Interfaces
+
+### Furoshiki Wrapping
+
+A gift registry interface where privacy is determined by knot complexity. Users drag virtual fabric corners to tie knots; simple knots are public, double knots encrypt the message. Physics-based cloth simulation…
+
+**Status:** polished · `gift` `textile` `encryption` `japan` `physics` `tactile` `privacy` `single-file-html` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/furoshiki-wrapping-protocol/prompt.md) · [extended](prompts/interfaces/furoshiki-wrapping-protocol/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Kintsugi Joinery Scheduler
+
+A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 'set' a gold joinery line, turning logistics into a restorative craft.
+
+**Status:** polished · `japan` `repair` `calendar` `tolerance` `craft` `interactive` `precision` `tactile` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/kintsugi-joinery-scheduler/prompt.md) · [extended](prompts/interfaces/kintsugi-joinery-scheduler/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Mon no B Groceries
+
+A conceptual grocery interface using physical ledger metaphors: items hang as paper tags on a central wire. Cutting tags triggers snappy animations, while cart weight influences the wire's ambient sway.
+
+**Status:** polished · `grocery` `ledger` `physicality` `japan` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/mon-nob-grocery-ledger/prompt.md) · [extended](prompts/interfaces/mon-nob-grocery-ledger/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Shoji Screen Privacy
+
+A team collaboration interface where presence is communicated through the opacity of shoji paper panels and the movement of shadows behind them, replacing status dots with architectural light.
+
+**Status:** polished · `collaboration` `light` `japan` `architecture` `kumiko` `presence` `html` `css` `js` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/shoji-screen-privacy/prompt.md) · [extended](prompts/interfaces/shoji-screen-privacy/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Mono no Aware: Erosive Weather Station
+
+A meteorological interface where data degrades the UI. Rain erodes wood-grain textures, sun bleaches ink, and humidity causes paper to curl and stain. The visual state is a direct physical consequence of the weather…
+
+**Status:** polished · `weather` `texture` `japan` `decay` `wabi-sabi` `data-visualization` `organic-ui` `materiality` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/wabi-sabi-weather-station/prompt.md) · [extended](prompts/interfaces/wabi-sabi-weather-station/prompt.full.md)
 
 _No shot preview yet._
 

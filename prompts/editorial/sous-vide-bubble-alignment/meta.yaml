@@ -1,0 +1,24 @@
+id: sous-vide-bubble-alignment
+title: "The Vacuum Seal Protocol"
+category: editorial
+tags:
+  - molecular
+  - vacuum
+  - tension
+  - editorial
+  - physics
+status: polished
+summary: "High-fidelity editorial experience for 'Chef & Vacuum' molecular gastronomy. Sterile lab aesthetic with vacuum seal scroll physics, strict tri-color palette, and monospace typography. Single-file HTML/CSS/JS."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

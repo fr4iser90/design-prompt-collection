@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tensile Integrity — Structural Physics Toy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1A1A; --grid:#333333; --teal:#4ECDC4; --red:#FF6B6B;
+    --ink:#FFFFFF; --muted:#9a9a9a; --amber:#FFC94D;
+    --line:rgba(255,255,255,.12); --panel:rgba(18,18,18,.72);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#0d0d0d}
+  body{font-family:'IBM Plex Mono',monospace;color:var(--ink);-webkit-font-smoothing:antialiased;user-select:none}
+  canvas{display:block;position:fixed;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+
+  /* ---- atmospheric overlays ---- */
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 52%, rgba(0,0,0,.55) 100%)}
+  .scan{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.05;
+    background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+
+  /* ---- HUD ---- */
+  .hud{position:fixed;inset:0;z-index:5;pointer-events:none}
+  .hud .pe{pointer-events:auto}
+
+  .brand{position:absolute;top:20px;left:26px;display:flex;align-items:center;gap:16px}
+  .mark{position:relative;width:66px;height:44px;flex:none}
+  .mark svg{width:100%;height:100%;overflow:visible}
+  .mark .cable{stroke:var(--teal);stroke-width:2;fill:none;
+    stroke-dasharray:1 3;animation:cable 3.4s linear infinite}
+  .mark .deck{stroke:#fff;stroke-width:2.4}
+  .mark .pyl{stroke:#fff;stroke-width:2.4}
+  .mark .car{fill:var(--amber);animation:carRun 4.6s ease-in-out infinite}
+  @keyframes cable{to{stroke-dashoffset:-24}}
+  @keyframes carRun{0%{transform:translateX(0)}45%{transform:translateX(38px)}55%{transform:translateX(38px)}100%{transform:translateX(0)}}
+
+  .brand h1{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;
+    font-size:clamp(26px,4.4vw,50px);line-height:.86;letter-spacing:.01em}
+  .brand h1 .b{display:block;color:#fff}
+  .brand h1 .a{display:block;color:var(--teal)}
+  .brand .tag{margin-top:8px;font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--muted)}
+
+  /* top-right telemetry */
+  .tele{position:absolute;top:22px;right:26px;display:flex;gap:26px;text-align:right}
+  .stat .k{font-family:'Oswald',sans-serif;font-weight:500;font-size:10px;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+  .stat .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:26px;line-height:1;
+    font-variant-numeric:tabular-nums}
+  .stat .v small{font-size:12px;color:var(--muted);font-weight:400}
+  #stScore{color:var(--amber)}
+  #stStress{color:var(--teal);transition:color .15s}
+
+  /* mode pill */
+  .mode{position:absolute;top:118px;left:26px;display:inline-flex;align-items:center;gap:11px;
+    padding:9px 15px 9px 12px;background:var(--panel);border:1px solid var(--line);border-radius:2px;
+    backdrop-filter:blur(8px)}
+  .mode .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);
+    box-shadow:0 0 12px var(--teal);animation:blink 1.4s ease-in-out infinite}
+  .mode[data-sim="1"] .dot{background:var(--amber);box-shadow:0 0 12px var(--amber)}
+  @keyframes blink{50%{opacity:.35}}
+  .mode .lbl{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.24em;font-size:15px}
+  .mode .sub{font-size:9px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;
+    border-left:1px solid var(--line);padding-left:11px}
+
+  /* controls */
+  .controls{position:absolute;left:26px;bottom:22px;display:flex;flex-wrap:wrap;gap:7px;max-width:60vw}
+  .controls .c{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted)}
+  .controls kbd{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink);
+    background:rgba(255,255,255,.06);border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:3px;padding:3px 6px;min-width:20px;text-align:center}
+
+  /* wind meter */
+  .wind{position:absolute;right:26px;bottom:22px;width:172px;text-align:right}
+  .wind .k{font-family:'Oswald',sans-serif;font-weight:500;font-size:10px;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .wind .bar{position:relative;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+  .wind .fill{position:absolute;top:0;bottom:0;left:50%;width:0;background:var(--teal);
+    box-shadow:0 0 10px var(--teal);transition:width .1s,background .2s}
+  .wind .fill.neg{background:var(--red);box-shadow:0 0 10px var(--red)}
+  .wind .mid{position:absolute;top:-3px;bottom:-3px;left:50%;width:1px;background:var(--muted)}
+  .wind .num{margin-top:6px;font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* toast */
+  .toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:6;
+    font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.24em;font-size:13px;
+    text-transform:uppercase;padding:9px 20px;background:var(--panel);border:1px solid var(--line);
+    border-radius:2px;opacity:0;transition:opacity .25s,transform .25s;backdrop-filter:blur(8px)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(4px)}
+  .toast.danger{color:var(--red);border-color:rgba(255,107,107,.4)}
+  .toast.ok{color:var(--teal);border-color:rgba(78,205,196,.4)}
+
+  /* result */
+  .result{position:absolute;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;
+    opacity:0;pointer-events:none;transition:opacity .35s;
+    background:radial-gradient(60% 60% at 50% 45%, rgba(0,0,0,.35), rgba(0,0,0,.72))}
+  .result.show{opacity:1;pointer-events:auto}
+  .card{width:min(440px,90vw);background:rgba(20,20,20,.92);border:1px solid var(--line);
+    border-radius:3px;padding:34px 34px 28px;backdrop-filter:blur(10px);
+    transform:translateY(14px);transition:transform .4s cubic-bezier(.2,.9,.3,1)}
+  .result.show .card{transform:translateY(0)}
+  .card .verdict{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;
+    font-size:clamp(44px,8vw,74px);line-height:.85;letter-spacing:.02em}
+  .card.win .verdict{color:var(--teal)}
+  .card.fail .verdict{color:var(--red)}
+  .card .why{margin-top:10px;font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .card .grid{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line)}
+  .card .cell{background:#161616;padding:14px 16px}
+  .card .cell .k{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .card .cell .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:22px;
+    font-variant-numeric:tabular-nums}
+  .card .cell.big{grid-column:1/-1;background:#111}
+  .card .cell.big .v{font-size:40px;color:var(--amber)}
+  .card .actions{margin-top:24px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+    font-size:13px;padding:13px 22px;background:var(--teal);color:#0a0a0a;border:none;cursor:pointer;
+    border-radius:2px;transition:transform .12s,box-shadow .2s,background .2s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(78,205,196,.28)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink);box-shadow:none}
+
+  /* legend */
+  .legend{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;
+    align-items:center;gap:10px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .legend .grad{width:120px;height:6px;border-radius:3px;
+    background:linear-gradient(90deg,var(--teal),#c8e05a,var(--amber),var(--red))}
+
+  @media (max-width:760px){
+    .tele{gap:16px;top:16px;right:14px}
+    .stat .v{font-size:18px}
+    .brand{top:14px;left:14px}
+    .mode{top:auto;bottom:96px;left:14px}
+    .controls{left:14px;bottom:14px;max-width:70vw}
+    .wind{right:14px;bottom:14px;width:120px}
+    .legend{display:none}
+    .brand .tag{letter-spacing:.3em;font-size:9px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .mark .cable,.mark .car,.mode .dot{animation:none}
+    *{transition-duration:.001s!important}
+  }
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div class="vignette"></div>
+  <div class="scan"></div>
+
+  <div class="hud">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 66 44">
+          <path class="cable" d="M2 12 Q16 40 33 40 Q50 40 64 12"/>
+          <line class="pyl" x1="16" y1="4" x2="16" y2="40"/>
+          <line class="pyl" x1="50" y1="4" x2="50" y2="40"/>
+          <line class="deck" x1="2" y1="26" x2="64" y2="26"/>
+          <rect class="car" x="2" y="20" width="9" height="6" rx="1"/>
+        </svg>
+      </div>
+      <div>
+        <h1><span class="b">Tensile</span><span class="a">Integrity</span></h1>
+        <div class="tag">Structural Physics Toy</div>
+      </div>
+    </div>
+
+    <div class="tele">
+      <div class="stat"><div class="k">Score</div><div class="v" id="stScore">0</div></div>
+      <div class="stat"><div class="k">Beams</div><div class="v" id="stBeams">0</div></div>
+      <div class="stat"><div class="k">Max Stress</div><div class="v" id="stStress">0.00<small>x</small></div></div>
+    </div>
+
+    <div class="mode" id="modePill" data-sim="0">
+      <span class="dot"></span>
+      <span class="lbl" id="modeLbl">BUILD</span>
+      <span class="sub" id="modeSub">Click to place · Drag to beam</span>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="legend"><span>Stress</span><div class="grad"></div><span>Yield</span></div>
+
+    <div class="controls">
+      <div class="c"><kbd>Click</kbd> Node</div>
+      <div class="c"><kbd>Drag</kbd> Beam</div>
+      <div class="c"><kbd>Right</kbd> Delete</div>
+      <div class="c"><kbd>Space</kbd> Simulate</div>
+      <div class="c"><kbd>R</kbd> Reset</div>
+    </div>
+
+    <div class="wind">
+      <div class="k">Wind Shear</div>
+      <div class="bar"><div class="mid"></div><div class="fill" id="windFill"></div></div>
+      <div class="num" id="windNum">0.00 kN</div>
+    </div>
+  </div>
+
+  <div class="result" id="result">
+    <div class="card" id="resCard">
+      <div class="verdict" id="verdict">PASS</div>
+      <div class="why" id="why"></div>
+      <div class="grid">
+        <div class="cell"><div class="k">Load Carried</div><div class="v" id="rLoad">0</div></div>
+        <div class="cell"><div class="k">Beams Used</div><div class="v" id="rBeams">0</div></div>
+        <div class="cell"><div class="k">Distance</div><div class="v" id="rDist">0</div></div>
+        <div class="cell"><div class="k">Efficiency</div><div class="v" id="rEff">0</div></div>
+        <div class="cell big"><div class="k">Final Score</div><div class="v" id="rScore">0</div></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="btnBuild">Back to Build</button>
+        <button class="btn ghost" id="btnClear">Clear Bridge</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+
+  // ---------- config ----------
+  const GRAV = 0.5, ITER = 12, DAMP = 0.994, BREAK = 1.0, STIFF = 0.7;
+  const CAR_W = 24, CAR_H = 12, CAR_MASS = 5, CAR_SPEED = 1.35, WHEEL = 6.5;
+  const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  // ---------- state ----------
+  let W=0,H=0,DPR=1, grid=44, spanY=0, spanL=0, spanR=0, anchorY=0, failY=0;
+  let nodes=[], beams=[], particles=[], windLines=[];
+  let mode='build', running=false, time=0, wind=0, windT=0;
+  let car=null, carStartX=0, carEndX=0, carDist=0, carWeight=0;
+  let beamCount=0, maxStress=0, score=0;
+  let dragging=false, dragFrom=null, dragNode=null, mouse={x:0,y:0}, hover=null;
+  let resultOpen=false, toastT=null;
+
+  // ---------- layout ----------
+  function resize(){
+    DPR = Math.min(2, window.devicePixelRatio||1);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    grid = Math.max(38, Math.min(52, Math.round(W/24)));
+    spanY = Math.round(H*0.40);
+    spanL = Math.round(W*0.10); spanR = Math.round(W*0.90);
+    anchorY = Math.round(H*0.66);
+    failY = Math.round(H*0.90);
+    if(!reduce) initWind();
+  }
+
+  function initWind(){
+    windLines=[];
+    const n = Math.round(W/90)+6;
+    for(let i=0;i<n;i++) windLines.push({x:Math.random()*W, y:Math.random()*H, len:40+Math.random()*90, spd:.6+Math.random()*1.4});
+  }
+
+  // ---------- helpers ----------
+  const dist = (a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  function stressColor(s){
+    s = clamp(s,0,1.35);
+    let r,g,b;
+    if(s<=0.5){const t=s/0.5; r=78+(255-78)*t; g=205+(201-205)*t; b=196+(77-196)*t;}
+    else{const t=clamp((s-0.5)/0.5,0,1); r=255+(255-255)*t; g=201+(107-201)*t; b=77+(107-77)*t;}
+    return [Math.round(r),Math.round(g),Math.round(b)];
+  }
+  function stressCSS(s){const c=stressColor(s);return `rgb(${c[0]},${c[1]},${c[2]})`;}
+
+  function toast(msg,kind='ok'){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.className='toast show '+kind;
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1500);
+  }
+
+  // ---------- structure ----------
+  function addNode(x,y,anchor=false){
+    const n={x,y,px:x,py:y,anchor}; nodes.push(n); return n;
+  }
+  function addBeam(a,b){
+    if(a===b) return null;
+    for(const bm of beams) if((bm.a===a&&bm.b===b)||(bm.a===b&&bm.b===a)) return null;
+    const L=dist(a,b); if(L<6) return null;
+    const bm={a,b,rest:L,stress:0,flash:0,broken:false}; beams.push(bm); return bm;
+  }
+  function nodeAt(x,y,r=12){ let best=null,bd=r*r;
+    for(const n of nodes){const d=(n.x-x)**2+(n.y-y)**2; if(d<bd){bd=d;best=n;}} return best; }
+  function beamAt(x,y,th=7){ let best=null,bd=th;
+    for(const bm of beams){
+      const ax=bm.a.x,ay=bm.a.y,bx=bm.b.x,by=bm.b.y;
+      const dx=bx-ax,dy=by-ay, l2=dx*dx+dy*dy||1;
+      let t=((x-ax)*dx+(y-ay)*dy)/l2; t=clamp(t,0,1);
+      const px=ax+dx*t, py=ay+dy*t, d=Math.hypot(x-px,y-py);
+      if(d<bd){bd=d;best=bm;}
+    } return best; }
+
+  function deleteNode(n){
+    beams = beams.filter(b=>b.a!==n&&b.b!==n);
+    nodes = nodes.filter(x=>x!==n);
+  }
+  function deleteBeam(b){ beams = beams.filter(x=>x!==b); }
+
+  function resetBridge(){
+    nodes=[]; beams=[]; particles=[]; car=null; running=false; mode='build';
+    score=0; beamCount=0; maxStress=0; resultOpen=false;
+    document.getElementById('result').classList.remove('show');
+    setMode();
+  }
+
+  // ---------- simulation ----------
+  function startSim(){
+    if(nodes.length<2){ toast('Build a bridge first','danger'); return; }
+    if(!car){
+      const top=nodes.filter(n=>!n.anchor).sort((a,b)=>a.y-b.y);
+      const y = top.length? top[0].y : spanY;
+      car = {x:spanL-40, y:y-WHEEL, vx:0, vy:0};
+      carStartX=car.x; carEndX=spanR+30;
+      carWeight = CAR_MASS;
+      for(const n of nodes) n.px=n.x, n.py=n.y;
+    }
+    running=true; mode='sim'; setMode();
+  }
+  function pauseSim(){ running=false; mode='build'; setMode(); }
+  function toggleSim(){ running? pauseSim() : startSim(); }
+
+  function physics(){
+    // wind
+    windT += 0.02;
+    wind = reduce ? 0 : (Math.sin(windT)*0.55 + Math.sin(windT*0.43+1.2)*0.25) * 0.35;
+
+    // integrate dynamic nodes
+    for(const n of nodes){
+      if(n.anchor) continue;
+      const vx=(n.x-n.px)*DAMP, vy=(n.y-n.py)*DAMP;
+      n.px=n.x; n.py=n.y;
+      n.x += vx + wind;
+      n.y += vy + GRAV;
+    }
+
+    // car load -> nearest deck node
+    let deck=null, bd=1e9;
+    for(const n of nodes){ const d=Math.abs(n.x-car.x); if(d<bd){bd=d;deck=n;} }
+    if(deck && Math.hypot(deck.x-car.x, deck.y-car.y) < 90){
+      deck.y += CAR_MASS*0.05; // downward load
+    }
+
+    // solve constraints
+    for(let it=0; it<ITER; it++){
+      for(const bm of beams){
+        if(bm.broken) continue;
+        const a=bm.a,b=bm.b;
+        let dx=b.x-a.x, dy=b.y-a.y, d=Math.hypot(dx,dy)||0.0001;
+        const diff=(d-bm.rest)/d*0.5*STIFF;
+        const ox=dx*diff, oy=dy*diff;
+        const wa=a.anchor?0:1, wb=b.anchor?0:1, ws=wa+wb;
+        if(ws===0) continue;
+        a.x += ox*(wa/ws); a.y += oy*(wa/ws);
+        b.x -= ox*(wb/ws); b.y -= oy*(wb/ws);
+      }
+      // car follows deck height
+      if(deck){
+        car.y = deck.y - WHEEL;
+        car.vy = (car.y - (car._py||car.y)); car._py=car.y;
+      }
+    }
+
+    // stress + break
+    maxStress=0; beamCount=0;
+    for(const bm of beams){
+      if(bm.broken) continue;
+      beamCount++;
+      const d=dist(bm.a,bm.b);
+      bm.stress = Math.abs(d-bm.rest)/bm.rest;
+      if(bm.flash>0) bm.flash-=0.08;
+      if(bm.stress>maxStress) maxStress=bm.stress;
+      if(bm.stress>BREAK){ bm.broken=true; breakBeam(bm); }
+    }
+    beams = beams.filter(b=>!b.broken);
+
+    // move car
+    car.x += CAR_SPEED;
+    carDist = Math.max(0, car.x - carStartX);
+
+    // win / fail
+    if(car.x >= carEndX){ win(); return; }
+    if(car.y > failY){ fail('The car fell into the void'); return; }
+    for(const n of nodes){ if(!n.anchor && n.y>failY){ fail('The deck collapsed'); return; } }
+  }
+
+  function breakBeam(bm){
+    const mx=(bm.a.x+bm.b.x)/2, my=(bm.a.y+bm.b.y)/2;
+    for(let i=0;i<10;i++){
+      const a=Math.random()*Math.PI*2, sp=1+Math.random()*3;
+      particles.push({x:mx,y:my,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,life:1,col:stressColor(1.1)});
+    }
+    flashScreen();
+  }
+
+  // ---------- particles / effects ----------
+  let screenFlash=0;
+  function flashScreen(){ if(!reduce) screenFlash=1; }
+  function updateParticles(){
+    for(const p of particles){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=0.03; }
+    particles = particles.filter(p=>p.life>0);
+    if(screenFlash>0) screenFlash-=0.06;
+  }
+
+  function win(){
+    running=false; mode='build'; setMode();
+    const eff = beamCount>0 ? (carWeight*carDist)/beamCount : 0;
+    score = Math.round(eff);
+    showResult('win','The load crossed intact.', {load:carWeight, beams:beamCount, dist:Math.round(carDist), eff:Math.round(eff), score});
+  }
+  function fail(why){
+    running=false; mode='build'; setMode();
+    showResult('fail',why, {load:carWeight, beams:beamCount, dist:Math.round(carDist), eff:0, score:0});
+  }
+  function showResult(kind,why,d){
+    const r=document.getElementById('result'), card=document.getElementById('resCard');
+    card.className='card '+kind;
+    document.getElementById('verdict').textContent = kind==='win'?'PASS':'FAIL';
+    document.getElementById('why').textContent = why;
+    document.getElementById('rLoad').textContent = d.load;
+    document.getElementById('rBeams').textContent = d.beams;
+    document.getElementById('rDist').textContent = d.dist+'px';
+    document.getElementById('rEff').textContent = d.eff;
+    document.getElementById('rScore').textContent = d.score;
+    r.classList.add('show'); resultOpen=true;
+  }
+
+  // ---------- mode UI ----------
+  function setMode(){
+    const pill=document.getElementById('modePill');
+    pill.dataset.sim = running?'1':'0';
+    document.getElementById('modeLbl').textContent = running?'SIM':'BUILD';
+    document.getElementById('modeSub').textContent = running?'Space to pause · R to reset':'Click to place · Drag to beam';
+  }
+
+  // ---------- input ----------
+  function pos(e){ const r=canvas.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+
+  canvas.addEventListener('contextmenu', e=>e.preventDefault());
+
+  canvas.addEventListener('pointerdown', e=>{
+    if(e.button===2){ // right click delete
+      const p=pos(e); const n=nodeAt(p.x,p.y); 
+      if(n){ deleteNode(n); return; }
+      const b=beamAt(p.x,p.y); if(b){ deleteBeam(b); } return;
+    }
+    if(e.button!==0) return;
+    if(running) return; // build only when paused
+    const p=pos(e);
+    const n=nodeAt(p.x,p.y);
+    if(n){ dragging=true; dragFrom=n; dragNode={x:p.x,y:p.y}; }
+    else { const nn=addNode(p.x,p.y); dragging=true; dragFrom=nn; dragNode={x:p.x,y:p.y}; }
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', e=>{
+    const p=pos(e); mouse=p;
+    hover = (!running && !dragging) ? (nodeAt(p.x,p.y) || beamAt(p.x,p.y)) : null;
+    if(dragging){ dragNode=p; }
+  });
+
+  canvas.addEventListener('pointerup', e=>{
+    if(!dragging) return;
+    dragging=false;
+    const p=pos(e); const target=nodeAt(p.x,p.y,12);
+    if(target && target!==dragFrom) addBeam(dragFrom,target);
+    dragFrom=null; dragNode=null;
+  });
+
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'){ e.preventDefault(); if(resultOpen){ backToBuild(); return;} toggleSim(); }
+    else if(e.key==='r'||e.key==='R'){ resetBridge(); }
+    else if(e.key==='Escape'){ if(resultOpen) backToBuild(); }
+  });
+
+  function backToBuild(){ resultOpen=false; document.getElementById('result').classList.remove('show'); }
+  document.getElementById('btnBuild').addEventListener('click', backToBuild);
+  document.getElementById('btnClear').addEventListener('click', ()=>{ resetBridge(); });
+
+  // ---------- render ----------
+  function drawGrid(){
+    ctx.strokeStyle='#333333'; ctx.lineWidth=1; ctx.globalAlpha=0.55;
+    ctx.beginPath();
+    for(let x=(W/2)%grid; x<W; x+=grid){ ctx.moveTo(x+.5,0); ctx.lineTo(x+.5,H); }
+    for(let y=(H/2)%grid; y<H; y+=grid){ ctx.moveTo(0,y+.5); ctx.lineTo(W,y+.5); }
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+
+  function drawRiver(){
+    const g=ctx.createLinearGradient(0,failY,0,H);
+    g.addColorStop(0,'rgba(78,205,196,0)'); g.addColorStop(1,'rgba(78,205,196,0.06)');
+    ctx.fillStyle=g; ctx.fillRect(0,failY,W,H-failY);
+    ctx.strokeStyle='rgba(255,107,107,0.35)'; ctx.setLineDash([6,8]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(0,failY+.5); ctx.lineTo(W,failY+.5); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,107,107,0.5)'; ctx.font='10px "IBM Plex Mono"';
+    ctx.fillText('COLLAPSE THRESHOLD', 12, failY-8);
+  }
+
+  function drawWind(){
+    if(reduce) return;
+    ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.lineWidth=1;
+    const dir = wind>=0?1:-1;
+    for(const l of windLines){
+      l.x += l.spd*dir*2;
+      if(l.x>W+120) l.x=-120; if(l.x<-120) l.x=W+120;
+      ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(l.x+l.len*dir,l.y); ctx.stroke();
+      // arrow head
+      ctx.beginPath(); ctx.moveTo(l.x+l.len*dir,l.y);
+      ctx.lineTo(l.x+(l.len-6)*dir,l.y-3); ctx.moveTo(l.x+l.len*dir,l.y);
+      ctx.lineTo(l.x+(l.len-6)*dir,l.y+3); ctx.stroke();
+    }
+  }
+
+  function drawSpan(){
+    // abutments
+    ctx.fillStyle='#2a2a2a';
+    ctx.fillRect(spanL-16, anchorY, 16, H-anchorY);
+    ctx.fillRect(spanR, anchorY, 16, H-anchorY);
+    ctx.strokeStyle='#3a3a3a'; ctx.lineWidth=1;
+    ctx.strokeRect(spanL-16+.5, anchorY+.5, 16, H-anchorY);
+    ctx.strokeRect(spanR+.5, anchorY+.5, 16, H-anchorY);
+    ctx.fillStyle='#555'; ctx.font='9px "IBM Plex Mono"';
+    ctx.fillText('ABUTMENT', spanL-14, anchorY-6);
+    ctx.fillText('ABUTMENT', spanR-2, anchorY-6);
+  }
+
+  function drawBeams(){
+    for(const bm of beams){
+      const c=stressColor(bm.stress);
+      ctx.strokeStyle=`rgb(${c[0]},${c[1]},${c[2]})`;
+      ctx.lineWidth=2.2 + bm.stress*2.2;
+      if(bm.stress>0.85){ ctx.shadowColor=`rgba(${c[0]},${c[1]},${c[2]},0.8)`; ctx.shadowBlur=10; }
+      ctx.beginPath(); ctx.moveTo(bm.a.x,bm.a.y); ctx.lineTo(bm.b.x,bm.b.y); ctx.stroke();
+      ctx.shadowBlur=0;
+      if(bm.flash>0){ ctx.strokeStyle=`rgba(255,255,255,${bm.flash})`; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(bm.a.x,bm.a.y); ctx.lineTo(bm.b.x,bm.b.y); ctx.stroke(); }
+    }
+  }
+
+  function drawNodes(){
+    for(const n of nodes){
+      const isHover = hover===n;
+      let pulse=0;
+      if(!reduce && running){
+        let load=0; for(const bm of beams){ if(bm.a===n||bm.b===n) load+=bm.stress; }
+        pulse = Math.min(1, load*0.5);
+      }
+      const r = n.anchor?6:5;
+      if(pulse>0.05){ ctx.fillStyle=`rgba(78,205,196,${0.12*pulse})`;
+        ctx.beginPath(); ctx.arc(n.x,n.y,r+4+pulse*4,0,7); ctx.fill(); }
+      ctx.fillStyle = n.anchor ? '#FFC94D' : '#FFFFFF';
+      ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.fill();
+      ctx.strokeStyle='#000'; ctx.lineWidth=1.5; ctx.stroke();
+      if(isHover){ ctx.strokeStyle='#4ECDC4'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(n.x,n.y,r+4,0,7); ctx.stroke(); }
+    }
+  }
+
+  function drawCar(){
+    if(!car) return;
+    const x=car.x, y=car.y;
+    // body
+    ctx.fillStyle='#0d0d0d';
+    ctx.beginPath(); ctx.roundRect(x-CAR_W/2, y-CAR_H, CAR_W, CAR_H, 2); ctx.fill();
+    ctx.strokeStyle='#4ECDC4'; ctx.lineWidth=1.2; ctx.stroke();
+    // cabin
+    ctx.fillStyle='#111'; ctx.beginPath();
+    ctx.moveTo(x-CAR_W/2+4,y-CAR_H); ctx.lineTo(x-CAR_W/2+8,y-CAR_H-6);
+    ctx.lineTo(x+CAR_W/2-8,y-CAR_H-6); ctx.lineTo(x+CAR_W/2-4,y-CAR_H); ctx.closePath();
+    ctx.fill(); ctx.strokeStyle='rgba(78,205,196,0.6)'; ctx.stroke();
+    // wheels
+    for(const wx of [-CAR_W/2+5, CAR_W/2-5]){
+      ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(x+wx, y, WHEEL/1.4,0,7); ctx.fill();
+      ctx.strokeStyle='#4ECDC4'; ctx.lineWidth=1.5; ctx.stroke();
+      ctx.strokeStyle='#666'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(x+wx,y); ctx.lineTo(x+wx+Math.cos(time*0.4)*WHEEL/2,y+Math.sin(time*0.4)*WHEEL/2); ctx.stroke();
+    }
+  }
+
+  function drawParticles(){
+    for(const p of particles){
+      ctx.fillStyle=`rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.6*p.life+0.5,0,7); ctx.fill();
+    }
+  }
+
+  function drawDrag(){
+    if(!dragging||!dragFrom) return;
+    const c=stressColor(0);
+    ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.setLineDash([4,4]); ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(dragFrom.x,dragFrom.y); ctx.lineTo(dragNode.x,dragNode.y); ctx.stroke();
+    ctx.setLineDash([]);
+    const L=Math.hypot(dragNode.x-dragFrom.x,dragNode.y-dragFrom.y);
+    ctx.fillStyle='#9a9a9a'; ctx.font='10px "IBM Plex Mono"';
+    ctx.fillText(Math.round(L)+'px', dragNode.x+8, dragNode.y-8);
+  }
+
+  function render(){
+    ctx.fillStyle='#1A1A1A'; ctx.fillRect(0,0,W,H);
+    drawGrid();
+    drawRiver();
+    drawWind();
+    drawSpan();
+    drawBeams();
+    drawNodes();
+    drawCar();
+    drawDrag();
+    drawParticles();
+    if(screenFlash>0){ ctx.fillStyle=`rgba(255,107,107,${screenFlash*0.18})`; ctx.fillRect(0,0,W,H); }
+  }
+
+  // ---------- HUD update ----------
+  const elScore=document.getElementById('stScore'), elBeams=document.getElementById('stBeams'),
+        elStress=document.getElementById('stStress'), elWindFill=document.getElementById('windFill'),
+        elWindNum=document.getElementById('windNum');
+  function updateHUD(){
+    elScore.textContent = score;
+    elBeams.textContent = beamCount;
+    elStress.innerHTML = maxStress.toFixed(2)+'<small>x</small>';
+    elStress.style.color = stressCSS(maxStress);
+    const w=Math.round(wind*100)/100;
+    elWindFill.style.width = Math.abs(w)*50+'%';
+    elWindFill.classList.toggle('neg', w<0);
+    elWindFill.style.left = w>=0?'50%':(50-Math.abs(w)*50)+'%';
+    elWindNum.textContent = (w>=0?'+':'')+w.toFixed(2)+' kN';
+  }
+
+  // ---------- loop ----------
+  function loop(){
+    time++;
+    if(running) physics();
+    updateParticles();
+    render();
+    updateHUD();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- boot ----------
+  resize();
+  window.addEventListener('resize', ()=>{ resize(); });
+  if(!reduce) initWind();
+  setMode();
+  loop();
+})();
+</script>
+</body>
+</html>

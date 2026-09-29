@@ -9,11 +9,11 @@ tags:
   - verticality
 status: polished
 summary: "A long-form essay on pasta engineering where text strands stretch, thin, and vibrate like dough through a brass die, toggling between spaghetti and rigatoni layouts."
-preview: null
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
-demo: null
-default_run: null
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
 source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
 source_provider: "custom"
 created: "2026-09-29"

@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 316841
+gen_ms: 316841
+ttft_ms: 11609
+queue_wait_ms: 147
+wall_ms: 328661
+review_score: 8
+review_summary: "Strong editorial execution with perfect palette adherence and typography hierarchy, though the fog mechanic is not visible in the static capture."
+reviewed_at: "2026-09-29T10:50:55.342Z"
+review_issues:
+  - "Fog layer not visible in screenshot (likely cleared or transparent)"
+  - "Headline font appears to be a heavy sans-serif (e.g., Impact/Helvetica) rather than the requested Playfair Display serif"
+  - "Top-left grid texture is a bit heavy/busy compared to the 'clinical' brief"

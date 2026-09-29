@@ -1,0 +1,27 @@
+id: wabi-sabi-weather-station
+title: "Mono no Aware: Erosive Weather Station"
+category: interfaces
+tags:
+  - weather
+  - texture
+  - japan
+  - decay
+  - wabi-sabi
+  - data-visualization
+  - organic-ui
+  - materiality
+status: polished
+summary: "A meteorological interface where data degrades the UI. Rain erodes wood-grain textures, sun bleaches ink, and humidity causes paper to curl and stain. The visual state is a direct physical consequence of the weather…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

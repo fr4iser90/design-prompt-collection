@@ -1,0 +1,24 @@
+id: linen-fold-accordion
+title: "The Chef's Fold"
+category: editorial
+tags:
+  - editorial
+  - textile
+  - craft
+  - geometry
+  - culinary
+status: polished
+summary: "A recipe journal where the layout behaves like a folded linen napkin. Scrolling unfolds the cloth to reveal nested chapters, with crisp creases acting as visual dividers and tactile interaction."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

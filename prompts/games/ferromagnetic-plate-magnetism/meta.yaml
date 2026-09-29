@@ -1,0 +1,27 @@
+id: ferromagnetic-plate-magnetism
+title: "Ferromagnetic Flux"
+category: games
+tags:
+  - canvas2d
+  - physics
+  - spatial-puzzle
+  - magnetism
+  - state-stack
+  - game
+  - field-lines
+  - vector-math
+status: polished
+summary: "Guide a steel ball to a goal by placing magnets that visualize real-time magnetic field lines. Drag to place, rotate to steer. Fail if the ball hits red hazards or exits bounds."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

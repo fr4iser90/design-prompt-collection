@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Vapor & Vine — Issue 04: The Cold Pour. A beverage pairing annual. Wipe the condensation to read.">
+<title>Vapor &amp; Vine — Condensation Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Code+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --midnight:#0B132B;
+    --ink:#F7F7F7;
+    --teal:#5BC0BE;
+    --slate:#1C2541;
+    --ink-soft:rgba(247,247,247,.82);
+    --ink-faint:rgba(247,247,247,.5);
+    --line:rgba(91,192,190,.22);
+    --line-soft:rgba(247,247,247,.1);
+    --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+    --mono:'Source Code Pro',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--midnight);
+    color:var(--ink);
+    font-family:var(--mono);
+    font-weight:300;
+    line-height:1.7;
+    overflow-x:hidden;
+    cursor:crosshair;
+    min-height:100vh;
+  }
+
+  /* ---------- Atmospheric base ---------- */
+  .atmos{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(91,192,190,.10), transparent 60%),
+      radial-gradient(90% 60% at 100% 110%, rgba(28,37,65,.9), transparent 55%),
+      radial-gradient(80% 70% at 0% 90%, rgba(28,37,65,.6), transparent 60%),
+      var(--midnight);
+  }
+  .atmos::after{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(91,192,190,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(91,192,190,.035) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(120% 90% at 50% 40%,#000 30%,transparent 85%);
+            mask-image:radial-gradient(120% 90% at 50% 40%,#000 30%,transparent 85%);
+    opacity:.6;
+  }
+
+  /* ---------- Fog canvas ---------- */
+  #fog{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:1}
+
+  /* ---------- Fixed chrome ---------- */
+  .chrome{
+    position:fixed;top:0;left:0;right:0;z-index:60;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px clamp(16px,4vw,44px);
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-faint);
+    pointer-events:none;
+  }
+  .chrome .brand{color:var(--ink);letter-spacing:.34em;font-weight:500}
+  .chrome .brand b{color:var(--teal);font-weight:500}
+  .chrome .status{display:flex;gap:22px;align-items:center}
+  .chrome .status .dot{
+    width:6px;height:6px;border-radius:50%;background:var(--teal);
+    box-shadow:0 0 10px var(--teal);display:inline-block;margin-right:8px;
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  @media(max-width:640px){.chrome .status .hide-s{display:none}}
+
+  /* ---------- Clear / help control ---------- */
+  .control{
+    position:fixed;right:clamp(16px,4vw,44px);bottom:22px;z-index:70;
+    display:flex;align-items:center;gap:14px;
+  }
+  .hint{
+    font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);
+    border:1px solid var(--line);padding:9px 13px;background:rgba(11,19,43,.55);
+    backdrop-filter:blur(2px);transition:opacity .6s ease,transform .6s ease;
+    max-width:230px;text-align:right;line-height:1.5;
+  }
+  .hint.gone{opacity:0;transform:translateY(8px);pointer-events:none}
+  .hint b{color:var(--ink);font-weight:500}
+  .clear-btn{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink);background:transparent;border:1px solid var(--line);
+    padding:9px 15px;cursor:pointer;transition:.28s ease;white-space:nowrap;
+  }
+  .clear-btn:hover{background:var(--teal);color:var(--midnight);border-color:var(--teal)}
+  .clear-btn:focus-visible,.skip:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+
+  /* ---------- Layout ---------- */
+  .wrap{position:relative;z-index:10;max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,44px)}
+  section{position:relative}
+
+  .skip{
+    position:absolute;left:-999px;top:0;z-index:200;background:var(--teal);color:var(--midnight);
+    padding:10px 16px;font-size:12px;letter-spacing:.1em
+  }
+  .skip:focus{left:12px;top:12px}
+
+  /* ---------- Hero ---------- */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 0 70px}
+  .hero .rule{display:flex;align-items:center;gap:16px;color:var(--teal);font-size:11px;letter-spacing:.28em;text-transform:uppercase;margin-bottom:26px}
+  .hero .rule::before{content:"";height:1px;width:56px;background:var(--teal);opacity:.6}
+  .hero .rule::after{content:"";height:1px;flex:1;background:var(--line-soft)}
+
+  .masthead{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(3.4rem,15vw,12.5rem);line-height:.86;letter-spacing:-.02em;
+    text-transform:uppercase;color:var(--ink);
+  }
+  .masthead .amp{color:var(--teal);font-style:italic;font-weight:700}
+  .issue{
+    font-family:var(--serif);font-style:italic;font-weight:700;
+    font-size:clamp(1.6rem,5.2vw,3.4rem);line-height:1.05;margin-top:14px;color:var(--ink);
+  }
+  .issue .num{color:var(--teal);font-style:normal;font-family:var(--mono);font-weight:500;font-size:.62em;vertical-align:.18em;margin-right:.4em}
+
+  .hero-foot{
+    margin-top:clamp(34px,6vh,60px);display:flex;flex-wrap:wrap;gap:26px 48px;align-items:flex-end;justify-content:space-between;
+  }
+  .hero-foot p{max-width:44ch;color:var(--ink-soft);font-size:13.5px;line-height:1.85}
+  .hero-foot .meta{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);display:flex;flex-direction:column;gap:6px}
+  .hero-foot .meta span b{color:var(--teal);font-weight:500}
+  .cue{display:inline-flex;align-items:center;gap:10px;color:var(--teal);font-size:11px;letter-spacing:.2em;text-transform:uppercase;margin-top:20px}
+  .cue .swipe{width:34px;height:1px;background:linear-gradient(90deg,var(--teal),transparent);position:relative}
+  .cue .swipe::after{content:"";position:absolute;left:0;top:-3px;width:7px;height:7px;border-radius:50%;background:var(--teal);animation:swipe 2.6s ease-in-out infinite}
+  @keyframes swipe{0%{left:0;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:100%;opacity:0}}
+
+  /* ---------- Section headers ---------- */
+  .shead{display:flex;align-items:baseline;gap:20px;padding:clamp(70px,12vh,130px) 0 34px}
+  .shead .no{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--teal);white-space:nowrap}
+  .shead h2{font-family:var(--serif);font-weight:800;font-size:clamp(2rem,6vw,3.9rem);line-height:1;letter-spacing:-.01em}
+  .shead .tag{margin-left:auto;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-faint);text-align:right}
+  .shead .rule{flex:1;height:1px;background:var(--line-soft);align-self:center;min-width:20px}
+
+  /* ---------- Chapter 1 : Science ---------- */
+  .science{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(30px,5vw,72px);padding-bottom:40px}
+  .science .lead{font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.35rem);line-height:1.32;font-weight:600;color:var(--ink)}
+  .science .lead .drop{color:var(--teal)}
+  .science .body{margin-top:26px;color:var(--ink-soft);font-size:13.5px;line-height:1.95;max-width:56ch}
+  .science .body p+p{margin-top:16px}
+  .science .body em{color:var(--ink);font-style:normal;border-bottom:1px solid var(--line)}
+
+  .spec{border-top:1px solid var(--line);padding-top:22px}
+  .spec .cap{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;display:flex;justify-content:space-between}
+  .spec .row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line-soft);font-size:12.5px}
+  .spec .row .k{color:var(--ink-soft)}
+  .spec .row .v{color:var(--ink);font-weight:500;letter-spacing:.04em}
+  .spec .row .v small{color:var(--teal)}
+  .spec .row:last-child{border-bottom:none}
+
+  /* ---------- Chapter 2 : Pairing grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
+  .card{
+    background:var(--midnight);padding:26px 24px 24px;position:relative;min-height:230px;
+    display:flex;flex-direction:column;transition:background .4s ease;
+  }
+  .card:hover,.card:focus-within{background:#0e1836}
+  .card .idx{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--teal)}
+  .card .drink{font-family:var(--serif);font-weight:700;font-size:1.55rem;line-height:1.1;margin-top:16px;color:var(--ink)}
+  .card .pair{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.15rem;color:var(--teal);margin-top:6px}
+  .card .note{font-size:11.5px;line-height:1.75;color:var(--ink-soft);margin-top:16px}
+  .card .foot{margin-top:auto;padding-top:18px;display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);border-top:1px solid var(--line-soft)}
+  .card .foot b{color:var(--teal);font-weight:500}
+
+  /* ---------- Chapter 3 : Ritual ---------- */
+  .ritual{padding:clamp(40px,8vh,80px) 0}
+  .ritual blockquote{
+    font-family:var(--serif);font-weight:700;font-style:italic;
+    font-size:clamp(1.9rem,5.4vw,4.2rem);line-height:1.14;letter-spacing:-.01em;color:var(--ink);
+    max-width:20ch;
+  }
+  .ritual blockquote .hl{color:var(--teal);font-style:italic}
+  .ritual .attrib{margin-top:34px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);display:flex;gap:16px;align-items:center}
+  .ritual .attrib::before{content:"";width:40px;height:1px;background:var(--teal)}
+  .ritual .attrib b{color:var(--ink);font-weight:500}
+
+  /* ---------- Footer ---------- */
+  footer{position:relative;z-index:10;margin-top:clamp(60px,10vh,110px);border-top:1px solid var(--line);padding:clamp(46px,7vh,80px) 0 60px;background:linear-gradient(180deg,transparent,rgba(28,37,65,.35))}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+  .foot-grid h3{font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,4vw,2.6rem);line-height:1.05;letter-spacing:-.01em}
+  .foot-grid h3 .amp{color:var(--teal);font-style:italic}
+  .foot-grid p{color:var(--ink-soft);font-size:12.5px;line-height:1.9;margin-top:14px;max-width:34ch}
+  .foot-col .lbl{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+  .foot-col a,.foot-col div{display:block;color:var(--ink-soft);font-size:12.5px;line-height:2.1;text-decoration:none;transition:color .25s}
+  .foot-col a:hover{color:var(--teal)}
+  .colophon{margin-top:52px;padding-top:22px;border-top:1px solid var(--line-soft);display:flex;flex-wrap:wrap;gap:16px 30px;justify-content:space-between;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint)}
+  .colophon b{color:var(--teal);font-weight:500}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .grid .card.reveal{transition-delay:calc(var(--i,0)*70ms)}
+
+  /* ---------- Responsive ---------- */
+  @media(max-width:900px){
+    .science{grid-template-columns:1fr;gap:40px}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .foot-grid{grid-template-columns:1fr;gap:34px}
+  }
+  @media(max-width:560px){
+    body{cursor:auto}
+    .grid{grid-template-columns:1fr}
+    .shead{flex-wrap:wrap}
+    .shead .tag{margin-left:0;width:100%;text-align:left}
+    .hint{max-width:150px}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="atmos" aria-hidden="true"></div>
+
+<header class="chrome">
+  <div class="brand">VAPOR <b>&amp;</b> VINE</div>
+  <div class="status">
+    <span class="hide-s">ISSUE 04</span>
+    <span class="hide-s">CHILLED SERVICE</span>
+    <span><span class="dot"></span>DEW POINT 12°C</span>
+  </div>
+</header>
+
+<canvas id="fog" aria-hidden="true"></canvas>
+
+<div class="control">
+  <div class="hint" id="hint">Move your cursor to <b>wipe the condensation</b> and read.</div>
+  <button class="clear-btn" id="clearBtn" type="button">Clear Fog</button>
+</div>
+
+<main id="main" class="wrap">
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="masthead">
+    <div class="rule">The Beverage Pairing Annual — No. 04</div>
+    <h1 class="masthead" id="masthead">Vapor<span class="amp">&amp;</span>Vine</h1>
+    <div class="issue"><span class="num">04</span>The Cold Pour</div>
+    <div class="hero-foot">
+      <p>A field study in temperature, texture, and the thin film of water that forms when a chilled glass meets the air. Wipe the surface to read.</p>
+      <div class="meta">
+        <span>EDITORIAL <b>Vol. IV</b></span>
+        <span>PAIRINGS <b>06</b></span>
+        <span>SERVICE <b>12°C</b></span>
+      </div>
+    </div>
+    <div class="cue"><span class="swipe"></span>Drag to clear the glass</div>
+  </section>
+
+  <!-- CHAPTER 1 -->
+  <section aria-labelledby="c1">
+    <div class="shead reveal">
+      <span class="no">CH. 01</span>
+      <h2 id="c1">The Science of Chill</h2>
+      <span class="rule"></span>
+      <span class="tag">Refrigeration / Physics</span>
+    </div>
+    <div class="science">
+      <div class="reveal">
+        <p class="lead">Condensation is not a flaw in the glass — it is <span class="drop">evidence of the pour.</span></p>
+        <div class="body">
+          <p>When the surface temperature of a vessel falls below the <em>dew point</em> of the surrounding air, water vapour loses its energy and collapses back into liquid. What we read as a cold drink is, in truth, a small weather system forming on the outside of the glass.</p>
+          <p>The heavier the humidity, the faster the film gathers. The colder the pour, the crisper the contrast between the dark cellar and the bright bead of moisture. A sommelier reads the glass the way a meteorologist reads a sky — the fog is the forecast.</p>
+        </div>
+      </div>
+      <aside class="spec reveal">
+        <div class="cap"><span>SPECIMEN LOG</span><span>CELLAR B</span></div>
+        <div class="row"><span class="k">Ambient Air</span><span class="v">21.4 <small>°C</small></span></div>
+        <div class="row"><span class="k">Relative Humidity</span><span class="v">68 <small>%</small></span></div>
+        <div class="row"><span class="k">Dew Point</span><span class="v">12.0 <small>°C</small></span></div>
+        <div class="row"><span class="k">Vessel Surface</span><span class="v">4.2 <small>°C</small></span></div>
+        <div class="row"><span class="k">Δ Below Dew Point</span><span class="v">7.8 <small>°C</small></span></div>
+        <div class="row"><span class="k">Film Growth</span><span class="v">0.9 <small>µm/s</small></span></div>
+        <div class="row"><span class="k">Condensate</span><span class="v">ACTIVE</span></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CHAPTER 2 -->
+  <section aria-labelledby="c2">
+    <div class="shead reveal">
+      <span class="no">CH. 02</span>
+      <h2 id="c2">Pairing Index</h2>
+      <span class="rule"></span>
+      <span class="tag">Hover to reveal</span>
+    </div>
+    <div class="grid">
+      <article class="card reveal" tabindex="0" style="--i:0">
+        <span class="idx">01 / BOTANICAL</span>
+        <h3 class="drink">Gin &amp; Tonic</h3>
+        <p class="pair">Yuzu Foam</p>
+        <p class="note">Juniper cut against citrus oil; the foam holds the nose above the ice.</p>
+        <div class="foot"><span>TEMP <b>6°C</b></span><span>GLASS <b>COUPE</b></span></div>
+      </article>
+      <article class="card reveal" tabindex="0" style="--i:1">
+        <span class="idx">02 / OAK</span>
+        <h3 class="drink">Chilled Red</h3>
+        <p class="pair">Smoked Fig</p>
+        <p class="note">A Gamay at cellar temperature; smoke answers the tannin's grip.</p>
+        <div class="foot"><span>TEMP <b>12°C</b></span><span>GLASS <b>BALLOON</b></span></div>
+      </article>
+      <article class="card reveal" tabindex="0" style="--i:2">
+        <span class="idx">03 / MINERAL</span>
+        <h3 class="drink">Chablis</h3>
+        <p class="pair">Raw Oyster</p>
+        <p class="note">Saline meets flint — the acidity reads like cold seawater.</p>
+        <div class="foot"><span>TEMP <b>8°C</b></span><span>GLASS <b>TULIP</b></span></div>
+      </article>
+      <article class="card reveal" tabindex="0" style="--i:3">
+        <span class="idx">04 / AMARO</span>
+        <h3 class="drink">Bitter Vermouth</h3>
+        <p class="pair">Dark Chocolate</p>
+        <p class="note">Bitterness folded into cocoa; served over a single large cube.</p>
+        <div class="foot"><span>TEMP <b>10°C</b></span><span>GLASS <b>ROCKS</b></span></div>
+      </article>
+      <article class="card reveal" tabindex="0" style="--i:4">
+        <span class="idx">05 / FERMENT</span>
+        <h3 class="drink">Dry Cider</h3>
+        <p class="pair">Aged Comté</p>
+        <p class="note">Orchard acid against crystallised salt; a study in clarity.</p>
+        <div class="foot"><span>TEMP <b>7°C</b></span><span>GLASS <b>FLUTE</b></span></div>
+      </article>
+      <article class="card reveal" tabindex="0" style="--i:5">
+        <span class="idx">06 / SPIRIT</span>
+        <h3 class="drink">Negroni Sbagliato</h3>
+        <p class="pair">Orange Peel</p>
+        <p class="note">Bittersweet, low-proof, effervescent — the glass sweats beautifully.</p>
+        <div class="foot"><span>TEMP <b>9°C</b></span><span>GLASS <b>GOBLET</b></span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CHAPTER 3 -->
+  <section class="ritual" aria-labelledby="c3">
+    <div class="shead reveal">
+      <span class="no">CH. 03</span>
+      <h2 id="c3">The Ritual</h2>
+      <span class="rule"></span>
+      <span class="tag">Pull Quote</span>
+    </div>
+    <blockquote class="reveal">
+      To pour cold is to accept the <span class="hl">fog.</span> The glass must sweat before it can speak.
+    </blockquote>
+    <div class="attrib reveal"><span>Head Sommelier</span><b>E. Marchetti</b><span>Cellar B, Issue 04</span></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h3>Vapor <span class="amp">&amp;</span> Vine</h3>
+        <p>An annual on temperature and pairing. Published from a cold room, printed on uncoated stock.</p>
+      </div>
+      <div class="foot-col">
+        <div class="lbl">Correspondence</div>
+        <a href="#">studio@vaporandvine.press</a>
+        <a href="#">+44 20 7946 0104</a>
+        <div>Unit 12, Cold Storage</div>
+        <div>London EC1</div>
+      </div>
+      <div class="foot-col">
+        <div class="lbl">Index</div>
+        <a href="#main">Issue 04</a>
+        <a href="#">Archive 01–03</a>
+        <a href="#">Subscriptions</a>
+        <a href="#">Stockists</a>
+      </div>
+    </div>
+    <div class="colophon">
+      <span>© <b>Vapor &amp; Vine</b> — Vol. IV, The Cold Pour</span>
+      <span>Set in <b>Playfair Display</b> &amp; <b>Source Code Pro</b></span>
+      <span>Service temp <b>12°C</b> · Dew point <b>12°C</b></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var canvas=document.getElementById('fog');
+  var ctx=canvas.getContext('2d');
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isTouch=window.matchMedia('(pointer: coarse)').matches;
+
+  // ---- Fog state ----
+  var cell=18, cols=0, rows=0;
+  var fog=null, scratch=null;
+  var W=0,H=0;
+  var intro=reduce?0:1;
+  var clearAll=false;
+  var lastMove=-1e9;
+  var pointer={x:-999,y:-999,active:false};
+
+  // ---- Droplets ----
+  var drops=[];
+  var dropTimer=0;
+
+  // ---- Reveal / footer clear ----
+  var revealTop=0, footerTop=Infinity;
+  var revealActive=false;
+
+  function computeReveal(){
+    var hero=document.querySelector('.hero');
+    if(hero) revealTop=hero.getBoundingClientRect().bottom + window.scrollY - 80;
+    var f=document.querySelector('footer');
+    footerTop=f?f.getBoundingClientRect().top + window.scrollY:Infinity;
+    revealActive=window.scrollY > revealTop;
+  }
+
+  function resize(){
+    var w=canvas.clientWidth||window.innerWidth;
+    var h=canvas.clientHeight||window.innerHeight;
+    var dpr=Math.min(window.devicePixelRatio||1,1.5);
+    canvas.width=Math.floor(w*dpr);
+    canvas.height=Math.floor(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    W=w;H=h;
+    cols=Math.ceil(W/cell)+1;
+    rows=Math.ceil(H/cell)+1;
+    var n=cols*rows;
+    var base=isTouch?0.30:0.46;
+    var old=fog;
+    fog=new Float32Array(n);
+    scratch=new Float32Array(n);
+    for(var i=0;i<n;i++) fog[i]=base;
+    if(old){ // preserve rough pattern where possible
+      var oc=Math.ceil((old.length?0:0));
+    }
+    computeReveal();
+  }
+
+  // ---- Pointer ----
+  function setPointer(x,y){pointer.x=x;pointer.y=y;pointer.active=true;lastMove=performance.now();}
+  window.addEventListener('mousemove',function(e){setPointer(e.clientX,e.clientY);},{passive:true});
+  window.addEventListener('touchmove',function(e){var t=e.touches[0];if(t)setPointer(t.clientX,t.clientY);},{passive:true});
+  window.addEventListener('touchstart',function(e){var t=e.touches[0];if(t)setPointer(t.clientX,t.clientY);},{passive:true});
+  window.addEventListener('touchend',function(){pointer.active=false;},{passive:true});
+  window.addEventListener('blur',function(){pointer.active=false;});
+
+  // ---- Controls ----
+  var hint=document.getElementById('hint');
+  var clearBtn=document.getElementById('clearBtn');
+  var hintDismissed=false;
+  function dismissHint(){if(hintDismissed)return;hintDismissed=true;if(hint)hint.classList.add('gone');}
+  clearBtn.addEventListener('click',function(){clearAll=true;dismissHint();});
+  window.addEventListener('mousemove',dismissHint,{once:true});
+  window.addEventListener('touchstart',dismissHint,{once:true});
+
+  // ---- Wipe ----
+  function wipe(){
+    var R=isTouch?66:96;
+    var R2=R*R;
+    var minx=Math.max(0,Math.floor((pointer.x-R)/cell));
+    var maxx=Math.min(cols-1,Math.ceil((pointer.x+R)/cell));
+    var miny=Math.max(0,Math.floor((pointer.y-R)/cell));
+    var maxy=Math.min(rows-1,Math.ceil((pointer.y+R)/cell));
+    var since=performance.now()-lastMove;
+    var strength=since<16?0.9:0.12;
+    for(var gy=miny;gy<=maxy;gy++){
+      for(var gx=minx;gx<=maxx;gx++){
+        var dx=gx*cell-pointer.x, dy=gy*cell-pointer.y;
+        var d2=dx*dx+dy*dy;
+        if(d2<R2){
+          var t=1-Math.sqrt(d2)/R;
+          var idx=gy*cols+gx;
+          fog[idx]-=strength*t*t;
+          if(fog[idx]<0)fog[idx]=0;
+        }
+      }
+    }
+  }
+
+  // ---- Rebuild ----
+  function rebuild(){
+    var since=performance.now()-lastMove;
+    var base=isTouch?0.30:0.46;
+    var rate=since<16?0.0016:0.0075;
+    for(var i=0;i<fog.length;i++){
+      if(fog[i]<base) fog[i]+=rate;
+    }
+  }
+
+  // ---- Droplets ----
+  function spawnDrop(){
+    var r=1.4+Math.random()*2.6;
+    drops.push({
+      x:Math.random()*W,
+      y:-10,
+      r:r,
+      vy:0.4+Math.random()*1.4,
+      vx:(Math.random()-0.5)*0.25,
+      wob:Math.random()*6.28,
+      life:1
+    });
+  }
+  function updateDrops(dt){
+    dropTimer+=dt;
+    var interval=reduce?900:520;
+    if(dropTimer>interval && drops.length<40){spawnDrop();dropTimer=0;}
+    for(var i=drops.length-1;i>=0;i--){
+      var d=drops[i];
+      d.vy+=0.02;
+      d.wob+=0.15;
+      d.y+=d.vy;
+      d.x+=d.vx+Math.sin(d.wob)*0.15;
+      if(d.y>H+20||d.life<=0) drops.splice(i,1);
+    }
+  }
+
+  // ---- Render ----
+  function render(){
+    ctx.clearRect(0,0,W,H);
+    var sy=window.scrollY;
+
+    // fog rectangles
+    for(var gy=0;gy<rows;gy++){
+      var y=gy*cell;
+      for(var gx=0;gx<cols;gx++){
+        var idx=gy*cols+gx;
+        var v=fog[idx];
+        if(v<=0.003) continue;
+        // intro fade
+        if(intro>0) v=v*intro;
+        // scroll reveal fade (hero)
+        var fade=1;
+        if(revealActive){
+          var docY=sy+y;
+          var span=260;
+          var t=(docY-revealTop)/span;
+          if(t<0)t=0; if(t>1)t=1;
+          fade=1-t;
+        }
+        // footer clear
+        var docY2=sy+y;
+        if(docY2>footerTop){fade=0;}
+        else if(docY2>footerTop-300){fade*= (footerTop-docY2)/300;}
+        var a=v*fade;
+        if(a<=0.003) continue;
+        ctx.fillStyle='rgba(206,220,234,'+a.toFixed(3)+')';
+        ctx.fillRect(gx*cell,y,cell+1,cell+1);
+      }
+    }
+
+    // droplets (only if not fully clear / reduced)
+    if(!clearAll){
+      for(var i=0;i<drops.length;i++){
+        var d=drops[i];
+        var a=0.20;
+        if(revealActive){
+          var t=(sy+d.y-revealTop)/260;
+          if(t>0){a*= (1-Math.min(t,1));}
+        }
+        if(a<=0.002) continue;
+        // body
+        var g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*3.2);
+        g.addColorStop(0,'rgba(180,210,224,'+(a*0.9).toFixed(3)+')');
+        g.addColorStop(0.6,'rgba(120,160,185,'+(a*0.5).toFixed(3)+')');
+        g.addColorStop(1,'rgba(91,192,190,0)');
+        ctx.fillStyle=g;
+        ctx.beginPath();ctx.arc(d.x,d.y,d.r*3.2,0,6.2832);ctx.fill();
+        // highlight
+        ctx.fillStyle='rgba(247,247,247,'+(a*1.1).toFixed(3)+')';
+        ctx.beginPath();ctx.arc(d.x-d.r*0.4,d.y-d.r*0.5,d.r*0.5,0,6.2832);ctx.fill();
+        // tail
+        ctx.strokeStyle='rgba(150,185,205,'+(a*0.4).toFixed(3)+')';
+        ctx.lineWidth=0.8;
+        ctx.beginPath();ctx.moveTo(d.x,d.y-d.r);ctx.lineTo(d.x,d.y-d.r-8-d.vy*3);ctx.stroke();
+      }
+    }
+  }
+
+  // ---- Loop ----
+  var lastT=performance.now();
+  function frame(now){
+    var dt=Math.min(64,now-lastT); lastT=now;
+    if(intro>0){intro-=dt/2000; if(intro<0)intro=0;}
+    if(clearAll){
+      for(var i=0;i<fog.length;i++) fog[i]=0;
+    } else {
+      if(pointer.active) wipe();
+      rebuild();
+      updateDrops(dt);
+    }
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Scroll reveal ----
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if(e.isIntersecting){e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:0.12,rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  window.addEventListener('resize',resize);
+  window.addEventListener('scroll',computeReveal,{passive:true});
+
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
