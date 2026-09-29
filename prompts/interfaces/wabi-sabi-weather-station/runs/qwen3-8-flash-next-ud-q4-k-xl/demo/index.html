@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mono no Aware — Erosive Weather Station</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;700&family=Kosugi+Maru&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<style>
+  :root{
+    --paper:#F0F0EA; --paper-damp:#E0E0DA; --ink:#5B4F46; --ink-soft:#6d625a;
+    --vermilion:#8C1944; --wood:#3A322C; --void:#1A1A1A; --cream:#E9E1D2;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Kosugi Maru', sans-serif;
+    color:var(--ink);
+    background-color:var(--paper);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    overflow-x:hidden;
+    transition:background-color 1.1s ease;
+  }
+  body.damp{ background-color:var(--paper-damp); }
+  .font-decol{ font-family:'Kaisei Decol', serif; }
+  .font-kosugi{ font-family:'Kosugi Maru', sans-serif; }
+
+  /* ---- Paper texture (SVG feTurbulence) ---- */
+  .paper-tex{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    mix-blend-mode:multiply; opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.022 0.03' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+    transition:opacity 1.1s ease;
+  }
+  .paper-tex.damp{ opacity:.72; }
+
+  /* ---- Vignette (paper edge darkening) ---- */
+  .vignette{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 40%, rgba(0,0,0,0) 55%, rgba(58,50,44,.10) 100%);
+  }
+
+  /* ---- Sun cracks (SVG noise, jagged white) ---- */
+  .cracks{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    opacity:0; transition:opacity 1.2s ease;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.09' numOctaves='2' seed='21' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 6 -2.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+    background-size:420px 420px;
+    mix-blend-mode:screen;
+  }
+  .cracks.show{ opacity:.5; }
+
+  /* ---- Rain overlay ---- */
+  .rain-overlay{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    opacity:0; transition:opacity 1.1s ease;
+    background:linear-gradient(105deg, rgba(58,50,44,.0) 0%, rgba(58,50,44,.05) 50%, rgba(58,50,44,.0) 100%);
+  }
+  .rain-overlay.show{ opacity:1; }
+
+  /* ---- Ink bleed (humid) ---- */
+  .ink-bleed{ transition:filter .9s ease, color 1.1s ease, text-shadow 1.1s ease; }
+  .ink-bleed.humid{ filter:url(#inkBleed); }
+
+  /* ---- Bleached ink (UV) ---- */
+  .ink-bleed.bleached{ color:#93897f; text-shadow:0 1px 0 rgba(240,240,234,.6); }
+
+  /* ---- Wood grain ---- */
+  .wood{
+    background-color:var(--wood);
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.20) 0 1px, rgba(255,255,255,.02) 1px 3px, rgba(0,0,0,.10) 3px 4px, transparent 4px 7px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 2px, transparent 2px 11px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.06' numOctaves='4' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)' opacity='0.35'/%3E%3C/svg%3E");
+    background-blend-mode:multiply,overlay,multiply;
+    transition:background-color 1.1s ease, box-shadow 1.1s ease, filter 1.1s ease;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.4);
+  }
+  .wood.wet{
+    background-color:#2b241f;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.55), inset 0 2px 18px rgba(255,255,255,.14);
+    filter:brightness(1.08) contrast(1.12) saturate(1.05);
+  }
+  .wood-gloss{
+    position:absolute; inset:0; pointer-events:none; opacity:0;
+    background:linear-gradient(160deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 30%);
+    transition:opacity 1.1s ease;
+  }
+  .wood.wet .wood-gloss{ opacity:1; }
+
+  /* ---- Timeline strip (paper) ---- */
+  .strip{ perspective:900px; }
+  .seg{
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1), box-shadow .35s ease;
+    cursor:pointer;
+    transform-origin:bottom center;
+  }
+  .seg:hover{ transform:translateY(-5px) rotateX(-7deg); box-shadow:0 12px 18px -8px rgba(58,50,44,.5); }
+  .seg-inner{
+    position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:space-between; padding:8px 3px 6px;
+    border-right:1px dashed rgba(91,79,70,.22);
+    transition:filter .6s ease, background .6s ease;
+  }
+  .seg.selected .seg-inner{ box-shadow:inset 0 0 0 2px var(--vermilion); }
+
+  /* torn segment */
+  .seg.torn .seg-inner{
+    clip-path:polygon(0 0,100% 0,100% 58%,86% 66%,92% 78%,74% 82%,80% 94%,60% 90%,66% 100%,0 100%);
+    background:rgba(58,50,44,.10);
+  }
+  /* stained segment */
+  .seg.stained .seg-inner{
+    background:radial-gradient(circle at 50% 62%, rgba(58,50,44,.24), rgba(58,50,44,.06) 62%, transparent 74%);
+  }
+  /* bleached segment */
+  .seg.bleached .seg-inner{
+    background:linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.25));
+  }
+  /* wind curl */
+  .seg.wind::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:16px;
+    background:linear-gradient(180deg, rgba(58,50,44,.0), rgba(58,50,44,.16));
+    transform:rotateX(52deg); transform-origin:bottom;
+    box-shadow:0 6px 10px -6px rgba(58,50,44,.5);
+    z-index:-1;
+  }
+
+  /* ---- Folded note tooltip ---- */
+  .note{
+    position:relative; background:#f4f2ea; color:var(--ink);
+    box-shadow:0 18px 34px -14px rgba(26,26,26,.55), 0 2px 0 rgba(255,255,255,.6) inset;
+    border:1px solid rgba(91,79,70,.25);
+  }
+  .note::before{
+    content:''; position:absolute; right:0; top:0; width:0; height:0;
+    border-style:solid; border-width:0 0 20px 20px;
+    border-color:transparent transparent #d9d4c6 transparent;
+    filter:drop-shadow(-2px 2px 1px rgba(0,0,0,.15));
+  }
+
+  /* ---- Soak-in entrance ---- */
+  @keyframes soak{
+    0%{ opacity:0; filter:blur(7px); transform:translateY(6px); }
+    100%{ opacity:1; filter:blur(0); transform:translateY(0); }
+  }
+  .soak{ animation:soak 1.5s ease forwards; }
+  .soak.d1{ animation-delay:.15s; } .soak.d2{ animation-delay:.35s; }
+  .soak.d3{ animation-delay:.55s; } .soak.d4{ animation-delay:.75s; }
+
+  /* ---- Vermilion seal ---- */
+  .seal{
+    display:inline-flex; align-items:center; justify-content:center;
+    color:var(--vermilion); border:2px solid var(--vermilion);
+    border-radius:50%; width:34px; height:34px; font-family:'Kaisei Decol',serif;
+    font-size:1.05rem; opacity:.9;
+    filter:url(#inkBleed);
+    mix-blend-mode:multiply;
+  }
+
+  /* ---- Slider ---- */
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:3px; background:rgba(91,79,70,.3); border-radius:2px; outline:none; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--vermilion); cursor:pointer; border:2px solid #f4f2ea; box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  input[type=range]::-moz-range-thumb{ width:16px; height:16px; border-radius:50%; background:var(--vermilion); cursor:pointer; border:2px solid #f4f2ea; }
+
+  /* ---- Hand-drawn icon stroke ---- */
+  .hd path, .hd circle, .hd line{ stroke-linecap:round; stroke-linejoin:round; }
+  .hd.wet path, .hd.wet circle, .hd.wet line{ opacity:.55; filter:url(#waterDamage); }
+
+  .icon-wrap{ transition:filter .8s ease, opacity .8s ease; }
+  .icon-wrap.bleached{ opacity:.6; }
+
+  /* reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .soak{ animation:none; opacity:1; filter:none; transform:none; }
+    *{ transition-duration:.001ms !important; }
+    .seg:hover{ transform:none; }
+  }
+
+  /* ---- Error tear ---- */
+  .tear{
+    position:absolute; inset:0; z-index:40; pointer-events:none;
+    background:linear-gradient(90deg, var(--void) 0 49.4%, transparent 49.4% 50.6%, var(--void) 50.6% 100%);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Global SVG filters -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="inkBleed" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="waterDamage" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="roughEdge">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.4"/>
+    </filter>
+  </defs>
+</svg>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+const { motion, AnimatePresence } = window.Motion || window.FramerMotion || {};
+
+/* ---------- Mock data ---------- */
+const LOCATIONS = [
+  { name:'Kyoto',   jp:'京都', temp:18, hum:88, prec:2.4, uv:3, pres:1006, wind:14, cond:'rain'  },
+  { name:'Nara',    jp:'奈良', temp:29, hum:42, prec:0,   uv:8, pres:1014, wind:9,  cond:'clear' },
+  { name:'Kanazawa',jp:'金沢', temp:12, hum:71, prec:0,   uv:2, pres:1021, wind:22, cond:'wind'  },
+];
+
+function buildHours(base){
+  const hours=[];
+  for(let i=0;i<24;i++){
+    const t = base.temp + Math.sin(i/24*Math.PI*2 - 1.2)*4 + (Math.random()*1.6-0.8);
+    const rain = Math.max(0, base.prec + Math.sin(i/24*Math.PI*2+0.6)*2 + (Math.random()*1.2-0.6));
+    const uv   = Math.max(0, base.uv + Math.sin(i/24*Math.PI*2 - 0.4)*4 + (Math.random()*1-0.5));
+    const wind = Math.max(0, base.wind + Math.cos(i/24*Math.PI*2)*8 + (Math.random()*4-2));
+    const hum  = Math.min(100, Math.max(20, base.hum + Math.sin(i/24*Math.PI*2+1.5)*10 + (Math.random()*6-3)));
+    hours.push({
+      hour:i, temp:Math.round(t), rain:Math.round(rain*10)/10,
+      uv:Math.round(uv), wind:Math.round(wind), hum:Math.round(hum)
+    });
+  }
+  return hours;
+}
+
+/* ---------- Hand-drawn SVG icons ---------- */
+function Icon({type, wet, size=64}){
+  const common = { fill:'none', stroke:'var(--ink)', strokeWidth:3 };
+  let body;
+  if(type==='clear'){
+    body = (<>
+      <circle cx="32" cy="32" r="11" {...common}/>
+      <path d="M32 8 v9 M32 47 v9 M8 32 h9 M47 32 h9 M15 15 l6 6 M43 43 l6 6 M49 15 l-6 6 M15 49 l6 -6" {...common}/>
+    </>);
+  } else if(type==='rain'){
+    body = (<>
+      <path d="M18 30 q-6 0 -6 -7 q0 -8 9 -8 q2 -9 12 -9 q10 0 12 9 q9 0 9 8 q0 7 -7 7 z" {...common}/>
+      <path d="M20 40 l-3 8 M30 40 l-3 8 M40 40 l-3 8" {...common} strokeWidth={2.6}/>
+    </>);
+  } else if(type==='wind'){
+    body = (<>
+      <path d="M10 24 h22 q7 0 7 -6 q0 -5 -6 -5" {...common}/>
+      <path d="M10 36 h28 q7 0 7 6 q0 5 -7 5" {...common}/>
+      <path d="M14 44 h14" {...common}/>
+    </>);
+  } else if(type==='cloud'){
+    body = (<path d="M16 40 q-8 0 -8 -8 q0 -9 10 -9 q3 -10 14 -10 q12 0 14 10 q10 0 10 9 q0 8 -8 8 z" {...common}/>);
+  } else {
+    body = (<circle cx="32" cy="32" r="10" {...common}/>);
+  }
+  return (
+    <svg className={"hd "+(wet?'wet':'')} width={size} height={size} viewBox="0 0 64 64"
+         style={{overflow:'visible'}} aria-hidden="true">{body}</svg>
+  );
+}
+
+/* ---------- App ---------- */
+function App(){
+  const [mode, setMode] = useState('live');           // live | sim | empty | error
+  const [locIdx, setLocIdx] = useState(0);
+  const [sim, setSim] = useState({ temp:18, hum:88, prec:2.4, uv:3, pres:1006, wind:14, cond:'rain' });
+  const [selected, setSelected] = useState(null);
+  const [hovered, setHovered] = useState(null);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(()=>{ const t=setInterval(()=>setNow(new Date()),30000); return ()=>clearInterval(t); },[]);
+
+  const data = mode==='sim' ? sim : LOCATIONS[locIdx];
+  const hours = useMemo(()=> buildHours(data), [data]);
+
+  const isRain = data.prec>0;
+  const isHumid = data.hum>80;
+  const isSun = data.uv>5;
+  const isWind = data.wind>18;
+
+  const dateStr = now.toLocaleDateString('en-GB',{weekday:'long', day:'numeric', month:'long'});
+
+  const setSimState = (k,v)=> setSim(s=>({...s,[k]:v}));
+
+  /* ---- Empty state ---- */
+  if(mode==='empty'){
+    return (
+      <div className="relative min-h-screen flex items-center justify-center p-6">
+        <div className="paper-tex"></div>
+        <div className="vignette"></div>
+        <div className="soak relative max-w-md text-center">
+          <div className="relative bg-[#f4f2ea] p-10 shadow-[0_20px_40px_-18px_rgba(26,26,26,.5)]"
+               style={{clipPath:'polygon(0 4%, 100% 0, 98% 100%, 3% 96%)'}}>
+            <div className="font-decol text-2xl text-[var(--ink)] mb-3 ink-bleed">空白</div>
+            <p className="font-kosugi text-[var(--ink-soft)] leading-relaxed">
+              Choose a place to unfold.
+            </p>
+            <button onClick={()=>setMode('live')}
+              className="mt-6 font-kosugi text-sm text-[var(--vermilion)] border-b border-[var(--vermilion)] pb-0.5">
+              Return to the living world
+            </button>
+          </div>
+        </div>
+        <Controls mode={mode} setMode={setMode} locIdx={locIdx} setLocIdx={setLocIdx} sim={sim} setSim={setSimState}/>
+      </div>
+    );
+  }
+
+  /* ---- Error state ---- */
+  if(mode==='error'){
+    return (
+      <div className="relative min-h-screen flex items-center justify-center p-6 bg-[var(--void)]">
+        <div className="paper-tex"></div>
+        <div className="soak relative w-full max-w-3xl h-72">
+          <div className="tear"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="font-decol text-3xl text-white mb-2">紙が裂けた</div>
+              <p className="font-kosugi text-[#c9c2b4]">The paper tore. The data could not be read.</p>
+              <button onClick={()=>setMode('live')}
+                className="mt-6 font-kosugi text-sm text-[var(--vermilion)] bg-white/95 px-4 py-2 rounded-sm">
+                Refold the paper
+              </button>
+            </div>
+          </div>
+        </div>
+        <Controls mode={mode} setMode={setMode} locIdx={locIdx} setLocIdx={setLocIdx} sim={sim} setSim={setSimState}/>
+      </div>
+    );
+  }
+
+  /* ---- Main interface ---- */
+  return (
+    <div className="relative min-h-screen">
+      <div className={"paper-tex "+(isRain||isHumid?'damp':'')}></div>
+      <div className="vignette"></div>
+      <div className={"cracks "+(isSun?'show':'')}></div>
+      <div className={"rain-overlay "+(isRain?'show':'')}></div>
+
+      <div className="relative z-10 flex flex-col md:flex-row min-h-screen">
+
+        {/* ===== PAPER SHEET ===== */}
+        <main className="flex-1 px-5 sm:px-8 lg:px-12 py-6 md:py-10">
+          {/* Header */}
+          <header className="soak flex items-start justify-between gap-4 mb-8 md:mb-12">
+            <div className="flex items-center gap-3">
+              <span className="seal" aria-hidden="true">侘</span>
+              <div>
+                <h1 className="font-kosugi text-sm tracking-[0.25em] uppercase text-[var(--ink)]">Mono no Aware</h1>
+                <p className="font-kosugi text-[11px] text-[var(--ink-soft)] -mt-0.5">Erosive Weather Station</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-kosugi text-[11px] text-[var(--ink-soft)]">{dateStr}</p>
+              <p className="font-decol text-lg text-[var(--ink)] leading-none">
+                {data.name} <span className="text-[var(--ink-soft)] text-sm">{data.jp}</span>
+              </p>
+            </div>
+          </header>
+
+          {/* Top zone: temp + icon */}
+          <section className="soak d1 flex items-end justify-between gap-6 mb-10 md:mb-14">
+            <div className="ink-bleed "+(isHumid?'humid':'')+(isSun?' bleached':'')
+                 style={{mixBlendMode:'multiply'}}>
+              <div className="relative">
+                <span className="font-decol font-bold text-[5.5rem] sm:text-[7rem] lg:text-[8.5rem] leading-[0.8] text-[var(--ink)]">
+                  {Math.round(data.temp)}
+                </span>
+                <span className="font-decol absolute top-2 right-[-1.4rem] text-3xl text-[var(--ink-soft)]">°</span>
+              </div>
+              <p className="font-kosugi text-sm text-[var(--ink-soft)] mt-3 uppercase tracking-widest">
+                {condLabel(data.cond)}
+              </p>
+            </div>
+            <div className={"icon-wrap "+(isSun?'bleached':'')} style={{mixBlendMode:'multiply'}}>
+              <Icon type={data.cond} wet={isRain} size={120}/>
+            </div>
+          </section>
+
+          {/* Timeline strip */}
+          <section className="soak d2 mb-8 md:mb-10">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-kosugi text-xs uppercase tracking-[0.2em] text-[var(--ink-soft)]">Next 24 Hours</h2>
+              <span className="font-kosugi text-[11px] text-[var(--ink-soft)]">hover to lift · click to fold a note</span>
+            </div>
+
+            <div className="strip">
+              <div className="flex overflow-x-auto pb-2" style={{scrollbarWidth:'thin'}}>
+                {hours.map((h,i)=>{
+                  const segRain = h.rain>0.4;
+                  const segSun  = h.uv>5;
+                  const segWind = h.wind>20;
+                  const cls = 'seg'+(segRain?' torn':'')+(segRain&&h.rain>1.4?' stained':'')
+                            +(segSun?' bleached':'')+(segWind?' wind':'')
+                            +(selected===i?' selected':'');
+                  return (
+                    <motion.div key={i} className={cls}
+                      style={{minWidth:'44px', flex:'1 0 44px'}}
+                      whileHover={{}}
+                      onClick={()=>setSelected(selected===i?null:i)}
+                      onMouseEnter={()=>setHovered(i)} onMouseLeave={()=>setHovered(null)}
+                      role="button" tabIndex={0}
+                      aria-label={h.hour+" o'clock, "+h.temp+" degrees"}
+                      onKeyDown={(e)=>{if(e.key==='Enter')setSelected(selected===i?null:i);}}>
+                      <div className="seg-inner">
+                        <span className={"font-kosugi text-[10px] "+(segSun?'text-[#5B4F46]':'text-[var(--ink-soft)]')}>
+                          {String(h.hour).padStart(2,'0')}
+                        </span>
+                        <span className={"font-decol text-base "+(segSun?'text-[#5B4F46]':'text-[var(--ink)]')}>
+                          {h.temp}
+                        </span>
+                        <span style={{opacity:segRain?1:0}} className="font-kosugi text-[9px] text-[var(--ink-soft)]">
+                          {h.rain}mm
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* Folded note */}
+          <AnimatePresence>
+            {selected!==null && (
+              <motion.div initial={{opacity:0, y:14}} animate={{opacity:1,y:0}} exit={{opacity:0,y:14}}
+                transition={{duration:.35}}
+                className="soak note max-w-sm p-5 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-decol text-2xl text-[var(--ink)]">
+                    {String(hours[selected].hour).padStart(2,'0')}:00
+                  </span>
+                  <button onClick={()=>setSelected(null)} className="font-kosugi text-xs text-[var(--vermilion)]">
+                    閉じる close
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-y-2 gap-x-6 font-kosugi text-sm text-[var(--ink)]">
+                  <div><span className="text-[var(--ink-soft)]">Temp</span> — {hours[selected].temp}°</div>
+                  <div><span className="text-[var(--ink-soft)]">Rain</span> — {hours[selected].rain} mm</div>
+                  <div><span className="text-[var(--ink-soft)]">Humidity</span> — {hours[selected].hum}%</div>
+                  <div><span className="text-[var(--ink-soft)]">UV</span> — {hours[selected].uv}</div>
+                  <div><span className="text-[var(--ink-soft)]">Wind</span> — {hours[selected].wind} km/h</div>
+                  <div><span className="text-[var(--ink-soft)]">Pressure</span> — {data.pres} hPa</div>
+                </div>
+                <p className="font-kosugi text-[11px] text-[var(--ink-soft)] mt-3 italic">
+                  {decayNote(hours[selected])}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Bottom footnotes */}
+          <section className="soak d3 flex flex-wrap gap-x-8 gap-y-3 pt-4 border-t border-[rgba(91,79,70,.2)]">
+            <Metric label="Humidity" value={data.hum+'%'} humid={isHumid} sun={isSun}/>
+            <Metric label="Precipitation" value={data.prec+' mm/h'} humid={isHumid} sun={isSun}/>
+            <Metric label="UV Index" value={data.uv} humid={isHumid} sun={isSun}/>
+            <Metric label="Wind" value={data.wind+' km/h'} humid={isHumid} sun={isSun}/>
+          </section>
+        </main>
+
+        {/* ===== WOOD SIDEBAR ===== */}
+        <aside className={"wood relative w-full md:w-52 lg:w-60 shrink-0 px-6 py-8 md:py-10 "+(isRain?'wet':'')}>
+          <div className="wood-gloss"></div>
+          <div className="relative z-10">
+            <div className="mb-8">
+              <p className="font-kosugi text-[11px] uppercase tracking-[0.25em] text-[var(--cream)] opacity-70">The House</p>
+              <p className="font-decol text-2xl text-[var(--cream)] mt-1">木 <span className="text-sm opacity-70">Wood</span></p>
+            </div>
+
+            <WoodMetric label="Pressure" value={data.pres} unit="hPa" highlight={false}/>
+            <WoodMetric label="Wind Speed" value={data.wind} unit="km/h" highlight={isWind}/>
+            <WoodMetric label="Humidity" value={data.hum} unit="%" highlight={isHumid}/>
+            <WoodMetric label="UV Index" value={data.uv} unit="" highlight={isSun}/>
+
+            <div className="mt-10 pt-6 border-t border-white/10">
+              <p className="font-kosugi text-[11px] text-[var(--cream)] opacity-60 leading-relaxed">
+                {isRain ? 'The grain drinks the rain and grows dark.'
+                 : isSun ? 'The sun has bleached the ink to ash.'
+                 : isHumid ? 'Moisture spreads the ink beyond its edge.'
+                 : 'The paper rests, dry and quiet.'}
+              </p>
+            </div>
+
+            {/* active-hour indicator on wood */}
+            <div className="mt-8">
+              <p className="font-kosugi text-[10px] uppercase tracking-widest text-[var(--cream)] opacity-50 mb-2">
+                {hovered!==null ? 'Hour '+String(hovered).padStart(2,'0') : 'Current hour'}
+              </p>
+              <div className="h-1 w-full bg-white/10 overflow-hidden">
+                <motion.div className="h-full bg-[var(--vermilion)]"
+                  animate={{width: hovered!==null ? ((hovered+1)/24*100)+'%' : (now.getHours()/24*100)+'%'}}
+                  transition={{type:'spring', stiffness:120, damping:20}}/>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <Controls mode={mode} setMode={setMode} locIdx={locIdx} setLocIdx={setLocIdx} sim={sim} setSim={setSimState} data={data}/>
+    </div>
+  );
+}
+
+function condLabel(c){
+  return {clear:'Clear Sky', rain:'Rainfall', wind:'Strong Wind', cloud:'Overcast'}[c]||'Still';
+}
+function decayNote(h){
+  if(h.rain>1.4) return 'The paper is stained dark where the rain fell heaviest.';
+  if(h.rain>0.4) return 'A small tear opens where the water pooled.';
+  if(h.uv>5) return 'The sun has bleached this hour to near-white.';
+  if(h.wind>20) return 'The edge curls up, lifted by the wind.';
+  return 'This hour lies flat and unmarked.';
+}
+
+function Metric({label,value,humid,sun}){
+  return (
+    <div className="ink-bleed "+(humid?'humid':'')+(sun?' bleached':'')
+         style={{mixBlendMode:'multiply'}}>
+      <p className="font-kosugi text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">{label}</p>
+      <p className="font-decol text-2xl text-[var(--ink)] leading-tight">{value}</p>
+    </div>
+  );
+}
+
+function WoodMetric({label,value,unit,highlight}){
+  return (
+    <div className="mb-6">
+      <p className="font-kosugi text-[11px] uppercase tracking-[0.2em] text-[var(--cream)] opacity-60">{label}</p>
+      <p className={"font-decol text-3xl leading-none "+(highlight?'text-[#e8b04b]':'text-[var(--cream)]')}>
+        {value}<span className="text-sm opacity-60 ml-1">{unit}</span>
+      </p>
+    </div>
+  );
+}
+
+/* ---------- Controls ---------- */
+function Controls({mode,setMode,locIdx,setLocIdx,sim,setSim,data}){
+  const presets = [
+    {k:'rain',   label:'Rain',   s:{temp:16,hum:88,prec:2.6,uv:2,pres:1004,wind:12,cond:'rain'}},
+    {k:'sun',    label:'Sun',    s:{temp:31,hum:38,prec:0,  uv:9,pres:1016,wind:8, cond:'clear'}},
+    {k:'humid',  label:'Humid',  s:{temp:24,hum:92,prec:0.3,uv:4,pres:1008,wind:10,cond:'cloud'}},
+    {k:'calm',   label:'Calm',   s:{temp:20,hum:55,prec:0,  uv:3,pres:1018,wind:6, cond:'cloud'}},
+  ];
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 pb-4 pointer-events-none">
+      <div className="pointer-events-auto bg-[#f4f2ea]/95 border border-[rgba(91,79,70,.25)] shadow-[0_10px_30px_-12px_rgba(26,26,26,.5)] rounded-sm px-4 py-3 max-w-3xl w-full">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <div className="flex items-center gap-2">
+            <span className="font-kosugi text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Mode</span>
+            {['live','sim','empty','error'].map(m=>(
+              <button key={m} onClick={()=>setMode(m)}
+                className={"font-kosugi text-xs px-2 py-1 rounded-sm transition "+
+                  (mode===m?'bg-[var(--vermilion)] text-white':'text-[var(--ink-soft)] hover:text-[var(--ink)]')}>
+                {m}
+              </button>
+            ))}
+          </div>
+
+          {mode==='live' && (
+            <div className="flex items-center gap-2">
+              <span className="font-kosugi text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Place</span>
+              {LOCATIONS.map((l,i)=>(
+                <button key={l.name} onClick={()=>setLocIdx(i)}
+                  className={"font-kosugi text-xs px-2 py-1 rounded-sm transition "+
+                    (locIdx===i?'bg-[var(--ink)] text-[#f0f0ea]':'text-[var(--ink-soft)] hover:text-[var(--ink)]')}>
+                  {l.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {mode==='sim' && (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="font-kosugi text-[11px] uppercase tracking-widest text-[var(--ink-soft)]">Simulate</span>
+                {presets.map(p=>(
+                  <button key={p.k} onClick={()=>setSim(p.s)}
+                    className="font-kosugi text-xs px-2 py-1 rounded-sm border border-[rgba(91,79,70,.3)] text-[var(--ink)] hover:bg-[rgba(91,79,70,.08)]">
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex-1 min-w-[180px] grid grid-cols-3 gap-x-4 gap-y-2">
+                <Slider label="Humidity" min="20" max="100" value={sim.hum} onChange={v=>setSim('hum',+v)}/>
+                <Slider label="UV" min="0" max="11" value={sim.uv} onChange={v=>setSim('uv',+v)}/>
+                <Slider label="Rain" min="0" max="5" step="0.1" value={sim.prec} onChange={v=>setSim('prec',+v)}/>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Slider({label,min,max,step,value,onChange}){
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="font-kosugi text-[10px] uppercase tracking-wider text-[var(--ink-soft)]">{label} · {value}</span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(e.target.value)}/>
+    </label>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

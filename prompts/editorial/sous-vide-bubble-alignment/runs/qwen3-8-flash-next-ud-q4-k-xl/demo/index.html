@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Chef & Vacuum — a molecular gastronomy publication. The Vacuum Seal Protocol.">
+<title>Chef & Vacuum — The Vacuum Seal Protocol</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   CHEF & VACUUM — THE VACUUM SEAL PROTOCOL
+   Palette: Deep Void #0a0a0a · Sterile White #e0e0e0 · Cyan Pulse #00f0ff
+   ============================================================ */
+
+:root{
+  --void:#0a0a0a;
+  --white:#e0e0e0;
+  --cyan:#00f0ff;
+  --mono:'Space Mono', ui-monospace, 'Courier New', monospace;
+  --disp:'Space Grotesk', 'Space Mono', ui-monospace, monospace;
+  --ease:cubic-bezier(0.19, 1, 0.22, 1);
+  --rail:230px;
+  --pad:clamp(20px, 4vw, 64px);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+html{
+  background:var(--void);
+  color:var(--white);
+  font-family:var(--mono);
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  scroll-behavior:smooth;
+  scrollbar-color:#1c1c1c var(--void);
+  scrollbar-width:thin;
+}
+
+body{
+  background:var(--void);
+  color:var(--white);
+  overflow-x:hidden;
+  min-height:100vh;
+}
+
+::selection{background:var(--cyan);color:var(--void)}
+
+a{color:inherit;text-decoration:none}
+
+/* ---------- Ambient: Circulator Pulse (top + bottom edges) ---------- */
+.pulse-edge{
+  position:fixed;left:0;right:0;height:2px;
+  background:var(--cyan);
+  z-index:60;pointer-events:none;
+  animation:pulse 1s ease-in-out infinite;
+}
+.pulse-edge.top{top:0;box-shadow:0 0 18px 1px rgba(0,240,255,.55)}
+.pulse-edge.bottom{bottom:0;box-shadow:0 0 18px 1px rgba(0,240,255,.55)}
+@keyframes pulse{0%,100%{opacity:.2}50%{opacity:.85}}
+
+/* ---------- Atmosphere: faint lab grid ---------- */
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(224,224,224,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(224,224,224,.035) 1px, transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+          mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 78%);
+}
+
+/* ---------- Masthead ---------- */
+.masthead{
+  position:relative;z-index:5;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+  padding:calc(var(--pad) + 4px) var(--pad) var(--pad);
+  border-bottom:1px solid rgba(224,224,224,.12);
+}
+.brand{
+  font-family:var(--disp);
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:-0.04em;
+  font-size:clamp(1.05rem, 2.4vw, 1.5rem);
+  line-height:1;
+  display:inline-flex;align-items:center;gap:.55em;
+}
+.brand .amp{color:var(--cyan)}
+.brand .dot{
+  width:11px;height:11px;background:var(--cyan);border-radius:50%;
+  box-shadow:0 0 14px rgba(0,240,255,.85);
+  animation:blink 1s steps(2,end) infinite;
+}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+.masthead .meta{
+  text-align:right;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(224,224,224,.55);line-height:1.7;
+}
+.masthead .meta .live{color:var(--cyan)}
+
+/* ---------- Layout shell ---------- */
+.shell{
+  position:relative;z-index:2;
+  display:grid;
+  grid-template-columns:var(--rail) minmax(0,1fr);
+  align-items:start;
+}
+
+/* ---------- Sticky Rail ---------- */
+.rail{
+  position:sticky;top:0;
+  height:100vh;
+  display:flex;flex-direction:column;gap:26px;
+  padding:calc(var(--pad) + 14px) 20px var(--pad) var(--pad);
+  border-right:1px solid rgba(224,224,224,.12);
+}
+.rail-label{
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(224,224,224,.5);
+}
+.seal{display:flex;gap:16px;align-items:stretch;flex:1;min-height:0}
+.seal-track{
+  position:relative;width:2px;background:rgba(224,224,224,.16);flex:0 0 auto;
+}
+.seal-fill{
+  position:absolute;top:0;left:0;width:2px;height:0%;
+  background:var(--cyan);box-shadow:0 0 10px rgba(0,240,255,.7);
+}
+.seal-fill::after{
+  content:"";position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);
+  width:9px;height:9px;background:var(--cyan);border-radius:50%;
+  box-shadow:0 0 12px rgba(0,240,255,.9);
+}
+.seal-info{display:flex;flex-direction:column;justify-content:space-between;padding:2px 0}
+.seal-pct{
+  font-family:var(--disp);font-weight:700;font-size:clamp(1.6rem,3vw,2.4rem);
+  line-height:1;color:var(--white);letter-spacing:-0.03em;
+}
+.seal-pct .p{color:var(--cyan);font-size:.55em;margin-left:2px}
+.seal-status{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan)}
+.seal-status .live{animation:blink 1s steps(2,end) infinite}
+
+.chapters{list-style:none;display:flex;flex-direction:column;gap:14px}
+.chapters a{
+  display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(224,224,224,.5);transition:color .25s ease;
+}
+.chapters a .num{color:rgba(224,224,224,.35);margin-right:8px}
+.chapters a:hover,.chapters a.active{color:var(--white)}
+.chapters a.active .num{color:var(--cyan)}
+.chapters a.active::before{content:"▸ ";color:var(--cyan)}
+
+/* ---------- Mobile top progress bar ---------- */
+.mbar{display:none}
+
+/* ---------- Main ---------- */
+.main{padding:var(--pad) var(--pad) 0;max-width:1000px}
+
+/* ---------- Hero ---------- */
+.hero{padding:clamp(28px,6vh,80px) 0 clamp(48px,10vh,110px);position:relative}
+.hero .kicker{
+  font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);
+  display:inline-flex;align-items:center;gap:12px;margin-bottom:26px;
+}
+.hero .kicker::before{content:"";width:46px;height:1px;background:var(--cyan)}
+.hero h1{
+  font-family:var(--disp);font-weight:700;text-transform:uppercase;
+  font-size:clamp(2.6rem, 10vw, 7rem);line-height:.9;letter-spacing:-0.05em;
+  color:var(--white);
+}
+.hero h1 .line{display:block;overflow:hidden}
+.hero .sub{
+  margin-top:26px;max-width:46ch;font-size:14px;line-height:1.7;
+  color:rgba(224,224,224,.75);
+}
+.hero .sub b{color:var(--white);font-weight:700}
+
+/* scramble target keeps width stable */
+.scramble{display:inline-block}
+
+.hero-stats{
+  margin-top:44px;display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:rgba(224,224,224,.12);border:1px solid rgba(224,224,224,.12);
+}
+.stat{background:var(--void);padding:16px 18px}
+.stat .k{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(224,224,224,.5)}
+.stat .v{font-family:var(--disp);font-weight:700;font-size:1.15rem;margin-top:6px;color:var(--white)}
+.stat .v .u{color:var(--cyan);font-size:.7em;margin-left:3px}
+
+/* ---------- Seal line ---------- */
+.seal-line{
+  height:1px;background:var(--cyan);width:0%;
+  box-shadow:0 0 12px rgba(0,240,255,.6);
+  transition:width 1.1s var(--ease);
+  margin:0;
+}
+.seal-line.in{width:100%}
+
+/* ---------- Chapter ---------- */
+.chapter{padding:clamp(48px,9vh,96px) 0}
+.ch-head{margin-bottom:36px}
+.ch-meta{
+  font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--cyan);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px;
+}
+.ch-meta .sep{color:rgba(224,224,224,.35)}
+.ch-title{
+  font-family:var(--disp);font-weight:700;text-transform:uppercase;
+  font-size:clamp(1.7rem, 5vw, 3rem);line-height:1;letter-spacing:-0.04em;color:var(--white);
+}
+.ch-sub{
+  margin-top:16px;font-size:13px;line-height:1.6;color:rgba(224,224,224,.65);
+  max-width:60ch;font-style:italic;
+}
+
+/* ---------- Body ---------- */
+.body{max-width:64ch}
+.body p{font-size:14px;line-height:1.7;color:var(--white);margin-bottom:26px}
+.body p:last-child{margin-bottom:0}
+
+/* ---------- Specimen ---------- */
+.specimen{margin:40px 0}
+.specimen .frame{
+  position:relative;aspect-ratio:4/3;
+  border:1px solid var(--white);overflow:hidden;background:var(--void);
+}
+.specimen .frame svg{display:block;width:100%;height:100%}
+.specimen .cap{
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-top:12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(224,224,224,.6);
+}
+.specimen .cap .id{color:var(--cyan)}
+
+/* ---------- Pull quote ---------- */
+.pull{
+  margin:44px 0;padding:26px 0 26px 28px;border-left:2px solid var(--cyan);
+  font-family:var(--disp);font-weight:500;font-size:clamp(1.15rem,2.6vw,1.7rem);
+  line-height:1.3;letter-spacing:-0.02em;color:var(--white);max-width:30ch;
+}
+
+/* ---------- Data table ---------- */
+.datatable{margin:40px 0;border-top:1px solid rgba(224,224,224,.2)}
+.dt-row{
+  display:grid;grid-template-columns:1.4fr .8fr 1fr .8fr;gap:14px;
+  padding:14px 4px;border-bottom:1px solid rgba(224,224,224,.1);
+  font-size:12px;letter-spacing:.06em;
+}
+.dt-row.head{color:rgba(224,224,224,.5);text-transform:uppercase;letter-spacing:.16em;font-size:10px}
+.dt-row .val{color:var(--white)}
+.dt-row .val.hi{color:var(--cyan)}
+.dt-row .r{text-align:right}
+
+/* ---------- Protocol list ---------- */
+.protocol{list-style:none;margin:36px 0;display:flex;flex-direction:column;gap:1px;
+  background:rgba(224,224,224,.12);border:1px solid rgba(224,224,224,.12)}
+.protocol li{
+  background:var(--void);display:grid;grid-template-columns:auto 1fr;gap:18px;
+  padding:16px 18px;font-size:13px;line-height:1.6;color:var(--white);
+}
+.protocol li .idx{color:var(--cyan);font-weight:700}
+
+/* ---------- Condensation focus interaction ---------- */
+.condens{position:relative;transition:outline-color .2s ease, background-color .2s ease}
+.condens:hover{
+  outline:1px solid var(--cyan);outline-offset:6px;
+  background-color:rgba(0,240,255,.04);
+  -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+}
+
+/* ---------- Footer ---------- */
+.footer{
+  position:relative;z-index:2;margin-top:60px;
+  border-top:1px solid rgba(224,224,224,.14);
+  padding:var(--pad);
+  display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;
+}
+.footer .brand{font-size:1.1rem;font-variant:small-caps;letter-spacing:.02em}
+.footer .brand .amp{color:var(--cyan)}
+.footer .integrity{
+  display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--cyan);
+}
+.footer .integrity .dot{width:9px;height:9px;background:var(--cyan);border-radius:50%;
+  box-shadow:0 0 12px rgba(0,240,255,.8);animation:blink 1s steps(2,end) infinite}
+.footer .fine{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(224,224,224,.4)}
+
+/* ---------- Entrance (Pump Cycle) ---------- */
+.reveal{
+  opacity:0;transform:scale(0.95);filter:blur(4px);
+  transition:opacity .6s var(--ease), transform .6s var(--ease), filter .6s var(--ease);
+  will-change:transform, filter;
+}
+.reveal.in{opacity:1;transform:none;filter:none}
+
+/* ---------- Responsive ---------- */
+@media (max-width:768px){
+  .shell{grid-template-columns:1fr}
+  .rail{display:none}
+  .mbar{
+    display:block;position:fixed;top:0;left:0;right:0;height:3px;z-index:70;
+    background:rgba(224,224,224,.12);
+  }
+  .mbar .mfill{height:100%;width:0%;background:var(--cyan);box-shadow:0 0 8px rgba(0,240,255,.7)}
+  .pulse-edge{display:none}
+  .main{padding-top:calc(var(--pad) + 10px)}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .dt-row{grid-template-columns:1fr 1fr;font-size:11px}
+  .dt-row .r{text-align:left}
+  .masthead{flex-direction:column;gap:10px}
+  .masthead .meta{text-align:left}
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;filter:none;transition:none}
+  .seal-line{width:100%;transition:none}
+  .pulse-edge{display:none}
+  .brand .dot,.seal-status .live,.footer .integrity .dot{animation:none}
+  .condens:hover{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg" aria-hidden="true"></div>
+<div class="pulse-edge top" aria-hidden="true"></div>
+<div class="pulse-edge bottom" aria-hidden="true"></div>
+<div class="mbar" aria-hidden="true"><div class="mfill" id="mfill"></div></div>
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <a class="brand" href="#top"><span class="dot" aria-hidden="true"></span>Chef <span class="amp">&amp;</span> Vacuum</a>
+  <div class="meta">
+    <div>Vol. 07 · Issue 03 · Molecular Gastronomy</div>
+    <div>ISSN 0000-0000 · <span class="live">● Chamber Online</span></div>
+    <div id="clock">SYS 00:00:00</div>
+  </div>
+</header>
+
+<div class="shell" id="top">
+
+  <!-- STICKY RAIL -->
+  <aside class="rail">
+    <div class="rail-label">Seal Status</div>
+    <div class="seal">
+      <div class="seal-track"><div class="seal-fill" id="sealFill"></div></div>
+      <div class="seal-info">
+        <div class="seal-pct"><span id="pct">0</span><span class="p">%</span></div>
+        <div class="seal-status"><span class="live">●</span> Pump Active</div>
+      </div>
+    </div>
+    <nav>
+      <div class="rail-label" style="margin-bottom:14px">Index</div>
+      <ul class="chapters" id="chapters">
+        <li><a href="#ch1"><span class="num">01</span>Pressure Differential</a></li>
+        <li><a href="#ch2"><span class="num">02</span>Thermal Equilibrium</a></li>
+        <li><a href="#ch3"><span class="num">03</span>The Glass Plane</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="kicker reveal">Editorial · The Vacuum Seal Protocol</div>
+      <h1>
+        <span class="line">The Vacuum</span>
+        <span class="line">Seal <span class="scramble" data-text="Protocol">Protocol</span></span>
+      </h1>
+      <p class="sub reveal">A sterile, airless environment where scroll tension compresses content against a glass plane. <b>Chef &amp; Vacuum</b> rejects the rustic. This is a lab, not a kitchen — every specimen observed under pressure, every variable held constant.</p>
+      <div class="hero-stats reveal">
+        <div class="stat"><div class="k">Chamber</div><div class="v"><span class="num" data-count="98.6" data-dec="1">0</span><span class="u">%</span></div></div>
+        <div class="stat"><div class="k">Pressure</div><div class="v"><span class="num" data-count="54" data-dec="0">0</span><span class="u">mbar</span></div></div>
+        <div class="stat"><div class="k">Thermal</div><div class="v"><span class="num" data-count="54.5" data-dec="1">0</span><span class="u">°C</span></div></div>
+        <div class="stat"><div class="k">Integrity</div><div class="v"><span class="num" data-count="100" data-dec="0">0</span><span class="u">%</span></div></div>
+      </div>
+    </section>
+
+    <div class="seal-line" data-seal></div>
+
+    <!-- CHAPTER 01 -->
+    <section class="chapter" id="ch1">
+      <div class="ch-head reveal">
+        <div class="ch-meta"><span>Ch. 01</span><span class="sep">/</span><span>Abstract</span><span class="sep">/</span><span>Refr. PV-001</span></div>
+        <h2 class="ch-title">Pressure Differential</h2>
+        <p class="ch-sub">On the removal of atmospheric gas and the collapse of the interstitial void within a sealed polymer membrane.</p>
+      </div>
+
+      <div class="body">
+        <p class="reveal condens">The protocol begins with evacuation. A flexible barrier is drawn around the specimen and the ambient atmosphere is withdrawn until the residual pressure falls below 60 millibar. At this threshold, the membrane conforms to the surface of the material with zero tolerance — every irregularity is pressed flat against the glass plane, and the specimen is rendered dimensionally honest. What remains is not a package but a measurement.</p>
+
+        <div class="specimen reveal condens">
+          <div class="frame">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Specimen 01: polymer membrane conforming under vacuum">
+              <rect width="400" height="300" fill="#0a0a0a"/>
+              <g stroke="#e0e0e0" stroke-width="1" opacity="0.5" fill="none">
+                <path d="M40 40 H360 M40 260 H360 M40 40 V260 M360 40 V260"/>
+                <path d="M40 150 H360 M200 40 V260" opacity="0.3"/>
+              </g>
+              <g fill="none" stroke="#00f0ff" stroke-width="1.4">
+                <path d="M90 90 Q200 60 310 90 Q340 150 310 210 Q200 240 90 210 Q60 150 90 90 Z"/>
+                <path d="M120 120 Q200 100 280 120 Q300 150 280 180 Q200 200 120 180 Q100 150 120 120 Z" opacity="0.6"/>
+              </g>
+              <g fill="#00f0ff" opacity="0.85">
+                <circle cx="200" cy="150" r="2.4"/><circle cx="150" cy="130" r="1.6"/><circle cx="250" cy="170" r="1.6"/>
+                <circle cx="170" cy="180" r="1.4"/><circle cx="235" cy="125" r="1.4"/>
+              </g>
+              <text x="46" y="34" fill="#00f0ff" font-family="monospace" font-size="11" letter-spacing="2">EVACUATION ΔP</text>
+              <text x="300" y="284" fill="#e0e0e0" font-family="monospace" font-size="10" opacity="0.6">60 mbar</text>
+            </svg>
+          </div>
+          <div class="cap"><span class="id">Specimen 01: Polymer Membrane</span><span>Fig. 1.1 · Conformance Test</span></div>
+        </div>
+
+        <p class="reveal condens">Air is the enemy of precision. Trapped gas pockets create thermal shadows, insulating regions of the specimen from the bath and producing gradients that betray the intended result. The vacuum eliminates these shadows entirely. Heat transfers directly through the membrane, and the material reaches equilibrium in a fraction of the time required by conventional methods.</p>
+
+        <div class="pull reveal">Remove the air, and the material tells the truth. Everything else is decoration.</div>
+
+        <p class="reveal condens">We log the differential at one-hertz intervals. The pump cycle is not a step; it is a continuous negotiation between the chamber and the specimen, a slow compression that the operator learns to read by the tone of the machine. When the tone flattens, the seal is complete. When it rises, something has failed.</p>
+      </div>
+
+      <div class="datatable reveal">
+        <div class="dt-row head"><span>Parameter</span><span class="r">Ref</span><span>Value</span><span class="r">Tol</span></div>
+        <div class="dt-row"><span>Residual Pressure</span><span class="r">PV-01</span><span class="val hi">54.2 mbar</span><span class="r">±2</span></div>
+        <div class="dt-row"><span>Membrane Thickness</span><span class="r">PV-02</span><span class="val">75 µm</span><span class="r">±5</span></div>
+        <div class="dt-row"><span>Evacuation Time</span><span class="r">PV-03</span><span class="val">11.4 s</span><span class="r">±1</span></div>
+        <div class="dt-row"><span>Seal Integrity</span><span class="r">PV-04</span><span class="val hi">100 %</span><span class="r">0</span></div>
+      </div>
+    </section>
+
+    <div class="seal-line" data-seal></div>
+
+    <!-- CHAPTER 02 -->
+    <section class="chapter" id="ch2">
+      <div class="ch-head reveal">
+        <div class="ch-meta"><span>Ch. 02</span><span class="sep">/</span><span>Protocol</span><span class="sep">/</span><span>Refr. PV-014</span></div>
+        <h2 class="ch-title">Thermal Equilibrium</h2>
+        <p class="ch-sub">Sustaining a constant bath temperature to ±0.1°C across a 24-hour immersion window.</p>
+      </div>
+
+      <div class="body">
+        <p class="reveal condens">Equilibrium is not a destination but a discipline. The circulator maintains the bath at a target of 54.5 degrees Celsius, correcting for every joule of loss with sub-degree precision. Over twenty-four hours the specimen drifts toward this temperature asymptotically — the outer layers first, the core last — until the gradient collapses and the material is, in every measurable sense, uniform.</p>
+
+        <div class="specimen reveal condens">
+          <div class="frame">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Specimen 02: thermal gradient chart">
+              <rect width="400" height="300" fill="#0a0a0a"/>
+              <g stroke="#e0e0e0" stroke-width="1" opacity="0.35">
+                <path d="M50 40 V250 M50 250 H360"/>
+                <path d="M50 90 H360 M50 140 H360 M50 190 H360" opacity="0.2"/>
+              </g>
+              <g fill="none" stroke="#00f0ff" stroke-width="1.6">
+                <path d="M50 230 C120 230 150 70 220 62 C280 55 320 54 360 54"/>
+              </g>
+              <g fill="none" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="4 4" opacity="0.5">
+                <path d="M50 232 C130 232 170 120 240 100 C300 84 330 80 360 80"/>
+              </g>
+              <g fill="#00f0ff"><circle cx="220" cy="62" r="2.6"/><circle cx="360" cy="54" r="2.6"/></g>
+              <text x="54" y="34" fill="#00f0ff" font-family="monospace" font-size="11" letter-spacing="2">CORE / SURFACE Δ</text>
+              <text x="250" y="272" fill="#e0e0e0" font-family="monospace" font-size="10" opacity="0.6">t → 24h</text>
+            </svg>
+          </div>
+          <div class="cap"><span class="id">Specimen 02: Thermal Gradient</span><span>Fig. 2.3 · Core vs. Surface</span></div>
+        </div>
+
+        <p class="reveal condens">The circulator's heartbeat is the pulse we borrow for this interface. Each correction is a tiny exhalation of heat, a rhythm the operator can feel through the bench. To maintain equilibrium is to resist the second law of thermodynamics with a machine that never tires and never rounds its numbers.</p>
+
+        <ul class="protocol reveal">
+          <li><span class="idx">01</span><span>Preheat bath to 54.5°C; confirm stability across three consecutive 60-second readings.</span></li>
+          <li><span class="idx">02</span><span>Seal specimen; verify residual pressure below 60 mbar before immersion.</span></li>
+          <li><span class="idx">03</span><span>Immerse fully; ensure no membrane contact with vessel wall or base.</span></li>
+          <li><span class="idx">04</span><span>Hold 24h; log bath temperature at 1Hz; flag any deviation beyond ±0.1°C.</span></li>
+          <li><span class="idx">05</span><span>Chill to 3°C within 90 minutes to arrest the thermal process.</span></li>
+        </ul>
+
+        <div class="pull reveal">Precision is not the absence of error. It is the refusal to tolerate it.</div>
+
+        <p class="reveal condens">When the protocol is followed exactly, the result is reproducible to the gram and the degree. When it is followed loosely, the specimen betrays the operator — a pocket of undercooked core, a surface over-set by a single careless minute. The vacuum does not forgive, and neither does the record.</p>
+      </div>
+    </section>
+
+    <div class="seal-line" data-seal></div>
+
+    <!-- CHAPTER 03 -->
+    <section class="chapter" id="ch3">
+      <div class="ch-head reveal">
+        <div class="ch-meta"><span>Ch. 03</span><span class="sep">/</span><span>Observation</span><span class="sep">/</span><span>Refr. PV-027</span></div>
+        <h2 class="ch-title">The Glass Plane</h2>
+        <p class="ch-sub">Where compression becomes legibility: reading the specimen through a plane of zero distortion.</p>
+      </div>
+
+      <div class="body">
+        <p class="reveal condens">The glass plane is the final arbiter. Once sealed and compressed, the specimen is pressed against a surface of optical clarity, and every internal structure becomes visible without sectioning or stain. We read the material the way a physicist reads a plate — not by interpretation but by alignment, each feature snapped into a fixed coordinate.</p>
+
+        <div class="specimen reveal condens">
+          <div class="frame">
+            <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Specimen 03: gel lattice under compression">
+              <rect width="400" height="300" fill="#0a0a0a"/>
+              <g stroke="#e0e0e0" stroke-width="1" opacity="0.28">
+                <path d="M40 40 H360 M40 90 H360 M40 140 H360 M40 190 H360 M40 240 H360"/>
+                <path d="M40 40 V260 M100 40 V260 M160 40 V260 M220 40 V260 M280 40 V260 M340 40 V260"/>
+              </g>
+              <g fill="none" stroke="#00f0ff" stroke-width="1.2" opacity="0.9">
+                <path d="M100 90 L220 90 L280 140 L220 190 L100 190 L40 140 Z"/>
+                <path d="M160 90 L160 190 M220 90 L220 190 M40 140 L280 140" opacity="0.5"/>
+              </g>
+              <g fill="#00f0ff">
+                <circle cx="100" cy="90" r="2.2"/><circle cx="220" cy="90" r="2.2"/><circle cx="280" cy="140" r="2.2"/>
+                <circle cx="220" cy="190" r="2.2"/><circle cx="100" cy="190" r="2.2"/><circle cx="40" cy="140" r="2.2"/>
+              </g>
+              <text x="46" y="34" fill="#00f0ff" font-family="monospace" font-size="11" letter-spacing="2">GEL LATTICE</text>
+              <text x="270" y="284" fill="#e0e0e0" font-family="monospace" font-size="10" opacity="0.6">n = 6 nodes</text>
+            </svg>
+          </div>
+          <div class="cap"><span class="id">Specimen 03: Hydrocolloid Gel</span><span>Fig. 3.7 · Lattice Under Compression</span></div>
+        </div>
+
+        <p class="reveal condens">This is the metaphor the entire interface enacts. As you scroll, content is drawn against the plane of the viewport — blurred, compressed, and finally sharp. The tension you feel is the same tension that holds the gel lattice in place: a vacuum, a membrane, and a refusal to let anything remain soft.</p>
+
+        <div class="pull reveal">The seal is not a container. It is a lens.</div>
+
+        <p class="reveal condens">We close the chamber with the same care we opened it. The integrity indicator holds at one hundred percent, the pump falls silent, and the specimen is released into the record — measured, compressed, and legible. This is the protocol. Everything else is noise.</p>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div>
+        <div class="brand">Chef <span class="amp">&amp;</span> Vacuum</div>
+        <div class="fine" style="margin-top:10px">A Molecular Gastronomy Publication · Est. 2019</div>
+      </div>
+      <div style="text-align:right">
+        <div class="integrity"><span class="dot" aria-hidden="true"></span>Seal Integrity: 100%</div>
+        <div class="fine" style="margin-top:10px">© 2024 · All Protocols Reserved</div>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- System clock ---- */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    var p = function(n){return (n<10?'0':'')+n;};
+    if(clock) clock.textContent = 'SYS ' + p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---- Scroll progress: seal rail + mobile bar ---- */
+  var sealFill = document.getElementById('sealFill');
+  var pctEl = document.getElementById('pct');
+  var mfill = document.getElementById('mfill');
+  var ticking = false;
+
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var doc = document.documentElement;
+      var max = doc.scrollHeight - doc.clientHeight;
+      var p = max > 0 ? (doc.scrollTop / max) : 0;
+      p = Math.max(0, Math.min(1, p));
+      var pct = Math.round(p * 100);
+      if(sealFill) sealFill.style.height = pct + '%';
+      if(pctEl) pctEl.textContent = pct;
+      if(mfill) mfill.style.width = pct + '%';
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---- Reveal on scroll (Pump Cycle) ---- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if(reduce){
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var ro = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); ro.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+    revealEls.forEach(function(el){ ro.observe(el); });
+  }
+
+  /* ---- Seal line animation ---- */
+  var sealLines = document.querySelectorAll('[data-seal]');
+  var so = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); so.unobserve(e.target); }
+    });
+  }, {threshold:0.5});
+  sealLines.forEach(function(el){ so.observe(el); });
+
+  /* ---- Active chapter in rail ---- */
+  var links = {};
+  document.querySelectorAll('#chapters a').forEach(function(a){
+    links[a.getAttribute('href').slice(1)] = a;
+  });
+  var chapters = document.querySelectorAll('.chapter');
+  var co = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        Object.keys(links).forEach(function(k){ links[k].classList.remove('active'); });
+        if(links[e.target.id]) links[e.target.id].classList.add('active');
+      }
+    });
+  }, {threshold:0, rootMargin:'-45% 0px -45% 0px'});
+  chapters.forEach(function(c){ co.observe(c); });
+
+  /* ---- Count-up stats ---- */
+  function animateCount(el){
+    var target = parseFloat(el.getAttribute('data-count'));
+    var dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+    if(reduce){ el.textContent = target.toFixed(dec); return; }
+    var dur = 1400, start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var t = Math.min(1, (ts - start) / dur);
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = (target * eased).toFixed(dec);
+      if(t < 1) requestAnimationFrame(step);
+      else el.textContent = target.toFixed(dec);
+    }
+    requestAnimationFrame(step);
+  }
+  var nums = document.querySelectorAll('.num');
+  var no = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ animateCount(e.target); no.unobserve(e.target); }
+    });
+  }, {threshold:0.6});
+  nums.forEach(function(n){ no.observe(n); });
+
+  /* ---- Scramble-decode title ---- */
+  function scramble(el){
+    var finalText = el.getAttribute('data-text');
+    if(reduce){ el.textContent = finalText; return; }
+    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/#%';
+    var frame = 0, total = finalText.length;
+    var id = setInterval(function(){
+      var out = '';
+      for(var i=0;i<total;i++){
+        if(i < frame/2){ out += finalText[i]; }
+        else if(finalText[i] === ' '){ out += ' '; }
+        else { out += chars[Math.floor(Math.random()*chars.length)]; }
+      }
+      el.textContent = out;
+      frame++;
+      if(frame/2 >= total){ clearInterval(id); el.textContent = finalText; }
+    }, 45);
+  }
+  var sc = document.querySelector('.scramble');
+  if(sc){
+    setTimeout(function(){ scramble(sc); }, 350);
+  }
+})();
+</script>
+</body>
+</html>

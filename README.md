@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 204 | 194 | 172 | 32 |
+| 204 | 204 | 172 | 32 |
 
 ## Quick start
 
@@ -3013,9 +3013,11 @@ Guide a steel ball to a goal by placing magnets that visualize real-time magneti
 
 [prompt](prompts/games/ferromagnetic-plate-magnetism/prompt.md) · [extended](prompts/games/ferromagnetic-plate-magnetism/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/ferromagnetic-plate-magnetism/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.5s | 440s | 8 | [open](prompts/games/ferromagnetic-plate-magnetism/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3125,9 +3127,11 @@ Interactive 3D velvet cushion where mouse drag physically deforms the mesh and r
 
 [prompt](prompts/webgl/satin-velvet-brush-deform/prompt.md) · [extended](prompts/webgl/satin-velvet-brush-deform/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/satin-velvet-brush-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.6s | 232s | 1 | [open](prompts/webgl/satin-velvet-brush-deform/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3141,9 +3145,11 @@ A recipe journal where the layout behaves like a folded linen napkin. Scrolling 
 
 [prompt](prompts/editorial/linen-fold-accordion/prompt.md) · [extended](prompts/editorial/linen-fold-accordion/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.9s | 448s | 2 | [open](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3155,9 +3161,11 @@ High-fidelity editorial experience for 'Chef & Vacuum' molecular gastronomy. Ste
 
 [prompt](prompts/editorial/sous-vide-bubble-alignment/prompt.md) · [extended](prompts/editorial/sous-vide-bubble-alignment/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/sous-vide-bubble-alignment/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.5s | 490s | 9 | [open](prompts/editorial/sous-vide-bubble-alignment/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3169,9 +3177,11 @@ A high-end editorial web experience titled 'Hot Plate' for the fictional fine-di
 
 [prompt](prompts/editorial/steam-condensation-read/prompt.md) · [extended](prompts/editorial/steam-condensation-read/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/steam-condensation-read/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.5s | 380s | 6 | [open](prompts/editorial/steam-condensation-read/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3217,9 +3227,11 @@ A gift registry interface where privacy is determined by knot complexity. Users 
 
 [prompt](prompts/interfaces/furoshiki-wrapping-protocol/prompt.md) · [extended](prompts/interfaces/furoshiki-wrapping-protocol/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/furoshiki-wrapping-protocol/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.7s | 712s | 6 | [open](prompts/interfaces/furoshiki-wrapping-protocol/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3231,9 +3243,11 @@ A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 
 
 [prompt](prompts/interfaces/kintsugi-joinery-scheduler/prompt.md) · [extended](prompts/interfaces/kintsugi-joinery-scheduler/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/kintsugi-joinery-scheduler/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.0s | 465s | 8 | [open](prompts/interfaces/kintsugi-joinery-scheduler/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3245,9 +3259,11 @@ A conceptual grocery interface using physical ledger metaphors: items hang as pa
 
 [prompt](prompts/interfaces/mon-nob-grocery-ledger/prompt.md) · [extended](prompts/interfaces/mon-nob-grocery-ledger/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.4s | 269s | — | — |
 
 ---
 
@@ -3259,9 +3275,11 @@ A team collaboration interface where presence is communicated through the opacit
 
 [prompt](prompts/interfaces/shoji-screen-privacy/prompt.md) · [extended](prompts/interfaces/shoji-screen-privacy/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/shoji-screen-privacy/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.9s | 342s | 2 | [open](prompts/interfaces/shoji-screen-privacy/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3273,9 +3291,11 @@ A meteorological interface where data degrades the UI. Rain erodes wood-grain te
 
 [prompt](prompts/interfaces/wabi-sabi-weather-station/prompt.md) · [extended](prompts/interfaces/wabi-sabi-weather-station/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/wabi-sabi-weather-station/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.5s | 311s | 1 | [open](prompts/interfaces/wabi-sabi-weather-station/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

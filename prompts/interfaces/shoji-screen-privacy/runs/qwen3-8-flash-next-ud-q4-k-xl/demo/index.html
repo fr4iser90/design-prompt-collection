@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kumiko — Presence, read through the paper.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Genjyu+Gothic&family=M+PLUS+1+Code:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F0E6;
+  --wood:#4B3821;
+  --wood-lite:#6E5636;
+  --ink:#2C2C2C;
+  --shadow:#1A1A1A;
+  --dnd-paper:#E8E2D5;
+  --accent:#8A7B6D;
+  --gutter:16px;
+  --ease:cubic-bezier(.65,.02,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Genjyu Gothic',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #26221c 0%, #1A1A1A 55%, #131210 100%);
+  color:var(--paper);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+body::before{ /* faint room-light bleed near top */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(60% 40% at 50% 0%, rgba(245,240,230,.06), transparent 70%);
+}
+.mono{font-family:'M PLUS 1 Code',ui-monospace,monospace}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  position:relative;z-index:3;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  padding:clamp(20px,3.5vw,40px) clamp(16px,4vw,48px) 18px;
+  border-bottom:1px solid rgba(245,240,230,.10);
+  background:linear-gradient(180deg, rgba(245,240,230,.045), transparent);
+}
+.brand{display:flex;align-items:center;gap:16px}
+.brand .mark{width:46px;height:46px;flex:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.brand h1{
+  font-size:clamp(34px,6vw,60px);font-weight:400;line-height:.9;
+  letter-spacing:-.01em;color:var(--paper);
+}
+.brand .jp{font-size:.34em;letter-spacing:.55em;color:var(--accent);margin-top:6px}
+.topmeta{display:flex;align-items:center;gap:clamp(14px,2.4vw,34px);flex-wrap:wrap;justify-content:flex-end}
+.clock{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.clock .t{font-size:clamp(22px,2.6vw,30px);font-weight:500;color:var(--paper);letter-spacing:.02em}
+.clock .d{font-size:11px;color:var(--accent);letter-spacing:.14em;text-transform:uppercase}
+.legend{display:flex;gap:16px;flex-wrap:wrap}
+.legend .li{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#cfc6b4;letter-spacing:.04em}
+.legend .sw{width:22px;height:14px;border:1px solid var(--wood-lite);position:relative;overflow:hidden;flex:none}
+.legend .sw::after{content:"";position:absolute;inset:0}
+.sw.active::after{background:rgba(26,26,26,.35);filter:blur(2px);animation:legmove 5s ease-in-out infinite alternate}
+.sw.idle::after{background:rgba(26,26,26,.16)}
+.sw.dnd::after{background:var(--wood)}
+.sw.off::after{background:transparent}
+@keyframes legmove{from{transform:translateX(-4px)}to{transform:translateX(4px)}}
+
+/* ============ ROOM / GRID ============ */
+.room{
+  position:relative;z-index:2;
+  max-width:1440px;margin:0 auto;
+  padding:clamp(20px,3.5vw,40px) clamp(16px,4vw,48px) 60px;
+  transition:filter .5s var(--ease),opacity .5s var(--ease);
+}
+.room.dimmed{filter:brightness(.55) saturate(.9);opacity:.55}
+.room::before{ /* inner shadow to suggest depth of the frame */
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:4px;
+  box-shadow:inset 0 2px 40px rgba(0,0,0,.55), inset 0 0 120px rgba(0,0,0,.4);
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:var(--gutter);
+}
+@media(max-width:1200px){.grid{grid-template-columns:repeat(5,1fr)}}
+@media(max-width:1000px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:760px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+/* ============ PANEL ============ */
+.panel{
+  position:relative;aspect-ratio:3/4;
+  background:var(--shadow);
+  border:1px solid rgba(75,56,33,.55);
+  cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 26 26'%3E%3Cpath d='M1 13C4 6 9 3 13 3s9 3 12 10c-3 7-8 10-12 10S4 20 1 13z' fill='none' stroke='%23F5F0E6' stroke-width='1.6'/%3E%3Ccircle cx='13' cy='13' r='3.4' fill='%23F5F0E6'/%3E%3C/svg%3E") 13 13, pointer;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+}
+.panel:hover{transform:translateY(-3px)}
+.panel:focus-visible{outline:2px solid var(--paper);outline-offset:2px}
+.panel .kumiko{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;display:block}
+.panel .woodframe{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  border:8px solid var(--wood);
+  border-image:linear-gradient(135deg,#3a2a17,#6E5636 45%,#3a2a17) 1;
+  box-shadow:inset 0 0 0 1px rgba(245,240,230,.06);
+}
+.panel[data-status="dnd"] .woodframe{border-width:12px}
+
+/* shadow behind paper */
+.shadow{
+  position:absolute;top:12%;left:24%;width:52%;height:60%;z-index:1;
+  background:radial-gradient(50% 55% at 50% 42%, rgba(26,26,26,.95), rgba(26,26,26,.55) 60%, transparent 78%);
+  filter:blur(15px);opacity:0;transition:opacity .5s var(--ease);
+}
+.panel[data-status="active"] .shadow{opacity:.55;animation:drift 16s ease-in-out infinite alternate}
+.panel[data-status="idle"] .shadow{opacity:.22}
+.panel[data-status="dnd"] .shadow,.panel[data-status="offline"] .shadow{opacity:0}
+.panel:hover .shadow{opacity:.9;filter:blur(11px)}
+.panel[data-status="dnd"]:hover .shadow,.panel[data-status="offline"]:hover .shadow{opacity:0}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1)}
+  25%{transform:translate(16px,-10px) scale(1.05)}
+  50%{transform:translate(-10px,12px) scale(.96)}
+  75%{transform:translate(12px,6px) scale(1.03)}
+  100%{transform:translate(-6px,-12px) scale(1)}
+}
+
+/* paper */
+.paper{
+  position:absolute;inset:0;z-index:4;
+  background:
+    radial-gradient(120% 90% at 30% 15%, rgba(255,255,255,.35), transparent 55%),
+    repeating-linear-gradient(90deg, rgba(75,56,33,.03) 0 1px, transparent 1px 3px),
+    var(--paper);
+  opacity:.6;transition:opacity .5s var(--ease),background .5s var(--ease);
+}
+.panel[data-status="idle"] .paper{opacity:.8}
+.panel[data-status="dnd"] .paper{opacity:1;background-color:var(--dnd-paper)}
+.panel[data-status="offline"] .paper{opacity:1;background-color:#dcd6c8}
+.panel:hover .paper{opacity:.5}
+.panel[data-status="dnd"]:hover .paper,.panel[data-status="offline"]:hover .paper{opacity:1}
+
+/* paper grain overlay on top */
+.panel .grain{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");}
+
+/* panel content */
+.pcontent{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;justify-content:space-between;padding:14px 14px 12px;pointer-events:none}
+.phead{display:flex;justify-content:space-between;align-items:flex-start}
+.pcode{font-size:10px;color:var(--ink);opacity:.5;letter-spacing:.06em}
+.dnd-toggle{
+  pointer-events:auto;width:26px;height:26px;border:1px solid rgba(75,56,33,.6);
+  background:rgba(245,240,230,.4);color:var(--wood);border-radius:2px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  opacity:0;transform:translateY(-4px);transition:opacity .25s,transform .25s,background .2s,color .2s;
+}
+.panel:hover .dnd-toggle,.panel[data-status="dnd"] .dnd-toggle{opacity:1;transform:none}
+.dnd-toggle svg{width:13px;height:13px}
+.panel[data-status="dnd"] .dnd-toggle{background:var(--wood);color:var(--paper)}
+.dnd-toggle:hover{background:var(--wood);color:var(--paper)}
+
+.pfoot{display:flex;flex-direction:column;gap:2px}
+.pname{font-size:clamp(15px,1.5vw,18px);color:var(--ink);line-height:1.1;font-weight:400}
+.prole{font-size:10.5px;color:var(--ink);opacity:.55;letter-spacing:.03em}
+.pstatus{font-size:10px;color:var(--ink);opacity:.6;letter-spacing:.08em;margin-top:5px}
+.panel[data-status="dnd"] .pstatus,.panel[data-status="offline"] .pstatus{opacity:.85}
+
+/* error stamp */
+.stamp{
+  position:absolute;inset:0;z-index:7;display:none;align-items:center;justify-content:center;
+  background:rgba(232,226,213,.55);
+}
+.panel[data-error="true"] .stamp{display:flex}
+.stamp .box{
+  border:2px solid var(--wood);color:var(--wood);padding:14px 16px;text-align:center;
+  transform:rotate(-6deg);background:rgba(245,240,230,.85);
+}
+.stamp .box b{display:block;font-size:15px;letter-spacing:.04em}
+.stamp .box small{display:block;font-size:10px;opacity:.7;margin-top:4px;letter-spacing:.05em}
+.stamp .retry{pointer-events:auto;margin-top:10px;font-size:11px;color:var(--ink);border-bottom:1px solid var(--wood);cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+/* paper tear */
+.tear{position:absolute;top:0;left:0;right:0;height:100%;z-index:6;pointer-events:none;display:none}
+.panel[data-error="true"] .tear{display:block}
+
+/* ============ CHAT DRAWER ============ */
+.drawer{
+  position:fixed;inset:0;z-index:50;display:flex;justify-content:flex-end;
+  pointer-events:none;
+}
+.scrim{position:absolute;inset:0;background:rgba(20,18,15,.55);opacity:0;transition:opacity .4s var(--ease)}
+.chat{
+  position:relative;width:min(460px,100%);height:100%;
+  background:var(--paper);color:var(--ink);
+  transform:translateX(102%);transition:transform .42s var(--ease);
+  display:flex;flex-direction:column;
+  box-shadow:-14px 0 60px rgba(0,0,0,.55);
+}
+.drawer.open{pointer-events:auto}
+.drawer.open .scrim{opacity:1}
+.drawer.open .chat{transform:none}
+.chat::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");}
+.chat-head{
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 20px;border-bottom:2px solid var(--wood);
+}
+.chat-id{display:flex;flex-direction:column;gap:2px;min-width:0}
+.chat-id .n{font-size:20px;line-height:1.1}
+.chat-id .m{font-size:10.5px;color:var(--accent);letter-spacing:.08em}
+.chat-close{
+  flex:none;width:34px;height:34px;border:1px solid var(--wood);background:transparent;color:var(--wood);
+  border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s;
+}
+.chat-close:hover{background:var(--wood);color:var(--paper)}
+.chat-close svg{width:14px;height:14px}
+.chat-body{position:relative;z-index:1;flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg{max-width:82%;display:flex;flex-direction:column;gap:3px}
+.msg .b{padding:9px 12px;border-radius:2px;font-size:14.5px;line-height:1.45;border:1px solid rgba(75,56,33,.25)}
+.msg .ts{font-size:9.5px;color:var(--accent);letter-spacing:.06em}
+.msg.them{align-self:flex-start}
+.msg.them .b{background:#ece6d8}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg.me .b{background:var(--wood);color:var(--paper);border-color:var(--wood)}
+.chat-input{position:relative;z-index:1;display:flex;gap:8px;padding:14px 16px;border-top:2px solid var(--wood);background:#efe9db}
+.chat-input input{
+  flex:1;border:1px solid rgba(75,56,33,.4);background:var(--paper);color:var(--ink);
+  padding:11px 12px;font-family:'M PLUS 1 Code',monospace;font-size:13px;border-radius:2px;
+}
+.chat-input input:focus{outline:none;border-color:var(--wood);box-shadow:inset 0 0 0 1px var(--wood)}
+.chat-input button{
+  flex:none;border:none;background:var(--wood);color:var(--paper);padding:0 16px;border-radius:2px;cursor:pointer;
+  font-family:'M PLUS 1 Code',monospace;font-size:12px;letter-spacing:.08em;transition:background .2s;
+}
+.chat-input button:hover{background:#5f4729}
+
+/* ============ EMPTY STATE ============ */
+.empty{display:none;justify-content:center;padding:40px 20px}
+.empty.show{display:flex}
+.bigscreen{
+  position:relative;width:min(320px,70vw);aspect-ratio:3/4;background:var(--shadow);
+  border:1px solid rgba(75,56,33,.55);display:flex;align-items:center;justify-content:center;
+}
+.bigscreen .kumiko{position:absolute;inset:0;width:100%;height:100%;z-index:2}
+.bigscreen .woodframe{position:absolute;inset:0;border:10px solid var(--wood);border-image:linear-gradient(135deg,#3a2a17,#6E5636 45%,#3a2a17) 1}
+.bigscreen .paper{position:absolute;inset:0;z-index:1;opacity:.85;background:radial-gradient(120% 90% at 30% 15%, rgba(255,255,255,.3),transparent 55%),var(--paper)}
+.bigscreen .invite{position:relative;z-index:3;text-align:center;padding:24px}
+.bigscreen .invite p{color:var(--ink);font-size:14px;margin-bottom:16px;line-height:1.5}
+.bigscreen .invite button{
+  font-family:'Genjyu Gothic',sans-serif;font-size:14px;color:var(--paper);background:var(--wood);
+  border:none;padding:12px 22px;border-radius:2px;cursor:pointer;letter-spacing:.03em;transition:background .2s;
+}
+.bigscreen .invite button:hover{background:#5f4729}
+
+/* ============ FOOTER ============ */
+.footer{
+  position:relative;z-index:2;max-width:1440px;margin:0 auto;
+  padding:18px clamp(16px,4vw,48px) 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  border-top:1px solid rgba(245,240,230,.08);color:var(--accent);font-size:11px;letter-spacing:.06em;
+}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:640px){
+  .topbar{flex-direction:column;align-items:flex-start;gap:16px}
+  .topmeta{width:100%;justify-content:space-between}
+  .legend{gap:12px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .panel[data-status="active"] .shadow{animation:none}
+  .sw.active::after{animation:none}
+  .reveal{opacity:1;transform:none;transition:none}
+  .panel,.paper,.chat,.scrim,.room{transition-duration:.001s}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <rect x="4" y="4" width="40" height="40" stroke="#F5F0E6" stroke-width="2"/>
+      <path d="M4 16h40M4 32h40M16 4v40M32 4v40" stroke="#8A7B6D" stroke-width="1"/>
+      <path d="M4 4l12 12M32 4l12 12M4 32l12 12M32 32l12 12" stroke="#4B3821" stroke-width="1"/>
+      <rect x="18" y="18" width="12" height="12" fill="#F5F0E6"/>
+    </svg>
+    <div>
+      <h1>KUMIKO</h1>
+      <div class="jp mono">組子 · PRESENCE</div>
+    </div>
+  </div>
+  <div class="topmeta">
+    <div class="legend">
+      <div class="li"><span class="sw active"></span>Active</div>
+      <div class="li"><span class="sw idle"></span>Idle</div>
+      <div class="li"><span class="sw dnd"></span>Do Not Disturb</div>
+      <div class="li"><span class="sw off"></span>Away</div>
+    </div>
+    <div class="clock">
+      <span class="t mono" id="clock">--:--</span>
+      <span class="d mono" id="date">—</span>
+    </div>
+  </div>
+</header>
+
+<main class="room" id="room">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">
+    <div class="bigscreen">
+      <svg class="kumiko" viewBox="0 0 100 133" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="paper"></div>
+      <div class="woodframe"></div>
+      <div class="invite">
+        <p>The room is quiet.<br>No one is behind the paper yet.</p>
+        <button id="inviteBtn">Invite Team</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <span class="mono">KUMIKO v1.0 · SHŌJI PROTOCOL</span>
+  <span class="mono" id="count">— members in the room</span>
+</footer>
+
+<!-- CHAT DRAWER -->
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Conversation">
+  <div class="scrim" id="scrim"></div>
+  <section class="chat">
+    <div class="chat-head">
+      <div class="chat-id">
+        <span class="n" id="chatName">—</span>
+        <span class="m mono" id="chatMeta">—</span>
+      </div>
+      <button class="chat-close" id="chatClose" aria-label="Close conversation">
+        <svg viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <form class="chat-input" id="chatForm">
+      <input id="chatInput" type="text" placeholder="write quietly…" autocomplete="off">
+      <button type="submit">SEND</button>
+    </form>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Kumiko SVG generator (yotsumegumi / asanoha) ----------
+  function kumikoSVG(cols, rows){
+    const W=100, H=133, cw=W/cols, ch=H/rows;
+    let s='<g stroke="#4B3821" fill="none" stroke-width="1.1" stroke-linecap="square">';
+    // outer + grid lines
+    for(let c=0;c<=cols;c++){const x=(c*cw).toFixed(2);s+='<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+H+'"/>';}
+    for(let r=0;r<=rows;r++){const y=(r*ch).toFixed(2);s+='<line x1="0" y1="'+y+'" x2="'+W+'" y2="'+y+'"/>';}
+    // asanoha: diagonals + centre spokes per cell
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x0=c*cw,y0=r*ch,x1=x0+cw,y1=y0+ch,cx=x0+cw/2,cy=y0+ch/2;
+        s+='<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y1+'"/>';
+        s+='<line x1="'+x1+'" y1="'+y0+'" x2="'+x0+'" y2="'+y1+'"/>';
+        s+='<line x1="'+cx+'" y1="'+y0+'" x2="'+cx+'" y2="'+cy+'"/>';
+        s+='<line x1="'+cx+'" y1="'+y1+'" x2="'+cx+'" y2="'+cy+'"/>';
+        s+='<line x1="'+x0+'" y1="'+cy+'" x2="'+cx+'" y2="'+cy+'"/>';
+        s+='<line x1="'+x1+'" y1="'+cy+'" x2="'+cx+'" y2="'+cy+'"/>';
+      }
+    }
+    s+='</g>';
+    return s;
+  }
+
+  // ---------- Data ----------
+  const members=[
+    {id:'a1',code:'A1',name:'Aiko Tanaka',role:'Lead Designer',status:'active',
+      msgs:[{me:false,t:'The shoji grid is holding at 60fps now.',ts:'09:12'},{me:true,t:'Beautiful. The shadow drift feels alive.',ts:'09:14'},{me:false,t:'Presence reads without a single dot.',ts:'09:15'}]},
+    {id:'a2',code:'A2',name:'Ren Kobayashi',role:'Systems',status:'active',
+      msgs:[{me:false,t:'Room lighting bleed is subtle enough now.',ts:'08:40'},{me:true,t:'Keep the inner shadow soft.',ts:'08:42'}]},
+    {id:'a3',code:'A3',name:'Mei Sato',role:'Research',status:'idle',
+      msgs:[{me:false,t:'Away from the desk for a moment.',ts:'11:03'}]},
+    {id:'a4',code:'A4',name:'Hiroshi Mori',role:'Front-end',status:'active',
+      msgs:[{me:false,t:'Slide-open easing is cubic-bezier(.65,.02,.2,1).',ts:'10:20'},{me:true,t:'That snap feels right.',ts:'10:21'}]},
+    {id:'a5',code:'A5',name:'Yuki Nakamura',role:'Product',status:'dnd',
+      msgs:[{me:false,t:'Deep work until 15:00.',ts:'13:00'}]},
+    {id:'a6',code:'A6',name:'Sora Ito',role:'Motion',status:'active',
+      msgs:[{me:false,t:'Reduced-motion path tested and clean.',ts:'09:55'}]},
+    {id:'a7',code:'A7',name:'Kenji Watanabe',role:'Backend',status:'idle',
+      msgs:[{me:false,t:'Presence sync is running quietly.',ts:'12:10'}]},
+    {id:'a8',code:'A8',name:'Haruto Kimura',role:'Design',status:'offline',
+      msgs:[{me:false,t:'Signed off for the day.',ts:'17:30'}]},
+    {id:'a9',code:'A9',name:'Nao Fujita',role:'QA',status:'active',error:true,
+      msgs:[]},
+    {id:'a10',code:'A10',name:'Emi Suzuki',role:'Support',status:'idle',
+      msgs:[{me:false,t:'No urgent tickets behind this screen.',ts:'11:48'}]},
+    {id:'a11',code:'A11',name:'Taro Ono',role:'Infra',status:'dnd',
+      msgs:[{me:false,t:'Do not disturb — migration in progress.',ts:'14:05'}]},
+    {id:'a12',code:'A12',name:'Rin Hayashi',role:'Copy',status:'active',
+      msgs:[{me:false,t:'Wording reads calm and human.',ts:'10:02'},{me:true,t:'Good. Quiet over loud.',ts:'10:05'}]}
+  ];
+
+  const statusLabel={active:'PRESENT',idle:'STILL',dnd:'DO NOT DISTURB',offline:'AWAY'};
+  const grid=document.getElementById('grid');
+  const room=document.getElementById('room');
+  const empty=document.getElementById('empty');
+  const countEl=document.getElementById('count');
+
+  function render(){
+    grid.innerHTML='';
+    if(members.length===0){empty.classList.add('show');countEl.textContent='0 members in the room';return;}
+    empty.classList.remove('show');
+    countEl.textContent=members.length+' members in the room';
+    members.forEach((m,i)=>{
+      const el=document.createElement('article');
+      el.className='panel reveal';
+      el.tabIndex=0;
+      el.setAttribute('role','button');
+      el.setAttribute('aria-label',m.name+', '+statusLabel[m.status]);
+      el.dataset.status=m.status;
+      el.dataset.id=m.id;
+      if(m.error) el.dataset.error='true';
+      el.innerHTML=
+        '<div class="shadow"></div>'+
+        '<div class="paper"></div>'+
+        '<svg class="kumiko" viewBox="0 0 100 133" preserveAspectRatio="none" aria-hidden="true">'+kumikoSVG(3,4)+'</svg>'+
+        '<div class="woodframe"></div>'+
+        '<div class="pcontent">'+
+          '<div class="phead">'+
+            '<span class="pcode mono">'+m.code+'</span>'+
+            '<button class="dnd-toggle" aria-label="Toggle Do Not Disturb" title="Do Not Disturb">'+
+              '<svg viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="1.8"/></svg>'+
+            '</button>'+
+          '</div>'+
+          '<div class="pfoot">'+
+            '<span class="pname">'+m.name+'</span>'+
+            '<span class="prole mono">'+m.role+'</span>'+
+            '<span class="pstatus mono">'+statusLabel[m.status]+'</span>'+
+          '</div>'+
+        '</div>'+
+        '<svg class="tear" viewBox="0 0 100 133" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L100 0 L100 30 L88 34 L94 44 L80 48 L86 60 L70 64 L76 78 L60 82 L66 96 L50 100 L56 114 L40 118 L46 133 L0 133 Z" fill="#F5F0E6" opacity="0.001"/></svg>'+
+        '<div class="stamp"><div class="box"><b class="mono">ERROR</b><small class="mono">CONNECTION TORN</small><button class="retry mono">RETRY</button></div></div>';
+
+      // stagger reveal
+      el.style.transitionDelay=(i*40)+'ms';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));
+
+      // open chat
+      el.addEventListener('click',(e)=>{
+        if(e.target.closest('.dnd-toggle'))return;
+        if(el.dataset.error==='true'){ /* clicking an errored panel still opens */ }
+        openChat(m);
+      });
+      el.addEventListener('keydown',(e)=>{
+        if(e.key==='Enter'||e.key===' '){e.preventDefault();openChat(m);}
+      });
+
+      // dnd toggle
+      el.querySelector('.dnd-toggle').addEventListener('click',(e)=>{
+        e.stopPropagation();
+        const next=m.status==='dnd'?'active':'dnd';
+        m.status=next;
+        el.dataset.status=next;
+        el.querySelector('.pstatus').textContent=statusLabel[next];
+        el.setAttribute('aria-label',m.name+', '+statusLabel[next]);
+      });
+
+      grid.appendChild(el);
+    });
+  }
+
+  // ---------- Chat drawer ----------
+  const drawer=document.getElementById('drawer');
+  const scrim=document.getElementById('scrim');
+  const chatName=document.getElementById('chatName');
+  const chatMeta=document.getElementById('chatMeta');
+  const chatBody=document.getElementById('chatBody');
+  const chatForm=document.getElementById('chatForm');
+  const chatInput=document.getElementById('chatInput');
+  const chatClose=document.getElementById('chatClose');
+  let current=null;
+
+  function now(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+  function openChat(m){
+    current=m;
+    chatName.textContent=m.name;
+    chatMeta.textContent=m.role.toUpperCase()+' · '+statusLabel[m.status]+' · '+m.code;
+    chatBody.innerHTML='';
+    if(m.error){
+      const err=document.createElement('div');
+      err.className='msg them';
+      err.innerHTML='<div class="b" style="border-style:dashed">The paper tore — this conversation could not load.<br><button class="retry mono" style="margin-top:8px;color:inherit;border-bottom:1px solid currentColor;background:none;border:none;cursor:pointer;font-family:inherit">RETRY</button></div>';
+      err.querySelector('.retry').addEventListener('click',()=>{
+        m.error=false;
+        const panel=grid.querySelector('[data-id="'+m.id+'"]');
+        if(panel){delete panel.dataset.error;}
+        openChat(m);
+      });
+      chatBody.appendChild(err);
+    }else{
+      (m.msgs||[]).forEach(msg=>addMsg(msg,false));
+    }
+    drawer.classList.add('open');
+    room.classList.add('dimmed');
+    setTimeout(()=>chatInput.focus(),300);
+  }
+
+  function addMsg(msg,animate){
+    const el=document.createElement('div');
+    el.className='msg '+(msg.me?'me':'them');
+    if(animate){el.style.opacity='0';el.style.transform='translateY(6px)';}
+    el.innerHTML='<div class="b"></div><span class="ts mono">'+msg.ts+'</span>';
+    el.querySelector('.b').textContent=msg.t;
+    chatBody.appendChild(el);
+    if(animate){requestAnimationFrame(()=>{el.style.transition='opacity .3s, transform .3s';el.style.opacity='1';el.style.transform='none';});}
+    chatBody.scrollTop=chatBody.scrollHeight;
+  }
+
+  function closeChat(){
+    drawer.classList.remove('open');
+    room.classList.remove('dimmed');
+    current=null;
+  }
+
+  chatForm.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const v=chatInput.value.trim();
+    if(!v||!current)return;
+    const msg={me:true,t:v,ts:now()};
+    current.msgs=current.msgs||[];current.msgs.push(msg);
+    addMsg(msg,true);
+    chatInput.value='';
+    // gentle acknowledgement for active users
+    if(current.status==='active'){
+      setTimeout(()=>{
+        const reply={me:false,t:'Noted. I saw the paper move.',ts:now()};
+        current.msgs.push(reply);addMsg(reply,true);
+      },900);
+    }
+  });
+
+  chatClose.addEventListener('click',closeChat);
+  scrim.addEventListener('click',closeChat);
+  document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&drawer.classList.contains('open'))closeChat();});
+
+  // ---------- Clock ----------
+  const clock=document.getElementById('clock');
+  const dateEl=document.getElementById('date');
+  const days=['日','月','火','水','木','金','土'];
+  function tick(){
+    const d=new Date();
+    clock.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+    dateEl.textContent=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' '+days[d.getDay()];
+  }
+  tick();setInterval(tick,10000);
+
+  // ---------- Empty-state invite ----------
+  document.getElementById('inviteBtn').addEventListener('click',function(){
+    const names=['Kaede Yamamoto','Daichi Ota','Sakura Endo','Kenta Abe'];
+    const roles=['Design','Engineering','Research','Operations'];
+    const idx=members.length%names.length;
+    members.push({id:'n'+Date.now(),code:'N'+(members.length+1),name:names[idx],role:roles[idx],status:'active',msgs:[]});
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

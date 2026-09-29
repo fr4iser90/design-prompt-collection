@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Brush &amp; Nap — Anisotropic Soft-Body Study</title>
+<meta name="description" content="A WebGL material study: a velvet cushion whose nap, sheen and hidden type respond to the brush of your cursor." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;1,400&family=Ogg:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#1a121b;
+    --plum:#5c3a5d;
+    --lilac:#d4c5d8;
+    --lilac-dim:rgba(212,197,216,0.55);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--void);}
+  body{
+    font-family:'Lora',Georgia,serif;
+    color:var(--lilac);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    cursor:default;
+    touch-action:none;
+  }
+  #c{position:fixed;inset:0;width:100vw;height:100vh;display:block;z-index:0;cursor:default;}
+
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+  }
+
+  .ui{position:fixed;inset:0;z-index:3;pointer-events:none;}
+
+  .titleblock{position:absolute;left:clamp(22px,4vw,64px);bottom:clamp(26px,5vh,58px);max-width:min(560px,82vw);}
+  .kicker{
+    font-family:'Lora',serif;font-style:italic;font-weight:400;
+    font-size:clamp(11px,1.25vw,14px);letter-spacing:.4em;text-transform:uppercase;
+    color:var(--plum);margin-bottom:.95em;
+  }
+  .title{
+    font-family:'Ogg',Georgia,serif;font-weight:400;
+    font-size:clamp(46px,9.4vw,122px);line-height:.9;letter-spacing:.01em;
+    color:var(--lilac);text-shadow:0 1px 40px rgba(212,197,216,.10);
+  }
+  .title .amp{font-style:italic;color:var(--plum);}
+  .subtitle{
+    font-family:'Lora',serif;font-weight:400;font-style:italic;
+    font-size:clamp(13px,1.55vw,17px);letter-spacing:.02em;
+    color:var(--plum);margin-top:1.15em;max-width:34ch;
+  }
+  .subtitle::before{content:"";display:inline-block;width:34px;height:1px;background:var(--plum);vertical-align:middle;margin-right:14px;opacity:.6;}
+
+  .meta{position:absolute;right:clamp(20px,4vw,60px);top:clamp(22px,4vh,46px);text-align:right;font-family:'Lora',serif;}
+  .meta .row{font-size:clamp(10px,1.15vw,12.5px);letter-spacing:.2em;text-transform:uppercase;color:var(--lilac-dim);line-height:2;}
+  .meta .row b{font-weight:400;color:var(--plum);}
+
+  .hint{position:absolute;right:clamp(20px,4vw,60px);bottom:clamp(24px,5vh,54px);font-family:'Lora',serif;font-style:italic;font-size:clamp(12px,1.35vw,15px);color:var(--plum);letter-spacing:.03em;text-align:right;transition:opacity 1s ease;}
+  .hint.gone{opacity:0;}
+  .hint .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--plum);vertical-align:middle;margin-left:10px;animation:pulse 2.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.25;transform:scale(1);}50%{opacity:1;transform:scale(1.7);}}
+
+  .reveal{opacity:0;transform:translateY(16px);animation:rise 1.4s cubic-bezier(.19,1,.22,1) forwards;}
+  .reveal.d1{animation-delay:.3s;}
+  .reveal.d2{animation-delay:.55s;}
+  .reveal.d3{animation-delay:.8s;}
+  .reveal.d4{animation-delay:1.05s;}
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+
+  @media (max-width:640px){
+    .meta{display:none;}
+    .hint{left:clamp(22px,4vw,64px);right:auto;text-align:left;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .reveal{animation:none;opacity:1;transform:none;}
+    .hint .dot{animation:none;}
+  }
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div class="grain"></div>
+
+  <div class="ui">
+    <div class="meta reveal d1">
+      <div class="row"><b>Material</b> · Velvet</div>
+      <div class="row"><b>Shading</b> · Anisotropic</div>
+      <div class="row"><b>Body</b> · Soft / Spring</div>
+    </div>
+
+    <div class="titleblock">
+      <div class="kicker reveal d2">Material Study №04</div>
+      <h1 class="title reveal d3">Brush <span class="amp">&amp;</span> Nap</h1>
+      <p class="subtitle reveal d4">Anisotropic Soft-Body Study</p>
+    </div>
+
+    <div class="hint reveal d4" id="hint">drag across the surface to brush the nap <span class="dot"></span></div>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Renderer / Scene / Camera ---------- */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a121b);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 5);
+
+/* ---------- Lighting ---------- */
+const key = new THREE.DirectionalLight(0xd4c5d8, 3.0);
+key.position.set(5, 5, 5);
+scene.add(key);
+scene.add(new THREE.AmbientLight(0x1a121b, 0.2));
+
+/* ---------- Geometry ---------- */
+const geo = new THREE.BoxGeometry(2, 2, 0.5, 64, 64, 16);
+const posAttr = geo.attributes.position;
+const N = posAttr.count;
+const basePos = new Float32Array(posAttr.array);
+const dispAttr = new THREE.BufferAttribute(new Float32Array(N), 1);
+geo.setAttribute('aDisp', dispAttr);
+
+/* ---------- Hidden typography (VELVET & VOID) ---------- */
+function buildTextTexture(){
+  const cv = document.createElement('canvas');
+  cv.width = 1024; cv.height = 1024;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0,0,1024,1024);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = "700 158px 'Ogg', Georgia, serif";
+  ctx.fillText('VELVET', 512, 456);
+  ctx.font = "italic 700 158px 'Ogg', Georgia, serif";
+  ctx.fillText('& VOID', 512, 606);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.NoColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+const textTex = buildTextTexture();
+
+/* ---------- Uniforms ---------- */
+const uniforms = {
+  uTime:      { value: 0 },
+  uWind:      { value: 0 },
+  uBreath:    { value: 0 },
+  uNap:       { value: 0 },
+  uReveal:    { value: 0 },
+  uLightDir:  { value: key.position.clone().normalize() },
+  uBase:      { value: new THREE.Color(0x5c3a5d) },
+  uHi:        { value: new THREE.Color(0xd4c5d8) },
+  uAmbient:   { value: new THREE.Color(0x1a121b) },
+  uText:      { value: textTex },
+  uExposure:  { value: renderer.toneMappingExposure }
+};
+
+/* ---------- Shader ---------- */
+const vertexShader = `
+  attribute float aDisp;
+  varying vec3 vWorldPos;
+  varying vec3 vViewPos;
+  varying vec2 vUv;
+  uniform float uTime;
+  uniform float uWind;
+  uniform float uBreath;
+
+  void main(){
+    vec3 p = position;
+    vec3 n = normalize(normal);
+    float front = smoothstep(0.0, 0.25, n.z);
+    float amp = 0.02 * uBreath;
+    float breathe = sin(uTime*0.9 + p.x*1.4 + p.y*1.1)*0.6 + sin(uTime*1.5 - p.y*1.7)*0.4;
+    p += n * (breathe * amp * front);
+    float wave = sin(p.x*3.0 - uTime*7.0 + p.y*0.6);
+    p += n * (wave * 0.05 * uWind * front);
+    p += n * (aDisp * front);
+    vec4 wp = modelMatrix * vec4(p,1.0);
+    vec4 vp = viewMatrix * wp;
+    vWorldPos = wp.xyz;
+    vViewPos  = vp.xyz;
+    vUv = uv;
+    gl_Position = projectionMatrix * vp;
+  }
+`;
+
+const fragmentShader = `
+  precision highp float;
+  varying vec3 vWorldPos;
+  varying vec3 vViewPos;
+  varying vec2 vUv;
+  uniform float uTime;
+  uniform float uNap;
+  uniform float uReveal;
+  uniform vec3 uLightDir;
+  uniform vec3 uBase;
+  uniform vec3 uHi;
+  uniform vec3 uAmbient;
+  uniform sampler2D uText;
+  uniform float uExposure;
+
+  vec3 aces(vec3 x){
+    float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14;
+    return clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0);
+  }
+  float hash(vec2 p){ return fract(sin(dot(p,vec2(41.3,289.1)))*43758.5453); }
+
+  void main(){
+    vec3 N = normalize(normal);
+    vec3 V = normalize(cameraPosition - vWorldPos);
+    vec3 L = normalize(uLightDir);
+    vec3 H = normalize(L + V);
+
+    vec3 t0 = normalize(cross(N, vec3(0.0,1.0,0.0)));
+    vec3 t1 = normalize(cross(N, t0));
+    float c = cos(uNap), s = sin(uNap);
+    vec3 T = normalize(t0*c + t1*s);
+    vec3 B = normalize(cross(N, T));
+
+    float TdH = dot(T,H);
+    float BdH = dot(B,H);
+    float NdH = max(dot(N,H), 0.0);
+    float NdV = max(dot(N,V), 0.0);
+    float NdL = max(dot(N,L), 0.0);
+    float rough = 0.34;
+    float ax = rough*rough;
+    float ay = rough*0.14;
+
+    float D = 1.0 / (6.28318 * ax*ay * pow(TdH*TdH/(ax*ax) + BdH*BdH/(ay*ay) + NdH*NdH, 2.0));
+    float fres = pow(1.0 - NdV, 5.0);
+    float sheen = 0.55 * pow(1.0 - NdV, 2.2);
+
+    float spec = D * (0.05 + 0.95*fres);
+    vec3 color = uAmbient + uBase * (0.14 + 0.86*NdL);
+    color += uHi * spec * 0.9;
+    color += uHi * sheen * 0.5;
+
+    float grain = (hash(vUv*vec2(900.0,900.0) + floor(uTime*0.0)) - 0.5) * 0.02;
+    color += grain;
+
+    float text = texture2D(uText, vUv).r;
+    float align = smoothstep(0.55, 0.95, NdH);
+    color += uHi * text * align * uReveal * 0.9;
+
+    color *= uExposure;
+    color = aces(color);
+    color = pow(color, vec3(1.0/2.2));
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+const mat = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
+const mesh = new THREE.Mesh(geo, mat);
+scene.add(mesh);
+
+/* ---------- Soft-body spring-mass (surface) ---------- */
+const dispVel = new Float32Array(N);
+const stiffness = 60;
+const damping   = 6;
+const maxDisp   = 0.24;
+const brushMax  = 0.02;
+
+/* ---------- Interaction ---------- */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let pointerActive = false;
+let moved = false;
+const hintEl = document.getElementById('hint');
+
+function setNDC(e){
+  const r = canvas.getBoundingClientRect();
+  ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+}
+
+function applyBrush(localPoint, dir){
+  const R = 0.42;
+  const strength = Math.min(dir.length(), 0.6);
+  for(let i=0;i<N;i++){
+    const ix=i*3;
+    const dx=basePos[ix]-localPoint.x, dy=basePos[ix+1]-localPoint.y, dz=basePos[ix+2]-localPoint.z;
+    const d2=dx*dx+dy*dy+dz*dz;
+    if(d2 > R*R) continue;
+    const fall = 1 - Math.sqrt(d2)/R;
+    dispVel[i] -= strength * fall * 55;
+  }
+  uniforms.uNap.value += dir.x * brushMax;
+}
+
+canvas.addEventListener('pointerdown', e=>{
+  pointerActive = true;
+  setNDC(e);
+  try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+});
+canvas.addEventListener('pointermove', e=>{
+  if(!pointerActive) return;
+  setNDC(e);
+  raycaster.setFromCamera(ndc, camera);
+  const hit = raycaster.intersectObject(mesh, false)[0];
+  if(hit){
+    const local = mesh.worldToLocal(hit.point.clone());
+    applyBrush(local, e.movementVector || {x:0,y:0});
+    if(!moved){ moved = true; hintEl.classList.add('gone'); }
+  }
+});
+window.addEventListener('pointerup', ()=>{ pointerActive = false; });
+window.addEventListener('pointercancel', ()=>{ pointerActive = false; });
+
+/* ---------- Resize ---------- */
+function resize(){
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ---------- Loop ---------- */
+const clock = new THREE.Clock();
+const windDur = reduceMotion ? 0 : 2.0;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.033);
+  const t = clock.elapsedTime;
+
+  uniforms.uTime.value = t;
+
+  // Entrance wind (left→right nap sweep)
+  if(windDur > 0){
+    const p = Math.min(t/windDur, 1);
+    uniforms.uWind.value = Math.sin(p*Math.PI);
+    uniforms.uNap.value = (1 - p) * 0.9;
+  } else {
+    uniforms.uWind.value = 0;
+  }
+
+  // Ambient breathing
+  uniforms.uBreath.value = reduceMotion ? 0.0 : 1.0;
+
+  // Reveal hidden type over the entrance
+  uniforms.uReveal.value = reduceMotion ? 0.5 : Math.min(t/2.2, 1);
+
+  // Spring-mass integration
+  for(let i=0;i<N;i++){
+    const a = -stiffness*dispAttr.array[i] - damping*dispVel[i];
+    dispVel[i] += a*dt;
+    let d = dispAttr.array[i] + dispVel[i]*dt;
+    if(d < -maxDisp){ d = -maxDisp; dispVel[i] = 0; }
+    if(d >  maxDisp){ d =  maxDisp; dispVel[i] = 0; }
+    dispAttr.array[i] = d;
+  }
+  dispAttr.needsUpdate = true;
+
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

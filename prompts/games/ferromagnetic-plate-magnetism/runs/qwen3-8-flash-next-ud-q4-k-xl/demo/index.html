@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ferromagnetic Flux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0C15; --grid:#1A1C29; --grid2:#232639;
+    --cyan:#00F0FF; --red:#FF3366; --green:#00FF88; --white:#FFFFFF;
+    --ink:#e7eaf6; --muted:#7f88a6; --muted2:#565d78;
+    --mono:'Space Mono', ui-monospace, monospace;
+    --sans:'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--sans);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  #app{display:flex; flex-direction:column; height:100vh; height:100dvh}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex; align-items:center; gap:20px; padding:14px 22px;
+    border-bottom:1px solid var(--grid);
+    background:linear-gradient(180deg, rgba(20,23,38,.6), rgba(11,12,21,.2));
+    position:relative; z-index:5;
+  }
+  .brand{display:flex; align-items:center; gap:12px}
+  .wordmark{
+    font-family:var(--mono); font-weight:700; letter-spacing:.14em;
+    font-size:clamp(16px,2.4vw,24px); text-transform:uppercase;
+    color:var(--white); white-space:nowrap;
+  }
+  .wordmark .flux{color:var(--cyan); text-shadow:0 0 18px rgba(0,240,255,.55)}
+  .brand-tag{
+    font-family:var(--mono); font-size:10px; letter-spacing:.22em; color:var(--muted);
+    text-transform:uppercase; margin-top:3px;
+  }
+  .brand-tag b{color:var(--muted); font-weight:400}
+  .spacer{flex:1}
+  .hud{display:flex; align-items:stretch; gap:2px}
+  .stat{
+    display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+    padding:6px 16px; border-left:1px solid var(--grid); min-width:78px;
+  }
+  .stat .k{font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:var(--muted2); text-transform:uppercase}
+  .stat .v{font-family:var(--mono); font-weight:700; font-size:clamp(16px,2vw,22px); color:var(--ink); line-height:1}
+  .stat .v.cyan{color:var(--cyan)} .stat .v.red{color:var(--red)} .stat .v.green{color:var(--green)}
+
+  /* ---------- Stage ---------- */
+  .stage{flex:1; min-height:0; position:relative; overflow:hidden}
+  #cv{position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair; touch-action:none}
+  .corner{position:absolute; width:18px; height:18px; border:1px solid var(--grid2); pointer-events:none; z-index:4}
+  .corner.tl{top:14px; left:14px; border-right:0; border-bottom:0}
+  .corner.tr{top:14px; right:14px; border-left:0; border-bottom:0}
+  .corner.bl{bottom:14px; left:14px; border-right:0; border-top:0}
+  .corner.br{bottom:14px; right:14px; border-left:0; border-top:0}
+  .stage-tag{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10px; letter-spacing:.28em; color:var(--muted2);
+    text-transform:uppercase; pointer-events:none; z-index:4; white-space:nowrap;
+  }
+  .toast{
+    position:absolute; left:50%; top:16px; transform:translate(-50%,-14px);
+    background:rgba(11,12,21,.85); border:1px solid var(--grid2); color:var(--ink);
+    font-family:var(--mono); font-size:12px; letter-spacing:.05em; padding:8px 16px;
+    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:6;
+    backdrop-filter:blur(4px);
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0)}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    display:flex; align-items:center; gap:18px; padding:12px 22px;
+    border-top:1px solid var(--grid);
+    background:linear-gradient(0deg, rgba(20,23,38,.6), rgba(11,12,21,.2));
+    flex-wrap:wrap; position:relative; z-index:5;
+  }
+  .group{display:flex; align-items:center; gap:8px}
+  .group-label{font-family:var(--mono); font-size:9px; letter-spacing:.2em; color:var(--muted2); text-transform:uppercase; margin-right:2px}
+  .tool{
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+    background:rgba(255,255,255,.03); border:1px solid var(--grid2); color:var(--muted);
+    font-family:var(--mono); font-size:12px; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 12px; transition:all .15s ease;
+  }
+  .tool:hover{border-color:#3a4060; color:var(--ink)}
+  .tool .swatch{width:12px; height:12px; display:inline-block}
+  .tool[data-tool="attract"] .swatch{background:var(--cyan); box-shadow:0 0 8px rgba(0,240,255,.6)}
+  .tool[data-tool="repel"] .swatch{background:var(--red); box-shadow:0 0 8px rgba(255,51,102,.6)}
+  .tool.active{color:var(--bg); font-weight:700}
+  .tool.active[data-tool="attract"]{background:var(--cyan); border-color:var(--cyan); box-shadow:0 0 18px rgba(0,240,255,.35)}
+  .tool.active[data-tool="repel"]{background:var(--red); border-color:var(--red); box-shadow:0 0 18px rgba(255,51,102,.35)}
+  .tool.btn{color:var(--ink)}
+  .tool.btn:hover{border-color:#4a517a}
+  .tool.launch{color:var(--green); border-color:rgba(0,255,136,.4)}
+  .tool.launch:hover{background:rgba(0,255,136,.12); border-color:var(--green)}
+  .tool .key{
+    font-family:var(--mono); font-size:9px; color:var(--muted2); border:1px solid var(--grid2);
+    padding:1px 5px; letter-spacing:.05em;
+  }
+  .tool.active .key{color:rgba(11,12,21,.7); border-color:rgba(11,12,21,.3)}
+  .hint{font-family:var(--mono); font-size:10px; color:var(--muted2); letter-spacing:.08em; margin-left:auto; text-align:right; line-height:1.5}
+  .hint b{color:var(--muted); font-weight:400}
+
+  @media (max-width:760px){
+    .topbar{padding:10px 14px; gap:12px}
+    .brand-tag{display:none}
+    .stat{min-width:56px; padding:4px 10px}
+    .toolbar{gap:10px; padding:10px 14px}
+    .hint{display:none}
+    .tool{padding:7px 9px; font-size:11px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="27" height="27" stroke="#2a2f47"/>
+        <circle cx="15" cy="15" r="4.4" fill="#fff"/>
+        <path d="M15 15 L27 15" stroke="#00F0FF" stroke-width="1.6"/>
+        <path d="M15 15 L15 27" stroke="#00F0FF" stroke-width="1.6"/>
+        <path d="M15 15 L3 15" stroke="#FF3366" stroke-width="1.6"/>
+        <path d="M15 15 L15 3" stroke="#FF3366" stroke-width="1.6"/>
+      </svg>
+      <div>
+        <div class="wordmark">Ferromagnetic <span class="flux">Flux</span></div>
+        <div class="brand-tag">Magnetic Field Puzzle · <b>Canvas&nbsp;2D</b></div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="hud">
+      <div class="stat"><span class="k">Sector</span><span class="v" id="hudLevel">01 / 03</span></div>
+      <div class="stat"><span class="k">Time</span><span class="v" id="hudTime">0.00</span></div>
+      <div class="stat"><span class="k">Magnets</span><span class="v cyan" id="hudMagnets">0</span></div>
+      <div class="stat"><span class="k">Status</span><span class="v" id="hudStatus">READY</span></div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="corner tl"></div><div class="corner tr"></div>
+    <div class="corner bl"></div><div class="corner br"></div>
+    <div class="stage-tag">FIELD VIEW · GRID <span id="gridCount">—</span></div>
+    <div class="toast" id="toast"></div>
+  </main>
+
+  <footer class="toolbar">
+    <div class="group">
+      <span class="group-label">Pole</span>
+      <div class="tool active" data-tool="attract"><span class="swatch"></span>Attract<span class="key">Q</span></div>
+      <div class="tool" data-tool="repel"><span class="swatch"></span>Repel<span class="key">E</span></div>
+    </div>
+    <div class="group">
+      <span class="group-label">Run</span>
+      <div class="tool btn launch" id="btnLaunch">Launch<span class="key">Enter</span></div>
+      <div class="tool btn" id="btnReset">Reset<span class="key">R</span></div>
+    </div>
+    <div class="hint">
+      <b>Click</b> place · <b>Drag</b> move · <b>Right-click</b> remove<br>
+      <b>Space</b> flip pole · <b>Enter</b> launch · <b>R</b> reset
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+(function(){
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const stage = document.getElementById('stage');
+  const hudLevel = document.getElementById('hudLevel');
+  const hudTime = document.getElementById('hudTime');
+  const hudMagnets = document.getElementById('hudMagnets');
+  const hudStatus = document.getElementById('hudStatus');
+  const gridCount = document.getElementById('gridCount');
+  const toastEl = document.getElementById('toast');
+  const btnLaunch = document.getElementById('btnLaunch');
+  const btnReset = document.getElementById('btnReset');
+  const toolEls = Array.from(document.querySelectorAll('.tool[data-tool]'));
+
+  // ---------- constants ----------
+  const CELL = 42;
+  const FIXED_DT = 1000/60;
+  const GRAVITY = 0.5;
+  const FRICTION = 0.99;
+  const K = 26000;
+  const MAX_FORCE = 2.4;
+  const BALL_R = 10;
+  const MAG_R = 11;
+  const MAG_HALF = 12;
+  const EPS = 90;
+  const COLS = 16, ROWS = 12;
+  const FIELD_CELL = 30;
+
+  const COL = {
+    bg:'#0B0C15', grid:'#1A1C29', grid2:'#232639',
+    cyan:'#00F0FF', red:'#FF3366', green:'#00FF88', white:'#FFFFFF',
+    ink:'#e7eaf6', muted:'#7f88a6', muted2:'#565d78'
+  };
+
+  // ---------- levels ----------
+  const LEVELS = [
+    { name:'FIRST CONTACT',
+      start:{gx:2,gy:9}, goal:{gx:13,gy:2},
+      hazards:[ {gx:7,gy:10,w:2,h:2}, {gx:10,gy:8,w:1,h:2} ] },
+    { name:'GRAVITY WELL',
+      start:{gx:3,gy:2}, goal:{gx:13,gy:9},
+      hazards:[ {gx:6,gy:4,w:1,h:6}, {gx:9,gy:6,w:3,h:1}, {gx:12,gy:3,w:1,h:3} ] },
+    { name:'THE GAUNTLET',
+      start:{gx:2,gy:6}, goal:{gx:14,gy:6},
+      hazards:[ {gx:5,gy:4,w:1,h:2}, {gx:5,gy:8,w:1,h:2},
+                {gx:8,gy:2,w:1,h:3}, {gx:8,gy:7,w:1,h:3},
+                {gx:11,gy:5,w:1,h:2} ] }
+  ];
+
+  // ---------- state ----------
+  let W=0,H=0,dpr=1,offX=0,offY=0,gridW=0,gridH=0;
+  let levelIndex=0, level=null, start=null, goal=null, hazards=[];
+  let magnets=[];
+  let ball={x:0,y:0,vx:0,vy:0};
+  let simRunning=false, simTime=0, state='ready';
+  let shake=0, flash=0, revealT=0, best=null;
+  let tool='attract';
+  let particles=[];
+  let fieldSamples=[];
+  let mouse={x:-999,y:-999,over:false};
+  let dragging=false, dragIndex=-1, dragMoved=false;
+  let hoverIndex=-1;
+  let last=performance.now(), acc=0, now=performance.now();
+
+  // ---------- helpers ----------
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const dist2=(ax,ay,bx,by)=>{const dx=ax-bx,dy=ay-by;return dx*dx+dy*dy;};
+  function cellToPx(gx,gy){return {x:offX+gx*CELL+CELL/2, y:offY+gy*CELL+CELL/2};}
+  function pxToCell(px,py){return {gx:Math.round((px-offX-CELL/2)/CELL), gy:Math.round((py-offY-CELL/2)/CELL)};}
+  function rectFrom(gx,gy,w,h){return {x:offX+gx*CELL, y:offY+gy*CELL, w:w*CELL, h:h*CELL};}
+  function pointInRect(px,py,r){return px>=r.x&&px<=r.x+r.w&&py>=r.y&&py<=r.y+r.h;}
+  function circleRect(cx,cy,cr,r){
+    const nx=clamp(cx,r.x,r.x+r.w), ny=clamp(cy,r.y,r.y+r.h);
+    return dist2(cx,cy,nx,ny)<=cr*cr;
+  }
+  function hexToRgb(h){const n=parseInt(h.slice(1),16);return [(n>>16)&255,(n>>8)&255,n&255];}
+  function rgba(hex,a){const [r,g,b]=hexToRgb(hex);return `rgba(${r},${g},${b},${a})`;}
+
+  let toastTimer=null;
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1600);
+  }
+
+  // ---------- layout ----------
+  function layout(){
+    const rect=stage.getBoundingClientRect();
+    W=Math.max(320, rect.width); H=Math.max(260, rect.height);
+    dpr=Math.min(2, window.devicePixelRatio||1);
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    gridW=COLS*CELL; gridH=ROWS*CELL;
+    offX=Math.round((W-gridW)/2); offY=Math.round((H-gridH)/2);
+    gridCount.textContent=COLS+'×'+ROWS;
+    buildFieldSamples();
+    if(level){ start=cellToPx(level.start.gx,level.start.gy); goal=rectFrom(level.goal.gx,level.goal.gy,1,1); hazards=level.hazards.map(h=>rectFrom(h.gx,h.gy,h.w,h.h)); }
+  }
+
+  function buildFieldSamples(){
+    fieldSamples=[];
+    for(let x=offX+FIELD_CELL/2; x<=offX+gridW-FIELD_CELL/2; x+=FIELD_CELL){
+      for(let y=offY+FIELD_CELL/2; y<=offY+gridH-FIELD_CELL/2; y+=FIELD_CELL){
+        fieldSamples.push({x,y});
+      }
+    }
+  }
+
+  // ---------- level control ----------
+  function loadLevel(i){
+    levelIndex=clamp(i,0,LEVELS.length-1);
+    level=LEVELS[levelIndex];
+    start=cellToPx(level.start.gx,level.start.gy);
+    goal=rectFrom(level.goal.gx,level.goal.gy,1,1);
+    hazards=level.hazards.map(h=>rectFrom(h.gx,h.gy,h.w,h.h));
+    magnets=[]; particles=[];
+    resetSim();
+    hudLevel.textContent=String(levelIndex+1).padStart(2,'0')+' / '+String(LEVELS.length).padStart(2,'0');
+    revealT=0;
+    toast('SECTOR '+String(levelIndex+1).padStart(2,'0')+' · '+level.name);
+  }
+  function resetSim(){
+    simRunning=false; simTime=0; state='ready';
+    ball.x=start.x; ball.y=start.y; ball.vx=0; ball.vy=0;
+    particles=[];
+    setStatus('READY');
+  }
+  function setStatus(s){ hudStatus.textContent=s; }
+
+  function startSim(){
+    if(simRunning) return;
+    ball.x=start.x; ball.y=start.y; ball.vx=0; ball.vy=0;
+    simTime=0; simRunning=true; state='running';
+    setStatus('RUNNING');
+  }
+
+  // ---------- physics ----------
+  function step(){
+    let ax=0, ay=GRAVITY;
+    for(const m of magnets){
+      const dx=m.x-ball.x, dy=m.y-ball.y;
+      const r2=dx*dx+dy*dy+EPS;
+      const r=Math.sqrt(r2);
+      let f=K/r2; if(f>MAX_FORCE)f=MAX_FORCE;
+      const s=m.polarity; // +1 attract, -1 repel
+      ax+=s*f*dx/r; ay+=s*f*dy/r;
+    }
+    ball.vx+=ax; ball.vy+=ay;
+    ball.vx*=FRICTION; ball.vy*=FRICTION;
+    ball.x+=ball.vx; ball.y+=ball.vy;
+    simTime+=FIXED_DT;
+    // collisions
+    for(const hz of hazards){
+      if(circleRect(ball.x,ball.y,BALL_R,hz)){ fail('HAZARD CONTACT'); return; }
+    }
+    if(ball.y>H+BALL_R*3 || ball.x<-BALL_R*4 || ball.x>W+BALL_R*4){ fail('SIGNAL LOST'); return; }
+    if(pointInRect(ball.x,ball.y,goal)){ win(); return; }
+  }
+
+  function fail(reason){
+    simRunning=false; state='fail';
+    shake=1; flash=1;
+    setStatus('FAILED');
+    toast(reason);
+    setTimeout(()=>{ if(state==='fail') resetSim(); }, 950);
+  }
+  function win(){
+    simRunning=false; state='win';
+    spawnBurst(ball.x,ball.y);
+    setStatus('CLEARED');
+    if(best===null || simTime<best){ best=simTime; }
+    toast('FLUX LOCKED · '+fmt(simTime)+'s · '+magnets.length+' magnets');
+    setTimeout(()=>{
+      if(state==='win'){
+        if(levelIndex<LEVELS.length-1){ loadLevel(levelIndex+1); }
+        else { toast('ALL SECTORS CLEARED · BEST '+fmt(best)+'s'); resetSim(); }
+      }
+    }, 1500);
+  }
+
+  function fmt(ms){ return (ms/1000).toFixed(2); }
+
+  // ---------- particles ----------
+  function spawnBurst(x,y){
+    for(let i=0;i<46;i++){
+      const a=Math.random()*Math.PI*2, sp=1+Math.random()*5;
+      particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1,
+        life:1,decay:0.008+Math.random()*0.02,
+        c:Math.random()<0.6?COL.green:(Math.random()<0.5?COL.cyan:COL.white),
+        size:1.5+Math.random()*2.5});
+    }
+  }
+  function updateParticles(){
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.vy+=0.12; p.vx*=0.98; p.vy*=0.98;
+      p.x+=p.vx; p.y+=p.vy; p.life-=p.decay;
+      if(p.life<=0) particles.splice(i,1);
+    }
+  }
+
+  // ---------- field ----------
+  function fieldAt(x,y){
+    let fx=0,fy=0,cA=0,rA=0;
+    for(const m of magnets){
+      const dx=x-m.x, dy=y-m.y;
+      const r2=dx*dx+dy*dy+EPS;
+      const r=Math.sqrt(r2);
+      const mag=K/r2;
+      fx+=m.polarity*mag*dx/r; fy+=m.polarity*mag*dy/r;
+      if(m.polarity>0) cA+=mag; else rA+=mag;
+    }
+    return {fx,fy,cA,rA};
+  }
+
+  // ---------- render ----------
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // atmospheric vignette
+    const vg=ctx.createRadialGradient(W/2,H*0.42,Math.min(W,H)*0.1,W/2,H*0.5,Math.max(W,H)*0.75);
+    vg.addColorStop(0,'#12141f'); vg.addColorStop(1,'#08090f');
+    ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+
+    ctx.save();
+    if(shake>0){
+      const s=shake*7;
+      ctx.translate((Math.random()*2-1)*s,(Math.random()*2-1)*s);
+    }
+
+    drawGrid();
+    drawZones();
+    drawField();
+    drawMagnets();
+    drawBall();
+    drawParticles();
+    drawPreview();
+
+    ctx.restore();
+
+    if(flash>0){
+      ctx.fillStyle=rgba(COL.red, flash*0.35);
+      ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  function drawGrid(){
+    ctx.lineWidth=1;
+    ctx.strokeStyle=COL.grid;
+    ctx.beginPath();
+    for(let c=0;c<=COLS;c++){const x=Math.round(offX+c*CELL)+0.5; ctx.moveTo(x,offY); ctx.lineTo(x,offY+gridH);}
+    for(let r=0;r<=ROWS;r++){const y=Math.round(offY+r*CELL)+0.5; ctx.moveTo(offX,y); ctx.lineTo(offX+gridW,y);}
+    ctx.stroke();
+    // intersection nodes
+    ctx.fillStyle='#20243a';
+    for(let c=0;c<=COLS;c+=2){
+      for(let r=0;r<=ROWS;r+=2){
+        ctx.fillRect(offX+c*CELL-1,offY+r*CELL-1,2,2);
+      }
+    }
+    // frame
+    ctx.strokeStyle=COL.grid2; ctx.lineWidth=1.5;
+    ctx.strokeRect(offX+0.5,offY+0.5,gridW-1,gridH-1);
+  }
+
+  function drawZones(){
+    // hazards
+    for(const hz of hazards){
+      ctx.fillStyle=rgba(COL.red,0.10);
+      ctx.fillRect(hz.x,hz.y,hz.w,hz.h);
+      ctx.strokeStyle=rgba(COL.red,0.85); ctx.lineWidth=1.5;
+      ctx.strokeRect(hz.x+0.5,hz.y+0.5,hz.w-1,hz.h-1);
+      // hatch
+      ctx.save();
+      ctx.beginPath(); ctx.rect(hz.x,hz.y,hz.w,hz.h); ctx.clip();
+      ctx.strokeStyle=rgba(COL.red,0.22); ctx.lineWidth=1;
+      for(let d=-hz.h;d<hz.w;d+=8){
+        ctx.beginPath(); ctx.moveTo(hz.x+d,hz.y); ctx.lineTo(hz.x+d+hz.h,hz.y+hz.h); ctx.stroke();
+      }
+      ctx.restore();
+    }
+    // goal (pulsing)
+    const pulse=0.5+0.5*Math.sin(now/400);
+    const gp=0.35+0.25*pulse;
+    ctx.fillStyle=rgba(COL.green,0.12+0.06*pulse);
+    ctx.fillRect(goal.x,goal.y,goal.w,goal.h);
+    ctx.strokeStyle=rgba(COL.green,0.9); ctx.lineWidth=2;
+    ctx.strokeRect(goal.x+1,goal.y+1,goal.w-2,goal.h-2);
+    ctx.strokeStyle=rgba(COL.green,gp*0.6); ctx.lineWidth=1;
+    ctx.strokeRect(goal.x+5,goal.y+5,goal.w-10,goal.h-10);
+    ctx.fillStyle=rgba(COL.green,0.9);
+    ctx.font='700 9px "Space Mono", monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('GOAL', goal.x+goal.w/2, goal.y+goal.h/2);
+
+    // start node
+    ctx.strokeStyle=rgba(COL.white,0.5); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(start.x,start.y,13,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle=rgba(COL.white,0.25);
+    ctx.beginPath(); ctx.arc(start.x,start.y,18,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle=rgba(COL.white,0.6);
+    ctx.font='9px "Space Mono", monospace';
+    ctx.fillText('START', start.x, start.y+30);
+  }
+
+  function drawField(){
+    if(magnets.length===0) return;
+    const flow=(now/1000);
+    const rev=clamp(revealT,0,1);
+    const cx=offX+gridW/2, cy=offY+gridH/2;
+    const maxD=Math.hypot(gridW,gridH)/2;
+    ctx.lineWidth=1; ctx.lineCap='round';
+    for(const s of fieldSamples){
+      const f=fieldAt(s.x,s.y);
+      const mag=Math.hypot(f.fx,f.fy);
+      if(mag<0.004) continue;
+      const d=Math.hypot(s.x-cx,s.y-cy);
+      const appear=clamp((rev*maxD*1.15-d)/CELL,0,1);
+      if(appear<=0) continue;
+      const ux=f.fx/mag, uy=f.fy/mag;
+      const len=clamp(mag*140,4,FIELD_CELL*0.92);
+      const half=len/2;
+      const total=Math.hypot(f.cA,f.rA)+1e-6;
+      const mix=f.cA/total;
+      const col=mix>=0.5?COL.cyan:COL.red;
+      const strength=clamp(mag*26,0,1);
+      const pulse=0.5+0.5*Math.sin(flow*3.2 - d/42);
+      const a=clamp(0.05+strength*0.32,0,0.5)*appear*(0.6+0.4*pulse);
+      ctx.strokeStyle=rgba(col,a);
+      ctx.beginPath();
+      ctx.moveTo(s.x-ux*half, s.y-uy*half);
+      ctx.lineTo(s.x+ux*half, s.y+uy*half);
+      ctx.stroke();
+      // head arrow
+      if(strength>0.18){
+        const hx=s.x+ux*half, hy=s.y+uy*half;
+        const px=-uy, py=ux;
+        ctx.beginPath();
+        ctx.moveTo(hx,hy);
+        ctx.lineTo(hx-ux*3+px*2, hy-uy*3+py*2);
+        ctx.moveTo(hx,hy);
+        ctx.lineTo(hx-ux*3-px*2, hy-uy*3-py*2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawMagnets(){
+    for(let i=0;i<magnets.length;i++){
+      const m=magnets[i];
+      const col=m.polarity>0?COL.cyan:COL.red;
+      const r=MAG_R;
+      const glow=ctx.createRadialGradient(m.x,m.y,1,m.x,m.y,r*2.6);
+      glow.addColorStop(0,rgba(col,0.5)); glow.addColorStop(1,rgba(col,0));
+      ctx.fillStyle=glow;
+      ctx.beginPath(); ctx.arc(m.x,m.y,r*2.6,0,Math.PI*2); ctx.fill();
+
+      ctx.fillStyle=rgba(col,0.16);
+      ctx.beginPath(); ctx.arc(m.x,m.y,r,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle=col; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(m.x,m.y,r,0,Math.PI*2); ctx.stroke();
+
+      // inner ring
+      ctx.strokeStyle=rgba(col,0.5); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(m.x,m.y,r-4,0,Math.PI*2); ctx.stroke();
+
+      ctx.fillStyle=col;
+      ctx.font='700 10px "Space Mono", monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(m.polarity>0?'A':'R', m.x, m.y+0.5);
+    }
+  }
+
+  function drawBall(){
+    const r=BALL_R;
+    const g=ctx.createRadialGradient(ball.x-r*0.3,ball.y-r*0.3,1,ball.x,ball.y,r*3);
+    g.addColorStop(0,rgba(COL.white,0.6));
+    g.addColorStop(0.4,rgba('#cfe9ff',0.25));
+    g.addColorStop(1,rgba('#cfe9ff',0));
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(ball.x,ball.y,r*3,0,Math.PI*2); ctx.fill();
+
+    const bg=ctx.createRadialGradient(ball.x-r*0.35,ball.y-r*0.4,1,ball.x,ball.y,r);
+    bg.addColorStop(0,'#ffffff'); bg.addColorStop(0.7,'#e8eefc'); bg.addColorStop(1,'#aab6d6');
+    ctx.fillStyle=bg;
+    ctx.beginPath(); ctx.arc(ball.x,ball.y,r,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle=rgba(COL.white,0.9); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.arc(ball.x,ball.y,r,0,Math.PI*2); ctx.stroke();
+    // highlight
+    ctx.fillStyle=rgba('#ffffff',0.9);
+    ctx.beginPath(); ctx.arc(ball.x-r*0.35,ball.y-r*0.4,r*0.28,0,Math.PI*2); ctx.fill();
+  }
+
+  function drawParticles(){
+    for(const p of particles){
+      ctx.fillStyle=rgba(p.c, clamp(p.life,0,1));
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  function drawPreview(){
+    if(state!=='ready') return;
+    if(dragging && dragIndex>=0){
+      const m=magnets[dragIndex];
+      const c=pxToCell(mouse.x,mouse.y);
+      const cp=cellToPx(c.gx,c.gy);
+      ctx.setLineDash([4,4]);
+      ctx.strokeStyle=rgba(COL.white,0.3); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(cp.x,cp.y); ctx.stroke();
+      ctx.setLineDash([]);
+    } else if(mouse.over && !dragging){
+      const c=pxToCell(mouse.x,mouse.y);
+      if(c.gx>=0&&c.gx<COLS&&c.gy>=0&&c.gy<ROWS){
+        const p=cellToPx(c.gx,c.gy);
+        const col=tool==='attract'?COL.cyan:COL.red;
+        ctx.strokeStyle=rgba(col,0.6); ctx.lineWidth=1.5;
+        ctx.strokeRect(offX+c.gx*CELL+3, offY+c.gy*CELL+3, CELL-6, CELL-6);
+        ctx.fillStyle=rgba(col,0.12);
+        ctx.beginPath(); ctx.arc(p.x,p.y,MAG_R,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle=rgba(col,0.7);
+        ctx.font='700 10px "Space Mono", monospace';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(tool==='attract'?'A':'R', p.x, p.y);
+      }
+    }
+  }
+
+  // ---------- magnet helpers ----------
+  function magnetAt(px,py){
+    for(let i=magnets.length-1;i>=0;i--){
+      const m=magnets[i];
+      if(Math.abs(px-m.x)<=MAG_HALF && Math.abs(py-m.y)<=MAG_HALF) return i;
+    }
+    return -1;
+  }
+  function occupied(gx,gy){
+    for(const m of magnets){ if(m.gx===gx&&m.gy===gy) return true; }
+    if(start){ const sp=cellToPx(level.start.gx,level.start.gy); if(m.gx===level.start.gx&&m.gy===level.start.gy) return true; }
+    return false;
+  }
+  function isBlockedCell(gx,gy){
+    // start cell
+    if(gx===level.start.gx && gy===level.start.gy) return true;
+    // goal cell
+    if(gx===level.goal.gx && gy===level.goal.gy) return true;
+    // hazards
+    for(const h of level.hazards){ if(gx>=h.gx&&gx<h.gx+h.w&&gy>=h.gy&&gy<h.gy+h.h) return true; }
+    return false;
+  }
+  function canPlace(gx,gy,ignoreIdx){
+    if(gx<0||gx>=COLS||gy<0||gy>=ROWS) return false;
+    if(isBlockedCell(gx,gy)) return false;
+    for(let i=0;i<magnets.length;i++){ if(i===ignoreIdx) continue; if(magnets[i].gx===gx&&magnets[i].gy===gy) return false; }
+    return true;
+  }
+  function addMagnet(gx,gy){
+    if(!canPlace(gx,gy,-1)){ return false; }
+    magnets.push({gx,gy,polarity:tool==='attract'?1:-1, x:cellToPx(gx,gy).x, y:cellToPx(gx,gy).y, born:now});
+    return true;
+  }
+  function removeMagnet(i){ magnets.splice(i,1); }
+
+  // ---------- input ----------
+  function localPos(e){
+    const r=cv.getBoundingClientRect();
+    return {x:e.clientX-r.left, y:e.clientY-r.top};
+  }
+  function setTool(t){
+    tool=t;
+    toolEls.forEach(el=>el.classList.toggle('active', el.dataset.tool===t));
+  }
+  toolEls.forEach(el=>el.addEventListener('click',()=>setTool(el.dataset.tool)));
+  btnLaunch.addEventListener('click',()=>{ if(state==='ready') startSim(); });
+  btnReset.addEventListener('click',()=>{ resetSim(); toast('RESET'); });
+
+  cv.addEventListener('pointerdown',e=>{
+    if(e.button===2) return;
+    const p=localPos(e); mouse.x=p.x; mouse.y=p.y; mouse.over=true;
+    if(state!=='ready') return;
+    const idx=magnetAt(p.x,p.y);
+    if(idx>=0){
+      dragging=true; dragIndex=idx; dragMoved=false;
+      cv.setPointerCapture(e.pointerId);
+    } else {
+      const c=pxToCell(p.x,p.y);
+      if(canPlace(c.gx,c.gy,-1)){ addMagnet(c.gx,c.gy); updateCount(); }
+    }
+  });
+  cv.addEventListener('pointermove',e=>{
+    const p=localPos(e); mouse.x=p.x; mouse.y=p.y; mouse.over=true;
+    if(dragging && dragIndex>=0){
+      const c=pxToCell(p.x,p.y);
+      if(canPlace(c.gx,c.gy,dragIndex)){
+        const m=magnets[dragIndex]; m.gx=c.gx; m.gy=c.gy;
+        const cp=cellToPx(c.gx,c.gy); m.x=cp.x; m.y=cp.y;
+        dragMoved=true;
+      }
+    } else {
+      hoverIndex=magnetAt(p.x,p.y);
+    }
+  });
+  cv.addEventListener('pointerup',e=>{
+    if(dragging){ dragging=false; dragIndex=-1; }
+    updateCount();
+  });
+  cv.addEventListener('pointerleave',()=>{ mouse.over=false; });
+  cv.addEventListener('contextmenu',e=>{
+    e.preventDefault();
+    if(state!=='ready') return;
+    const p=localPos(e);
+    const idx=magnetAt(p.x,p.y);
+    if(idx>=0){ removeMagnet(idx); updateCount(); }
+  });
+
+  window.addEventListener('keydown',e=>{
+    const k=e.key.toLowerCase();
+    if(k==='enter'){ e.preventDefault(); if(state==='ready') startSim(); }
+    else if(k==='r'){ e.preventDefault(); resetSim(); toast('RESET'); }
+    else if(k==='q'){ setTool('attract'); }
+    else if(k==='e'){ setTool('repel'); }
+    else if(k===' '){
+      e.preventDefault();
+      if(state!=='ready') return;
+      if(hoverIndex>=0){ const m=magnets[hoverIndex]; m.polarity*=-1; }
+      else { setTool(tool==='attract'?'repel':'attract'); }
+    }
+  });
+
+  function updateCount(){ hudMagnets.textContent=magnets.length; }
+
+  // ---------- loop ----------
+  function update(dt){
+    now=performance.now();
+    revealT+=dt/1400;
+    if(shake>0){ shake-=dt/500; if(shake<0)shake=0; }
+    if(flash>0){ flash-=dt/450; if(flash<0)flash=0; }
+    updateParticles();
+    if(simRunning){
+      acc+=dt; let steps=0;
+      while(acc>=FIXED_DT && steps<5){ step(); acc-=FIXED_DT; steps++; if(!simRunning) break; }
+    }
+    hudTime.textContent=fmt(simTime);
+  }
+
+  function frame(){
+    const t=performance.now();
+    let dt=t-last; last=t;
+    if(dt>60)dt=60;
+    update(dt);
+    draw();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- init ----------
+  const ro=new ResizeObserver(()=>{ layout(); });
+  ro.observe(stage);
+  window.addEventListener('resize',layout);
+  layout();
+  loadLevel(0);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

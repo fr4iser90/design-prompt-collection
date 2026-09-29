@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tsutsumu — Wrap your gift in a knot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;500;700&family=Kosugi+Maru&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --washi:#E8D8C3;
+    --ink:#4A3B32;
+    --indigo:#004B87;
+    --gray:#F5F5F5;
+    --paper:#F3E9D8;
+    --ink-soft:rgba(74,59,50,.62);
+    --indigo-soft:rgba(0,75,135,.14);
+    --edge:rgba(74,59,50,.16);
+    --serif:'Kaisei Decol', Georgia, 'Times New Roman', serif;
+    --round:'Kosugi Maru', system-ui, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    font-family:var(--round);
+    color:var(--ink);
+    background-color:var(--washi);
+    background-image:
+      radial-gradient(120% 90% at 15% -10%, rgba(255,250,240,.75), transparent 55%),
+      radial-gradient(100% 80% at 110% 120%, rgba(120,90,60,.12), transparent 60%),
+      radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(74,59,50,.07) 100%);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* washi paper grain */
+  .grain{
+    position:fixed; inset:0; z-index:9999; pointer-events:none;
+    opacity:.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* drifting indigo ink wash */
+  .wash{
+    position:fixed; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(38% 38% at 22% 30%, rgba(0,75,135,.10), transparent 70%),
+      radial-gradient(30% 30% at 82% 68%, rgba(0,75,135,.08), transparent 70%);
+    animation:drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    0%{ transform:translate3d(-2%, -1%, 0) scale(1); }
+    100%{ transform:translate3d(3%, 2%, 0) scale(1.08); }
+  }
+
+  .app{ position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* ---------- HEADER ---------- */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px clamp(18px,4vw,46px);
+    gap:16px;
+  }
+  .wordmark{ display:flex; align-items:baseline; gap:12px; }
+  .wordmark h1{
+    font-family:var(--serif); font-weight:700;
+    font-size:clamp(26px,3.4vw,38px); letter-spacing:.01em; line-height:1;
+  }
+  .wordmark .kana{
+    font-family:var(--serif); font-weight:400; color:var(--indigo);
+    font-size:clamp(13px,1.6vw,17px); letter-spacing:.32em; padding-left:2px;
+  }
+  .wordmark .tag{
+    font-size:11px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--ink-soft); border-left:1px solid var(--edge); padding-left:12px; margin-left:2px;
+  }
+  nav{ display:flex; gap:6px; align-items:center; }
+  nav a{
+    font-size:13px; letter-spacing:.04em; color:var(--ink-soft); text-decoration:none;
+    padding:8px 12px; border-radius:999px; position:relative; transition:color .3s, background .3s;
+  }
+  nav a:hover{ color:var(--ink); background:rgba(74,59,50,.06); }
+  nav a.active{ color:var(--indigo); }
+  nav a.active::after{
+    content:""; position:absolute; left:12px; right:12px; bottom:3px; height:2px;
+    background:var(--indigo); border-radius:2px; transform:scaleX(0); transform-origin:left;
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  nav a.active::after{ transform:scaleX(1); }
+
+  /* ---------- LAYOUT ---------- */
+  main{
+    flex:1; width:100%; max-width:1360px; margin:0 auto;
+    padding:0 clamp(16px,4vw,46px) 46px;
+    display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:clamp(20px,3vw,40px);
+    align-items:start;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage-wrap{ position:relative; }
+  .stage-head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+    margin-bottom:14px; flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--indigo);
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{ content:""; width:26px; height:1px; background:var(--indigo); display:inline-block; }
+  .stage-head h2{
+    font-family:var(--serif); font-weight:500; font-size:clamp(20px,2.4vw,27px);
+    line-height:1.15; margin-top:8px; max-width:34ch;
+  }
+  .stage-head h2 em{ font-style:normal; color:var(--indigo); }
+  .hint{
+    font-size:12.5px; color:var(--ink-soft); line-height:1.5; text-align:right; max-width:26ch;
+  }
+  .hint b{ color:var(--ink); font-weight:400; }
+
+  .stage{
+    position:relative;
+    aspect-ratio:1/1;
+    max-width:640px;
+    width:100%;
+    margin-inline:auto;
+    border-radius:14px;
+    background:
+      radial-gradient(120% 120% at 50% 40%, rgba(255,252,246,.55), rgba(255,252,246,0) 60%);
+    touch-action:none;
+    cursor:default;
+  }
+  .stage::before, .stage::after{
+    content:""; position:absolute; width:16px; height:16px; border:1.5px solid var(--edge);
+  }
+  .stage::before{ top:-1px; left:-1px; border-right:0; border-bottom:0; }
+  .stage::after{ bottom:-1px; right:-1px; border-left:0; border-top:0; }
+  canvas{ display:block; width:100%; height:100%; }
+
+  /* message tag floating on the cloth */
+  .tag{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(58%,260px); padding:16px 18px 18px;
+    background:var(--paper);
+    border:1px solid var(--edge);
+    border-radius:6px;
+    box-shadow:0 14px 30px -18px rgba(74,59,50,.5);
+    text-align:center; pointer-events:none;
+    transition:opacity .5s ease, transform .5s ease, filter .5s ease;
+  }
+  .tag::before{ /* punched hole + string */
+    content:""; position:absolute; top:7px; left:50%; transform:translateX(-50%);
+    width:9px; height:9px; border-radius:50%; background:var(--washi);
+    border:1px solid var(--edge);
+  }
+  .tag .who{ font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--indigo); }
+  .tag .msg{
+    font-family:var(--round); font-size:15px; line-height:1.5; color:var(--ink);
+    margin-top:9px; white-space:pre-wrap; word-break:break-word; min-height:1.4em;
+  }
+  .tag .msg.empty{ color:var(--ink-soft); font-style:italic; }
+  .tag.hidden{ opacity:0; transform:translate(-50%,-50%) scale(.86); filter:blur(3px); }
+
+  /* sealed label over the private knot */
+  .sealed{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    opacity:0; transition:opacity .55s ease; pointer-events:none; text-align:center;
+  }
+  .sealed .glyph{
+    width:64px; height:64px; border-radius:50%;
+    border:1.5px solid var(--indigo);
+    display:grid; place-items:center;
+    background:radial-gradient(circle at 50% 40%, rgba(0,75,135,.16), transparent 70%);
+    box-shadow:0 0 26px -4px rgba(0,75,135,.5);
+    animation:pulse 3.4s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 20px -6px rgba(0,75,135,.4);} 50%{ box-shadow:0 0 34px -2px rgba(0,75,135,.7);} }
+  .sealed .glyph svg{ width:30px; height:30px; }
+  .sealed .lbl{
+    font-family:var(--serif); font-size:14px; letter-spacing:.16em; color:var(--indigo);
+    background:var(--paper); padding:3px 12px; border:1px solid var(--indigo-soft); border-radius:999px;
+  }
+  .sealed .sub{ font-size:11px; letter-spacing:.14em; color:var(--ink-soft); }
+  .sealed.show{ opacity:1; }
+
+  /* ---------- PANEL ---------- */
+  .panel{ display:flex; flex-direction:column; gap:20px; }
+  .card{
+    background:linear-gradient(180deg, rgba(255,253,248,.85), rgba(255,253,248,.55));
+    border:1px solid var(--edge);
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 20px 44px -34px rgba(74,59,50,.6);
+  }
+  .card h3{
+    font-family:var(--serif); font-weight:500; font-size:15px; letter-spacing:.02em;
+    display:flex; align-items:center; gap:9px; margin-bottom:14px;
+  }
+  .card h3 .dot{ width:7px; height:7px; border-radius:50%; background:var(--indigo); }
+
+  .field{ margin-bottom:15px; }
+  .field:last-child{ margin-bottom:0; }
+  label{
+    display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--ink-soft); margin-bottom:7px;
+  }
+  input, textarea{
+    width:100%; font-family:var(--round); font-size:14px; color:var(--ink);
+    background:var(--gray); border:1px solid var(--edge); border-radius:8px;
+    padding:11px 13px; resize:none; transition:border-color .25s, box-shadow .25s, background .25s;
+  }
+  textarea{ min-height:88px; line-height:1.5; }
+  input:focus, textarea:focus{
+    outline:none; border-color:var(--indigo); background:#fff;
+    box-shadow:0 0 0 3px var(--indigo-soft);
+  }
+  input::placeholder, textarea::placeholder{ color:rgba(74,59,50,.4); }
+
+  .key-row{ display:flex; gap:8px; }
+  .key-row input{ flex:1; }
+  .key-row button{
+    font-family:var(--round); font-size:12px; letter-spacing:.05em; white-space:nowrap;
+    background:var(--ink); color:var(--washi); border:none; border-radius:8px;
+    padding:0 16px; cursor:pointer; transition:transform .2s, background .25s;
+  }
+  .key-row button:hover{ background:var(--indigo); transform:translateY(-1px); }
+
+  .btn{
+    font-family:var(--round); font-size:13px; letter-spacing:.04em; cursor:pointer;
+    border-radius:999px; padding:11px 18px; transition:transform .2s, background .25s, color .25s, border-color .25s;
+    border:1px solid var(--edge); background:transparent; color:var(--ink);
+  }
+  .btn:hover{ transform:translateY(-1px); border-color:var(--ink); }
+  .btn.primary{ background:var(--indigo); color:#fff; border-color:var(--indigo); }
+  .btn.primary:hover{ background:#013a68; }
+  .btn.ghost{ border-color:var(--edge); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  /* status */
+  .status{ display:flex; align-items:center; gap:14px; }
+  .status .knotmini{ flex:0 0 auto; }
+  .status .txt strong{ font-family:var(--serif); font-weight:500; font-size:16px; display:block; }
+  .status .txt span{ font-size:12px; color:var(--ink-soft); }
+  .status .txt span.pub{ color:var(--indigo); }
+
+  /* legend */
+  .legend{ display:flex; gap:14px; }
+  .legend .item{ flex:1; text-align:center; }
+  .legend .item svg{ width:52px; height:44px; margin:0 auto 6px; display:block; }
+  .legend .item .n{ font-family:var(--serif); font-size:13px; }
+  .legend .item .d{ font-size:11px; color:var(--ink-soft); }
+
+  .note{ font-size:11.5px; color:var(--ink-soft); line-height:1.55; }
+  .note b{ color:var(--indigo); font-weight:400; }
+
+  /* ---------- REGISTRY ---------- */
+  .registry{
+    width:100%; max-width:1360px; margin:0 auto; padding:6px clamp(16px,4vw,46px) 60px;
+  }
+  .reg-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    border-top:1px solid var(--edge); padding-top:26px; margin-bottom:22px; flex-wrap:wrap;
+  }
+  .reg-head h2{ font-family:var(--serif); font-weight:500; font-size:clamp(19px,2.2vw,24px); }
+  .reg-head .count{ font-size:12px; color:var(--ink-soft); letter-spacing:.1em; }
+  .reg-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:16px; }
+  .gift{
+    background:linear-gradient(180deg, rgba(255,253,248,.7), rgba(255,253,248,.35));
+    border:1px solid var(--edge); border-radius:12px; padding:18px 16px 16px;
+    text-align:center; cursor:pointer; position:relative; overflow:hidden;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), border-color .3s, box-shadow .3s;
+  }
+  .gift::after{
+    content:""; position:absolute; inset:0; background:radial-gradient(60% 60% at 50% 20%, rgba(0,75,135,.10), transparent 70%);
+    opacity:0; transition:opacity .35s;
+  }
+  .gift:hover{ transform:translateY(-4px); border-color:var(--indigo); box-shadow:0 22px 40px -26px rgba(74,59,50,.6); }
+  .gift:hover::after{ opacity:1; }
+  .gift .knotmini{ margin:0 auto 12px; }
+  .gift .to{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); }
+  .gift .name{ font-family:var(--serif); font-size:15px; margin-top:3px; }
+  .gift .kind{ font-size:11px; margin-top:8px; letter-spacing:.06em; }
+  .gift .kind.pub{ color:var(--ink-soft); }
+  .gift .kind.priv{ color:var(--indigo); }
+  .gift .view{
+    margin-top:12px; font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--indigo); opacity:0; transform:translateY(4px); transition:.3s;
+  }
+  .gift:hover .view{ opacity:1; transform:translateY(0); }
+
+  /* ---------- MODAL ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:200; display:grid; place-items:center;
+    background:rgba(74,59,50,.34); backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; transition:opacity .35s, visibility .35s; padding:20px;
+  }
+  .overlay.open{ opacity:1; visibility:visible; }
+  .modal{
+    width:min(440px,100%); background:var(--washi); border:1px solid var(--edge);
+    border-radius:14px; padding:30px 28px; position:relative;
+    box-shadow:0 40px 90px -40px rgba(0,0,0,.5);
+    transform:translateY(16px) scale(.98); transition:transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .overlay.open .modal{ transform:translateY(0) scale(1); }
+  .modal.shake{ animation:shake .5s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake{
+    10%,90%{ transform:translateX(-2px);} 20%,80%{ transform:translateX(4px);}
+    30%,50%,70%{ transform:translateX(-8px);} 40%,60%{ transform:translateX(8px);}
+  }
+  .modal .m-head{ display:flex; align-items:center; gap:16px; margin-bottom:18px; }
+  .modal .m-head .knotmini{ flex:0 0 auto; }
+  .modal .m-head .to{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); }
+  .modal .m-head .name{ font-family:var(--serif); font-size:22px; margin-top:2px; }
+  .modal .m-body{
+    background:var(--paper); border:1px solid var(--edge); border-radius:8px; padding:16px;
+    font-size:14.5px; line-height:1.6; white-space:pre-wrap; word-break:break-word; min-height:60px;
+  }
+  .modal .m-body.blurred{ filter:blur(6px); user-select:none; }
+  .modal .m-body .empty{ color:var(--ink-soft); font-style:italic; }
+  .modal .m-note{ font-size:12px; color:var(--ink-soft); margin-top:12px; line-height:1.5; }
+  .modal .m-note.err{ color:var(--indigo); font-weight:400; }
+  .modal .m-actions{ display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .modal .close{
+    position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%;
+    border:1px solid var(--edge); background:transparent; cursor:pointer; color:var(--ink-soft);
+    display:grid; place-items:center; font-size:16px; transition:.25s;
+  }
+  .modal .close:hover{ background:rgba(74,59,50,.08); color:var(--ink); transform:rotate(90deg); }
+
+  /* toast */
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translate(-50%,140%);
+    background:var(--ink); color:var(--washi); padding:13px 22px; border-radius:999px;
+    font-size:13px; letter-spacing:.03em; z-index:300; box-shadow:0 20px 40px -18px rgba(0,0,0,.5);
+    transition:transform .5s cubic-bezier(.2,.8,.2,1); max-width:90vw; text-align:center;
+  }
+  .toast.show{ transform:translate(-50%,0); }
+
+  /* reveal on scroll */
+  .reveal{ opacity:0; transform:translateY(20px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:960px){
+    main{ grid-template-columns:1fr; }
+    .panel{ order:2; }
+    .stage-wrap{ order:1; }
+    .hint{ text-align:left; max-width:none; }
+  }
+  @media (max-width:560px){
+    header{ flex-wrap:wrap; gap:10px; }
+    .wordmark .tag{ display:none; }
+    nav a{ padding:6px 9px; font-size:12px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+    .wash{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wash"></div>
+
+<div class="app">
+  <header>
+    <div class="wordmark">
+      <h1>Tsutsumu</h1>
+      <span class="kana">つつむ</span>
+      <span class="tag">wrap · gift · keep</span>
+    </div>
+    <nav aria-label="Primary">
+      <a href="#stage" class="active">Wrap</a>
+      <a href="#registry">My Gifts</a>
+      <a href="#how">The Craft</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- STAGE -->
+    <section class="stage-wrap" id="stage">
+      <div class="stage-head">
+        <div>
+          <div class="eyebrow">The Knot</div>
+          <h2>Privacy you can <em>feel</em>. Drag the corners of the cloth to tie your gift shut.</h2>
+        </div>
+        <p class="hint"><b>Two corners → a bow.</b> The message stays open.<br><b>All four → a double knot.</b> The words vanish beneath the fabric.</p>
+      </div>
+
+      <div class="stage" id="stageBox">
+        <canvas id="cloth" aria-label="Interactive furoshiki cloth. Drag the four corners to tie a knot."></canvas>
+
+        <div class="tag" id="tag" role="status" aria-live="polite">
+          <div class="who" id="tagWho">To —</div>
+          <div class="msg empty" id="tagMsg">Write a message to your gift…</div>
+        </div>
+
+        <div class="sealed" id="sealed" role="status" aria-live="polite">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="#004B87" stroke-width="1.6" stroke-linecap="round">
+              <path d="M8 12 L16 6 L24 12 L16 18 Z"/>
+              <path d="M8 12 L8 20 L16 26"/>
+              <path d="M24 12 L24 20 L16 26"/>
+            </svg>
+          </div>
+          <div class="lbl">Sealed</div>
+          <div class="sub">a double knot holds this shut</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL -->
+    <aside class="panel">
+      <div class="card">
+        <h3><span class="dot"></span>Compose the gift</h3>
+        <div class="field">
+          <label for="recipient">Recipient</label>
+          <input id="recipient" type="text" placeholder="e.g. Hana" autocomplete="off" maxlength="24">
+        </div>
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="A little something, wrapped in cloth…" maxlength="220"></textarea>
+        </div>
+        <div class="field">
+          <label for="key">Privacy key <span style="text-transform:none;letter-spacing:0;color:var(--ink-soft)">— for double knots</span></label>
+          <div class="key-row">
+            <input id="key" type="password" placeholder="secret word" autocomplete="off">
+            <button id="untieBtn" type="button">Untie</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot"></span>Current knot</h3>
+        <div class="status">
+          <div class="knotmini" id="curMini" aria-hidden="true"></div>
+          <div class="txt">
+            <strong id="curName">Loose cloth</strong>
+            <span id="curDesc" class="pub">nothing tied yet</span>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:18px;">
+          <button class="btn primary" id="saveBtn" type="button">Save to registry</button>
+          <button class="btn ghost" id="resetBtn" type="button">Re-open cloth</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="dot"></span>Reading the knot</h3>
+        <div class="legend">
+          <div class="item">
+            <svg viewBox="0 0 52 44" aria-hidden="true"><g fill="none" stroke="#4A3B32" stroke-width="1.6" stroke-linecap="round"><path d="M26 22 C18 14 8 16 10 24 C12 30 22 26 26 22 Z"/><path d="M26 22 C34 14 44 16 42 24 C40 30 30 26 26 22 Z"/><path d="M26 22 L22 34"/><path d="M26 22 L30 34"/></g></svg>
+            <div class="n">Simple bow</div>
+            <div class="d">public · visible</div>
+          </div>
+          <div class="item">
+            <svg viewBox="0 0 52 44" aria-hidden="true"><g fill="none" stroke="#004B87" stroke-width="1.7" stroke-linecap="round"><rect x="16" y="14" width="20" height="16" rx="3"/><path d="M16 22 L36 22"/><path d="M26 14 L26 30"/><path d="M26 14 C20 8 32 8 26 14"/></g></svg>
+            <div class="n">Double knot</div>
+            <div class="d">private · sealed</div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:16px;">No padlocks here. The <b>cloth itself</b> is the security — the tighter you pull, the more it keeps.</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- REGISTRY -->
+  <section class="registry reveal" id="registry">
+    <div class="reg-head">
+      <h2>The shelf of wrapped things</h2>
+      <span class="count" id="regCount"></span>
+    </div>
+    <div class="reg-grid" id="regGrid"></div>
+  </section>
+</section>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="mName">
+  <div class="modal" id="modal">
+    <button class="close" id="modalClose" aria-label="Close">✕</button>
+    <div class="m-head">
+      <div class="knotmini" id="mMini" aria-hidden="true"></div>
+      <div>
+        <div class="to" id="mTo">To —</div>
+        <div class="name" id="mName">—</div>
+      </div>
+    </div>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-note" id="mNote"></div>
+    <div class="m-actions" id="mActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ CLOTH PHYSICS (Verlet) ============ */
+  const canvas = document.getElementById('cloth');
+  const ctx = canvas.getContext('2d');
+  const stageBox = document.getElementById('stageBox');
+
+  const N = 11;                 // grid resolution
+  const iters = 5;
+  const friction = 0.985;
+  const gravity = 0.02;
+  const maxStretch = 1.4;
+  let W = 0, H = 0, dpr = 1;
+  let clothSize = 0, cx = 0, cy = 0, margin = 0;
+
+  const corners = [{r:0,c:0},{r:0,c:N-1},{r:N-1,c:N-1},{r:N-1,c:0}];
+  const cornerIdx = corners.map(p=>p.r*N+p.c);
+  const cornerTargets = corners.map(p=>({x:p.c*clothSize/(N-1), y:p.r*clothSize/(N-1)}));
+  const cornerTied = [false,false,false,false];
+  const cornerRest = corners.map(()=>({x:0,y:0}));
+
+  let pts = [];
+  let springs = [];
+  let t = 0;
+  let grabbed = null;
+  let dragging = false;
+  let snapT = 0;
+  let tieType = 'none'; // none | public | private
+  let shake = 0;
+  let breeze = 1;
+
+  function build(){
+    pts = []; springs = [];
+    const step = clothSize/(N-1);
+    for(let r=0;r<N;r++){
+      for(let c=0;c<N;c++){
+        const x = c*step, y = r*step;
+        pts.push({x,y,px:x,py:y,ox:x,oy:y});
+      }
+    }
+    const add=(a,b)=>{const dx=pts[a].x-pts[b].x,dy=pts[a].y-pts[b].y;springs.push({a,b,rest:Math.hypot(dx,dy)});};
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+      const i=r*N+c;
+      if(c<N-1)add(i,i+1);
+      if(r<N-1)add(i,i+N);
+    }
+    for(let i=0;i<4;i++){ cornerRest[i].x=pts[cornerIdx[i]].x; cornerRest[i].y=pts[cornerIdx[i]].y; }
+    updateTargets();
+  }
+
+  function updateTargets(){
+    for(let i=0;i<4;i++){
+      const p=corners[i];
+      cornerTargets[i].x = p.c*clothSize/(N-1);
+      cornerTargets[i].y = p.r*clothSize/(N-1);
+    }
+  }
+
+  function resize(){
+    const rect = stageBox.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = rect.width; H = rect.height;
+    canvas.width = Math.round(W*dpr);
+    canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    clothSize = Math.min(W,H)*0.62;
+    cx = W/2; cy = H/2; margin = (Math.min(W,H)-clothSize)/2;
+    build();
+  }
+
+  function step(){
+    t += 0.016;
+    const amp = reduce ? 0 : 1;
+    // verlet integrate
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i];
+      const vx=(p.x-p.px)*friction, vy=(p.y-p.py)*friction;
+      p.px=p.x; p.py=p.y;
+      p.x += vx; p.y += vy + gravity;
+    }
+    // ambient breeze (low-freq, stronger when loose)
+    if(amp){
+      const strength = breeze * 1.4;
+      for(let i=0;i<pts.length;i++){
+        const p=pts[i];
+        const ph = p.ox*0.06 + p.oy*0.05;
+        p.x += Math.sin(t*1.1 + ph)*0.05*strength;
+        p.y += Math.cos(t*0.9 + ph*1.3)*0.05*strength;
+      }
+    }
+    // constraints
+    for(let k=0;k<iters;k++){
+      for(let s=0;s<springs.length;s++){
+        const sp=springs[s], a=pts[sp.a], b=pts[sp.b];
+        let dx=b.x-a.x, dy=b.y-a.y;
+        let d=Math.hypot(dx,dy); if(d<0.0001) d=0.0001;
+        let diff=(sp.rest-d)/d*0.5;
+        // limit stretch
+        let ox=dx*diff, oy=dy*diff;
+        const maxo = sp.rest*(maxStretch-1)*0.5;
+        const om=Math.hypot(ox,oy);
+        if(om>maxo){ ox=ox/om*maxo; oy=oy/om*maxo; }
+        a.x-=ox; a.y-=oy; b.x+=ox; b.y+=oy;
+      }
+    }
+    // pin corners
+    for(let i=0;i<4;i++){
+      const p=pts[cornerIdx[i]];
+      let tx,ty;
+      if(grabbed===i){ tx=dragX; ty=dragY; }
+      else if(cornerTied[i]){ tx=cx; ty=cy; }
+      else { tx=cornerRest[i].x; ty=cornerRest[i].y; }
+      p.x=tx; p.y=ty; p.px=tx; p.py=ty;
+    }
+    // shake decay
+    if(shake>0.001) shake*=0.86; else shake=0;
+  }
+
+  /* ---------- drawing ---------- */
+  function shade(h){ // h 0..1 -> darker mix toward ink
+    const r=Math.round(232*(1-h*0.55)+74*(h*0.55));
+    const g=Math.round(216*(1-h*0.55)+59*(h*0.55));
+    const b=Math.round(195*(1-h*0.55)+50*(h*0.55));
+    return `rgb(${r},${g},${b})`;
+  }
+  function cornerOpacity(i){
+    // 1 = flat, 0 = fully folded to center (private)
+    if(cornerTied[i]) return 0;
+    return Math.max(0, Math.min(1, 1 - snapT));
+  }
+  function cornerPos(i){
+    const tx=cornerTargets[i].x, ty=cornerTargets[i].y;
+    const k=cornerOpacity(i);
+    return { x: cx + (tx-cx)*k, y: cy + (ty-cy)*k };
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.translate(cx,cy);
+    if(shake>0.001) ctx.translate((Math.random()-0.5)*shake*26,(Math.random()-0.5)*shake*26);
+    ctx.translate(-cx,-cy);
+
+    const cp = cornerPos(0), cp1=cornerPos(1), cp2=cornerPos(2), cp3=cornerPos(3);
+    const b0=pts[cornerIdx[0]], b1=pts[cornerIdx[1]], b2=pts[cornerIdx[2]], b3=pts[cornerIdx[3]];
+    const e = 0.000001;
+    const f00={x:cp.x/b0.x,y:cp.y/b0.y}, f11={x:cp1.x/b1.x,y:cp1.y/b1.y};
+    const f22={x:cp2.x/b2.x,y:cp2.y/b2.y}, f33={x:cp3.x/b3.x,y:cp3.y/b3.y};
+    const step = clothSize/(N-1);
+
+    // fill quads with soft shading (skip folded-away quads)
+    for(let r=0;r<N-1;r++){
+      for(let c=0;c<N-1;c++){
+        const i00=r*N+c, i10=i00+1, i01=i00+N, i11=i01+1;
+        const p00=pts[i00],p10=pts[i10],p01=pts[i01],p11=pts[i11];
+        const op = Math.min(cornerOpacity(c===0?0:c===N-1?1:0), cornerOpacity(c===0?3:c===N-1?2:3));
+        // weight by proximity to folded corners
+        const near = Math.min(cornerOpacity(0),cornerOpacity(1),cornerOpacity(2),cornerOpacity(3));
+        if(near<0.02 && (r<1||r>N-3||c<1||c>N-3)) continue;
+        const w00=(c/(N-1)), h00=(r/(N-1));
+        const w10=((c+1)/(N-1)), h01=((r+1)/(N-1));
+        const a00=lerp2(f00.x,f11.x,w00), a01=lerp2(f00.y,f33.y,h00);
+        const b10x=lerp2(f00.x,f11.x,w10);
+        const b01y=lerp2(f33.y,f22.y,h01);
+        const b11x=lerp2(f11.x,f22.x,w10), b11y=lerp2(f33.y,f22.y,h01);
+        const q00={x:p00.x*a00,y:p00.y*a01};
+        const q10={x:p10.x*b10x,y:p10.y*a01};
+        const q01={x:p01.x*a00,y:p01.y*b01y};
+        const q11={x:p11.x*b11x,y:p11.y*b11y};
+        // shade: center darker, corners lighter; private adds depth
+        const mx=(w00+w10)/2, my=(h00+h01)/2;
+        const dist=Math.hypot(mx-0.5,my-0.5)*1.4;
+        let h = 0.10 + dist*0.14 + snapT*0.12;
+        ctx.fillStyle = shade(h);
+        ctx.beginPath();
+        ctx.moveTo(q00.x,q00.y); ctx.lineTo(q10.x,q10.y); ctx.lineTo(q11.x,q11.y); ctx.lineTo(q01.x,q01.y);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    // weave lines (subtle)
+    ctx.strokeStyle='rgba(74,59,50,0.10)'; ctx.lineWidth=0.7;
+    for(let r=0;r<N;r++){
+      ctx.beginPath();
+      for(let c=0;c<N;c++){
+        const p=pts[r*N+c];
+        const w=c/(N-1), h=r/(N-1);
+        const a00=lerp2(f00.x,f11.x,w), a01=lerp2(f00.y,f33.y,h);
+        const b11x=lerp2(f11.x,f22.x,w), b11y=lerp2(f33.y,f22.y,h);
+        const x=p.x*lerp2(a00,b11x,w), y=p.y*lerp2(a01,b11y,h);
+        if(c===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+    for(let c=0;c<N;c++){
+      ctx.beginPath();
+      for(let r=0;r<N;r++){
+        const p=pts[r*N+c];
+        const w=c/(N-1), h=r/(N-1);
+        const a00=lerp2(f00.x,f11.x,w), a01=lerp2(f00.y,f33.y,h);
+        const b11x=lerp2(f11.x,f22.x,w), b11y=lerp2(f33.y,f22.y,h);
+        const x=p.x*lerp2(a00,b11x,w), y=p.y*lerp2(a01,b11y,h);
+        if(r===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // outer border
+    ctx.strokeStyle='rgba(74,59,50,0.4)'; ctx.lineWidth=1.4;
+    ctx.beginPath();
+    ctx.moveTo(cp.x,cp.y); ctx.lineTo(cp1.x,cp1.y); ctx.lineTo(cp2.x,cp2.y); ctx.lineTo(cp3.x,cp3.y);
+    ctx.closePath(); ctx.stroke();
+
+    // tension lines (indigo) when stretched
+    ctx.strokeStyle='rgba(0,75,135,0.5)'; ctx.lineWidth=1.6;
+    for(let s=0;s<springs.length;s++){
+      const sp=springs[s], a=pts[sp.a], b=pts[sp.b];
+      const d=Math.hypot(b.x-a.x,b.y-a.y);
+      if(d>sp.rest*1.12){
+        const w=a.ox/clothSize, h=a.oy/clothSize;
+        const a00=lerp2(f00.x,f11.x,w), a01=lerp2(f00.y,f33.y,h);
+        const w2=b.ox/clothSize, h2=b.oy/clothSize;
+        const c10=lerp2(f11.x,f22.x,w2), c01y=lerp2(f33.y,f22.y,h2);
+        const x1=a.x*lerp2(a00,lerp2(f11.x,f22.x,w),w), y1=a.y*lerp2(a01,lerp2(f33.y,f22.y,h),h);
+        const x2=b.x*lerp2(lerp2(f00.x,f11.x,w2),c10,w2), y2=b.y*lerp2(lerp2(f00.y,f33.y,h2),c01y,h2);
+        ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      }
+    }
+
+    drawKnot(cp,cp1,cp2,cp3);
+    ctx.restore();
+  }
+
+  function lerp2(a,b,t){ return a+(b-a)*t; }
+
+  function drawKnot(c0,c1,c2,c3){
+    const tied = cornerTied.filter(Boolean).length;
+    const k = Math.min(1, snapT*1.6);
+    if(k<0.02) return;
+    // gather point
+    const gx=cx, gy=cy;
+    ctx.lineCap='round';
+    // cloth tails folding toward center
+    ctx.strokeStyle='rgba(74,59,50,0.5)'; ctx.lineWidth=6*k;
+    const cs=[c0,c1,c2,c3];
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      ctx.moveTo(cs[i].x,cs[i].y);
+      ctx.quadraticCurveTo((cs[i].x+gx)/2,(cs[i].y+gy)/2 - 10, gx, gy);
+      ctx.stroke();
+    }
+    // knot body
+    const rad = (10 + k*16) * (tieType==='private'?1.25:1);
+    const grd=ctx.createRadialGradient(gx,gy-rad*0.3,2,gx,gy,rad);
+    grd.addColorStop(0,'rgba(120,95,72,0.95)');
+    grd.addColorStop(1,'rgba(74,59,50,0.95)');
+    ctx.fillStyle=grd;
+    ctx.beginPath(); ctx.arc(gx,gy,rad,0,Math.PI*2); ctx.fill();
+
+    // indigo encryption pattern for private
+    if(tieType==='private'){
+      ctx.strokeStyle='rgba(0,75,135,'+(0.55*k)+')'; ctx.lineWidth=1.4;
+      const rings=3;
+      for(let i=1;i<=rings;i++){
+        ctx.beginPath(); ctx.arc(gx,gy,rad*(i/(rings+1)),0,Math.PI*2); ctx.stroke();
+      }
+      // asanoha-ish radial spokes
+      for(let i=0;i<8;i++){
+        const a=i/8*Math.PI*2 + t*0.15;
+        ctx.beginPath();
+        ctx.moveTo(gx,gy);
+        ctx.lineTo(gx+Math.cos(a)*rad*0.9, gy+Math.sin(a)*rad*0.9);
+        ctx.stroke();
+      }
+      // glow
+      ctx.save();
+      ctx.shadowColor='rgba(0,75,135,0.8)'; ctx.shadowBlur=22*k;
+      ctx.strokeStyle='rgba(0,75,135,'+(0.7*k)+')'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(gx,gy,rad,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    } else {
+      // bow loops for public
+      ctx.strokeStyle='rgba(74,59,50,0.9)'; ctx.lineWidth=5*k;
+      ctx.beginPath();
+      ctx.moveTo(gx,gy); ctx.quadraticCurveTo(gx-26*k,gy-18*k,gx-34*k,gy-2*k); ctx.quadraticCurveTo(gx-24*k,gy+10*k,gx,gy);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(gx,gy); ctx.quadraticCurveTo(gx+26*k,gy-18*k,gx+34*k,gy-2*k); ctx.quadraticCurveTo(gx+24*k,gy+10*k,gx,gy);
+      ctx.stroke();
+      ctx.fillStyle='rgba(0,75,135,0.9)';
+      ctx.beginPath(); ctx.arc(gx,gy,4*k,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  /* ---------- knot state machine ---------- */
+  const tag = document.getElementById('tag');
+  const sealed = document.getElementById('sealed');
+  const curMini = document.getElementById('curMini');
+  const curName = document.getElementById('curName');
+  const curDesc = document.getElementById('curDesc');
+
+  function tiedCount(){ return cornerTied.filter(Boolean).length; }
+
+  function checkTie(){
+    const th = clothSize*0.14;
+    const tc = tiedCount();
+    let type='none';
+    if(tc>=4) type='private';
+    else if(tc>=2) type='public';
+    if(type!==tieType){
+      tieType=type;
+      onStateChange();
+    }
+    breeze = tc===0 ? 1 : (tc>=4 ? 0.25 : 0.6);
+  }
+
+  function onStateChange(){
+    if(tieType==='none'){
+      tag.classList.remove('hidden');
+      sealed.classList.remove('show');
+      curMini.innerHTML = knotSVG('loose');
+      curName.textContent='Loose cloth';
+      curDesc.textContent='nothing tied yet';
+      curDesc.className='pub';
+    } else if(tieType==='public'){
+      tag.classList.remove('hidden');
+      sealed.classList.remove('show');
+      curMini.innerHTML = knotSVG('bow');
+      curName.textContent='Simple bow';
+      curDesc.textContent='public · your message is visible';
+      curDesc.className='pub';
+    } else {
+      tag.classList.add('hidden');
+      sealed.classList.add('show');
+      curMini.innerHTML = knotSVG('double');
+      curName.textContent='Double knot';
+      curDesc.textContent='private · sealed under the fabric';
+      curDesc.className='pub';
+    }
+    updateTag();
+  }
+
+  /* ---------- drag ---------- */
+  let dragX=0, dragY=0;
+  function toLocal(clientX,clientY){
+    const r=canvas.getBoundingClientRect();
+    return { x: clientX-r.left, y: clientY-r.top };
+  }
+  function cornerScreen(i){
+    // approximate screen pos of corner vertex
+    const p=pts[cornerIdx[i]];
+    return { x:p.x, y:p.y };
+  }
+  function pick(x,y){
+    let best=-1, bd=1e9;
+    for(let i=0;i<4;i++){
+      const s=cornerScreen(i);
+      const d=Math.hypot(s.x-x,s.y-y);
+      if(d<bd){ bd=d; best=i; }
+    }
+    return bd < Math.max(34, clothSize*0.12) ? best : -1;
+  }
+  function down(x,y){
+    const i=pick(x,y);
+    if(i>=0){ grabbed=i; dragging=true; dragX=x; dragY=y; canvas.style.cursor='grabbing'; }
+  }
+  function move(x,y){
+    if(grabbed!=null){ dragX=x; dragY=y; }
+    else { canvas.style.cursor = pick(x,y)>=0 ? 'grab' : 'default'; }
+  }
+  function up(){
+    if(grabbed!=null){
+      grabbed=null; dragging=false; canvas.style.cursor='grab';
+      const th=clothSize*0.14;
+      const tc=tiedCount();
+      // decide which corners to tie based on current proximity
+      let near=0;
+      for(let i=0;i<4;i++){ const s=cornerScreen(i); if(Math.hypot(s.x-cx,s.y-cy)<th) near++; }
+      // tie the grabbed corner if near center, else untie
+      // (grabbed already released; use last known drag pos)
+      // simpler: tie any corner currently within threshold, untie those far
+      for(let i=0;i<4;i++){
+        const s=cornerScreen(i);
+        if(Math.hypot(s.x-cx,s.y-cy)<th) cornerTied[i]=true;
+      }
+      // enforce: a corner is tied only if within threshold of center
+      for(let i=0;i<4;i++){
+        const s=cornerScreen(i);
+        if(Math.hypot(s.x-cx,s.y-cy)>=th && grabbed===null){
+          // keep tied state sticky unless user drags it away; we untie on grab-release far
+        }
+      }
+      checkTie();
+    }
+  }
+
+  // pointer events (mouse + touch unified)
+  canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); const p=toLocal(e.clientX,e.clientY); down(p.x,p.y); canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e=>{ const p=toLocal(e.clientX,e.clientY); move(p.x,p.y); });
+  canvas.addEventListener('pointerup', e=>{ up(); });
+  canvas.addEventListener('pointercancel', ()=>{ up(); });
+
+  // untie on releasing a corner far from center
+  function releaseTieLogic(){
+    // when a tied corner is dragged out beyond threshold, untie it
+  }
+
+  /* ---------- animation loop ---------- */
+  function loop(){
+    step();
+    // smooth snap toward tied state
+    const targetSnap = tieType==='none' ? 0 : (tieType==='public'?0.45:0.92);
+    snapT += (targetSnap - snapT)*0.06;
+    checkTie();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- message tag ---------- */
+  const recipientEl=document.getElementById('recipient');
+  const messageEl=document.getElementById('message');
+  const keyEl=document.getElementById('key');
+  const tagWho=document.getElementById('tagWho');
+  const tagMsg=document.getElementById('tagMsg');
+
+  function updateTag(){
+    const who = recipientEl.value.trim() || '—';
+    tagWho.textContent = 'To ' + who;
+    const msg = messageEl.value.trim();
+    if(msg){ tagMsg.textContent=msg; tagMsg.classList.remove('empty'); }
+    else { tagMsg.textContent='Write a message to your gift…'; tagMsg.classList.add('empty'); }
+  }
+  recipientEl.addEventListener('input',updateTag);
+  messageEl.addEventListener('input',updateTag);
+
+  /* ---------- knot SVG generator ---------- */
+  function knotSVG(type){
+    if(type==='loose'){
+      return `<svg viewBox="0 0 48 48" width="46" height="46" aria-hidden="true"><rect x="8" y="8" width="32" height="32" rx="4" fill="none" stroke="#4A3B32" stroke-width="1.6"/><path d="M14 14 L20 20 M34 14 L28 20 M14 34 L20 28 M34 34 L28 28" stroke="#4A3B32" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+    }
+    if(type==='bow'){
+      return `<svg viewBox="0 0 48 48" width="46" height="46" aria-hidden="true"><g fill="none" stroke="#4A3B32" stroke-width="1.7" stroke-linecap="round"><path d="M24 24 C16 15 5 17 8 26 C11 33 21 29 24 24 Z"/><path d="M24 24 C32 15 43 17 40 26 C37 33 27 29 24 24 Z"/><path d="M24 24 L19 38"/><path d="M24 24 L29 38"/></g><circle cx="24" cy="24" r="2.6" fill="#004B87"/></svg>`;
+    }
+    // double
+    return `<svg viewBox="0 0 48 48" width="46" height="46" aria-hidden="true"><g fill="none" stroke="#004B87" stroke-width="1.8" stroke-linecap="round"><rect x="14" y="14" width="20" height="20" rx="4"/><path d="M14 24 L34 24"/><path d="M24 14 L24 34"/><path d="M24 14 C17 7 31 7 24 14"/><path d="M24 34 C17 41 31 41 24 34"/></g></svg>`;
+  }
+
+  /* ---------- toast ---------- */
+  const toastEl=document.getElementById('toast');
+  let toastTimer=null;
+  function toast(msg){
+    toastEl.textContent=msg; toastEl.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2600);
+  }
+
+  /* ---------- untie with key ---------- */
+  document.getElementById('untieBtn').addEventListener('click', ()=>{
+    if(tieType==='none'){ toast('There is nothing tied yet.'); return; }
+    if(tieType==='public'){ untieNow(); toast('The bow came undone.'); return; }
+    // private: need key
+    const k=keyEl.value.trim();
+    if(k===currentKey && currentKey!==''){ untieNow(); toast('The double knot loosened.'); }
+    else { failShake(); toast('The knot holds. Wrong key.'); }
+  });
+
+  function untieNow(){
+    for(let i=0;i<4;i++) cornerTied[i]=false;
+    tieType='none'; onStateChange();
+  }
+  function failShake(){ shake=1; }
+
+  /* ---------- save to registry ---------- */
+  let currentKey='';
+  const saveBtn=document.getElementById('saveBtn');
+  const resetBtn=document.getElementById('resetBtn');
+  saveBtn.addEventListener('click', ()=>{
+    if(tieType==='none'){ toast('Tie a knot before saving.'); return; }
+    currentKey = tieType==='private' ? (keyEl.value.trim()||'sealed') : '';
+    const g={
+      id:Date.now(),
+      to:recipientEl.value.trim()||'Someone',
+      msg:messageEl.value.trim(),
+      type:tieType,
+      key:currentKey
+    };
+    gifts.unshift(g);
+    renderRegistry();
+    toast('Wrapped and shelved.');
+    // reset cloth
+    resetCloth();
+  });
+  resetBtn.addEventListener('click', ()=>{ resetCloth(); toast('Cloth re-opened.'); });
+
+  function resetCloth(){
+    for(let i=0;i<4;i++) cornerTied[i]=false;
+    tieType='none'; onStateChange();
+    recipientEl.value=''; messageEl.value=''; keyEl.value=''; updateTag();
+  }
+
+  /* ---------- registry ---------- */
+  const gifts=[
+    {id:1,to:'Hana',msg:'Thank you for the tea, and the quiet after it. — K.',type:'public',key:''},
+    {id:2,to:'Rin',msg:'The coordinates are inside the third fold. Meet me at dusk.',type:'private',key:'asanoha'},
+    {id:3,to:'Oka',msg:'For your birthday — a whole year of mornings.',type:'public',key:''},
+    {id:4,to:'Sora',msg:'I wrote the name of the star in the lining. Do not open it yet.',type:'private',key:'tsuki'}
+  ];
+  const regGrid=document.getElementById('regGrid');
+  const regCount=document.getElementById('regCount');
+
+  function renderRegistry(){
+    regGrid.innerHTML='';
+    gifts.forEach(g=>{
+      const el=document.createElement('div');
+      el.className='gift';
+      el.setAttribute('role','button'); el.tabIndex=0;
+      el.setAttribute('aria-label', (g.type==='private'?'Sealed double knot, to ':'Open bow, to ')+g.to);
+      el.innerHTML=`
+        <div class="knotmini">${knotSVG(g.type==='private'?'double':'bow')}</div>
+        <div class="to">To</div>
+        <div class="name">${escapeHTML(g.to)}</div>
+        <div class="kind ${g.type==='private'?'priv':'pub'}">${g.type==='private'?'double knot · sealed':'simple bow · open'}</div>
+        <div class="view">Open the knot</div>`;
+      const open=()=>openGift(g);
+      el.addEventListener('click',open);
+      el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
+      regGrid.appendChild(el);
+    });
+    regCount.textContent = gifts.length+' wrapped · '+gifts.filter(g=>g.type==='private').length+' sealed';
+  }
+
+  /* ---------- modal ---------- */
+  const overlay=document.getElementById('overlay');
+  const modal=document.getElementById('modal');
+  const mMini=document.getElementById('mMini');
+  const mTo=document.getElementById('mTo');
+  const mName=document.getElementById('mName');
+  const mBody=document.getElementById('mBody');
+  const mNote=document.getElementById('mNote');
+  const mActions=document.getElementById('mActions');
+  const modalClose=document.getElementById('modalClose');
+  let activeGift=null;
+
+  function openGift(g){
+    activeGift=g;
+    mMini.innerHTML=knotSVG(g.type==='private'?'double':'bow');
+    mTo.textContent='To';
+    mName.textContent=g.to;
+    mNote.className='m-note';
+    mActions.innerHTML='';
+    if(g.type==='public'){
+      mBody.classList.remove('blurred');
+      mBody.innerHTML = g.msg ? escapeHTML(g.msg) : '<span class="empty">An empty bow — nothing written inside.</span>';
+      mNote.textContent='A simple bow keeps nothing. The words were always for the world.';
+    } else {
+      mBody.classList.add('blurred');
+      mBody.innerHTML='<span class="empty">sealed beneath the fabric</span>';
+      mNote.textContent='A double knot. Enter the key to loosen it.';
+      const inp=document.createElement('input');
+      inp.type='password'; inp.placeholder='key'; inp.style.flex='1';
+      const btn=document.createElement('button');
+      btn.className='btn primary'; btn.textContent='Loosen';
+      btn.addEventListener('click',()=>{
+        if(inp.value.trim()===g.key){
+          mBody.classList.remove('blurred');
+          mBody.innerHTML = g.msg ? escapeHTML(g.msg) : '<span class="empty">nothing written inside</span>';
+          mNote.textContent='The knot came open. The message is yours.';
+          mNote.className='m-note';
+          mActions.innerHTML='';
+        } else {
+          modal.classList.remove('shake'); void modal.offsetWidth; modal.classList.add('shake');
+          mNote.textContent='The knot holds. That is not the key.';
+          mNote.className='m-note err';
+        }
+      });
+      mActions.appendChild(inp); mActions.appendChild(btn);
+    }
+    overlay.classList.add('open');
+  }
+  function closeModal(){ overlay.classList.remove('open'); }
+  modalClose.addEventListener('click',closeModal);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closeModal(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+  function escapeHTML(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  /* ---------- scroll reveal ---------- */
+  const io=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  /* ---------- init ---------- */
+  window.addEventListener('resize',()=>{ clearTimeout(window.__rz); window.__rz=setTimeout(resize,120); });
+  resize();
+  onStateChange();
+  updateTag();
+  renderRegistry();
+  loop();
+})();
+</script>
+</body>
+</html>

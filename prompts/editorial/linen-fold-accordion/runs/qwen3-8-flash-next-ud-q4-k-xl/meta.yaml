@@ -1,0 +1,31 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 447966
+gen_ms: 447966
+ttft_ms: 4923
+queue_wait_ms: 105
+wall_ms: 453049
+review_score: 2
+review_summary: "Hero viewport is essentially blank—only a small nav logo and links, with no large Playfair headline, no hero content, and no visible fold structure."
+reviewed_at: "2026-09-29T12:31:41.838Z"
+review_issues:
+  - "Brand name only appears as small nav text, not a hero-level signal"
+  - "First viewport is empty/blank with no composition"
+  - "No large Playfair Display headline in hero"
+  - "No visible fold/crease structure or content sections"
+  - "Linen texture is barely perceptible; reads as flat off-white"
+  - "No hero visual or atmospheric depth"
