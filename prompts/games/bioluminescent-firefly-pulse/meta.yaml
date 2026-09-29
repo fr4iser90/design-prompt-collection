@@ -1,0 +1,24 @@
+id: bioluminescent-firefly-pulse
+title: "Bioluminescent Firefly Pulse"
+category: games
+tags:
+  - nature
+  - rhythm-timing
+  - canvas2d
+  - state-stack
+  - game
+status: polished
+summary: "A rhythm game where players sync clicks with an emergent swarm pulse. Join the bioluminescent rhythm, avoid desyncs, and master the chaotic beat in a single-file HTML experience."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

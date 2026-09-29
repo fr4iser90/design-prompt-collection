@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Plate & Press — a utilitarian ink-coverage estimator that simulates CMYK dot gain, paper grain and set-off risk before you run a job.">
+<title>Plate &amp; Press — Ink Coverage Estimator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:ital,wght@0,400;0,600;0,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f5f5;
+    --ink:#1a1a1a;
+    --danger:#ff0000;
+    --C:#00a0c0; --M:#c000a0; --Y:#d4a800; --K:#1a1a1a;
+    --line:#1a1a1a;
+    --line-soft:rgba(26,26,26,.16);
+    --track:#e2e2e2;
+    --disp:'Bebas Neue', 'Arial Narrow', sans-serif;
+    --body:'Source Sans 3','Source Sans Pro', system-ui, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ -webkit-text-size-adjust:100%; }
+
+  body{
+    font-family:var(--body);
+    font-size:14px;
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 39px, rgba(26,26,26,.05) 39px 40px),
+      repeating-linear-gradient(90deg, transparent 0 39px, rgba(26,26,26,.05) 39px 40px);
+    min-height:100vh;
+    line-height:1.5;
+  }
+
+  .app{ display:flex; flex-direction:column; min-height:100vh; }
+
+  /* ---------- HEADER ---------- */
+  .topbar{
+    flex:0 0 auto;
+    height:60px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px;
+    border-bottom:1px solid var(--line);
+    background:var(--paper);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{
+    width:24px; height:24px; flex:0 0 auto;
+    background:var(--ink);
+    position:relative;
+  }
+  .brand-mark::after{
+    content:''; position:absolute; inset:5px;
+    background:var(--paper);
+    border:1px solid var(--ink);
+  }
+  .brand-text{
+    font-family:var(--disp);
+    font-size:26px;
+    letter-spacing:.14em;
+    line-height:1;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .status{ display:flex; align-items:center; gap:10px; }
+  .status-label{
+    font-family:var(--disp);
+    font-size:13px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--ink);
+  }
+  .led{
+    width:10px; height:10px;
+    background:var(--ink);
+    border:1px solid var(--ink);
+  }
+  .led.warn{ background:var(--danger); animation:blink 1s steps(2,start) infinite; }
+  @keyframes blink{ 50%{ opacity:.15; } }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    flex:1 1 auto;
+    display:flex;
+    min-height:0;
+  }
+
+  /* ---------- CANVAS PANEL (60%) ---------- */
+  .canvas-panel{
+    flex:1 1 60%;
+    min-width:0;
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column;
+    background:var(--paper);
+  }
+  .canvas-head{
+    flex:0 0 auto;
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:12px;
+    padding:12px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .canvas-head .ch-title{
+    font-family:var(--disp);
+    font-size:22px; letter-spacing:.14em; text-transform:uppercase;
+  }
+  .canvas-head .ch-sub{
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:rgba(26,26,26,.6);
+  }
+  .canvas-wrap{
+    flex:1 1 auto;
+    min-height:0;
+    position:relative;
+    padding:20px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .sheet{
+    position:relative;
+    width:100%;
+    max-width:560px;
+    aspect-ratio:4/3;
+    background:#ffffff;
+    border:1px solid var(--line);
+    opacity:0;
+    transition:opacity .6s ease-in-out;
+  }
+  .sheet.on{ opacity:1; }
+  .sheet canvas{
+    display:block;
+    width:100%; height:100%;
+    filter:blur(.5px);
+    transition:filter .2s linear;
+  }
+  .corner{ position:absolute; width:12px; height:12px; pointer-events:none; }
+  .corner.tl{ top:-1px; left:-1px; border-top:2px solid var(--ink); border-left:2px solid var(--ink); }
+  .corner.tr{ top:-1px; right:-1px; border-top:2px solid var(--ink); border-right:2px solid var(--ink); }
+  .corner.bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--ink); border-left:2px solid var(--ink); }
+  .corner.br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--ink); border-right:2px solid var(--ink); }
+
+  .banner{
+    position:absolute; top:0; left:0; right:0;
+    background:var(--danger);
+    color:#fff;
+    font-family:var(--disp);
+    font-size:18px; letter-spacing:.16em; text-transform:uppercase;
+    padding:10px 16px;
+    display:flex; align-items:center; gap:12px;
+    transform:translateY(-100%);
+    transition:transform .35s cubic-bezier(.2,.8,.2,1);
+    z-index:3;
+  }
+  .banner.show{ transform:translateY(0); }
+  .banner .tri{ font-size:16px; line-height:1; }
+
+  .canvas-foot{
+    flex:0 0 auto;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:10px 20px;
+    border-top:1px solid var(--line);
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(26,26,26,.7);
+  }
+  .coverage{ display:flex; align-items:center; gap:10px; }
+  .coverage b{ font-family:var(--disp); font-size:18px; letter-spacing:.08em; color:var(--ink); }
+  .cov-bar{ width:120px; height:8px; border:1px solid var(--ink); background:#fff; }
+  .cov-fill{ height:100%; width:0%; background:var(--ink); transition:width .12s linear; }
+  .cov-fill.danger{ background:var(--danger); }
+  .cov-bar::after{ content:''; }
+  .cov-scale{ position:relative; }
+
+  /* ---------- CONTROL PANEL (40%) ---------- */
+  .control-panel{
+    flex:1 1 40%;
+    min-width:0;
+    padding:24px;
+    overflow-y:auto;
+    background:var(--paper);
+    transform:translateX(100%);
+    transition:transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .control-panel.in{ transform:translateX(0); }
+
+  .panel-title{
+    font-family:var(--disp);
+    font-size:40px; letter-spacing:.1em; text-transform:uppercase;
+    line-height:.95;
+    margin-bottom:4px;
+  }
+  .panel-sub{
+    font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(26,26,26,.6);
+    margin-bottom:20px;
+  }
+
+  .sliders{
+    display:flex; gap:14px;
+    padding:16px;
+    border:1px solid var(--line);
+    background:#fff;
+    margin-bottom:20px;
+  }
+  .sliders.err{ border-color:var(--danger); animation:errflash .5s ease-out 1; }
+  @keyframes errflash{ 0%,100%{ border-color:var(--line);} 30%{ border-color:var(--danger);} }
+
+  .fader{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; }
+  .fader-top{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+  .fader-label{
+    font-family:var(--disp);
+    font-size:32px; letter-spacing:.06em; line-height:1;
+  }
+  .fader-val{
+    font-family:var(--disp);
+    font-size:20px; letter-spacing:.04em;
+    min-width:44px; text-align:right;
+  }
+  .fader-val::after{ content:'%'; font-size:13px; color:rgba(26,26,26,.55); }
+
+  /* vertical fader */
+  .vrange{
+    -webkit-appearance:none; appearance:none;
+    width:100%; height:220px;
+    background:transparent;
+    cursor:pointer;
+  }
+  .vrange:focus{ outline:none; }
+  .vrange:focus-visible{ outline:2px solid var(--ink); outline-offset:4px; }
+  .vrange::-webkit-slider-runnable-track{
+    width:12px; height:100%; margin:0 auto;
+    background:var(--track);
+    border:1px solid var(--line);
+  }
+  .vrange::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:30px; height:22px;
+    margin-top:-1px; margin-left:-10px;
+    background:var(--ink);
+    border:1px solid var(--ink);
+    border-radius:0;
+  }
+  .vrange::-moz-range-track{
+    width:12px; height:100%;
+    background:var(--track);
+    border:1px solid var(--line);
+  }
+  .vrange::-moz-range-thumb{
+    width:30px; height:22px;
+    background:var(--ink);
+    border:1px solid var(--ink);
+    border-radius:0;
+  }
+  .fader-scale{
+    display:flex; justify-content:space-between;
+    font-size:10px; letter-spacing:.1em; color:rgba(26,26,26,.5);
+    margin-top:8px;
+  }
+  .fader-dot{
+    width:12px; height:12px; margin:12px auto 0;
+    border:1px solid var(--line);
+  }
+
+  /* metrics */
+  .metrics{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .metric{
+    border:1px solid var(--line);
+    padding:14px 16px;
+    background:#fff;
+  }
+  .metric-label{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(26,26,26,.6);
+    margin-bottom:6px;
+  }
+  .metric-value{
+    font-family:var(--disp);
+    font-size:34px; letter-spacing:.04em; line-height:1;
+  }
+  .metric-value.warn{ color:var(--danger); }
+  .metric-note{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:rgba(26,26,26,.55); margin-top:6px; }
+
+  /* breakdown */
+  .breakdown{
+    border:1px solid var(--line);
+    background:#fff;
+    padding:14px 16px;
+    margin-bottom:20px;
+  }
+  .bd-head{
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(26,26,26,.6);
+    margin-bottom:12px;
+  }
+  .bd-row{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .bd-row:last-child{ margin-bottom:0; }
+  .bd-name{ font-family:var(--disp); font-size:16px; letter-spacing:.08em; width:16px; }
+  .bd-bar{ flex:1 1 auto; height:8px; border:1px solid var(--line); background:#fff; }
+  .bd-fill{ height:100%; width:0%; transition:width .12s linear; }
+  .bd-num{ font-family:var(--disp); font-size:14px; letter-spacing:.04em; width:66px; text-align:right; }
+
+  /* actions */
+  .actions{ display:flex; gap:12px; }
+  .btn{
+    flex:1 1 auto;
+    font-family:var(--disp);
+    font-size:18px; letter-spacing:.12em; text-transform:uppercase;
+    padding:12px 16px;
+    background:#fff;
+    color:var(--ink);
+    border:1px solid var(--ink);
+    border-radius:0;
+    cursor:pointer;
+    transition:background .12s linear, color .12s linear;
+  }
+  .btn:hover{ background:var(--ink); color:#fff; }
+  .btn:active{ background:#333; color:#fff; }
+  .btn.primary{ background:var(--ink); color:#fff; }
+  .btn.primary:hover{ background:#000; }
+
+  /* ---------- FOOTER ---------- */
+  .footer{
+    flex:0 0 auto;
+    height:40px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    padding:0 20px;
+    border-top:1px solid var(--line);
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(26,26,26,.6);
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:768px){
+    .stage{ flex-direction:column; }
+    .canvas-panel{ flex:0 0 50vh; border-right:none; border-bottom:1px solid var(--line); }
+    .canvas-wrap{ padding:12px; }
+    .sheet{ max-width:100%; }
+    .control-panel{ flex:1 1 50vh; transform:none; padding:16px; }
+    .panel-title{ font-size:32px; }
+    .sliders{ flex-direction:row; overflow-x:auto; gap:16px; padding:14px; }
+    .fader{ flex:0 0 64px; }
+    .vrange{ height:200px; }
+    .vrange::-webkit-slider-thumb{ width:44px; height:26px; margin-left:-16px; }
+    .vrange::-moz-range-thumb{ width:44px; height:26px; }
+    .metrics{ grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:420px){
+    .brand-text{ font-size:22px; }
+    .actions{ flex-direction:column; }
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *{ transition:none !important; animation:none !important; }
+    .sheet{ opacity:1 !important; }
+    .control-panel{ transform:none !important; }
+    .banner{ transform:translateY(0); }
+    .banner:not(.show){ display:none; }
+    .sheet canvas{ filter:none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">Plate &amp; Press</span>
+    </div>
+    <div class="status">
+      <span class="status-label" id="statusText">Idle</span>
+      <span class="led" id="statusLed" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- CANVAS 60% -->
+    <section class="canvas-panel">
+      <div class="canvas-head">
+        <span class="ch-title">Press Sheet</span>
+        <span class="ch-sub">100 × 100 Dot Grid · Multiply</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <div class="banner" id="banner" role="alert" aria-live="assertive">
+          <span class="tri" aria-hidden="true">▲</span>
+          <span>Warning: Set-Off Risk</span>
+        </div>
+        <div class="sheet" id="sheet">
+          <canvas id="pressCanvas" width="600" height="450" role="img" aria-label="Press sheet preview: blank white paper."></canvas>
+          <span class="corner tl"></span><span class="corner tr"></span>
+          <span class="corner bl"></span><span class="corner br"></span>
+        </div>
+      </div>
+
+      <div class="canvas-foot">
+        <div class="coverage">
+          <span>Total Ink</span>
+          <b id="covNum">0%</b>
+          <div class="cov-bar" aria-hidden="true"><div class="cov-fill" id="covFill"></div></div>
+        </div>
+        <span>Safe Zone ≤ 300%</span>
+      </div>
+    </section>
+
+    <!-- CONTROLS 40% -->
+    <aside class="control-panel" id="controlPanel">
+      <h1 class="panel-title">Ink Coverage</h1>
+      <p class="panel-sub">Density Faders · C M Y K</p>
+
+      <div class="sliders" id="sliderBox">
+        <div class="fader">
+          <div class="fader-top"><span class="fader-label">C</span><span class="fader-val" id="valC">0</span></div>
+          <input class="vrange" type="range" min="0" max="100" value="0" step="1" orient="vertical" id="slC" aria-label="Cyan ink density percentage">
+          <div class="fader-scale"><span>100</span><span>0</span></div>
+          <span class="fader-dot" style="background:#00a0c0" aria-hidden="true"></span>
+        </div>
+        <div class="fader">
+          <div class="fader-top"><span class="fader-label">M</span><span class="fader-val" id="valM">0</span></div>
+          <input class="vrange" type="range" min="0" max="100" value="0" step="1" orient="vertical" id="slM" aria-label="Magenta ink density percentage">
+          <div class="fader-scale"><span>100</span><span>0</span></div>
+          <span class="fader-dot" style="background:#c000a0" aria-hidden="true"></span>
+        </div>
+        <div class="fader">
+          <div class="fader-top"><span class="fader-label">Y</span><span class="fader-val" id="valY">0</span></div>
+          <input class="vrange" type="range" min="0" max="100" value="0" step="1" orient="vertical" id="slY" aria-label="Yellow ink density percentage">
+          <div class="fader-scale"><span>100</span><span>0</span></div>
+          <span class="fader-dot" style="background:#d4a800" aria-hidden="true"></span>
+        </div>
+        <div class="fader">
+          <div class="fader-top"><span class="fader-label">K</span><span class="fader-val" id="valK">0</span></div>
+          <input class="vrange" type="range" min="0" max="100" value="0" step="1" orient="vertical" id="slK" aria-label="Black ink density percentage">
+          <div class="fader-scale"><span>100</span><span>0</span></div>
+          <span class="fader-dot" style="background:#1a1a1a" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Cost Estimate</div>
+          <div class="metric-value" id="costVal">$0.00</div>
+          <div class="metric-note">Per 1,000 Sheets</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Quality Score</div>
+          <div class="metric-value" id="qualityVal">—</div>
+          <div class="metric-note" id="qualityNote">Awaiting Ink</div>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <div class="bd-head">Channel Breakdown · Incl. Dot Gain</div>
+        <div class="bd-row"><span class="bd-name">C</span><div class="bd-bar"><div class="bd-fill" id="bdC" style="background:#00a0c0"></div></div><span class="bd-num" id="bdCn">0.0%</span></div>
+        <div class="bd-row"><span class="bd-name">M</span><div class="bd-bar"><div class="bd-fill" id="bdM" style="background:#c000a0"></div></div><span class="bd-num" id="bdMn">0.0%</span></div>
+        <div class="bd-row"><span class="bd-name">Y</span><div class="bd-bar"><div class="bd-fill" id="bdY" style="background:#d4a800"></div></div><span class="bd-num" id="bdYn">0.0%</span></div>
+        <div class="bd-row"><span class="bd-name">K</span><div class="bd-bar"><div class="bd-fill" id="bdK" style="background:#1a1a1a"></div></div><span class="bd-num" id="bdKn">0.0%</span></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="btnReset" type="button">Reset</button>
+        <button class="btn primary" id="btnMax" type="button">Full Coverage</button>
+      </div>
+    </aside>
+
+  </main>
+
+  <footer class="footer">
+    <span>Estimates only. Not a proof.</span>
+    <span>Plate &amp; Press · Ink Estimator v1.0</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas   = document.getElementById('pressCanvas');
+  var ctx      = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var sliders = {
+    C: document.getElementById('slC'),
+    M: document.getElementById('slM'),
+    Y: document.getElementById('slY'),
+    K: document.getElementById('slK')
+  };
+  var vals = { C: document.getElementById('valC'), M: document.getElementById('valM'), Y: document.getElementById('valY'), K: document.getElementById('valK') };
+  var bds  = { C: document.getElementById('bdC'), M: document.getElementById('bdM'), Y: document.getElementById('bdY'), K: document.getElementById('bdK') };
+  var bdn  = { C: document.getElementById('bdCn'), M: document.getElementById('bdMn'), Y: document.getElementById('bdYn'), K: document.getElementById('bdKn') };
+
+  var costVal    = document.getElementById('costVal');
+  var qualityVal = document.getElementById('qualityVal');
+  var qualityNote= document.getElementById('qualityNote');
+  var covNum     = document.getElementById('covNum');
+  var covFill    = document.getElementById('covFill');
+  var banner     = document.getElementById('banner');
+  var statusText = document.getElementById('statusText');
+  var statusLed  = document.getElementById('statusLed');
+  var sliderBox  = document.getElementById('sliderBox');
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- offscreen noise texture (generated once) ----
+  var noise = document.createElement('canvas');
+  noise.width = W; noise.height = H;
+  (function buildNoise(){
+    var nctx = noise.getContext('2d');
+    var img = nctx.createImageData(W, H);
+    var d = img.data;
+    for (var i = 0; i < d.length; i += 4){
+      var v = 200 + Math.floor(Math.random() * 55); // 200..254
+      d[i] = v; d[i+1] = v; d[i+2] = v; d[i+3] = 255;
+    }
+    nctx.putImageData(img, 0, 0);
+  })();
+
+  // ---- CMYK -> RGB (simple, screen display) ----
+  function cmykToRgb(c, m, y, k){
+    var r = 255 * (1 - c) * (1 - k);
+    var g = 255 * (1 - m) * (1 - k);
+    var b = 255 * (1 - y) * (1 - k);
+    return [r, g, b];
+  }
+
+  // ---- ink bleed / dot gain: each channel receives 5% of the others ----
+  function bleed(v){
+    var sum = v.C + v.M + v.Y + v.K;
+    var out = {};
+    ['C','M','Y','K'].forEach(function(ch){
+      out[ch] = Math.min(100, v[ch] + (sum - v[ch]) * 0.05);
+    });
+    return out;
+  }
+
+  function readValues(){
+    return {
+      C: +sliders.C.value, M: +sliders.M.value,
+      Y: +sliders.Y.value, K: +sliders.K.value
+    };
+  }
+
+  var lastRender = null;
+  var pending = false;
+
+  function scheduleRender(){
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function(){ pending = false; doRender(); });
+  }
+
+  function doRender(){
+    var v = readValues();
+    var key = v.C + ',' + v.M + ',' + v.Y + ',' + v.K;
+    if (key === lastRender) return;
+    lastRender = key;
+
+    var b = bleed(v);
+    var rgb = cmykToRgb(b.C/100, b.M/100, b.Y/100, b.K/100);
+
+    // base ink colour
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgb(' + Math.round(rgb[0]) + ',' + Math.round(rgb[1]) + ',' + Math.round(rgb[2]) + ')';
+    ctx.fillRect(0, 0, W, H);
+
+    // paper grain via multiply
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.drawImage(noise, 0, 0);
+
+    // pooling: darken noise further when ink is heavy
+    var total = b.C + b.M + b.Y + b.K;
+    if (total > 260){
+      ctx.globalAlpha = Math.min(0.18, (total - 260) / 400);
+      ctx.drawImage(noise, 0, 0);
+      ctx.globalAlpha = 1;
+    }
+    ctx.globalCompositeOperation = 'source-over';
+
+    updateReadouts(v, b, total);
+  }
+
+  function updateReadouts(v, b, total){
+    vals.C.textContent = v.C; vals.M.textContent = v.M;
+    vals.Y.textContent = v.Y; vals.K.textContent = v.K;
+
+    ['C','M','Y','K'].forEach(function(ch){
+      bds[ch].style.width = b[ch].toFixed(1) + '%';
+      bdn[ch].textContent = b[ch].toFixed(1) + '%';
+    });
+
+    // cost
+    var cost = (b.C + b.M + b.Y + b.K) * 0.045;
+    costVal.textContent = '$' + cost.toFixed(2);
+
+    // quality
+    var gain = (total - (v.C + v.M + v.Y + v.K));
+    var q = 100;
+    if (total > 300) q -= (total - 300) * 0.6;
+    if (total > 340) q -= (total - 340) * 0.9;
+    q -= gain * 0.25;
+    q = Math.max(0, Math.round(q));
+
+    if (total === 0){
+      qualityVal.textContent = '—';
+      qualityVal.classList.remove('warn');
+      qualityNote.textContent = 'Awaiting Ink';
+    } else {
+      qualityVal.textContent = q;
+      qualityVal.classList.toggle('warn', total > 300);
+      qualityNote.textContent = total > 300 ? 'Set-Off Risk' : (q >= 85 ? 'Optimal' : (q >= 60 ? 'Acceptable' : 'Degraded'));
+    }
+
+    // coverage bar (scale to 400%)
+    var pct = Math.min(100, total / 400 * 100);
+    covFill.style.width = pct + '%';
+    covFill.classList.toggle('danger', total > 300);
+    covNum.textContent = Math.round(total) + '%';
+    covNum.style.color = total > 300 ? 'var(--danger)' : 'var(--ink)';
+
+    // banner + status
+    var over = total > 300;
+    banner.classList.toggle('show', over);
+    statusText.textContent = over ? 'Set-Off Risk' : 'Idle';
+    statusLed.classList.toggle('warn', over);
+
+    // accessibility label
+    canvas.setAttribute('aria-label',
+      'Press sheet preview. Cyan ' + v.C + ' percent, Magenta ' + v.M +
+      ' percent, Yellow ' + v.Y + ' percent, Black ' + v.K +
+      ' percent. Total ink ' + Math.round(total) + ' percent.' + (over ? ' Warning: set-off risk.' : ''));
+  }
+
+  // ---- wet ink blur ----
+  var blurTimer = null;
+  function applyWet(){
+    if (reduce) return;
+    canvas.style.filter = 'blur(2px)';
+    if (blurTimer) clearTimeout(blurTimer);
+    blurTimer = setTimeout(function(){ canvas.style.filter = 'blur(0.5px)'; }, 200);
+  }
+
+  function onChange(){
+    var v = readValues();
+    var invalid = ['C','M','Y','K'].some(function(ch){ return isNaN(v[ch]) || v[ch] < 0 || v[ch] > 100; });
+    if (invalid){
+      sliderBox.classList.remove('err');
+      void sliderBox.offsetWidth;
+      sliderBox.classList.add('err');
+    } else {
+      sliderBox.classList.remove('err');
+    }
+    applyWet();
+    scheduleRender();
+  }
+
+  function onEnd(){
+    if (reduce) return;
+    if (blurTimer) clearTimeout(blurTimer);
+    canvas.style.filter = 'blur(0.5px)';
+  }
+
+  ['C','M','Y','K'].forEach(function(ch){
+    sliders[ch].addEventListener('input', onChange);
+    sliders[ch].addEventListener('change', onEnd);
+  });
+
+  // ---- buttons ----
+  document.getElementById('btnReset').addEventListener('click', function(){
+    ['C','M','Y','K'].forEach(function(ch){ sliders[ch].value = 0; });
+    applyWet(); scheduleRender();
+  });
+  document.getElementById('btnMax').addEventListener('click', function(){
+    ['C','M','Y','K'].forEach(function(ch){ sliders[ch].value = 100; });
+    applyWet(); scheduleRender();
+  });
+
+  // ---- entrance ----
+  window.addEventListener('load', function(){
+    var sheet = document.getElementById('sheet');
+    var panel = document.getElementById('controlPanel');
+    requestAnimationFrame(function(){
+      sheet.classList.add('on');
+      panel.classList.add('in');
+    });
+  });
+
+  // initial paint
+  doRender();
+})();
+</script>
+</body>
+</html>

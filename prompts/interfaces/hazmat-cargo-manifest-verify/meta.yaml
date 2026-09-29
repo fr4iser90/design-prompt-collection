@@ -1,0 +1,26 @@
+id: hazmat-cargo-manifest-verify
+title: "HazMat Cargo Manifest Verifier"
+category: interfaces
+tags:
+  - logistics
+  - hazmat
+  - stamping
+  - utility
+  - form-validation
+  - high-contrast
+  - warning
+status: polished
+summary: "Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verification, and brutalist utility design."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

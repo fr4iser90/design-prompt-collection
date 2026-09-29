@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AERIS — Air Pressure Task Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1a1a; --ink:#f0f0f0; --accent:#00e5ff; --alert:#ff4d4d;
+    --panel:#222222; --hairline:#333333; --muted:#8a8a8a;
+    --font-display:'Oswald',sans-serif; --font-body:'Barlow',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:var(--font-body);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+    user-select:none;
+  }
+
+  /* ---------- CHROME ---------- */
+  .chrome{
+    height:60px; display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px; border-bottom:1px solid var(--hairline); background:var(--bg);
+    position:relative; z-index:5;
+  }
+  .brand{display:flex; align-items:baseline; gap:12px}
+  .brand h1{
+    font-family:var(--font-display); font-weight:700; font-size:24px;
+    letter-spacing:.14em; color:var(--ink); line-height:1;
+  }
+  .brand .sub{
+    font-family:var(--font-body); font-weight:400; font-size:10px;
+    letter-spacing:.28em; text-transform:uppercase; color:var(--muted);
+  }
+  .chrome-right{display:flex; align-items:center; gap:22px}
+  .gauge{display:flex; align-items:center; gap:10px}
+  .gauge .gauge-label{
+    font-family:var(--font-display); font-weight:500; font-size:11px;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--muted);
+  }
+  .gauge .gauge-val{
+    font-family:var(--font-display); font-weight:600; font-size:18px;
+    color:var(--ink); min-width:34px; text-align:right; font-variant-numeric:tabular-nums;
+  }
+  .gauge .gauge-unit{
+    font-family:var(--font-body); font-size:10px; letter-spacing:.15em; color:var(--muted);
+  }
+  .gauge-bar{
+    width:110px; height:8px; background:#111; border:1px solid var(--hairline);
+    position:relative; overflow:hidden;
+  }
+  .gauge-bar i{
+    display:block; height:100%; width:0%; background:var(--accent);
+    transition:width .18s linear, background .3s ease;
+  }
+  .btn{
+    font-family:var(--font-display); font-weight:600; font-size:12px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ink);
+    background:transparent; border:1px solid var(--hairline); padding:9px 16px;
+    cursor:pointer; transition:border-color .15s, color .15s, background .15s;
+  }
+  .btn:hover{border-color:var(--accent); color:var(--accent)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:1px solid var(--accent); outline-offset:2px}
+
+  /* ---------- APP ---------- */
+  .app{display:flex; height:calc(100vh - 60px)}
+  .stage{position:relative; flex:1; min-width:0; background:var(--bg)}
+  canvas{display:block; touch-action:none; cursor:crosshair}
+  .hint{
+    position:absolute; left:16px; bottom:14px; z-index:3;
+    font-family:var(--font-body); font-size:11px; letter-spacing:.04em;
+    color:var(--muted); pointer-events:none; max-width:60%;
+  }
+  .hint b{color:var(--ink); font-weight:600}
+
+  /* ---------- PANEL ---------- */
+  .panel{
+    width:240px; flex:0 0 240px; background:var(--panel);
+    border-left:1px solid var(--hairline); height:100%;
+    overflow-y:auto; display:flex; flex-direction:column;
+  }
+  .panel-sec{padding:18px 18px 20px; border-bottom:1px solid var(--hairline)}
+  .panel-sec:last-child{border-bottom:none}
+  .sec-title{
+    font-family:var(--font-display); font-weight:600; font-size:11px;
+    letter-spacing:.22em; text-transform:uppercase; color:var(--muted);
+    margin-bottom:14px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .sec-title .dot{width:6px;height:6px;background:var(--hairline);border-radius:50%}
+  .sec-title .dot.on{background:var(--accent)}
+
+  .field{margin-bottom:16px}
+  .field label{
+    display:block; font-family:var(--font-body); font-weight:500; font-size:10px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:7px;
+  }
+  .input{
+    width:100%; background:#1a1a1a; border:1px solid var(--hairline); color:var(--ink);
+    font-family:var(--font-body); font-size:14px; padding:9px 10px; outline:none;
+    transition:border-color .15s;
+  }
+  .input:focus{border-color:var(--accent)}
+  .input::placeholder{color:#5a5a5a}
+  textarea.input{resize:vertical; min-height:64px; line-height:1.45}
+
+  .slider-row{display:flex; align-items:center; gap:12px}
+  .slider-row .val{
+    font-family:var(--font-display); font-weight:600; font-size:16px; color:var(--accent);
+    min-width:34px; text-align:right; font-variant-numeric:tabular-nums;
+  }
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; flex:1; height:3px; background:var(--hairline);
+    outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--accent); border:2px solid var(--bg); cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background:var(--accent);
+    border:2px solid var(--bg); cursor:pointer;
+  }
+  input[type=range]:disabled{opacity:.35; cursor:not-allowed}
+
+  .btn-danger{
+    width:100%; color:var(--alert); border-color:#3a2222;
+  }
+  .btn-danger:hover{border-color:var(--alert); color:var(--alert); background:rgba(255,77,77,.06)}
+  .btn-danger:disabled{opacity:.3; cursor:not-allowed; pointer-events:none}
+
+  .err-msg{
+    display:none; margin-top:10px; color:var(--alert);
+    font-family:var(--font-body); font-size:12px; letter-spacing:.04em;
+  }
+  .err-msg.show{display:block}
+
+  .empty-note{
+    font-family:var(--font-body); font-size:12.5px; line-height:1.55; color:var(--muted);
+  }
+  .empty-note .big{
+    font-family:var(--font-display); font-weight:500; font-size:13px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink); display:block; margin-bottom:8px;
+  }
+
+  .kbd{
+    display:inline-block; font-family:var(--font-body); font-size:10px; letter-spacing:.05em;
+    color:var(--muted); border:1px solid var(--hairline); border-radius:3px;
+    padding:1px 5px; margin:0 1px; background:#1a1a1a;
+  }
+  .legend{display:flex; flex-direction:column; gap:9px}
+  .legend .row{display:flex; align-items:center; gap:9px; font-family:var(--font-body); font-size:11.5px; color:var(--muted)}
+  .legend .swatch{width:11px;height:11px;border-radius:50%; flex:0 0 11px}
+
+  /* mobile */
+  @media (max-width:820px){
+    .brand .sub{display:none}
+    .gauge-bar{display:none}
+    .app{flex-direction:column; height:calc(100vh - 60px)}
+    .stage{flex:1 1 55%; min-height:0}
+    .panel{width:100%; flex:0 0 45%; border-left:none; border-top:1px solid var(--hairline)}
+    .hint{display:none}
+  }
+</style>
+</head>
+<body>
+  <header class="chrome">
+    <div class="brand">
+      <h1>AERIS</h1>
+      <span class="sub">Air Pressure Task Queue</span>
+    </div>
+    <div class="chrome-right">
+      <div class="gauge" title="System Pressure — mean priority across all tasks">
+        <span class="gauge-label">Pressure</span>
+        <div class="gauge-bar"><i id="gaugeFill"></i></div>
+        <span class="gauge-val" id="gaugeVal">0</span>
+        <span class="gauge-unit">PSI</span>
+      </div>
+      <button class="btn" id="addBtn">Add Task</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <div class="stage">
+      <canvas id="cv"></canvas>
+      <div class="hint">
+        <b>Drag up</b> to inflate priority &nbsp;·&nbsp; <b>Drag down</b> to deflate &nbsp;·&nbsp; <b>Click</b> a bubble to edit
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="panel-sec">
+        <div class="sec-title"><span>Task Details</span><span class="dot" id="selDot"></span></div>
+        <div class="field">
+          <label for="titleInput">Title</label>
+          <input class="input" id="titleInput" type="text" placeholder="Task name" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="prioRange">Priority</label>
+          <div class="slider-row">
+            <input type="range" id="prioRange" min="0" max="100" value="50">
+            <span class="val" id="prioVal">50</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="descInput">Description</label>
+          <textarea class="input" id="descInput" placeholder="Notes, context, links…"></textarea>
+        </div>
+        <div class="err-msg" id="errMsg">Title required</div>
+      </div>
+
+      <div class="panel-sec">
+        <div class="sec-title"><span>Actions</span></div>
+        <button class="btn btn-danger" id="deleteBtn" disabled>Delete Task</button>
+      </div>
+
+      <div class="panel-sec">
+        <div class="sec-title"><span>Legend</span></div>
+        <div class="legend">
+          <div class="row"><span class="swatch" style="background:#00e5ff"></span> High pressure (&gt;70)</div>
+          <div class="row"><span class="swatch" style="background:#ff4d4d"></span> Critical (&gt;90)</div>
+          <div class="row"><span class="swatch" style="background:#7a7a7a"></span> Low pressure (&lt;20)</div>
+        </div>
+      </div>
+
+      <div class="panel-sec" id="emptyNote">
+        <div class="sec-title"><span>System</span></div>
+        <p class="empty-note">
+          <span class="big">No Task Selected</span>
+          Click a bubble to edit it. Use <span class="kbd">Tab</span> to cycle bubbles and <span class="kbd">↑</span><span class="kbd">↓</span> to adjust priority.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+  const stage = canvas.parentElement;
+
+  // ---- palette ----
+  const COL = { bg:'#1a1a1a', ink:'#f0f0f0', accent:'#00e5ff', alert:'#ff4d4d',
+                hairline:'#333333', muted:'#8a8a8a', base:'#7a7a7a' };
+
+  // ---- config ----
+  const BASE_R = 20, SCALE_R = 0.42;   // radius = BASE_R + priority*SCALE_R
+  const GRAVITY = 0.05;                 // buoyancy accel (px/frame^2)
+  const DAMP = 0.86;
+  const MAXV = 6;
+  const REP = 0.05;
+  const WALL = 0.5;
+  const MAXR = 260;
+  const JITTER = 0.5;
+
+  // ---- state ----
+  let W=0, H=0, DPR=1;
+  let bubbles = [];
+  let selected = null;
+  let hovered = null;
+  let drag = null;
+  let idc = 0;
+  let reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const clamp = (v,a,b)=> v<a?a : v>b?b : v;
+  const targetR = p => BASE_R + p*SCALE_R;
+
+  // ---- canvas sizing ----
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    const r = stage.getBoundingClientRect();
+    W = Math.max(1, Math.floor(r.width));
+    H = Math.max(1, Math.floor(r.height));
+    canvas.width = Math.floor(W*DPR);
+    canvas.height = Math.floor(H*DPR);
+    canvas.style.width = W+'px';
+    canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+
+  // ---- task factory ----
+  function makeTask(name, priority, desc){
+    return {
+      id: ++idc,
+      name: name || '',
+      desc: desc || '',
+      priority: priority,
+      x: W*0.5 + (Math.random()*160-80),
+      y: H*0.5 + (Math.random()*160-80),
+      vx:0, vy:0,
+      radius: 2,
+      targetRadius: targetR(priority),
+      compress: 0,
+      spawnT: performance.now(),
+      spawnDur: reduced ? 1 : 300,
+      errorT: 0,
+      selected:false
+    };
+  }
+
+  function addTask(name, priority, desc){
+    const b = makeTask(name, priority, desc);
+    bubbles.push(b);
+    return b;
+  }
+
+  function seed(){
+    bubbles = [];
+    selected = null;
+    const seeds = [
+      ['Ship v2 to production', 96, 'Release blocked on final QA sign-off.'],
+      ['Fix auth token refresh', 88, 'Sessions expire mid-work on Safari.'],
+      ['Refactor billing module', 72, 'Split invoice generation from webhook.'],
+      ['Draft Q3 roadmap', 55, ''],
+      ['Update onboarding copy', 40, ''],
+      ['Triage support backlog', 28, ''],
+      ['Archive legacy dashboards', 12, ''],
+      ['Rename color tokens', 8, '']
+    ];
+    seeds.forEach((s,i)=>{
+      const b = addTask(s[0], s[1], s[2]);
+      b.spawnT = performance.now() - i*40; // stagger entrance
+    });
+    updateGauge();
+  }
+
+  // ---- physics ----
+  function step(now){
+    // radius animation (elastic overshoot on spawn, lerp on priority change)
+    for(const b of bubbles){
+      const t = b.spawnDur>0 ? clamp((now-b.spawnT)/b.spawnDur,0,1) : 1;
+      let tr;
+      if(t<1){ tr = b.targetRadius * elastic(t); }
+      else { tr = b.targetRadius + (b.compress||0); }
+      b.radius += (tr - b.radius)*0.35;
+      if(b.radius < 1) b.radius = 1;
+    }
+
+    // buoyancy (pressure -> vertical force) + jitter
+    for(const b of bubbles){
+      b.vy += (50 - b.priority)/50 * GRAVITY;
+      if(!reduced && b.priority>70 && !b.selected && !drag){
+        b.x += (Math.random()*2-1)*JITTER;
+        b.y += (Math.random()*2-1)*JITTER;
+      }
+    }
+
+    // collisions (bubble-bubble)
+    const n = bubbles.length;
+    for(let i=0;i<n;i++){
+      const a = bubbles[i];
+      for(let j=i+1;j<n;j++){
+        const c = bubbles[j];
+        let dx = c.x-a.x, dy = c.y-a.y;
+        let dist = Math.hypot(dx,dy);
+        if(dist===0){ dx = (Math.random()*2-1); dy = (Math.random()*2-1); dist = Math.hypot(dx,dy)||0.01; }
+        const minD = a.radius + c.radius;
+        if(dist < minD){
+          const nx = dx/dist, ny = dy/dist;
+          const overlap = minD - dist;
+          const pa = a.priority/100, pc = c.priority/100;
+          const sum = (pa+pc)*0.5 + 0.15;
+          const fa = sum*REP*overlap;
+          const aFixed = drag && drag.b===a;
+          const cFixed = drag && drag.b===c;
+          if(aFixed && !cFixed){ c.x += nx*overlap; c.y += ny*overlap; }
+          else if(cFixed && !aFixed){ a.x -= nx*overlap; a.y -= ny*overlap; }
+          else if(!aFixed && !cFixed){
+            a.vx -= nx*fa; a.vy -= ny*fa;
+            c.vx += nx*fa; c.vy += ny*fa;
+          }
+        }
+      }
+    }
+
+    // integrate + walls
+    for(const b of bubbles){
+      if(drag && drag.b===b){ b.vx=0; b.vy=0; continue; }
+      b.vx *= DAMP; b.vy *= DAMP;
+      b.vx = clamp(b.vx,-MAXV,MAXV);
+      b.vy = clamp(b.vy,-MAXV,MAXV);
+      b.x += b.vx; b.y += b.vy;
+      const r = b.radius;
+      if(b.x - r < 0){ b.x = r; b.vx = -b.vx*WALL; }
+      else if(b.x + r > W){ b.x = W-r; b.vx = -b.vx*WALL; }
+      if(b.y - r < 0){ b.y = r; b.vy = -b.vy*WALL; }
+      else if(b.y + r > H){ b.y = H-r; b.vy = -b.vy*WALL; }
+    }
+
+    // compress neighbors while dragging
+    if(drag){
+      const b = drag.b;
+      for(const o of bubbles){
+        if(o===b){ o.compress = 0; continue; }
+        const d = Math.hypot(o.x-b.x, o.y-b.y);
+        const band = b.radius + o.radius + 46;
+        if(d < band){
+          const f = (1 - d/band);
+          o.compress = clamp(o.compress - f*6, -12, 0);
+        } else {
+          o.compress += (0 - o.compress)*0.15;
+        }
+      }
+    } else {
+      for(const o of bubbles) o.compress += (0 - o.compress)*0.15;
+    }
+  }
+
+  function elastic(t){
+    const c4 = (2*Math.PI)/3;
+    return t<=0 ? 0 : t>=1 ? 1 : Math.pow(2,-10*t)*Math.sin((t*10-0.75)*c4)+1;
+  }
+
+  // ---- render ----
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function draw(now){
+    ctx.clearRect(0,0,W,H);
+
+    // empty state
+    if(bubbles.length===0){
+      const cx = W/2, cy = H/2;
+      const pulse = reduced ? 0 : (Math.sin(now/700)*0.5+0.5);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(240,240,240,'+(0.12+pulse*0.08)+')';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6,8]);
+      ctx.beginPath(); ctx.arc(cx,cy,72,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(240,240,240,'+(0.32+pulse*0.12)+')';
+      ctx.font = '600 15px Oswald, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '3px';
+      ctx.fillText('INFLATE TO START', cx, cy);
+      ctx.letterSpacing = '0px';
+      ctx.restore();
+      return;
+    }
+
+    for(const b of bubbles){
+      const r = b.radius;
+      const err = b.errorT>0;
+      const isSel = b.selected;
+      const isHover = (b===hovered) && !isSel;
+
+      ctx.save();
+      if(err){
+        const e = b.errorT/420;
+        ctx.translate(Math.sin(now/22)*3*e, 0);
+      }
+
+      // fill
+      ctx.beginPath(); ctx.arc(b.x,b.y,r,0,Math.PI*2);
+      ctx.fillStyle = err ? 'rgba(255,77,77,0.16)' : 'rgba(240,240,240,0.035)';
+      ctx.fill();
+
+      // inner glow for high pressure
+      if(!err && b.priority>70){
+        const g = ctx.createRadialGradient(b.x,b.y,r*0.15,b.x,b.y,r);
+        const crit = b.priority>90;
+        const glow = crit ? '255,77,77' : '0,229,255';
+        let a = 0.05 + (b.priority-70)/30*0.13;
+        if(crit && !reduced) a += Math.sin(now/170)*0.05 + 0.05;
+        g.addColorStop(0,'rgba('+glow+','+a.toFixed(3)+')');
+        g.addColorStop(1,'rgba('+glow+',0)');
+        ctx.fillStyle = g;
+        ctx.fill();
+      }
+
+      // stroke
+      ctx.beginPath(); ctx.arc(b.x,b.y,r,0,Math.PI*2);
+      let sc = COL.base, sw = 1.5;
+      if(err){ sc = COL.alert; sw = 2.5; }
+      else if(b.priority>90){
+        const p = reduced ? 1 : (Math.sin(now/170)*0.5+0.5);
+        sc = COL.alert; sw = 2 + p*1.5;
+      } else if(b.priority>70){ sc = COL.accent; sw = 2; }
+      if(isSel){ sw += 1.5; if(!err && b.priority<=70) sc = COL.accent; }
+      if(isHover){ sw += 0.6; }
+      ctx.strokeStyle = sc; ctx.lineWidth = sw; ctx.stroke();
+
+      // crosshair for selection
+      if(isSel){
+        ctx.strokeStyle = COL.accent; ctx.lineWidth = 1;
+        const ext = 16;
+        ctx.beginPath();
+        ctx.moveTo(b.x - r - ext, b.y); ctx.lineTo(b.x - r + 4, b.y);
+        ctx.moveTo(b.x + r - 4, b.y); ctx.lineTo(b.x + r + ext, b.y);
+        ctx.moveTo(b.x, b.y - r - ext); ctx.lineTo(b.x, b.y - r + 4);
+        ctx.moveTo(b.x, b.y + r - 4); ctx.lineTo(b.x, b.y + r + ext);
+        ctx.stroke();
+      }
+
+      // label
+      const fs = clamp(r*0.34, 8, 15);
+      ctx.font = '500 '+fs.toFixed(1)+'px Oswald, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '0.5px';
+      ctx.fillStyle = err ? COL.alert : COL.ink;
+      const label = (b.name || 'Untitled').toUpperCase();
+      const maxW = r*1.55;
+      if(fs < 10.5){
+        ctx.fillStyle = err ? COL.alert : COL.accent;
+        ctx.font = '600 '+fs.toFixed(1)+'px Oswald, sans-serif';
+        ctx.fillText(String(Math.round(b.priority)), b.x, b.y);
+      } else {
+        let text = label;
+        if(ctx.measureText(text).width > maxW){
+          while(text.length>1 && ctx.measureText(text+'…').width > maxW) text = text.slice(0,-1);
+          text += '…';
+        }
+        ctx.fillText(text, b.x, b.y);
+      }
+      ctx.letterSpacing = '0px';
+      ctx.restore();
+    }
+  }
+
+  function loop(now){
+    step(now);
+    draw(now);
+    requestAnimationFrame(loop);
+  }
+
+  // ---- gauge ----
+  const gaugeFill = document.getElementById('gaugeFill');
+  const gaugeVal = document.getElementById('gaugeVal');
+  function updateGauge(){
+    let avg = 0;
+    if(bubbles.length){ avg = bubbles.reduce((s,b)=>s+b.priority,0)/bubbles.length; }
+    avg = Math.round(avg);
+    gaugeVal.textContent = avg;
+    gaugeFill.style.width = avg + '%';
+    gaugeFill.style.background = avg>90 ? COL.alert : avg>70 ? COL.accent : COL.base;
+  }
+
+  // ---- selection / panel ----
+  const titleInput = document.getElementById('titleInput');
+  const descInput = document.getElementById('descInput');
+  const prioRange = document.getElementById('prioRange');
+  const prioVal = document.getElementById('prioVal');
+  const deleteBtn = document.getElementById('deleteBtn');
+  const selDot = document.getElementById('selDot');
+  const emptyNote = document.getElementById('emptyNote');
+  const errMsg = document.getElementById('errMsg');
+
+  function setEnabled(on){
+    [titleInput,descInput,prioRange,deleteBtn].forEach(el=>el.disabled=!on);
+    emptyNote.style.display = on ? 'none' : 'block';
+    selDot.classList.toggle('on', on);
+  }
+
+  function refreshPanel(){
+    if(selected){
+      titleInput.value = selected.name;
+      descInput.value = selected.desc;
+      prioRange.value = Math.round(selected.priority);
+      prioVal.textContent = Math.round(selected.priority);
+      setEnabled(true);
+    } else {
+      titleInput.value=''; descInput.value=''; prioRange.value=50; prioVal.textContent='50';
+      setEnabled(false);
+    }
+    errMsg.classList.remove('show');
+  }
+
+  function select(b){
+    if(selected) selected.selected = false;
+    selected = b;
+    if(b){ b.selected = true; }
+    refreshPanel();
+  }
+
+  function setPriority(b, p){
+    p = clamp(Math.round(p),0,100);
+    b.priority = p;
+    b.targetRadius = targetR(p);
+    prioVal.textContent = p;
+    prioRange.value = p;
+    updateGauge();
+  }
+
+  // ---- input helpers ----
+  function pos(e){
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  function bubbleAt(x,y){
+    for(let i=bubbles.length-1;i>=0;i--){
+      const b = bubbles[i];
+      if(Math.hypot(x-b.x, y-b.y) <= b.radius) return b;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', e=>{
+    const p = pos(e);
+    const b = bubbleAt(p.x,p.y);
+    if(b){
+      canvas.setPointerCapture(e.pointerId);
+      drag = { b, startY:p.y, startP:b.priority };
+      b.selected = true;
+      if(selected && selected!==b) selected.selected=false;
+      select(b);
+      canvas.style.cursor = 'grabbing';
+    } else {
+      if(selected) select(null);
+    }
+  });
+
+  canvas.addEventListener('pointermove', e=>{
+    const p = pos(e);
+    if(drag){
+      const dy = drag.startY - p.y;                 // up = positive
+      let np = clamp(drag.startP + dy*0.35, 0, 100);
+      setPriority(drag.b, np);
+    } else {
+      const b = bubbleAt(p.x,p.y);
+      hovered = b;
+      canvas.style.cursor = b ? 'grab' : 'crosshair';
+    }
+  });
+
+  function endDrag(){
+    if(drag){ drag = null; canvas.style.cursor = hovered ? 'grab' : 'crosshair'; }
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  // ---- panel events ----
+  titleInput.addEventListener('input', ()=>{
+    if(!selected) return;
+    selected.name = titleInput.value;
+    if(selected.name.trim()){ selected.errorT = 0; errMsg.classList.remove('show'); }
+  });
+  descInput.addEventListener('input', ()=>{ if(selected) selected.desc = descInput.value; });
+  prioRange.addEventListener('input', ()=>{ if(selected) setPriority(selected, +prioRange.value); });
+
+  deleteBtn.addEventListener('click', ()=>{
+    if(!selected) return;
+    const i = bubbles.indexOf(selected);
+    if(i>=0) bubbles.splice(i,1);
+    selected = null;
+    refreshPanel(); updateGauge();
+  });
+
+  document.getElementById('addBtn').addEventListener('click', ()=>{
+    const b = addTask('', 50, '');
+    select(b);
+    titleInput.focus();
+    updateGauge();
+  });
+
+  // ---- keyboard ----
+  window.addEventListener('keydown', e=>{
+    if(e.target.tagName==='INPUT' || e.target.tagName==='TEXTAREA') return;
+    if(e.key==='Tab'){
+      e.preventDefault();
+      if(!bubbles.length) return;
+      let idx = bubbles.indexOf(selected);
+      idx = (idx + (e.shiftKey?-1:1) + bubbles.length + 1) % bubbles.length;
+      select(bubbles[idx]);
+    } else if(selected){
+      if(e.key==='ArrowUp'){ e.preventDefault(); setPriority(selected, selected.priority + (e.shiftKey?5:1)); }
+      else if(e.key==='ArrowDown'){ e.preventDefault(); setPriority(selected, selected.priority - (e.shiftKey?5:1)); }
+      else if(e.key==='Delete' || e.key==='Backspace'){ e.preventDefault(); deleteBtn.click(); }
+    }
+  });
+
+  // ---- resize ----
+  const ro = new ResizeObserver(()=>{ resize(); });
+  ro.observe(stage);
+  window.addEventListener('resize', resize);
+
+  // ---- boot ----
+  resize();
+  seed();
+  refreshPanel();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

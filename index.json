@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T15:21:34.773Z",
+  "generated_at": "2026-09-29T16:50:42.525Z",
   "schema": "schema/entry.schema.json",
-  "count": 223,
+  "count": 232,
   "categories": [
     "landing-pages",
     "animations",
@@ -11550,6 +11550,66 @@
       ]
     },
     {
+      "id": "bioluminescent-firefly-pulse",
+      "title": "Bioluminescent Firefly Pulse",
+      "category": "games",
+      "tags": [
+        "nature",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "A rhythm game where players sync clicks with an emergent swarm pulse. Join the bioluminescent rhythm, avoid desyncs, and master the chaotic beat in a single-file HTML experience.",
+      "path": "prompts/games/bioluminescent-firefly-pulse",
+      "preview": null,
+      "prompt": "prompts/games/bioluminescent-firefly-pulse/prompt.md",
+      "extended": "prompts/games/bioluminescent-firefly-pulse/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "circuit-breaker-arc-timing",
+      "title": "Circuit Breaker Arc Timing",
+      "category": "games",
+      "tags": [
+        "industrial",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "High-stakes timing game: close breakers when the oscillating electric arc is shortest. Industrial aesthetic, 5 circuits, precision scoring.",
+      "path": "prompts/games/circuit-breaker-arc-timing",
+      "preview": null,
+      "prompt": "prompts/games/circuit-breaker-arc-timing/prompt.md",
+      "extended": "prompts/games/circuit-breaker-arc-timing/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "ferromagnetic-plate-magnetism",
       "title": "Ferromagnetic Flux",
       "category": "games",
@@ -11860,6 +11920,66 @@
       ]
     },
     {
+      "id": "satellite-orbit-sync-link",
+      "title": "Satellite Orbit Sync",
+      "category": "games",
+      "tags": [
+        "space",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "A rhythm-timing game where players drop data packets from orbiting satellites into a pulsing receiver window. Requires precise anticipation of orbital position and window phase to transfer 100GB of data before 5…",
+      "path": "prompts/games/satellite-orbit-sync-link",
+      "preview": null,
+      "prompt": "prompts/games/satellite-orbit-sync-link/prompt.md",
+      "extended": "prompts/games/satellite-orbit-sync-link/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "seismograph-pulse-filter",
+      "title": "Seismograph Pulse Filter",
+      "category": "games",
+      "tags": [
+        "data-viz",
+        "rhythm-timing",
+        "canvas2d",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "A precision timing game where players filter seismic noise to isolate earthquake pulses using a single-click mechanic on a dark oscilloscope interface.",
+      "path": "prompts/games/seismograph-pulse-filter",
+      "preview": null,
+      "prompt": "prompts/games/seismograph-pulse-filter/prompt.md",
+      "extended": "prompts/games/seismograph-pulse-filter/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "sonar-pulse-echo-sync",
       "title": "Echo Chamber Sync",
       "category": "games",
@@ -12043,6 +12163,38 @@
           "review_summary": "The page displays a WebGL initialization error, failing to render the required aurora borealis scene."
         }
       ]
+    },
+    {
+      "id": "borosilicate-bubble-trap-study",
+      "title": "The Lab Trap",
+      "category": "webgl",
+      "tags": [
+        "three-js",
+        "r3f",
+        "refraction",
+        "caustics",
+        "glass",
+        "scientific",
+        "microscope"
+      ],
+      "status": "polished",
+      "summary": "Photorealistic WebGL study of a borosilicate bubble trap with interactive liquid level simulation, focusing on accurate refraction and caustics.",
+      "path": "prompts/webgl/borosilicate-bubble-trap-study",
+      "preview": null,
+      "prompt": "prompts/webgl/borosilicate-bubble-trap-study/prompt.md",
+      "extended": "prompts/webgl/borosilicate-bubble-trap-study/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "chiral-mobius-strip-ribbon",
@@ -12420,6 +12572,38 @@
       ]
     },
     {
+      "id": "oxidized-silver-tarnish-scrub",
+      "title": "Silver Tarnish",
+      "category": "webgl",
+      "tags": [
+        "shader-mask",
+        "pbr",
+        "silver",
+        "oxidation",
+        "cleaning",
+        "three-js",
+        "metal-workflow"
+      ],
+      "status": "polished",
+      "summary": "Interactive WebGL silver tarnish scrubber using Three.js PBR shaders and dynamic DataTexture masking for realistic polishing.",
+      "path": "prompts/webgl/oxidized-silver-tarnish-scrub",
+      "preview": null,
+      "prompt": "prompts/webgl/oxidized-silver-tarnish-scrub/prompt.md",
+      "extended": "prompts/webgl/oxidized-silver-tarnish-scrub/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "satin-velvet-brush-deform",
       "title": "Brush & Nap",
       "category": "webgl",
@@ -12497,11 +12681,11 @@
       "status": "polished",
       "summary": "A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' timeline to accelerate gas phase-change, transitioning light from dull red to bright sodium yellow with thermal distortion.",
       "path": "prompts/webgl/sodium-vapor-crt-glass",
-      "preview": null,
+      "preview": "prompts/webgl/sodium-vapor-crt-glass/preview.png",
       "prompt": "prompts/webgl/sodium-vapor-crt-glass/prompt.md",
       "extended": "prompts/webgl/sodium-vapor-crt-glass/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -12511,7 +12695,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 368927,
+          "gen_ms": 368927,
+          "ttft_ms": 2724,
+          "queue_wait_ms": 105,
+          "wall_ms": 371814,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "The screenshot is effectively a black void with no visible geometry, UI, or lighting, failing to display the required CRT glass envelope or any interactive elements."
+        }
+      ]
     },
     {
       "id": "voxel-erosion-hydraulic-map",
@@ -12592,9 +12806,72 @@
       "status": "polished",
       "summary": "Carapace Press: A nocturnal entomological journal where scroll velocity physically shatters the dark chitinous top layer to reveal the pale, bioluminescent substrate beneath.",
       "path": "prompts/editorial/chitin-molting-exoskeleton",
-      "preview": null,
+      "preview": "prompts/editorial/chitin-molting-exoskeleton/preview.png",
       "prompt": "prompts/editorial/chitin-molting-exoskeleton/prompt.md",
       "extended": "prompts/editorial/chitin-molting-exoskeleton/prompt.full.md",
+      "demo": "prompts/editorial/chitin-molting-exoskeleton/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 741573,
+          "gen_ms": 741573,
+          "ttft_ms": 7944,
+          "queue_wait_ms": 117,
+          "wall_ms": 749687,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/chitin-molting-exoskeleton/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/chitin-molting-exoskeleton/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 4,
+          "review_summary": "The screenshot shows a mostly empty void with only a header and a small block of text, failing to deliver the requested high-fidelity editorial landing page."
+        }
+      ]
+    },
+    {
+      "id": "crane-hook-load-chart",
+      "title": "Rated Capacity",
+      "category": "editorial",
+      "tags": [
+        "crane",
+        "tension",
+        "safety",
+        "structural",
+        "physics",
+        "warning",
+        "industrial",
+        "grid"
+      ],
+      "status": "polished",
+      "summary": "An editorial interface for 'Lift & Limit' where scroll depth simulates physical load, causing the text column to sag and strain against a crane-hook metaphor, complete with dynamic SWL indicators and industrial…",
+      "path": "prompts/editorial/crane-hook-load-chart",
+      "preview": null,
+      "prompt": "prompts/editorial/crane-hook-load-chart/prompt.md",
+      "extended": "prompts/editorial/crane-hook-load-chart/prompt.full.md",
       "demo": null,
       "default_run": null,
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
@@ -12853,6 +13130,41 @@
           "review_summary": "The page is effectively blank, showing only a dark background and a grid, with no content or typography visible."
         }
       ]
+    },
+    {
+      "id": "pressure-vessel-gauge-sweep",
+      "title": "Barometric Essay: Atmosphere Quarterly",
+      "category": "editorial",
+      "tags": [
+        "gauge",
+        "weather",
+        "pressure",
+        "analog",
+        "tension",
+        "climate",
+        "industrial",
+        "reading-rhythm",
+        "editorial",
+        "infrastructure"
+      ],
+      "status": "polished",
+      "summary": "A long-form climate essay where narrative intensity drives an analog pressure gauge. Text density and contrast tighten as the needle sweeps toward the red zone, simulating an approaching storm front.",
+      "path": "prompts/editorial/pressure-vessel-gauge-sweep",
+      "preview": null,
+      "prompt": "prompts/editorial/pressure-vessel-gauge-sweep/prompt.md",
+      "extended": "prompts/editorial/pressure-vessel-gauge-sweep/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "salt-crystallization-growth",
@@ -13172,11 +13484,11 @@
       "status": "polished",
       "summary": "Direct manipulation of acoustic physics: drag foam panels onto a room diagram to visualize real-time sound wave reflection dampening and dead-zone creation.",
       "path": "prompts/interfaces/acoustic-panel-attenuation",
-      "preview": null,
+      "preview": "prompts/interfaces/acoustic-panel-attenuation/preview.png",
       "prompt": "prompts/interfaces/acoustic-panel-attenuation/prompt.md",
       "extended": "prompts/interfaces/acoustic-panel-attenuation/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -13186,7 +13498,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 530851,
+          "gen_ms": 530851,
+          "ttft_ms": 15399,
+          "queue_wait_ms": 113,
+          "wall_ms": 546423,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Faithful, dense engineering workspace with correct palette, Anton/Lato type, and a calm tool surface that starts immediately."
+        }
+      ]
     },
     {
       "id": "ferrous-oxide-bloom-filter",
@@ -13313,6 +13655,38 @@
       ]
     },
     {
+      "id": "hazmat-cargo-manifest-verify",
+      "title": "HazMat Cargo Manifest Verifier",
+      "category": "interfaces",
+      "tags": [
+        "logistics",
+        "hazmat",
+        "stamping",
+        "utility",
+        "form-validation",
+        "high-contrast",
+        "warning"
+      ],
+      "status": "polished",
+      "summary": "Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verification, and brutalist utility design.",
+      "path": "prompts/interfaces/hazmat-cargo-manifest-verify",
+      "preview": null,
+      "prompt": "prompts/interfaces/hazmat-cargo-manifest-verify/prompt.md",
+      "extended": "prompts/interfaces/hazmat-cargo-manifest-verify/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "kintsugi-joinery-scheduler",
       "title": "Kintsugi Joinery Scheduler",
       "category": "interfaces",
@@ -13389,11 +13763,11 @@
       "status": "polished",
       "summary": "Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split layout. Features CMYK sliders, real-time canvas simulation with ink bleed physics, and industrial styling.",
       "path": "prompts/interfaces/lithography-ink-coverage",
-      "preview": null,
+      "preview": "prompts/interfaces/lithography-ink-coverage/preview.png",
       "prompt": "prompts/interfaces/lithography-ink-coverage/prompt.md",
       "extended": "prompts/interfaces/lithography-ink-coverage/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/lithography-ink-coverage/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -13403,7 +13777,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 314153,
+          "gen_ms": 314153,
+          "ttft_ms": 7156,
+          "queue_wait_ms": 30325,
+          "wall_ms": 381840,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/lithography-ink-coverage/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/lithography-ink-coverage/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong industrial aesthetic with correct typography and layout, but features a logical state conflict (warning banner visible while sliders are at 0%)."
+        }
+      ]
     },
     {
       "id": "mon-nob-grocery-ledger",
@@ -13478,11 +13882,11 @@
       "status": "polished",
       "summary": "A physical task queue where priority is pressure. Drag bubbles to inflate; high-pressure tasks pulse, vibrate, and push adjacent tasks away, enforcing spatial hierarchy.",
       "path": "prompts/interfaces/pneumatic-actuator-queue",
-      "preview": null,
+      "preview": "prompts/interfaces/pneumatic-actuator-queue/preview.png",
       "prompt": "prompts/interfaces/pneumatic-actuator-queue/prompt.md",
       "extended": "prompts/interfaces/pneumatic-actuator-queue/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/pneumatic-actuator-queue/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-09-29",
@@ -13492,7 +13896,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-09-29",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": null,
+          "duration_ms": 264322,
+          "gen_ms": 264322,
+          "ttft_ms": 7241,
+          "queue_wait_ms": 111,
+          "wall_ms": 271735,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/pneumatic-actuator-queue/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/pneumatic-actuator-queue/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong industrial execution with accurate physics visualization, correct typography, and a clean tool-first layout."
+        }
+      ]
     },
     {
       "id": "seismograph-ink-trace",

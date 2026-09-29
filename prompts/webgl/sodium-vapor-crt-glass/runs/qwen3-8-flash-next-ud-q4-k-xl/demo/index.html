@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sodium Vapor CRT — Material Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0F0C0B;
+    --structure:#1E1E1E;
+    --sodium:#FFD700;
+    --orange:#FF7A00;
+    --red:#330000;
+    --ink:#6E6257;
+    --ink-2:#4A423B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--void);
+    color:#8A7F75;
+    font-family:'Chakra Petch',sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    position:relative;
+  }
+  canvas#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1}
+
+  /* ---------- HUD ---------- */
+  .hud{
+    position:fixed;inset:0;z-index:2;pointer-events:none;
+    padding:clamp(16px,3vw,40px);
+    display:flex;flex-direction:column;justify-content:space-between;
+    opacity:0;transition:opacity 1.4s ease .2s;
+  }
+  body.ready .hud{opacity:1}
+  .hud *{pointer-events:auto}
+
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+
+  .brand{display:flex;flex-direction:column;gap:4px}
+  .brand .mark{
+    font-family:'Chakra Petch',sans-serif;font-weight:600;
+    font-size:clamp(20px,2.6vw,30px);letter-spacing:.16em;
+    color:#C9BEB2;line-height:1;
+    text-shadow:0 0 24px rgba(255,215,0,.10);
+  }
+  .brand .mark b{color:var(--sodium);font-weight:600;text-shadow:0 0 20px rgba(255,215,0,.55)}
+  .brand .sub{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;
+    letter-spacing:.22em;color:var(--ink);text-transform:uppercase;
+  }
+  .brand .rule{width:54px;height:1px;background:linear-gradient(90deg,var(--orange),transparent);margin-top:6px}
+
+  .status{display:flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--ink);text-transform:uppercase}
+  .status .led{width:7px;height:7px;border-radius:50%;background:var(--orange);box-shadow:0 0 10px var(--orange);animation:led 2.4s ease-in-out infinite}
+  @keyframes led{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+
+  .stage-label{position:absolute;left:clamp(16px,3vw,40px);top:44%;transform:translateY(-50%);writing-mode:vertical-rl;text-orientation:mixed;font-family:'Chakra Petch',sans-serif;font-weight:500;font-size:11px;letter-spacing:.42em;color:var(--ink-2);text-transform:uppercase;opacity:.6}
+
+  /* ---------- CONSOLE ---------- */
+  .console{width:min(660px,100%);margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+  .telemetry{display:flex;gap:clamp(14px,4vw,46px);justify-content:center;flex-wrap:wrap;align-items:flex-end}
+  .tel{display:flex;flex-direction:column;gap:3px;min-width:64px}
+  .tel .k{font-family:'Chakra Petch',sans-serif;font-size:9.5px;letter-spacing:.24em;color:var(--ink-2);text-transform:uppercase}
+  .tel .v{font-family:'IBM Plex Mono',monospace;font-size:clamp(15px,2.2vw,20px);font-weight:500;color:#C7BCB0;letter-spacing:.02em;transition:color .2s,text-shadow .2s}
+  .tel .v .u{font-size:.6em;color:var(--ink);margin-left:2px}
+
+  .state{display:flex;align-items:baseline;gap:10px;justify-content:center}
+  .state .k{font-family:'Chakra Petch',sans-serif;font-size:9.5px;letter-spacing:.24em;color:var(--ink-2);text-transform:uppercase}
+  .state .v{font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:clamp(13px,1.9vw,17px);letter-spacing:.16em;text-transform:uppercase}
+
+  .scrub{display:flex;align-items:center;gap:16px;width:100%}
+  .scrub .lab{font-family:'Chakra Petch',sans-serif;font-size:10px;letter-spacing:.22em;color:var(--ink);text-transform:uppercase;white-space:nowrap}
+  .scrub .val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);min-width:42px;text-align:right}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;flex:1;height:2px;
+    background:var(--structure);border-radius:2px;cursor:pointer;outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--orange);border:2px solid #0F0C0B;
+    box-shadow:0 0 0 1px rgba(255,122,0,.4),0 0 16px 3px rgba(255,122,0,.6);
+    transition:transform .15s,box-shadow .2s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.18);box-shadow:0 0 0 1px rgba(255,215,0,.6),0 0 22px 5px rgba(255,215,0,.7)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--orange);border:2px solid #0F0C0B;box-shadow:0 0 16px 3px rgba(255,122,0,.6)}
+  input[type=range]::-moz-range-track{height:2px;background:var(--structure)}
+
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:16px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ink-2);text-transform:uppercase}
+  .foot .hint{color:var(--ink)}
+  .foot .hint b{color:var(--orange);font-weight:500}
+
+  .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse 70% 60% at 50% 46%,transparent 40%,rgba(0,0,0,.55) 100%)}
+
+  @media (max-width:640px){
+    .stage-label{display:none}
+    .telemetry{gap:16px}
+    .foot .hint{display:none}
+  }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="vignette"></div>
+
+  <div class="hud">
+    <div class="top">
+      <div class="brand">
+        <div class="mark">SODIUM <b>VAPOR</b></div>
+        <div class="sub">CRT Glass Envelope · Material Study</div>
+        <div class="rule"></div>
+      </div>
+      <div class="status"><span class="led"></span><span id="statusTxt">STANDBY</span></div>
+    </div>
+
+    <div class="stage-label">Phase-Change Observation</div>
+
+    <div class="console">
+      <div class="telemetry">
+        <div class="tel"><span class="k">Temp</span><span class="v"><span id="tTemp">1500</span><span class="u">K</span></span></div>
+        <div class="tel"><span class="k">Voltage</span><span class="v"><span id="tVolt">1.0</span><span class="u">kV</span></span></div>
+        <div class="tel"><span class="k">Gas Density</span><span class="v"><span id="tDens">0.10</span></span></div>
+        <div class="tel"><span class="k">Luminance</span><span class="v"><span id="tLum">0.0</span><span class="u">cd/m²</span></span></div>
+      </div>
+
+      <div class="state"><span class="k">Phase</span><span class="v" id="tState">COLD</span></div>
+
+      <div class="scrub">
+        <span class="lab">Warmup Cycle</span>
+        <input id="warmup" type="range" min="0" max="100" value="0" step="1" aria-label="Warmup cycle">
+        <span class="val" id="warmupVal">00%</span>
+      </div>
+
+      <div class="foot">
+        <span>Na-2400 · Vacuum Tube · Lathe Envelope</span>
+        <span class="hint">Drag to ionize · <b>Space</b> auto-cycle</span>
+      </div>
+    </div>
+  </div>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0F0C0B);
+scene.fog = new THREE.FogExp2(0x0F0C0B, 0.05);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 0.25, 5.1);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+// dim blue-grey rim light for glass edge definition
+const rim = new THREE.DirectionalLight(0x2a3a44, 1.1);
+rim.position.set(-2.5, 1.5, -3.0);
+scene.add(rim);
+const rim2 = new THREE.DirectionalLight(0x223038, 0.5);
+rim2.position.set(2.5, -1.0, -2.0);
+scene.add(rim2);
+
+const tube = new THREE.Group();
+tube.rotation.y = 0.35;
+scene.add(tube);
+
+/* ---------- shared GLSL noise ---------- */
+const NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+float fbm(vec3 p){float v=0.0,a=0.5;for(int i=0;i<4;i++){v+=a*snoise(p);p*=2.03;a*=0.5;}return v;}
+`;
+
+/* ---------- glass envelope (LatheGeometry) ---------- */
+const profile = [];
+const capR = 0.62, capH = 0.45, cylH = 1.5;
+for(let i=0;i<=14;i++){ const a=-Math.PI/2 + (Math.PI/2)*(i/14); profile.push(new THREE.Vector2(Math.cos(a)*capR, -cylH/2 + capH + Math.sin(a)*capH)); }
+for(let i=0;i<=2;i++){ profile.push(new THREE.Vector2(capR, cylH/2 - capH + (capH/2)*(i/2))); }
+for(let i=0;i<=14;i++){ const a=(Math.PI/2)*(i/14); profile.push(new THREE.Vector2(Math.cos(a)*capR, cylH/2 + Math.sin(a)*capH)); }
+const glassGeo = new THREE.LatheGeometry(profile, 128);
+glassGeo.computeVertexNormals();
+
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color:0xbfd0d6, metalness:0, roughness:0.05, transmission:1.0, thickness:0.6,
+  ior:1.45, transparent:true, clearcoat:0.6, clearcoatRoughness:0.15,
+  attenuationColor:new THREE.Color(0xffe6b0), attenuationDistance:4.0,
+  envMapIntensity:0.35, side:THREE.DoubleSide
+});
+glassMat.onBeforeCompile = (sh)=>{
+  sh.uniforms.uTime = {value:0};
+  sh.uniforms.uWarm = {value:0};
+  sh.vertexShader = sh.vertexShader
+    .replace('#include <common>', `#include <common>\nuniform float uTime;\nuniform float uWarm;`)
+    .replace('#include <begin_vertex>', `#include <begin_vertex>\n{
+      float d = sin(position.y*6.0 + uTime*1.5)*0.5 + sin(position.y*13.0 - uTime*2.1)*0.5;
+      transformed += normal * d * 0.012 * uWarm;
+    }`);
+};
+const glass = new THREE.Mesh(glassGeo, glassMat);
+tube.add(glass);
+
+/* ---------- internal volumetric gas (raymarched) ---------- */
+const gasGeo = new THREE.CylinderGeometry(0.5, 0.5, 1.9, 72, 1, true);
+const gasMat = new THREE.ShaderMaterial({
+  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide,
+  uniforms:{ uTime:{value:0}, uWarm:{value:0}, uPulse:{value:0}, uOpacity:{value:0},
+    uCold:{value:new THREE.Color(0x330000)}, uMid:{value:new THREE.Color(0xFF7A00)}, uHot:{value:new THREE.Color(0xFFD700)} },
+  vertexShader:`
+    varying vec3 vObjPos;
+    void main(){ vObjPos=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`
+    precision mediump float;
+    varying vec3 vObjPos;
+    uniform float uTime,uWarm,uPulse,uOpacity;
+    uniform vec3 uCold,uMid,uHot;
+    ${NOISE}
+    void main(){
+      vec3 p=vObjPos;
+      float rad=sqrt(p.x*p.x+p.z*p.z);
+      float capH=0.45;
+      float cylH=1.9;
+      float yTop = cylH*0.5 - capH + capH*sqrt(max(0.0,1.0-pow((abs(p.y)-(cylH*0.5-capH))/capH,2.0)));
+      float inside = 1.0 - smoothstep(0.0,0.06, rad - yTop);
+      float along  = 1.0 - smoothstep(0.72, 0.95, abs(p.y)/0.95);
+      inside *= along;
+      if(inside<=0.001) discard;
+      float speed=0.05+uWarm*0.9;
+      float turb=0.3+uWarm*1.4;
+      float density=fbm(vec3(p.x*2.4, p.y*1.8 - uTime*speed, p.z*2.4) + turb*fbm(p*1.5+uTime*0.2));
+      density=smoothstep(0.0,0.95,density);
+      float core=1.0-smoothstep(0.0,0.5,rad);
+      float swirl=0.5+0.5*sin(atan(p.z,p.x)*4.0 + p.y*3.0 - uTime*(0.5+uWarm*2.0));
+      float g=density*(0.45+0.55*core)*(0.5+0.5*swirl);
+      vec3 col=mix(uCold,uMid,smoothstep(0.0,0.5,uWarm));
+      col=mix(col,uHot,smoothstep(0.45,1.0,uWarm));
+      float intensity=(0.05+uWarm*uWarm*3.2)*(0.7+0.3*uPulse);
+      vec3 final=col*g*intensity;
+      gl_FragColor=vec4(final, g*intensity*uOpacity);
+    }`
+});
+const gas = new THREE.Mesh(gasGeo, gasMat);
+tube.add(gas);
+
+/* ---------- filament ---------- */
+const filMat = new THREE.ShaderMaterial({
+  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false,
+  uniforms:{ uTime:{value:0}, uWarm:{value:0}, uPulse:{value:0}, uOpacity:{value:0},
+    uCold:{value:new THREE.Color(0x330000)}, uMid:{value:new THREE.Color(0xFF7A00)}, uHot:{value:new THREE.Color(0xFFD700)} },
+  vertexShader:`
+    varying vec2 vUv;
+    uniform float uTime,uWarm;
+    void main(){ vUv=uv;
+      vec3 tp=position;
+      tp.x+=sin(tp.y*60.0+uTime*2.0)*0.004*uWarm;
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(tp,1.0); }`,
+  fragmentShader:`
+    precision mediump float;
+    varying vec2 vUv;
+    uniform float uTime,uWarm,uPulse,uOpacity;
+    uniform vec3 uCold,uMid,uHot;
+    void main(){
+      float core=smoothstep(0.5,0.0,abs(vUv.y-0.5));
+      float flick=0.7+0.3*sin(uTime*22.0)+0.15*sin(uTime*57.0);
+      vec3 col=mix(uCold,uMid,smoothstep(0.0,0.5,uWarm));
+      col=mix(col,uHot,smoothstep(0.45,1.0,uWarm));
+      float glow=core*(0.15+uWarm*uWarm*4.0)*(0.75+0.25*flick)*(0.7+0.3*uPulse);
+      gl_FragColor=vec4(col*glow, glow*uOpacity);
+    }`
+});
+const filament = new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,1.5,16), filMat);
+tube.add(filament);
+const fil2 = filament.clone(); fil2.position.x=0.07; tube.add(fil2);
+const fil3 = filament.clone(); fil3.position.x=-0.07; tube.add(fil3);
+
+/* ---------- metal end-caps ---------- */
+const capMat = new THREE.MeshStandardMaterial({ color:0x141414, metalness:0.9, roughness:0.45 });
+const capTop = new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.30,0.16,48), capMat);
+capTop.position.y = 1.10; tube.add(capTop);
+const capBot = new THREE.Mesh(new THREE.CylinderGeometry(0.30,0.24,0.16,48), capMat);
+capBot.position.y = -1.10; tube.add(capBot);
+
+/* ---------- dust motes ---------- */
+const dustCount = 520;
+const dustPos = new Float32Array(dustCount*3);
+const dustSeed = new Float32Array(dustCount);
+for(let i=0;i<dustCount;i++){
+  dustPos[i*3]   = (Math.random()-0.5)*9;
+  dustPos[i*3+1] = (Math.random()-0.5)*6;
+  dustPos[i*3+2] = (Math.random()-0.5)*6;
+  dustSeed[i] = Math.random();
+}
+const dustGeo = new THREE.BufferGeometry();
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos,3));
+dustGeo.setAttribute('aSeed', new THREE.BufferAttribute(dustSeed,1));
+const dustMat = new THREE.ShaderMaterial({
+  transparent:true, blending:THREE.AdditiveBlending, depthWrite:false,
+  uniforms:{ uTime:{value:0}, uWarm:{value:0}, uColor:{value:new THREE.Color(0xFFD700)}, uOpacity:{value:0} },
+  vertexShader:`
+    attribute float aSeed; varying float vA;
+    uniform float uTime,uWarm; uniform vec3 uColor; uniform float uOpacity;
+    void main(){
+      vec3 p=position;
+      p.y += sin(uTime*0.2 + aSeed*6.28)*0.15;
+      p.x += cos(uTime*0.15 + aSeed*6.28)*0.12;
+      vec4 mv=modelViewMatrix*vec4(p,1.0);
+      float dist=length(p);
+      float lit=smoothstep(6.0,0.8,dist);
+      vA=lit*uWarm*uOpacity;
+      gl_PointSize=(1.5+aSeed*3.0)*(300.0/-mv.z);
+      gl_Position=projectionMatrix*mv; }`,
+  fragmentShader:`
+    precision mediump float; varying float vA; uniform vec3 uColor;
+    void main(){
+      vec2 c=gl_PointCoord-0.5;
+      float d=1.0-smoothstep(0.0,0.5,length(c));
+      gl_FragColor=vec4(uColor*vA*d, vA*d); }`
+});
+const dust = new THREE.Points(dustGeo, dustMat);
+scene.add(dust);
+
+/* ---------- post-processing ---------- */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.9, 0.7, 1.0);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ---------- state ---------- */
+let targetWarm = 0;
+let currentWarm = 0;
+let startTime = performance.now();
+let lastInteract = 0;
+let mouse = {x:0, y:0, tx:0, ty:0};
+let autoOn = false;
+
+const slider = document.getElementById('warmup');
+const warmupVal = document.getElementById('warmupVal');
+const elTemp = document.getElementById('tTemp');
+const elVolt = document.getElementById('tVolt');
+const elDens = document.getElementById('tDens');
+const elLum  = document.getElementById('tLum');
+const elState= document.getElementById('tState');
+const statusTxt = document.getElementById('statusTxt');
+
+function stateName(w){
+  if(w<0.08) return 'COLD';
+  if(w<0.35) return 'IGNITION';
+  if(w<0.62) return 'IONIZING';
+  if(w<0.85) return 'GLOWING';
+  return 'SODIUM PEAK';
+}
+function updateUI(w){
+  const pct = Math.round(w*100);
+  warmupVal.textContent = String(pct).padStart(2,'0')+'%';
+  elTemp.textContent = Math.round(1500 + w*1100);
+  elVolt.textContent = (1 + w*11).toFixed(1);
+  elDens.textContent = (0.10 + w*0.90).toFixed(2);
+  elLum.textContent  = (w*w*4200).toFixed(1);
+  const s = stateName(w);
+  elState.textContent = s;
+  statusTxt.textContent = s;
+  const hot = Math.max(0, (w-0.45)/0.55);
+  elState.style.color = `rgb(${Math.round(120+hot*135)},${Math.round(110+hot*105)},${Math.round(90-hot*20)})`;
+  elState.style.textShadow = hot>0.05 ? `0 0 ${10+hot*22}px rgba(255,${Math.round(180-hot*40)},0,${0.3+hot*0.5})` : 'none';
+}
+
+slider.addEventListener('input', ()=>{ targetWarm = slider.value/100; lastInteract = performance.now(); autoOn=false; });
+
+addEventListener('pointermove', (e)=>{ mouse.tx = (e.clientX/innerWidth - 0.5); mouse.ty = (e.clientY/innerHeight - 0.5); });
+
+addEventListener('keydown', (e)=>{
+  if(e.code==='Space'){ e.preventDefault(); autoOn=!autoOn; }
+});
+
+/* ---------- loop ---------- */
+function animate(now){
+  requestAnimationFrame(animate);
+  const t = (now - startTime)/1000;
+
+  if(autoOn){
+    targetWarm = 0.5 + 0.5*Math.sin(t*0.25);
+    slider.value = Math.round(targetWarm*100);
+  }
+
+  currentWarm += (targetWarm - currentWarm)*0.05;
+  const w = currentWarm;
+
+  const entrance = Math.min(1, t/3.0);
+  const idleBase = reduced ? 0 : 0.06;
+  const pulse = reduced ? 0.5 : (0.5 + 0.5*Math.sin(t*1.1));
+  const pulseAmt = 0.5 + 0.5*Math.sin(t*2.4);
+
+  const effOpacity = entrance;
+  const effWarm = Math.max(w, idleBase) * entrance;
+
+  glassMat.uniforms.uTime.value = t;
+  glassMat.uniforms.uWarm.value = effWarm;
+
+  gasMat.uniforms.uTime.value = t;
+  gasMat.uniforms.uWarm.value = effWarm;
+  gasMat.uniforms.uPulse.value = pulseAmt;
+  gasMat.uniforms.uOpacity.value = effOpacity;
+
+  filMat.uniforms.uTime.value = t;
+  filMat.uniforms.uWarm.value = effWarm;
+  filMat.uniforms.uPulse.value = pulseAmt;
+  filMat.uniforms.uOpacity.value = effOpacity;
+
+  dustMat.uniforms.uTime.value = t;
+  dustMat.uniforms.uWarm.value = effWarm;
+  dustMat.uniforms.uOpacity.value = effOpacity;
+
+  bloom.strength = 0.55 + w*2.4;
+  bloom.threshold = 1.0 - w*0.8;
+  bloom.radius = 0.6 + w*0.25;
+
+  // parallax
+  mouse.x += (mouse.tx - mouse.x)*0.04;
+  mouse.y += (mouse.ty - mouse.y)*0.04;
+  const idleSpin = reduced ? 0 : 0.02*Math.sin(t*0.3);
+  camera.position.x = mouse.x*0.7;
+  camera.position.y = 0.25 - mouse.y*0.5;
+  camera.lookAt(0,0,0);
+  tube.rotation.y = 0.35 + idleSpin;
+
+  updateUI(w);
+  composer.render();
+}
+requestAnimationFrame(animate);
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  bloom.setSize(innerWidth, innerHeight);
+});
+
+document.body.classList.add('ready');
+</script>
+</body>
+</html>

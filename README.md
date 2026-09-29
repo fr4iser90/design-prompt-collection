@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 223 | 218 | 191 | 32 |
+| 232 | 223 | 200 | 32 |
 
 ## Quick start
 
@@ -3005,6 +3005,34 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 ## Games
 
+### Bioluminescent Firefly Pulse
+
+A rhythm game where players sync clicks with an emergent swarm pulse. Join the bioluminescent rhythm, avoid desyncs, and master the chaotic beat in a single-file HTML experience.
+
+**Status:** polished · `nature` `rhythm-timing` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/bioluminescent-firefly-pulse/prompt.md) · [extended](prompts/games/bioluminescent-firefly-pulse/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Circuit Breaker Arc Timing
+
+High-stakes timing game: close breakers when the oscillating electric arc is shortest. Industrial aesthetic, 5 circuits, precision scoring.
+
+**Status:** polished · `industrial` `rhythm-timing` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/circuit-breaker-arc-timing/prompt.md) · [extended](prompts/games/circuit-breaker-arc-timing/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Ferromagnetic Flux
 
 Guide a steel ball to a goal by placing magnets that visualize real-time magnetic field lines. Drag to place, rotate to steer. Fail if the ball hits red hazards or exits bounds.
@@ -3085,6 +3113,34 @@ Adjust pendulum length to match resonant frequency of glass targets. Release to 
 
 ---
 
+### Satellite Orbit Sync
+
+A rhythm-timing game where players drop data packets from orbiting satellites into a pulsing receiver window. Requires precise anticipation of orbital position and window phase to transfer 100GB of data before 5…
+
+**Status:** polished · `space` `rhythm-timing` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/satellite-orbit-sync-link/prompt.md) · [extended](prompts/games/satellite-orbit-sync-link/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Seismograph Pulse Filter
+
+A precision timing game where players filter seismic noise to isolate earthquake pulses using a single-click mechanic on a dark oscilloscope interface.
+
+**Status:** polished · `data-viz` `rhythm-timing` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/seismograph-pulse-filter/prompt.md) · [extended](prompts/games/seismograph-pulse-filter/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Echo Chamber Sync
 
 Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to emit expanding rings, hitting targets within tight tolerance while avoiding noise hazards. Features responsive desktop/mobile controls,…
@@ -3132,6 +3188,20 @@ Interactive 3D aurora curtain built with vertex-displaced planes and additive bl
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.8s | 308s | 2 | [open](prompts/webgl/aurora-borealis-shader-veil/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### The Lab Trap
+
+Photorealistic WebGL study of a borosilicate bubble trap with interactive liquid level simulation, focusing on accurate refraction and caustics.
+
+**Status:** polished · `three-js` `r3f` `refraction` `caustics` `glass` `scientific` `microscope` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/borosilicate-bubble-trap-study/prompt.md) · [extended](prompts/webgl/borosilicate-bubble-trap-study/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3231,6 +3301,20 @@ High-gloss liquid chrome sphere morphing from smooth to spiked via mouse-control
 
 ---
 
+### Silver Tarnish
+
+Interactive WebGL silver tarnish scrubber using Three.js PBR shaders and dynamic DataTexture masking for realistic polishing.
+
+**Status:** polished · `shader-mask` `pbr` `silver` `oxidation` `cleaning` `three-js` `metal-workflow` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/oxidized-silver-tarnish-scrub/prompt.md) · [extended](prompts/webgl/oxidized-silver-tarnish-scrub/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Brush & Nap
 
 Interactive 3D velvet cushion where mouse drag physically deforms the mesh and rotates tangent vectors, revealing embossed typography through shifting anisotropic sheen.
@@ -3255,9 +3339,11 @@ A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' ti
 
 [prompt](prompts/webgl/sodium-vapor-crt-glass/prompt.md) · [extended](prompts/webgl/sodium-vapor-crt-glass/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.7s | 369s | 1 | [open](prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3286,6 +3372,22 @@ Carapace Press: A nocturnal entomological journal where scroll velocity physical
 **Status:** polished · `entomology` `molting` `layers` `organic` `reveal` `night` `bioluminescence` `editorial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/editorial/chitin-molting-exoskeleton/prompt.md) · [extended](prompts/editorial/chitin-molting-exoskeleton/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/chitin-molting-exoskeleton/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.9s | 742s | 4 | [open](prompts/editorial/chitin-molting-exoskeleton/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Rated Capacity
+
+An editorial interface for 'Lift & Limit' where scroll depth simulates physical load, causing the text column to sag and strain against a crane-hook metaphor, complete with dynamic SWL indicators and industrial…
+
+**Status:** polished · `crane` `tension` `safety` `structural` `physics` `warning` `industrial` `grid` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/crane-hook-load-chart/prompt.md) · [extended](prompts/editorial/crane-hook-load-chart/prompt.full.md)
 
 _No shot preview yet._
 
@@ -3354,6 +3456,20 @@ A digital folio where black stamped text oxidizes into rust flakes as you scroll
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/oxidized-iron-marginalia/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.1s | 271s | 1 | [open](prompts/editorial/oxidized-iron-marginalia/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Barometric Essay: Atmosphere Quarterly
+
+A long-form climate essay where narrative intensity drives an analog pressure gauge. Text density and contrast tighten as the needle sweeps toward the red zone, simulating an approaching storm front.
+
+**Status:** polished · `gauge` `weather` `pressure` `analog` `tension` `climate` `industrial` `reading-rhythm` `editorial` `infrastructure` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/pressure-vessel-gauge-sweep/prompt.md) · [extended](prompts/editorial/pressure-vessel-gauge-sweep/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3447,9 +3563,11 @@ Direct manipulation of acoustic physics: drag foam panels onto a room diagram to
 
 [prompt](prompts/interfaces/acoustic-panel-attenuation/prompt.md) · [extended](prompts/interfaces/acoustic-panel-attenuation/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 15s | 531s | 8 | [open](prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3485,6 +3603,20 @@ A gift registry interface where privacy is determined by knot complexity. Users 
 
 ---
 
+### HazMat Cargo Manifest Verifier
+
+Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verification, and brutalist utility design.
+
+**Status:** polished · `logistics` `hazmat` `stamping` `utility` `form-validation` `high-contrast` `warning` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/hazmat-cargo-manifest-verify/prompt.md) · [extended](prompts/interfaces/hazmat-cargo-manifest-verify/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Kintsugi Joinery Scheduler
 
 A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 'set' a gold joinery line, turning logistics into a restorative craft.
@@ -3509,9 +3641,11 @@ Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split la
 
 [prompt](prompts/interfaces/lithography-ink-coverage/prompt.md) · [extended](prompts/interfaces/lithography-ink-coverage/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/lithography-ink-coverage/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.2s | 314s | 8 | [open](prompts/interfaces/lithography-ink-coverage/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3539,9 +3673,11 @@ A physical task queue where priority is pressure. Drag bubbles to inflate; high-
 
 [prompt](prompts/interfaces/pneumatic-actuator-queue/prompt.md) · [extended](prompts/interfaces/pneumatic-actuator-queue/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/pneumatic-actuator-queue/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.2s | 264s | 8 | [open](prompts/interfaces/pneumatic-actuator-queue/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

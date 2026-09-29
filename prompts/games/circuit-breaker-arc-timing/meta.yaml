@@ -1,0 +1,24 @@
+id: circuit-breaker-arc-timing
+title: "Circuit Breaker Arc Timing"
+category: games
+tags:
+  - industrial
+  - rhythm-timing
+  - canvas2d
+  - state-stack
+  - game
+status: polished
+summary: "High-stakes timing game: close breakers when the oscillating electric arc is shortest. Industrial aesthetic, 5 circuits, precision scoring."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

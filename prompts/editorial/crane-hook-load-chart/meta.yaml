@@ -1,0 +1,27 @@
+id: crane-hook-load-chart
+title: "Rated Capacity"
+category: editorial
+tags:
+  - crane
+  - tension
+  - safety
+  - structural
+  - physics
+  - warning
+  - industrial
+  - grid
+status: polished
+summary: "An editorial interface for 'Lift & Limit' where scroll depth simulates physical load, causing the text column to sag and strain against a crane-hook metaphor, complete with dynamic SWL indicators and industrial…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

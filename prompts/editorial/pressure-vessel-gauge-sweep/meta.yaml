@@ -1,0 +1,29 @@
+id: pressure-vessel-gauge-sweep
+title: "Barometric Essay: Atmosphere Quarterly"
+category: editorial
+tags:
+  - gauge
+  - weather
+  - pressure
+  - analog
+  - tension
+  - climate
+  - industrial
+  - reading-rhythm
+  - editorial
+  - infrastructure
+status: polished
+summary: "A long-form climate essay where narrative intensity drives an analog pressure gauge. Text density and contrast tighten as the needle sweeps toward the red zone, simulating an approaching storm front."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
