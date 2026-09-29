@@ -133,6 +133,8 @@ async function buildOne(cfg, entry, { dryRun, slug }) {
     provider: cfg.provider,
     engine: cfg.engine || null,
     engine_link: cfg.engineLink || null,
+    engine_rev: cfg.engineRev || null,
+    engine_version: cfg.engineVersion || null,
     demo: "demo/index.html",
     preview: null,
     status: "built",

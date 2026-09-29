@@ -202,6 +202,8 @@ export function writeRunMeta(runPath, data) {
     provider: merged.provider || null,
     engine: merged.engine || null,
     engine_link: merged.engine_link || null,
+    engine_rev: merged.engine_rev || null,
+    engine_version: merged.engine_version || null,
     built_at: merged.built_at || today(),
     updated: today(),
     demo: merged.demo || "demo/index.html",
@@ -246,6 +248,8 @@ model_slug: ${meta.model_slug}
 `;
   if (meta.engine) text += `engine: ${q(meta.engine)}\n`;
   if (meta.engine_link) text += `engine_link: ${q(meta.engine_link)}\n`;
+  if (meta.engine_rev) text += `engine_rev: ${q(meta.engine_rev)}\n`;
+  if (meta.engine_version) text += `engine_version: ${q(meta.engine_version)}\n`;
   text += `built_at: "${meta.built_at}"
 updated: "${meta.updated}"
 demo: ${meta.demo}
@@ -352,6 +356,8 @@ export function listRuns(entryDir, entryRelPosix) {
       provider: meta.provider || null,
       engine: meta.engine || null,
       engine_link: meta.engine_link || null,
+      engine_rev: meta.engine_rev || null,
+      engine_version: meta.engine_version || null,
       built_at: meta.built_at || null,
       status: meta.status || "built",
       build_attempts: numOrNull(meta.build_attempts) || 0,

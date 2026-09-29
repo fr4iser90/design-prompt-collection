@@ -9,7 +9,11 @@ import {
   repairStaleEntryPointers,
 } from "./lib/runs.mjs";
 import { CATEGORIES } from "./lib/helpers.mjs";
-import { updateMetaFields, walkEntries as walkFsEntries } from "./lib/provider.mjs";
+import {
+  updateMetaFields,
+  walkEntries as walkFsEntries,
+  engineLabel,
+} from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -225,10 +229,11 @@ Machine index: [\`index.json\`](./index.json) · Agents: [\`AGENTS.md\`](./AGENT
           const gen = fmtMs(r.gen_ms ?? r.duration_ms);
           const modelCell = `\`${r.model}\``;
           let engineCell = "—";
-          if (r.engine && r.engine_link) {
-            engineCell = `[${r.engine}](${r.engine_link})`;
-          } else if (r.engine) {
-            engineCell = `\`${r.engine}\``;
+          const eng = engineLabel(r.engine, r.engine_rev, r.engine_version);
+          if (eng && r.engine_link) {
+            engineCell = `[${eng}](${r.engine_link})`;
+          } else if (eng) {
+            engineCell = `\`${eng}\``;
           }
           md += `| ${img} | ${modelCell} | ${engineCell} | ${think} | ${ctx} | ${inn} | ${out} | ${ttft} | ${gen} | ${score} | ${demo} |\n`;
           // review_summary stays in run meta / index.json — not as a table row (clutters README)
@@ -322,6 +327,8 @@ function main() {
         provider: r.provider,
         engine: r.engine,
         engine_link: r.engine_link,
+        engine_rev: r.engine_rev,
+        engine_version: r.engine_version,
         built_at: r.built_at,
         thinking_enabled: r.thinking_enabled,
         stream: r.stream,

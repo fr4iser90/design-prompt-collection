@@ -323,6 +323,8 @@ async function shotRun(browser, entry, run) {
       provider: run.provider,
       engine: run.engine || prev.engine || null,
       engine_link: run.engine_link || prev.engine_link || null,
+      engine_rev: run.engine_rev || prev.engine_rev || null,
+      engine_version: run.engine_version || prev.engine_version || null,
       demo: "demo/index.html",
       preview: "preview.png",
       status: "shot",

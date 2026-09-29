@@ -1,0 +1,26 @@
+id: liquid-metal-morphing-vertex
+title: "Ferro Fluid"
+category: webgl
+tags:
+  - vertex-displacement
+  - liquid-metal
+  - environment-mapping
+  - magnetic-field
+  - three-js
+  - glossy
+  - shader-craft
+status: polished
+summary: "High-gloss liquid chrome sphere morphing from smooth to spiked via mouse-controlled magnetic vertex displacement and dynamic environment mapping."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

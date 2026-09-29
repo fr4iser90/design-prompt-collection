@@ -1,0 +1,24 @@
+id: steel-pasta-extrusion
+title: "Extruded Narrative"
+category: editorial
+tags:
+  - material
+  - physics
+  - typography
+  - craft
+  - verticality
+status: polished
+summary: "A long-form essay on pasta engineering where text strands stretch, thin, and vibrate like dough through a brass die, toggling between spaghetti and rigatoni layouts."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -11,10 +11,14 @@ export function resolveAiConfig(root, { requireKey = true } = {}) {
   // AI_MODEL = display name + runs/<slug>/ folder
   // AI_MODEL_API = id sent to /v1/chat/completions (defaults to AI_MODEL; e.g. gateway alias "chat")
   // AI_ENGINE / AI_ENGINE_LINK = runtime (gufo, llamacpp, …) stored in run meta + README
+  // AI_ENGINE_REV = git SHA for rolling engines (gufo); AI_ENGINE_VERSION = tag/semver (halogen)
   const model = process.env.AI_MODEL;
   const modelApi = process.env.AI_MODEL_API || model;
   const engine = (process.env.AI_ENGINE || "").trim() || null;
-  const engineLink = (process.env.AI_ENGINE_LINK || "").trim() || null;
+  const engineRev = (process.env.AI_ENGINE_REV || "").trim() || null;
+  const engineVersion = (process.env.AI_ENGINE_VERSION || "").trim() || null;
+  const engineLinkRaw = (process.env.AI_ENGINE_LINK || "").trim() || null;
+  const engineLink = pinEngineLink(engineLinkRaw, { engineRev, engineVersion });
   let baseUrl = process.env.AI_BASE_URL || PROVIDER_BASES[provider];
   if (requireKey && !apiKey) throw new Error("Missing AI_API_KEY in .env");
   if (!model) throw new Error("Missing AI_MODEL in .env");
@@ -36,11 +40,35 @@ export function resolveAiConfig(root, { requireKey = true } = {}) {
     modelApi, // request body "model"
     engine,
     engineLink,
+    engineRev,
+    engineVersion,
     baseUrl: baseUrl.replace(/\/$/, ""),
     thinkingEnabled,
     stream,
     waitForSlot,
   };
+}
+
+/**
+ * If AI_ENGINE_LINK is a bare github.com/org/repo URL, append /commit/<rev>
+ * or /releases/tag/<version>. Full URLs (already pinned) are left alone.
+ */
+export function pinEngineLink(link, { engineRev, engineVersion } = {}) {
+  if (!link) return null;
+  const base = String(link).trim().replace(/\/$/, "").replace(/\.git$/, "");
+  if (/\/(commit|releases\/tag|tree)\//.test(base)) return base;
+  const m = base.match(/^(https?:\/\/github\.com\/[^/]+\/[^/]+)$/i);
+  if (!m) return base;
+  if (engineRev) return `${m[1]}/commit/${engineRev}`;
+  if (engineVersion) return `${m[1]}/releases/tag/${engineVersion}`;
+  return base;
+}
+
+/** README / status label: gufo@996f343 or halogen@v1.2.3 */
+export function engineLabel(engine, engineRev, engineVersion) {
+  if (!engine) return null;
+  const pin = engineRev || engineVersion;
+  return pin ? `${engine}@${pin}` : engine;
 }
 
 export const ONE_HOUR_MS = 60 * 60 * 1000;

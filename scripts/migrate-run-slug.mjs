@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnvFile } from "./lib/helpers.mjs";
 import { modelSlug, writeRunMeta, readRunMeta, runDir } from "./lib/runs.mjs";
-import { walkEntries, updateMetaFields } from "./lib/provider.mjs";
+import { walkEntries, updateMetaFields, pinEngineLink } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -41,7 +41,12 @@ function main() {
   }
   const to = args.to || modelSlug(model);
   const engine = (process.env.AI_ENGINE || "").trim() || null;
-  const engineLink = (process.env.AI_ENGINE_LINK || "").trim() || null;
+  const engineRev = (process.env.AI_ENGINE_REV || "").trim() || null;
+  const engineVersion = (process.env.AI_ENGINE_VERSION || "").trim() || null;
+  const engineLink = pinEngineLink(
+    (process.env.AI_ENGINE_LINK || "").trim() || null,
+    { engineRev, engineVersion }
+  );
 
   if (from === to) {
     console.error(`from === to (${from}); nothing to rename`);
@@ -85,6 +90,8 @@ function main() {
       model_slug: to,
       engine: engine || prev.engine || null,
       engine_link: engineLink || prev.engine_link || null,
+      engine_rev: engineRev || prev.engine_rev || null,
+      engine_version: engineVersion || prev.engine_version || null,
       provider: prev.provider || "custom",
     });
 

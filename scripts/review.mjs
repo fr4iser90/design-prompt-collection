@@ -169,6 +169,9 @@ async function reviewRun(cfg, entry, run) {
     provider: run.provider || cfg.provider,
     engine: run.engine || cfg.engine || prev.engine || null,
     engine_link: run.engine_link || cfg.engineLink || prev.engine_link || null,
+    engine_rev: run.engine_rev || cfg.engineRev || prev.engine_rev || null,
+    engine_version:
+      run.engine_version || cfg.engineVersion || prev.engine_version || null,
     demo: run.demo_name || "demo/index.html",
     preview: run.preview_name || "preview.png",
     status: "ok",

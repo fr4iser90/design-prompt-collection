@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 186 | 185 | 154 | 32 |
+| 194 | 186 | 162 | 32 |
 
 ## Quick start
 
@@ -911,9 +911,11 @@ Full-bleed macro of a steel rail switch. Drag a heavy lever to physically shift 
 
 [prompt](prompts/landing-pages/rail-switch-mechanical-lock/prompt.md) · [extended](prompts/landing-pages/rail-switch-mechanical-lock/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/rail-switch-mechanical-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 160ms | 172s | 4 | [open](prompts/landing-pages/rail-switch-mechanical-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2998,6 +3000,124 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 190s | — | — |
+
+---
+
+## Games
+
+### Gimbal Lock
+
+Rotate gimbals to align a laser with a moving target; fight precession and RPM decay to keep the beam steady.
+
+**Status:** polished · `3d-math` `rotation` `physics` `gyroscope` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/gyroscopic-precession/prompt.md) · [extended](prompts/games/gyroscopic-precession/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Harmonic Chorus
+
+Adjust pendulum length to match resonant frequency of glass targets. Release to swing; correct timing shatters glass. Fail on mismatch or timeout.
+
+**Status:** polished · `acoustics` `pendulum` `resonance` `physics` `canvas2d` `state-stack` `toybox-physics` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/pendulum-wave-sync/prompt.md) · [extended](prompts/games/pendulum-wave-sync/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Tensile Integrity
+
+Build truss bridges with rigid-body physics. Place nodes, connect beams, test against wind and traffic. Fail if stress exceeds yield. Score based on efficiency and stability.
+
+**Status:** polished · `physics` `engineering` `rigid-body` `construction` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/suspension-bridge-tension/prompt.md) · [extended](prompts/games/suspension-bridge-tension/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+## Webgl
+
+### Polar Veil
+
+Interactive 3D aurora curtain built with vertex-displaced planes and additive blending, simulating solar wind intensity through color-shifting noise fields.
+
+**Status:** polished · `webgl` `vertex-displacement` `additive-blending` `glsl` `three-js` `atmospheric` `noise-shaders` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/aurora-borealis-shader-veil/prompt.md) · [extended](prompts/webgl/aurora-borealis-shader-veil/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Ink Dissolve
+
+GPU-accelerated Navier-Stokes fluid simulation. Drag mouse to inject sumi ink into water, creating real-time turbulent diffusion and alpha-blended patterns.
+
+**Status:** polished · `fluid-simulation` `navier-stokes` `fragment-shader` `three-js` `sumi` `reaction-diffusion` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/ink-in-water-shader-simulation/prompt.md) · [extended](prompts/webgl/ink-in-water-shader-simulation/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Ferro Fluid
+
+High-gloss liquid chrome sphere morphing from smooth to spiked via mouse-controlled magnetic vertex displacement and dynamic environment mapping.
+
+**Status:** polished · `vertex-displacement` `liquid-metal` `environment-mapping` `magnetic-field` `three-js` `glossy` `shader-craft` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/liquid-metal-morphing-vertex/prompt.md) · [extended](prompts/webgl/liquid-metal-morphing-vertex/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+## Editorial
+
+### Condensation Index
+
+A beverage pairing annual where a foggy glass surface obscures content. Cursor movement wipes away condensation to reveal pairings, simulating looking through chilled steel and glass.
+
+**Status:** polished · `editorial` `interactive` `texture` `beverage` `atmospheric` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/steam-visibility-layer/prompt.md) · [extended](prompts/editorial/steam-visibility-layer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Extruded Narrative
+
+A long-form essay on pasta engineering where text strands stretch, thin, and vibrate like dough through a brass die, toggling between spaghetti and rigatoni layouts.
+
+**Status:** polished · `material` `physics` `typography` `craft` `verticality` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/steel-pasta-extrusion/prompt.md) · [extended](prompts/editorial/steel-pasta-extrusion/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

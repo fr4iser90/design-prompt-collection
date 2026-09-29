@@ -477,20 +477,31 @@ Ban vague padding. No {{placeholders}}.`;
 /** Concrete repair instructions for expand retries (extend draft, don't discard). */
 function repairExpandHint(err, category, previousRaw) {
   const targets = WORD_TARGETS[category] || WORD_TARGETS.concepts;
+  const mdNow = previousRaw?.prompt_md
+    ? wordCount(previousRaw.prompt_md)
+    : null;
+  const fullNow = previousRaw?.prompt_full_md
+    ? wordCount(previousRaw.prompt_full_md)
+    : null;
   const parts = [
     "",
     `PREVIOUS EXPAND FAILED: ${err}`,
-    `Keep the same id/title/thesis. Fix EVERY listed issue — rewrite only what fails.`,
+    `Keep the same id/title/thesis. Fix EVERY listed issue.`,
   ];
   if (/too short/i.test(err)) {
+    const mdNeed = targets.md[0];
+    const fullNeed = targets.full[0];
     parts.push(
-      `LENGTH HARD REQUIREMENT: prompt_md = ${targets.md[0]}–${targets.md[1]} words; prompt_full_md = ${targets.full[0]}–${targets.full[1]} words.`,
-      `Extend with concrete layout (desktop+mobile), motion beats, constraints checklist, fail-able acceptance criteria — never adjective padding.`
+      `LENGTH — MANDATORY GROWTH (do not rewrite shorter):`,
+      `  prompt_md: now ${mdNow ?? "?"} words → MUST be ≥${mdNeed} (target ${mdNeed}–${targets.md[1]})`,
+      `  prompt_full_md: now ${fullNow ?? "?"} words → MUST be ≥${fullNeed} (target ${fullNeed}–${targets.full[1]})`,
+      `Keep every existing sentence. APPEND concrete sections: desktop+mobile layout, 3 named motions, constraints checklist, fail-able acceptance criteria, deliverable line.`,
+      `Do NOT compress. Do NOT drop content. Output the FULL extended strings.`
     );
     if (previousRaw?.prompt_md) {
       parts.push(
         "",
-        "DRAFT TO EXTEND (preserve concept; lengthen and fix):",
+        "DRAFT TO EXTEND (copy forward, then add ≥80 words to prompt_md if short):",
         "---prompt_md---",
         String(previousRaw.prompt_md).slice(0, 7000),
         "---prompt_full_md---",
@@ -498,6 +509,11 @@ function repairExpandHint(err, category, previousRaw) {
         "---end draft---"
       );
     }
+  }
+  if (/Bad summary length/i.test(err)) {
+    parts.push(
+      `SUMMARY must be 40–220 characters (not words). Shorten to ≤220 chars while keeping the concrete hook.`
+    );
   }
   if (/font stack/i.test(err)) {
     parts.push(
@@ -522,6 +538,31 @@ function repairExpandHint(err, category, previousRaw) {
     parts.push(`prompt_full_md must include every required ## heading for this category.`);
   }
   return "\n\n" + parts.join("\n");
+}
+
+/** Length-only repair: don't resend the full expand brief (model ignores growth otherwise). */
+function buildLengthenUser({ category, pitch, previousRaw, err }) {
+  const targets = WORD_TARGETS[category] || WORD_TARGETS.concepts;
+  const mdNow = wordCount(previousRaw?.prompt_md || "");
+  const fullNow = wordCount(previousRaw?.prompt_full_md || "");
+  return [
+    `Category: ${category}`,
+    `id: ${pitch.id}`,
+    `FAILED GATE: ${err}`,
+    "",
+    `Your previous prompt_md has ${mdNow} words — need ≥${targets.md[0]}.`,
+    `Your previous prompt_full_md has ${fullNow} words — need ≥${targets.full[0]}.`,
+    `Return ONE JSON object with the SAME fields. KEEP all existing content and APPEND enough concrete detail to clear the floors.`,
+    `summary: 40–220 characters max.`,
+    `Add: layout desktop/mobile, motions, constraints, acceptance criteria, "Deliverable: single-file HTML/CSS/JS."`,
+    "",
+    "---prompt_md (extend)---",
+    String(previousRaw?.prompt_md || ""),
+    "---prompt_full_md (extend)---",
+    String(previousRaw?.prompt_full_md || ""),
+    "---",
+    "Return JSON only.",
+  ].join("\n");
 }
 
 function buildPitchUser({
@@ -737,7 +778,12 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
     tags.push("webgl");
   }
 
-  const summary = String(raw.summary || "").trim();
+  const summaryRaw = String(raw.summary || "").trim();
+  // Soft clamp: Flash often overshoots 220 chars — trim instead of wasting a retry
+  const summary =
+    summaryRaw.length > 220
+      ? summaryRaw.slice(0, 217).replace(/\s+\S*$/, "").trimEnd() + "…"
+      : summaryRaw;
   if (summary.length < 40 || summary.length > 220) {
     throw new Error(`Bad summary length for ${id}: ${summary.length}`);
   }
@@ -1098,20 +1144,48 @@ async function generateForCategory(cfg, args, catalog, category) {
     let previousRaw = null;
     for (let attempt = 1; attempt <= EXPAND_ATTEMPTS; attempt++) {
       try {
+        const lengthRetry =
+          attempt > 1 &&
+          previousRaw &&
+          /too short/i.test(String(lastErr || ""));
+        const messages = lengthRetry
+          ? [
+              {
+                role: "system",
+                content:
+                  "You lengthen design-prompt JSON. Keep the thesis. APPEND detail until word floors are met. Return ONLY one JSON object.",
+              },
+              {
+                role: "user",
+                content: buildLengthenUser({
+                  category,
+                  pitch,
+                  previousRaw,
+                  err: lastErr,
+                }),
+              },
+            ]
+          : [
+              { role: "system", content: buildExpandSystem(category) },
+              {
+                role: "user",
+                content:
+                  buildExpandUser({
+                    category,
+                    pitch,
+                    lane,
+                    mood: args.mood,
+                    catalog,
+                  }) +
+                  (attempt > 1
+                    ? repairExpandHint(lastErr, category, previousRaw)
+                    : ""),
+              },
+            ];
         const expandContent = await chatJson(
           cfg,
-          [
-            { role: "system", content: buildExpandSystem(category) },
-            {
-              role: "user",
-              content:
-                buildExpandUser({ category, pitch, lane, mood: args.mood, catalog }) +
-                (attempt > 1
-                  ? repairExpandHint(lastErr, category, previousRaw)
-                  : ""),
-            },
-          ],
-          attempt === 1 ? expandTemp : Math.min(0.55, expandTemp)
+          messages,
+          attempt === 1 ? expandTemp : Math.min(0.45, expandTemp)
         );
         const raws = normalizePayload(expandContent, ["entries"]);
         const picked = raws[0];
@@ -1127,6 +1201,22 @@ async function generateForCategory(cfg, args, catalog, category) {
         raw.colors = raw.colors?.length >= 3 ? raw.colors : pitch.colors;
         raw.motions = raw.motions?.length >= 2 ? raw.motions : pitch.motions;
         raw.type_pairing = raw.type_pairing || pitch.type_pairing;
+        // Prefer longer draft if model "repairs" by shrinking
+        if (
+          lengthRetry &&
+          previousRaw?.prompt_md &&
+          wordCount(raw.prompt_md || "") < wordCount(previousRaw.prompt_md)
+        ) {
+          raw.prompt_md = `${previousRaw.prompt_md.trim()}\n\n${String(raw.prompt_md || "").trim()}`;
+        }
+        if (
+          lengthRetry &&
+          previousRaw?.prompt_full_md &&
+          wordCount(raw.prompt_full_md || "") <
+            wordCount(previousRaw.prompt_full_md)
+        ) {
+          raw.prompt_full_md = `${previousRaw.prompt_full_md.trim()}\n\n${String(raw.prompt_full_md || "").trim()}`;
+        }
         if (!raw.summary) {
           raw.summary = `${pitch.brand || pitch.title}: ${pitch.hook}`.slice(0, 220);
           if (raw.summary.length < 40) {

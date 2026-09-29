@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import { modelSlug, hasRunDemo, listRuns, isAbandonedRun, repairStaleEntryPointers } from "./lib/runs.mjs";
 import { fetchModelSlots, waitForIdleSlot } from "./lib/slots.mjs";
 import { envFlag, gitPushEnv, loadEnvFile, FILL_CATEGORIES } from "./lib/helpers.mjs";
-import { resolveAiConfig, walkEntries, updateMetaFields } from "./lib/provider.mjs";
+import { resolveAiConfig, walkEntries, updateMetaFields, engineLabel } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -276,12 +276,16 @@ function inventory(cfg, opts) {
     reviewQueue: pendingReviews(cfg, opts).length,
     builds,
     shots,
-    nextBuild: builds.slice(0, 5).map((e) => e.id),
-    nextShot: shots.slice(0, 5).map((e) => e.id),
+    nextBuild: builds.slice(0, 5).map((e) => `${e.category}/${e.id}`),
+    nextShot: shots.slice(0, 5).map((e) => `${e.category}/${e.id}`),
     pct: entries.length
       ? Math.round((done.length / entries.length) * 100)
       : 100,
   };
+}
+
+function entryLabel(e) {
+  return e?.category && e?.id ? `${e.category}/${e.id}` : e?.id || "?";
 }
 
 function phaseFor(inv, opts) {
@@ -320,16 +324,61 @@ function reportProgress(cfg, opts, state, cycle) {
   return inv;
 }
 
-/** Split N across fill categories (catalog-aware per call). */
+/**
+ * Split N across fill categories — starve-proof + optional per-category cap.
+ * Underfilled categories (e.g. games=0) get slots first; saturated cats only
+ * receive leftovers. FILL_CAP_PER_CATEGORY stops allotting once have>=cap.
+ */
+function fillCapPerCategory() {
+  const n = Number(process.env.FILL_CAP_PER_CATEGORY || 0);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+
 function fillPlan(total) {
-  const cats = FILL_CATEGORIES;
-  const base = Math.floor(total / cats.length);
-  let rem = total - base * cats.length;
-  return cats.map((c) => {
-    const n = base + (rem > 0 ? 1 : 0);
-    if (rem > 0) rem -= 1;
-    return { category: c, n };
-  }).filter((x) => x.n > 0);
+  const cap = fillCapPerCategory();
+  const counts = Object.fromEntries(FILL_CATEGORIES.map((c) => [c, 0]));
+  for (const e of walkEntries(ROOT)) {
+    if (e.status === "archived") continue;
+    if (counts[e.category] != null) counts[e.category] += 1;
+  }
+  const ranked = [...FILL_CATEGORIES].sort(
+    (a, b) =>
+      counts[a] - counts[b] ||
+      FILL_CATEGORIES.indexOf(a) - FILL_CATEGORIES.indexOf(b)
+  );
+  const open = ranked.filter((c) => !cap || counts[c] < cap);
+  if (!open.length) {
+    console.log(
+      `  fill plan: all categories at FILL_CAP_PER_CATEGORY=${cap} — skip fill`
+    );
+    return [];
+  }
+  const allot = Object.fromEntries(FILL_CATEGORIES.map((c) => [c, 0]));
+  for (let i = 0; i < total; i++) {
+    const candidates = open.filter(
+      (c) => !cap || counts[c] + allot[c] < cap
+    );
+    if (!candidates.length) break;
+    let best = candidates[0];
+    let bestScore = counts[best] + allot[best];
+    for (const c of candidates) {
+      const s = counts[c] + allot[c];
+      if (s < bestScore) {
+        best = c;
+        bestScore = s;
+      }
+    }
+    allot[best] += 1;
+  }
+  const plan = ranked
+    .map((c) => ({ category: c, n: allot[c], have: counts[c] }))
+    .filter((x) => x.n > 0);
+  const capNote = cap ? ` cap=${cap}` : "";
+  console.log(
+    `  fill plan (neediest first${capNote}): ` +
+      plan.map((p) => `${p.category} +${p.n} (have ${p.have})`).join(", ")
+  );
+  return plan.map(({ category, n }) => ({ category, n }));
 }
 
 async function runFill(cfg, fillN, state) {
@@ -339,7 +388,9 @@ async function runFill(cfg, fillN, state) {
   const mood = (process.env.FILL_MOOD || "").trim();
   const avoid = (process.env.FILL_AVOID || "").trim();
   const lane = (process.env.FILL_LANE || "").trim();
-  for (const { category, n } of fillPlan(fillN)) {
+  const plan = fillPlan(fillN);
+  if (!plan.length) return 0;
+  for (const { category, n } of plan) {
     if (shouldStop()) break;
     try {
       await waitForIdleSlot(cfg, { need: 1, signal: null, label: `fill:${category}` });
@@ -533,14 +584,15 @@ async function drainBuildsWithTopUp(cfg, opts, state) {
       if (code === 0) {
         state.built.push(e.id);
         didWork = true;
-        console.log(`  ✓ build done ${e.id} (in-flight ${inFlight.size})`);
+        console.log(`  ✓ build done ${entryLabel(e)} (in-flight ${inFlight.size})`);
       } else {
         recordFailure(state, {
           type: "build",
           id: e.id,
+          category: e.category,
           at: new Date().toISOString(),
         });
-        console.warn(`  ✗ build fail ${e.id} (in-flight ${inFlight.size})`);
+        console.warn(`  ✗ build fail ${entryLabel(e)} (in-flight ${inFlight.size})`);
       }
     }
     saveState(state);
@@ -554,7 +606,7 @@ async function drainBuildsWithTopUp(cfg, opts, state) {
     });
     inFlight.set(e.id, job);
     console.log(
-      `  launch build ${e.id}  (in-flight ${inFlight.size}/${opts.maxParallel})`
+      `  launch build ${entryLabel(e)}  (in-flight ${inFlight.size}/${opts.maxParallel})`
     );
   };
 
@@ -634,6 +686,18 @@ async function main() {
 
   console.log("🤖 worker — multi-day loop");
   console.log(`   model=${cfg.model} api=${cfg.modelApi} slug=${slug}`);
+  {
+    const eng = engineLabel(cfg.engine, cfg.engineRev, cfg.engineVersion);
+    if (eng) {
+      console.log(
+        `   engine=${eng}` + (cfg.engineLink ? `  ${cfg.engineLink}` : "")
+      );
+    }
+    const cap = Number(process.env.FILL_CAP_PER_CATEGORY || 0);
+    if (Number.isFinite(cap) && cap > 0) {
+      console.log(`   fill-cap=${cap}/category`);
+    }
+  }
   console.log(
     `   parallel≤${opts.maxParallel} top-up=${opts.topUpMs}ms fill=${opts.fill} fill-n=${opts.fillN} ` +
       `when-below=${opts.fillWhenBelow} commit=${opts.commit} push=${opts.push}` +
@@ -712,12 +776,14 @@ async function main() {
     if (shots.length && !shouldStop()) {
       for (const e of shots.slice(0, 10)) {
         if (shouldStop()) break;
+        console.log(`  shot ${entryLabel(e)}`);
         const code = await runNpm("shots", ["--id", e.id]);
         if (code === 0) didWork = true;
         else {
           recordFailure(state, {
             type: "shots",
             id: e.id,
+            category: e.category,
             at: new Date().toISOString(),
           });
         }

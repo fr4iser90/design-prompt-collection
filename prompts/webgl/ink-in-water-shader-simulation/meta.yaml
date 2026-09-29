@@ -1,0 +1,25 @@
+id: ink-in-water-shader-simulation
+title: "Ink Dissolve"
+category: webgl
+tags:
+  - fluid-simulation
+  - navier-stokes
+  - fragment-shader
+  - three-js
+  - sumi
+  - reaction-diffusion
+status: polished
+summary: "GPU-accelerated Navier-Stokes fluid simulation. Drag mouse to inject sumi ink into water, creating real-time turbulent diffusion and alpha-blended patterns."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
