@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 304142
+gen_ms: 304142
+ttft_ms: 20458
+queue_wait_ms: 60579
+wall_ms: 445669
+review_score: 2
+review_summary: "The UI text is present, but the core WebGL scene (the silver coin) is completely missing from the viewport, resulting in a blank screen."
+reviewed_at: "2026-09-29T17:16:22.157Z"
+review_issues:
+  - "Missing core visual: The high-poly silver coin is not visible in the viewport."
+  - "Blank canvas: The scene appears to be an empty dark void, failing the primary requirement of a 3D material study."
+  - "No atmospheric depth: Without the coin and lighting, the background is just a flat dark color."

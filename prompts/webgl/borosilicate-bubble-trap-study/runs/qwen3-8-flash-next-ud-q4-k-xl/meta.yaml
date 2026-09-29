@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 287709
+gen_ms: 287709
+ttft_ms: 7722
+queue_wait_ms: 155
+wall_ms: 295654
+review_score: 2
+review_summary: "The WebGL scene failed to render, leaving only a loading state with text on a black background."
+reviewed_at: "2026-09-29T17:16:14.215Z"
+review_issues:
+  - "Missing 3D content (glass trap, liquid, caustics)"
+  - "Missing UI slider control"
+  - "Appears to be a loading screen or failed render"
+  - "No visual evidence of the requested scientific simulation"

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>The Lab Trap — Borosilicate Bubble Trap Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1419;
+    --ink:#e6e1d6;
+    --accent:#88c0d0;
+    --shadow:#05070a;
+    --muted:rgba(230,225,214,.42);
+    --hair:rgba(230,225,214,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  #app{position:fixed;inset:0}
+  #app canvas{display:block;width:100%!important;height:100%!important;touch-action:none;outline:none}
+
+  /* atmospheric overlays */
+  .vignette{position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(130% 100% at 50% 38%,transparent 44%,rgba(5,7,10,.62) 100%);}
+  .grain{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:160px 160px;}
+
+  .overlay{position:fixed;inset:0;z-index:5;pointer-events:none}
+  .overlay>*{pointer-events:auto}
+
+  /* brand / hero signal */
+  .brand{position:fixed;top:clamp(18px,3vw,30px);left:clamp(18px,3vw,34px);display:flex;align-items:center;gap:10px}
+  .brand .glyph{width:11px;height:11px;border:1.5px solid var(--ink);border-radius:50%;position:relative;flex:none}
+  .brand .glyph::after{content:"";position:absolute;inset:2px;border-radius:50%;background:var(--accent);opacity:.55}
+  .brand .wm{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(14px,1.7vw,17px);letter-spacing:.02em;line-height:1}
+  .brand .sub{font-size:9.5px;letter-spacing:.32em;color:var(--muted);margin-top:3px}
+
+  /* spec block */
+  .spec{position:fixed;top:clamp(18px,3vw,30px);right:clamp(18px,3vw,34px);text-align:right;font-size:10px;line-height:1.85;color:var(--muted);letter-spacing:.06em}
+  .spec b{color:var(--ink);font-weight:500}
+  .spec .k{color:var(--accent)}
+
+  /* title */
+  .title{position:fixed;left:clamp(18px,3vw,34px);bottom:clamp(112px,17vh,150px);max-width:min(46vw,520px)}
+  .title .eyebrow{font-size:10px;letter-spacing:.42em;color:var(--accent);margin-bottom:14px;text-transform:uppercase}
+  .title h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(38px,7.2vw,82px);line-height:.9;letter-spacing:-.02em}
+  .title h1 .l2{display:block;color:transparent;-webkit-text-stroke:1.4px var(--ink)}
+  .title .desc{margin-top:16px;font-size:11.5px;line-height:1.7;color:var(--muted);max-width:34ch}
+
+  /* control */
+  .control{position:fixed;left:clamp(18px,3vw,34px);bottom:clamp(20px,4vh,34px);width:min(300px,42vw)}
+  .control .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .control .lab{font-size:11px;letter-spacing:.28em;color:var(--ink)}
+  .control .val{font-family:'Syne',sans-serif;font-weight:700;font-size:26px;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+  .control .val .pct{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:12px;color:var(--muted);margin-left:2px}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;background:transparent;cursor:ew-resize;display:block}
+  input[type=range]:focus{outline:none}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--accent) var(--p,0%),rgba(230,225,214,.16) var(--p,0%));border-radius:2px}
+  input[type=range]::-moz-range-track{height:2px;background:rgba(230,225,214,.16);border-radius:2px}
+  input[type=range]::-moz-range-progress{height:2px;background:var(--accent);border-radius:2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--ink);margin-top:-5px;box-shadow:0 0 0 4px rgba(136,192,208,.16);transition:box-shadow .15s ease}
+  input[type=range]:hover::-webkit-slider-thumb,input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 6px rgba(136,192,208,.30)}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:none;border-radius:50%;background:var(--ink);box-shadow:0 0 0 4px rgba(136,192,208,.16)}
+
+  .hint{margin-top:14px;font-size:9px;letter-spacing:.24em;color:var(--muted)}
+  .hint .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 6px 1px 0;vertical-align:middle;opacity:.7}
+
+  /* loader */
+  #loader{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .8s ease}
+  #loader.hidden{opacity:0;pointer-events:none}
+  #loader .lw{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,6vw,54px);letter-spacing:-.01em}
+  #loader .lbar{width:180px;height:2px;background:rgba(230,225,214,.14);position:relative;overflow:hidden}
+  #loader .lbar i{position:absolute;inset:0 100% 0 0;background:var(--accent);animation:load 1.1s ease-in-out infinite}
+  @keyframes load{0%{right:100%}50%{right:20%}100%{right:100%}}
+  #loader .lmsg{font-size:10px;letter-spacing:.3em;color:var(--muted)}
+
+  @media (max-width:640px){
+    .spec{display:none}
+    .title{bottom:auto;top:14vh;left:50%;transform:translateX(-50%);text-align:center;max-width:92vw}
+    .title .desc{margin-left:auto;margin-right:auto}
+    .control{left:50%;transform:translateX(-50%);width:min(360px,88vw);bottom:22px}
+    .control .lab{font-size:12px}
+    .control .val{font-size:30px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #loader .lbar i{animation:none;right:30%}
+  }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="overlay">
+    <div class="brand">
+      <span class="glyph"></span>
+      <div>
+        <div class="wm">THE LAB TRAP</div>
+        <div class="sub">BOROSILICATE STUDY</div>
+      </div>
+    </div>
+
+    <div class="spec">
+      <div><b>IOR</b> <span class="k">1.474</span> · borosilicate</div>
+      <div><b>LIQUID</b> <span class="k">1.333</span> · H₂O</div>
+      <div><b>KEY</b> <span class="k">#E6E1D6</span> · hard</div>
+      <div><b>SHADOW</b> <span class="k">2048²</span></div>
+    </div>
+
+    <div class="title">
+      <div class="eyebrow">Material Honesty · 01</div>
+      <h1>THE LAB<span class="l2">TRAP</span></h1>
+      <p class="desc">A single hard light reveals how borosilicate bends the world. Fill the trap to watch refraction deepen and caustics bloom across the floor.</p>
+    </div>
+
+    <div class="control">
+      <div class="row">
+        <span class="lab">LIQUID LEVEL</span>
+        <span class="val" id="val">000<span class="pct">%</span></span>
+      </div>
+      <input id="level" type="range" min="0" max="100" step="1" value="0"
+             aria-label="Liquid level inside the bubble trap, percent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="hint"><span class="dot"></span>DRAG · ARROW KEYS · ORBIT TO INSPECT</div>
+    </div>
+  </div>
+
+  <div id="loader">
+    <div class="lw">THE LAB TRAP</div>
+    <div class="lbar"><i></i></div>
+    <div class="lmsg">CALIBRATING REFRACTION</div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const MOBILE = window.matchMedia('(max-width:640px)').matches;
+
+  // ---- renderer ----
+  const app = document.getElementById('app');
+  const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.5 : 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.12;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  app.appendChild(renderer.domElement);
+
+  // ---- scene / camera ----
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0f1419);
+
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 2, 5);
+  camera.lookAt(0, 0, 0);
+
+  // environment for glass reflections / refraction backdrop
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  // ---- lights ----
+  const ambient = new THREE.AmbientLight(0x0f1419, 1.0);
+  scene.add(ambient);
+
+  const key = new THREE.DirectionalLight(0xe6e1d6, 3.4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.near = 1;
+  key.shadow.camera.far = 26;
+  const sc = 4;
+  Object.assign(key.shadow.camera, { left:-sc, right:sc, top:sc, bottom:-sc });
+  key.shadow.bias = -0.0004;
+  key.shadow.normalBias = 0.02;
+  key.shadow.radius = 3;
+  scene.add(key);
+  scene.add(key.target);
+  key.target.position.set(0, 0.2, 0);
+
+  // ---- geometry: glassware profile ----
+  const V = 0.12, R = 0.5;
+  const pts = [
+    new THREE.Vector2(0.001, 0.00),
+    new THREE.Vector2(0.34, 0.00),
+    new THREE.Vector2(0.40, 0.03),
+    new THREE.Vector2(0.40, 0.12),
+    new THREE.Vector2(0.34, 0.16),
+    new THREE.Vector2(0.34, 0.30),
+    new THREE.Vector2(0.50, 0.46),
+    new THREE.Vector2(0.50, 0.86),
+    new THREE.Vector2(0.34, 1.00),
+    new THREE.Vector2(0.34, 1.12),
+    new THREE.Vector2(0.40, 1.16),
+    new THREE.Vector2(0.40, 1.24),
+    new THREE.Vector2(0.34, 1.27),
+    new THREE.Vector2(0.34, V),
+    new THREE.Vector2(0.001, V),
+  ];
+  const glassGeo = new THREE.LatheGeometry(pts, 128);
+
+  const glassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    metalness: 0,
+    roughness: 0.05,
+    transmission: 1.0,
+    thickness: 0.5,
+    ior: 1.47,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.25,
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  const glass = new THREE.Mesh(glassGeo, glassMat);
+  glass.castShadow = true;
+  glass.receiveShadow = true;
+
+  // ---- liquid (water) ----
+  const liqPts = [
+    new THREE.Vector2(0.001, 0.02),
+    new THREE.Vector2(0.30, 0.02),
+    new THREE.Vector2(0.30, 0.28),
+    new THREE.Vector2(0.45, 0.44),
+    new THREE.Vector2(0.45, 0.84),
+    new THREE.Vector2(0.30, 0.98),
+    new THREE.Vector2(0.30, 1.22),
+    new THREE.Vector2(0.001, 1.22),
+  ];
+  const liquidGeo = new THREE.LatheGeometry(liqPts, 96);
+  const liquidMat = new THREE.MeshPhysicalMaterial({
+    color: 0x88c0d0,
+    metalness: 0,
+    roughness: 0.03,
+    transmission: 1.0,
+    thickness: 0.9,
+    ior: 1.33,
+    envMapIntensity: 1.0,
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  const liquid = new THREE.Mesh(liquidGeo, liquidMat);
+  liquid.castShadow = true;
+  liquid.receiveShadow = true;
+
+  // ---- trap group ----
+  const trap = new THREE.Group();
+  trap.add(glass, liquid);
+  scene.add(trap);
+
+  // ---- floor plane (caustic receiver) ----
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.MeshStandardMaterial({ color: 0x0f1419, roughness: 0.92, metalness: 0 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -0.001;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // ---- controls ----
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 0.25, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.enablePan = false;
+  controls.minDistance = 3.2;
+  controls.maxDistance = 7;
+  controls.minPolarAngle = Math.PI / 4;
+  controls.maxPolarAngle = Math.PI / 2.5;
+  controls.autoRotate = false;
+  controls.update();
+
+  let interacting = false;
+  controls.addEventListener('start', () => { interacting = true; });
+  controls.addEventListener('end', () => { interacting = false; });
+
+  // ---- liquid state ----
+  const LIQ_BASE_Y = -0.02;
+  const LIQ_MAX_Y = 1.22;
+  const LIQ_RANGE = LIQ_MAX_Y - LIQ_BASE_Y;
+  let liquidTarget = 0;
+  let liquidLevel = 0;
+  let lastLevel = 0;
+  let wobble = 0;
+
+  // ---- entrance easing ----
+  const easeInOutQuad = t => t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2;
+  let startTime = null;
+  const lightPanDur = REDUCED ? 0 : 3.0;
+
+  // ---- UI ----
+  const slider = document.getElementById('level');
+  const valEl = document.getElementById('val');
+  const pad = n => String(Math.round(n)).padStart(3, '0');
+  function syncUI(){
+    const v = Math.round(liquidTarget * 100);
+    valEl.innerHTML = pad(v) + '<span class="pct">%</span>';
+    slider.value = v;
+    slider.setAttribute('aria-valuenow', v);
+    slider.style.setProperty('--p', v + '%');
+  }
+  slider.addEventListener('input', () => { liquidTarget = slider.value / 100; syncUI(); });
+  syncUI();
+
+  // ---- resize ----
+  function onResize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    trap.scale.setScalar(MOBILE ? 0.85 : 1);
+  }
+  window.addEventListener('resize', onResize);
+  onResize();
+
+  // ---- loop ----
+  const clock = new THREE.Clock();
+  function tick(){
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const t = clock.elapsedTime;
+
+    // key light entrance pan (left -> right)
+    let pan = 1;
+    if (lightPanDur > 0){
+      if (startTime === null) startTime = t;
+      const p = Math.min((t - startTime) / lightPanDur, 1);
+      pan = easeInOutQuad(p);
+    }
+    const lx = -5.5 + pan * 9.0;
+    key.position.set(lx, 6.0, 4.0);
+
+    // liquid level with inertia + wobble
+    liquidLevel += (liquidTarget - liquidLevel) * 0.12;
+    if (Math.abs(liquidTarget - liquidLevel) < 0.0008) liquidLevel = liquidTarget;
+    if (Math.abs(liquidLevel - lastLevel) > 0.0015) wobble = Math.min(1, wobble + 0.14);
+    else wobble *= 0.93;
+    lastLevel = liquidLevel;
+    const wob = Math.sin(t * 9.0) * wobble * 0.008;
+    const surf = LIQ_BASE_Y + liquidLevel * LIQ_RANGE + wob;
+    liquid.scale.y = Math.max((surf - LIQ_BASE_Y) / LIQ_RANGE, 0.0001);
+    liquid.position.y = LIQ_BASE_Y;
+
+    // caustic response
+    const caustic = 0.55 + liquidLevel * 2.7;
+    key.intensity = 3.4 * (lightPanDur > 0 ? (0.5 + 0.5 * pan) : 1);
+    ambient.intensity = 1.0 - liquidLevel * 0.35;
+    glassMat.envMapIntensity = 1.25 + liquidLevel * 0.35;
+    liquidMat.thickness = 0.9 + liquidLevel * 0.4;
+
+    // slow Y rotation (pause while orbiting)
+    if (!interacting && !REDUCED) trap.rotation.y += 0.005;
+
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // ---- loader ----
+  const loader = document.getElementById('loader');
+  setTimeout(() => loader.classList.add('hidden'), 650);
+  </script>
+</body>
+</html>

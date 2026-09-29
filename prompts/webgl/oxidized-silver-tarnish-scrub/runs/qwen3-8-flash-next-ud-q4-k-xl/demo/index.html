@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Argent &amp; Oxo — Silver Tarnish Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0f0f0f; --silver:#c0c0c0; --tarnish:#1a1a1a; --bronze:#8b5a2b;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--void);}
+  body{font-family:'Lato',system-ui,sans-serif;color:var(--silver);
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+       user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;
+       background:radial-gradient(120% 120% at 30% 22%, #141414 0%, #0c0c0c 55%, #080808 100%);}
+  canvas{display:block;position:fixed;inset:0;z-index:1;cursor:none;}
+  #fallback{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+            text-align:center;padding:24px;color:#7a7a7a;font-size:14px;letter-spacing:.5px;}
+  .ui{position:fixed;inset:0;z-index:10;pointer-events:none;}
+  .brand{position:absolute;top:clamp(18px,3.2vw,30px);left:clamp(18px,3.2vw,34px);
+         font-family:'Playfair Display',serif;font-weight:400;color:var(--silver);
+         font-size:clamp(20px,2.4vw,26px);letter-spacing:2px;line-height:1;
+         text-shadow:0 2px 26px rgba(0,0,0,.65);}
+  .brand .amp{font-style:italic;font-weight:500;color:#a99c86;}
+  .meta{position:absolute;top:calc(clamp(18px,3.2vw,30px) + 42px);left:clamp(18px,3.2vw,34px);
+        font-family:'Lato',sans-serif;font-weight:300;font-size:10px;letter-spacing:3px;
+        text-transform:uppercase;color:#6b6b6b;}
+  .instr{position:absolute;bottom:clamp(18px,3vw,30px);right:clamp(18px,3.2vw,34px);
+         font-family:'Lato',sans-serif;font-weight:300;font-size:14px;letter-spacing:1px;
+         color:var(--bronze);opacity:.8;text-align:right;}
+  .instr .k{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bronze);
+            margin-right:9px;vertical-align:middle;box-shadow:0 0 12px rgba(139,90,43,.7);
+            animation:pulse 2.4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:.35;transform:scale(.8);}50%{opacity:1;transform:scale(1.15);}}
+  .vignette{position:fixed;inset:0;z-index:5;pointer-events:none;
+            background:radial-gradient(120% 120% at 50% 45%, rgba(0,0,0,0) 42%, rgba(0,0,0,.5) 100%);}
+  .grain{position:fixed;inset:-60%;z-index:6;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+         background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+         animation:grain 6s steps(6) infinite;}
+  @keyframes grain{0%{transform:translate(0,0);}20%{transform:translate(-4%,3%);}40%{transform:translate(3%,-2%);}60%{transform:translate(-2%,4%);}80%{transform:translate(4%,-3%);}100%{transform:translate(0,0);}}
+  @media (prefers-reduced-motion: reduce){ .grain{animation:none;} .instr .k{animation:none;opacity:.7;} }
+</style>
+</head>
+<body>
+  <div id="fallback">WebGL is required to view this material study.</div>
+  <div class="ui">
+    <div class="brand">Argent <span class="amp">&amp;</span> Oxo</div>
+    <div class="meta">Material Study · Sulfur Tarnish</div>
+    <div class="instr"><span class="k"></span><span id="instrText">Drag to polish</span></div>
+  </div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ------------------------------------------------------------------ *
+ *  ARGENT & OXO — interactive silver oxidation study
+ *  A tarnished silver coin. Drag to polish: a soft "cloth" brush
+ *  removes the sulfur mask and reveals polished, reflective metal.
+ * ------------------------------------------------------------------ */
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+const MASK_SIZE   = 512;
+const POLISHED    = new THREE.Color('#c0c0c0');
+const TARNISHED   = new THREE.Color('#1a1a1a');
+const KEY_COLOR   = '#fff4e6';   // warm key → cool silver pops by contrast
+const FILL_COLOR  = '#9fb2c4';   // cool fill → metallic, no color cast
+const RIM_COLOR   = '#d9c7a8';   // warm rim → separates from the void
+
+/* ---- Renderer --------------------------------------------------- */
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+} catch(e){
+  document.getElementById('fallback').style.display='flex';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+/* ---- Scene / Camera --------------------------------------------- */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#0f0f0f');
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 2, 5);
+camera.lookAt(0, 0, 0);
+
+/* ---- Lighting: one key + one fill (per brief) ------------------- */
+const key = new THREE.DirectionalLight(KEY_COLOR, 2.0);
+key.position.set(4, 6, 5);
+key.castShadow = true;
+key.shadow.mapSize.set(1024, 1024);
+key.shadow.camera.near = 0.5;
+key.shadow.camera.far = 25;
+key.shadow.camera.left = -4; key.shadow.camera.right = 4;
+key.shadow.camera.top = 4;   key.shadow.camera.bottom = -4;
+key.shadow.bias = -0.0004;
+key.shadow.radius = 4;
+scene.add(key);
+
+const fill = new THREE.AmbientLight(FILL_COLOR, 0.2);
+scene.add(fill);
+
+/* ---- Dark studio environment (drives metal reflections) --------- */
+function makeEnv(){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#080808'; g.fillRect(0,0,1024,512);
+  const soft = (x,y,r,col)=>{ const rg=g.createRadialGradient(x,y,0,x,y,r);
+    rg.addColorStop(0,col); rg.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=rg;
+    g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill(); };
+  soft(300,120,300,'rgba(255,246,232,0.95)');   // key reflection
+  soft(780,300,260,'rgba(150,168,182,0.35)');   // cool fill reflection
+  soft(560,60,200,'rgba(255,255,255,0.18)');    // faint top sheen
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromEquirectangular(tex).texture;
+  tex.dispose(); pmrem.dispose();
+  return env;
+}
+scene.environment = makeEnv();
+scene.environmentIntensity = 0.55;
+
+/* ---- Geometry: coin + bevelled rim + back ----------------------- */
+const R = 2, H = 0.2;
+const coin = new THREE.Group();
+scene.add(coin);
+
+const discGeo = new THREE.CircleGeometry(R, 96);
+const rimGeo  = new THREE.CylinderGeometry(R, R, H, 96, 1, true);
+const backGeo = new THREE.CircleGeometry(R, 96);
+
+/* ---- Polishing mask (DataTexture, 512², black = tarnished) ------ */
+const maskData = new Uint8Array(MASK_SIZE * MASK_SIZE);
+const maskTex  = new THREE.DataTexture(maskData, MASK_SIZE, MASK_SIZE, THREE.RedFormat, THREE.UnsignedByteType);
+maskTex.magFilter = THREE.LinearFilter;   // bilinear → smooth edges
+maskTex.minFilter = THREE.LinearFilter;
+maskTex.generateMipmaps = false;
+maskTex.needsUpdate = true;
+
+const scratch = new THREE.Color();
+
+/* Shared material factory: tarnish ⇄ polished blend via mask */
+function coinMaterial(front){
+  const m = new THREE.MeshPhysicalMaterial({
+    color: POLISHED, metalness: 1.0, roughness: 0.1, clearcoat: 0.0,
+    envMapIntensity: 1.15, side: THREE.FrontSide
+  });
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uMask      = { value: maskTex };
+    shader.uniforms.uPolished  = { value: POLISHED };
+    shader.uniforms.uTarnished = { value: TARNISHED };
+    shader.uniforms.uEnvInt    = { value: scene.environmentIntensity };
+    if (front) shader.vertexShader = 'varying vec2 vMaskUv;\n' + shader.vertexShader;
+    if (front) shader.vertexShader = shader.vertexShader.replace(
+      '#include <begin_vertex>', '#include <begin_vertex>\n vMaskUv = uv;' );
+    shader.fragmentShader = [
+      'uniform sampler2D uMask;',
+      'uniform vec3 uPolished; uniform vec3 uTarnished; uniform float uEnvInt;',
+      front ? 'varying vec2 vMaskUv;' : '',
+      '#include <common>'
+    ].join('\n') + shader.fragmentShader;
+
+    // Blend diffuse colour between tarnish and polished silver
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <color_fragment>',
+      '#include <color_fragment>\n' +
+      (front ? 'float _m = texture2D(uMask, vMaskUv).r;' : 'float _m = 0.0;') +
+      'diffuseColor.rgb = mix(uTarnished, diffuseColor.rgb, _m);'
+    );
+    // Tarnished → rough & non-metal; polished → metal & sharp
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <roughnessmap_fragment>',
+      '#include <roughnessmap_fragment>\n' +
+      'roughnessFactor = mix(0.8, roughnessFactor, _m);'
+    );
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <metalnessmap_fragment>',
+      '#include <metalnessmap_fragment>\n' +
+      'metalnessFactor = mix(0.0, metalnessFactor, _m);'
+    );
+    // Tarnish absorbs the environment; polished reflects it
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <envmap_fragment>',
+      'vec4 _env = vec4(0.0);\n#include <envmap_fragment>\n' +
+      'envColor.rgb *= mix(0.03, uEnvInt, _m);'
+    );
+  };
+  return m;
+}
+
+const frontMesh = new THREE.Mesh(discGeo, coinMaterial(true));
+frontMesh.position.z = H/2 + 0.001;
+frontMesh.receiveShadow = true;
+frontMesh.userData.isFront = true;
+coin.add(frontMesh);
+
+const backMesh = new THREE.Mesh(backGeo, coinMaterial(false));
+backMesh.rotation.y = Math.PI;
+backMesh.position.z = -H/2 - 0.001;
+backMesh.receiveShadow = true;
+coin.add(backMesh);
+
+const rimMesh = new THREE.Mesh(rimGeo, coinMaterial(false));
+rimMesh.rotation.x = Math.PI/2;
+rimMesh.castShadow = true;
+rimMesh.receiveShadow = true;
+coin.add(rimMesh);
+
+/* ---- Contact shadow plane --------------------------------------- */
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 40),
+  new THREE.MeshStandardMaterial({ color:'#0b0b0b', roughness:1.0, metalness:0.0 })
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -1.7;
+ground.receiveShadow = true;
+scene.add(ground);
+
+/* ---- Friction particles (soft additive sparks) ------------------ */
+const P_MAX = 50;
+const pPos = new Float32Array(P_MAX * 3);
+const pLife = new Float32Array(P_MAX);
+const pVel  = new Float32Array(P_MAX * 3);
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+const pTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const rg = g.createRadialGradient(32,32,0,32,32,32);
+  rg.addColorStop(0,'rgba(255,255,255,1)');
+  rg.addColorStop(0.4,'rgba(255,250,235,0.55)');
+  rg.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle = rg; g.fillRect(0,0,64,64);
+  return new THREE.CanvasTexture(c);
+})();
+const pMat = new THREE.PointsMaterial({
+  size:0.14, map:pTex, color:new THREE.Color('#f2ecdf'),
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:0.9
+});
+const points = new THREE.Points(pGeo, pMat);
+scene.add(points);
+
+/* ---- Cursor: custom ring + soft glow (hidden native cursor) ----- */
+const cursor = new THREE.Group(); cursor.visible = false;
+const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+  map:pTex, color:new THREE.Color('#e8e2d4'), transparent:true,
+  opacity:0.18, blending:THREE.AdditiveBlending, depthTest:false, depthWrite:false }));
+glow.scale.set(0.7,0.7,1);
+const ring = new THREE.Mesh(
+  new THREE.RingGeometry(0.15,0.175,48),
+  new THREE.MeshBasicMaterial({ color:new THREE.Color('#c9b48a'), transparent:true, opacity:0.55,
+    depthTest:false, depthWrite:false })
+);
+cursor.add(glow, ring);
+scene.add(cursor);
+
+/* ---- Interaction state ------------------------------------------ */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const brushWorld = new THREE.Vector3();
+const lastBrush  = new THREE.Vector3();
+let hasBrush = false, dragging = false, prevHit = false;
+let brushSize = isTouch ? 0.55 : 0.38;
+let interaction = 0;         // 0..1 dampens idle spin while polishing
+let lastPaint = 0;
+
+/* Map a world-space hit on the coin face → mask UV */
+function worldToUV(p){
+  const local = coin.worldToLocal(_tmp.copy(p));
+  return { u: 0.5 + local.x/(2*R), v: 0.5 + local.y/(2*R) };
+}
+const _tmp = new THREE.Vector3();
+
+/* Gaussian brush stamp into the mask (soft falloff = cloth pressure) */
+function stamp(u, v){
+  const cx = u*MASK_SIZE, cy = v*MASK_SIZE, rad = brushSize*MASK_SIZE;
+  const x0 = Math.max(0, Math.floor(cx-rad)), x1 = Math.min(MASK_SIZE-1, Math.ceil(cx+rad));
+  const y0 = Math.max(0, Math.floor(cy-rad)), y1 = Math.min(MASK_SIZE-1, Math.ceil(cy+rad));
+  const inv = 1/(rad*rad*0.28);
+  for (let y=y0; y<=y1; y++){
+    const dy = y-cy, row = y*MASK_SIZE;
+    for (let x=x0; x<=x1; x++){
+      const dx = x-cx, d2 = dx*dx + dy*dy;
+      if (d2 > rad*rad) continue;
+      const g = Math.exp(-d2*inv);
+      const i = row + x;
+      const nv = maskData[i] + g*255;
+      maskData[i] = nv > 255 ? 255 : nv;
+    }
+  }
+  maskTex.needsUpdate = true;
+}
+
+/* Interpolate stamps along the drag path for a continuous cloth */
+function paintPath(a, b){
+  const dist = a.distanceTo(b);
+  const steps = Math.max(1, Math.floor(dist/(brushSize*0.35)));
+  for (let i=1;i<=steps;i++){
+    _tmp.copy(a).lerp(b, i/steps);
+    const uv = worldToUV(_tmp);
+    stamp(uv.u, uv.v);
+  }
+}
+
+/* ---- Pointer handling (mouse + touch unified) ------------------- */
+function updateNDC(e){
+  ndc.x = (e.clientX/innerWidth)*2 - 1;
+  ndc.y = -(e.clientY/innerHeight)*2 + 1;
+}
+function hitTest(){
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObject(frontMesh, false);
+  if (hits.length){
+    brushWorld.copy(hits[0].point);
+    return true;
+  }
+  return false;
+}
+function onDown(e){
+  dragging = true;
+  updateNDC(e);
+  if (hitTest()){
+    lastBrush.copy(brushWorld);
+    const uv = worldToUV(brushWorld);
+    stamp(uv.u, uv.v);
+  }
+}
+function onMove(e){
+  updateNDC(e);
+  const hit = hitTest();
+  cursor.visible = hit;
+  if (hit){
+    cursor.position.copy(brushWorld);
+    cursor.quaternion.copy(camera.quaternion);
+    glow.material.opacity = dragging ? 0.45 : 0.18;
+    glow.scale.setScalar(dragging ? 0.95 : 0.7);
+    if (dragging){
+      if (hasBrush) paintPath(lastBrush, brushWorld);
+      else { const uv = worldToUV(brushWorld); stamp(uv.u, uv.v); }
+      lastBrush.copy(brushWorld);
+      hasBrush = true;
+      interaction = 1;
+      spawnParticles();
+      lastPaint = performance.now();
+    }
+  } else {
+    hasBrush = false;
+    glow.material.opacity = 0.18;
+  }
+}
+function onUp(){ dragging = false; hasBrush = false; }
+
+const el = renderer.domElement;
+el.addEventListener('pointerdown', (e)=>{ el.setPointerCapture?.(e.pointerId); onDown(e); });
+el.addEventListener('pointermove', onMove);
+el.addEventListener('pointerup', onUp);
+el.addEventListener('pointercancel', onUp);
+el.addEventListener('pointerleave', ()=>{ cursor.visible=false; dragging=false; hasBrush=false; });
+
+/* ---- Particle spawn (friction feedback) ------------------------- */
+function spawnParticles(){
+  let budget = 3;
+  for (let i=0;i<P_MAX && budget>0;i++){
+    if (pLife[i] <= 0){
+      pPos[i*3]   = brushWorld.x + (Math.random()-0.5)*brushSize*0.8;
+      pPos[i*3+1] = brushWorld.y + (Math.random()-0.5)*brushSize*0.8;
+      pPos[i*3+2] = brushWorld.z + 0.05;
+      pVel[i*3]   = (Math.random()-0.5)*0.6;
+      pVel[i*3+1] = (Math.random()-0.5)*0.6;
+      pVel[i*3+2] = 0.6 + Math.random()*0.5;
+      pLife[i]    = 1;
+      budget--;
+    }
+  }
+}
+function updateParticles(dt){
+  for (let i=0;i<P_MAX;i++){
+    if (pLife[i] > 0){
+      pLife[i] -= dt*2.0;
+      pPos[i*3]   += pVel[i*3]*dt;
+      pPos[i*3+1] += pVel[i*3+1]*dt;
+      pPos[i*3+2] += pVel[i*3+2]*dt;
+    } else {
+      pPos[i*3+2] = 9999; // park off-screen
+    }
+  }
+  pGeo.attributes.position.needsUpdate = true;
+}
+
+/* ---- Resize ----------------------------------------------------- */
+function onResize(){
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+}
+window.addEventListener('resize', onResize);
+
+/* ---- Mobile copy ------------------------------------------------ */
+if (isTouch){
+  document.getElementById('instrText').textContent = 'Swipe to polish';
+}
+
+/* ---- Animation loop --------------------------------------------- */
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t  = clock.elapsedTime;
+
+  // Idle spin — slows to a crawl while the user polishes
+  interaction *= 0.92;
+  const spin = reduceMotion ? 0 : (0.005 * (1 - interaction*0.9));
+  coin.rotation.y += spin;
+
+  // Camera breathing (±0.1 on Z, ~0.5Hz)
+  camera.position.z = 5 + (reduceMotion ? 0 : Math.sin(t*Math.PI) * 0.1);
+  camera.lookAt(0,0,0);
+
+  // Key light gently drifts so highlights travel across the metal
+  if (!reduceMotion){
+    key.position.x = 4 + Math.sin(t*0.4)*0.6;
+    key.position.y = 6 + Math.cos(t*0.3)*0.4;
+  }
+
+  updateParticles(dt);
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>

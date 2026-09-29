@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 232 | 223 | 200 | 32 |
+| 232 | 232 | 200 | 32 |
 
 ## Quick start
 
@@ -3013,9 +3013,11 @@ A rhythm game where players sync clicks with an emergent swarm pulse. Join the b
 
 [prompt](prompts/games/bioluminescent-firefly-pulse/prompt.md) · [extended](prompts/games/bioluminescent-firefly-pulse/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/bioluminescent-firefly-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.5s | 356s | 6 | [open](prompts/games/bioluminescent-firefly-pulse/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3027,9 +3029,11 @@ High-stakes timing game: close breakers when the oscillating electric arc is sho
 
 [prompt](prompts/games/circuit-breaker-arc-timing/prompt.md) · [extended](prompts/games/circuit-breaker-arc-timing/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/circuit-breaker-arc-timing/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.9s | 469s | 8 | [open](prompts/games/circuit-breaker-arc-timing/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3121,9 +3125,11 @@ A rhythm-timing game where players drop data packets from orbiting satellites in
 
 [prompt](prompts/games/satellite-orbit-sync-link/prompt.md) · [extended](prompts/games/satellite-orbit-sync-link/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/satellite-orbit-sync-link/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.8s | 425s | 3 | [open](prompts/games/satellite-orbit-sync-link/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3135,9 +3141,11 @@ A precision timing game where players filter seismic noise to isolate earthquake
 
 [prompt](prompts/games/seismograph-pulse-filter/prompt.md) · [extended](prompts/games/seismograph-pulse-filter/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.3s | 551s | — | — |
 
 ---
 
@@ -3199,9 +3207,11 @@ Photorealistic WebGL study of a borosilicate bubble trap with interactive liquid
 
 [prompt](prompts/webgl/borosilicate-bubble-trap-study/prompt.md) · [extended](prompts/webgl/borosilicate-bubble-trap-study/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/borosilicate-bubble-trap-study/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 7.7s | 288s | 2 | [open](prompts/webgl/borosilicate-bubble-trap-study/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3309,9 +3319,11 @@ Interactive WebGL silver tarnish scrubber using Three.js PBR shaders and dynamic
 
 [prompt](prompts/webgl/oxidized-silver-tarnish-scrub/prompt.md) · [extended](prompts/webgl/oxidized-silver-tarnish-scrub/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/oxidized-silver-tarnish-scrub/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 20s | 304s | 2 | [open](prompts/webgl/oxidized-silver-tarnish-scrub/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3389,9 +3401,11 @@ An editorial interface for 'Lift & Limit' where scroll depth simulates physical 
 
 [prompt](prompts/editorial/crane-hook-load-chart/prompt.md) · [extended](prompts/editorial/crane-hook-load-chart/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/crane-hook-load-chart/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 10s | 582s | 9 | [open](prompts/editorial/crane-hook-load-chart/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3467,9 +3481,11 @@ A long-form climate essay where narrative intensity drives an analog pressure ga
 
 [prompt](prompts/editorial/pressure-vessel-gauge-sweep/prompt.md) · [extended](prompts/editorial/pressure-vessel-gauge-sweep/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/pressure-vessel-gauge-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.5s | 527s | 8 | [open](prompts/editorial/pressure-vessel-gauge-sweep/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3611,9 +3627,11 @@ Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verificat
 
 [prompt](prompts/interfaces/hazmat-cargo-manifest-verify/prompt.md) · [extended](prompts/interfaces/hazmat-cargo-manifest-verify/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/hazmat-cargo-manifest-verify/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 12s | 297s | 7 | [open](prompts/interfaces/hazmat-cargo-manifest-verify/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

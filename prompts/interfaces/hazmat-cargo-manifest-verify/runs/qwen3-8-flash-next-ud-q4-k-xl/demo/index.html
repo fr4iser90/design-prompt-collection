@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SafeLoad Systems — HazMat Cargo Manifest Verifier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F2F2;
+    --ink:#000000;
+    --haz:#FFB000;
+    --alert:#D0021B;
+    --stripe:18px;
+    --display:'Anton','Arial Black',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;border-radius:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:var(--mono);
+    color:var(--ink);
+    background:var(--paper);
+    min-height:100vh;
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* ---------- atmospheric paper layers ---------- */
+  .bg-grid{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(0,0,0,.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0,0,0,.045) 1px, transparent 1px);
+    background-size:26px 26px;
+  }
+  .bg-noise{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .bg-vig{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.06) 100%);
+  }
+
+  .stage{position:relative;z-index:2;padding:26px 16px 64px;display:flex;justify-content:center;}
+
+  /* ---------- manifest panel + hazard border ---------- */
+  .manifest{
+    position:relative;width:100%;max-width:800px;
+    background:var(--paper);
+    border:1px solid var(--ink);
+    padding:22px;
+    will-change:transform;
+  }
+  .manifest::before,.manifest::after{
+    content:"";position:absolute;z-index:6;pointer-events:none;
+    background:repeating-linear-gradient(45deg,var(--haz) 0 var(--stripe),var(--ink) var(--stripe) calc(var(--stripe)*2));
+    transition:background-size .35s ease;
+  }
+  .manifest::before{top:-9px;left:-9px;right:-9px;height:9px;}
+  .manifest::after{bottom:-9px;left:-9px;right:-9px;height:9px;}
+  .manifest.flash::before,.manifest.flash::after{
+    background:repeating-linear-gradient(45deg,var(--alert) 0 var(--stripe),var(--ink) var(--stripe) calc(var(--stripe)*2));
+  }
+
+  /* entrance masks */
+  .manifest.enter::before{animation:maskL .8s cubic-bezier(.25,1,.5,1) both;}
+  .manifest.enter::after{animation:maskR .8s cubic-bezier(.25,1,.5,1) both;}
+  @keyframes maskL{from{clip-path:inset(0 100% 0 0);}to{clip-path:inset(0 0 0 0);}}
+  @keyframes maskR{from{clip-path:inset(0 0 0 100%);}to{clip-path:inset(0 0 0 0);}}
+
+  .manifest.shake{animation:shake .3s linear;}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    15%{transform:translateX(-5px);}30%{transform:translateX(5px);}
+    45%{transform:translateX(-5px);}60%{transform:translateX(5px);}
+    75%{transform:translateX(-3px);}90%{transform:translateX(3px);}
+  }
+  .manifest.instab{animation:instab .12s linear infinite;}
+  @keyframes instab{0%{transform:translateX(-1px);}50%{transform:translateX(1px);}100%{transform:translateX(-1px);}}
+
+  /* ---------- chrome ---------- */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .brand{font-family:var(--display);font-size:13px;letter-spacing:.06em;text-transform:uppercase;line-height:1;}
+  .brand .sub{display:block;font-family:var(--mono);font-weight:500;font-size:9px;letter-spacing:.28em;color:rgba(0,0,0,.55);margin-top:4px;}
+  .sysid{text-align:right;font-size:10px;letter-spacing:.08em;line-height:1.7;}
+  .sysid b{font-weight:700;}
+  .sysid .live{color:var(--alert);}
+
+  /* ---------- title block ---------- */
+  .titleblock{margin-top:20px;padding-top:16px;border-top:1px solid var(--ink);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+  .titleblock h1{font-family:var(--display);font-weight:400;text-transform:uppercase;letter-spacing:-.01em;line-height:.9;font-size:clamp(30px,7vw,58px);}
+  .titleblock h1 .thin{color:rgba(0,0,0,.42);}
+  .titleblock .docno{font-size:10px;letter-spacing:.12em;color:rgba(0,0,0,.6);white-space:nowrap;}
+  .titleblock .docno b{display:block;font-size:14px;color:var(--ink);letter-spacing:.05em;margin-top:2px;}
+
+  /* ---------- form ---------- */
+  form{margin-top:20px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
+  .field{display:flex;flex-direction:column;min-width:0;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(0,0,0,.62);margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;}
+  label .req{color:var(--alert);letter-spacing:.1em;}
+  label .hint{font-weight:400;letter-spacing:.06em;color:rgba(0,0,0,.4);}
+
+  input[type=text],input[type=number]{
+    font-family:var(--mono);font-size:15px;font-weight:500;letter-spacing:.02em;
+    background:#fff;color:var(--ink);
+    border:1px solid var(--ink);padding:11px 12px;width:100%;
+    outline:none;transition:border-color .12s ease;
+  }
+  input::placeholder{color:rgba(0,0,0,.28);letter-spacing:.04em;}
+  input:focus{outline:3px solid var(--ink);outline-offset:1px;}
+  .field.error input{border-color:var(--alert);border-width:2px;}
+  .field.error label{color:var(--alert);}
+  .err-msg{display:none;font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--alert);margin-top:6px;text-transform:uppercase;}
+  .field.error .err-msg{display:block;}
+
+  .radio-group{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--ink);}
+  .radio-group label{margin:0;flex:1 1 auto;min-width:70px;}
+  .radio-group input{position:absolute;opacity:0;width:0;height:0;}
+  .radio-group span{display:block;text-align:center;font-size:11px;font-weight:600;letter-spacing:.1em;padding:11px 6px;border-right:1px solid var(--ink);transition:background .12s ease,color .12s ease;cursor:pointer;text-transform:uppercase;}
+  .radio-group label:last-child span{border-right:none;}
+  .radio-group input:checked + span{background:var(--ink);color:var(--haz);}
+  .radio-group input:focus-visible + span{outline:3px solid var(--ink);outline-offset:-3px;}
+
+  /* ---------- risk slider ---------- */
+  .risk{margin-top:22px;padding-top:18px;border-top:1px solid var(--ink);}
+  .risk-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px;}
+  .risk-head .lbl{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(0,0,0,.62);}
+  .risk-head .val{font-family:var(--display);font-size:clamp(34px,8vw,54px);line-height:.85;}
+  .risk-head .val .of{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.1em;color:rgba(0,0,0,.45);}
+  .risk-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+  .risk-meta .desc{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;}
+  .risk-meta .desc.warn{color:var(--alert);}
+  .ticks{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.1em;color:rgba(0,0,0,.4);}
+
+  .slider-wrap{position:relative;padding:4px 0;}
+  .slider-track{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:10px;background:var(--ink);}
+  .slider-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:10px;background:var(--haz);transition:width .35s cubic-bezier(.25,1,.5,1);}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;position:relative;z-index:3;width:100%;height:22px;background:transparent;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:22px;background:transparent;}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:22px;height:22px;margin-top:0;
+    background:var(--haz);border:2px solid var(--ink);
+  }
+  input[type=range]::-moz-range-track{height:22px;background:transparent;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--haz);border:2px solid var(--ink);}
+  input[type=range]:focus-visible{outline:none;}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:3px solid var(--ink);outline-offset:2px;}
+  input[type=range]:focus-visible::-moz-range-thumb{outline:3px solid var(--ink);outline-offset:2px;}
+
+  /* ---------- verify button ---------- */
+  .verify{
+    margin-top:24px;width:100%;height:60px;
+    font-family:var(--display);font-size:20px;letter-spacing:.04em;text-transform:uppercase;
+    background:var(--ink);color:var(--haz);border:1px solid var(--ink);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:12px;
+    transition:background .12s ease,color .12s ease,transform .08s ease;
+  }
+  .verify .ico{font-size:14px;}
+  .verify:hover{background:var(--haz);color:var(--ink);}
+  .verify:active{transform:scale(.98);}
+  .verify:focus-visible{outline:3px solid var(--ink);outline-offset:3px;}
+  .verify:disabled{cursor:not-allowed;}
+  .verify.verified{background:var(--alert);color:#fff;border-color:var(--ink);}
+  .verify.verified:hover{background:var(--alert);color:#fff;}
+
+  .status{margin-top:12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(0,0,0,.55);min-height:16px;}
+  .status.ok{color:var(--alert);font-weight:600;}
+  .status.bad{color:var(--alert);font-weight:600;}
+
+  /* ---------- watermark (empty state) ---------- */
+  .watermark{
+    position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;opacity:0;transition:opacity .4s ease;
+  }
+  .watermark span{
+    font-family:var(--display);text-transform:uppercase;font-size:clamp(40px,12vw,96px);
+    letter-spacing:.02em;color:rgba(0,0,0,.07);transform:rotate(-8deg);white-space:nowrap;
+  }
+  .manifest.empty .watermark{opacity:1;}
+
+  /* ---------- stamp ---------- */
+  .stamp-wrap{
+    position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;
+    pointer-events:none;opacity:0;
+  }
+  .stamp{
+    width:min(74%,340px);height:auto;transform-origin:center;
+    filter:url(#smudge);
+  }
+  .stamp.stamped{animation:stampIn .55s cubic-bezier(.16,1.15,.3,1) forwards;}
+  @keyframes stampIn{
+    0%{opacity:0;transform:scale(1.6) rotate(10deg);}
+    30%{opacity:1;transform:scale(1.02) rotate(-4deg);}
+    45%{transform:scale(.98) rotate(-3deg);}
+    70%{transform:scale(1.01) rotate(-3.2deg);}
+    100%{opacity:1;transform:scale(1) rotate(-3deg);}
+  }
+  .stamp-ring{fill:none;stroke:var(--alert);stroke-width:7;}
+  .stamp-ring2{fill:none;stroke:var(--alert);stroke-width:2.5;}
+  .stamp-t{fill:var(--alert);font-family:var(--display);text-anchor:middle;text-transform:uppercase;}
+  .stamp-mono{fill:var(--alert);font-family:var(--mono);text-anchor:middle;}
+  .stamp .dot{fill:var(--alert);}
+
+  /* ---------- footer ---------- */
+  .foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(0,0,0,.5);}
+  .foot .cls{color:var(--alert);font-weight:700;}
+
+  /* ---------- reveal ---------- */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.25,1,.5,1);}
+  .reveal.in{opacity:1;transform:none;}
+
+  @media (max-width:640px){
+    .manifest{padding:16px;}
+    .grid{grid-template-columns:1fr;}
+    .titleblock{align-items:flex-start;}
+    .verify{font-size:18px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+    .manifest.enter::before,.manifest.enter::after{clip-path:none !important;}
+    .reveal{opacity:1;transform:none;}
+    .stamp.stamped{animation:none;opacity:1;transform:scale(1) rotate(-3deg);}
+  }
+</style>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-noise" aria-hidden="true"></div>
+  <div class="bg-vig" aria-hidden="true"></div>
+
+  <main class="stage">
+    <section class="manifest empty enter" id="manifest" aria-label="HazMat cargo manifest">
+
+      <!-- watermark -->
+      <div class="watermark" aria-hidden="true"><span>Awaiting Data</span></div>
+
+      <!-- stamp -->
+      <div class="stamp-wrap" id="stampWrap" aria-hidden="true">
+        <svg class="stamp" id="stamp" viewBox="0 0 340 340" role="img" aria-label="Verified stamp">
+          <defs>
+            <filter id="smudge" x="-25%" y="-25%" width="150%" height="150%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="2" seed="7" result="noise"/>
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="4.5" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+              <feGaussianBlur in="disp" stdDeviation="0.5" result="blur"/>
+              <feComponentTransfer in="blur" result="crisp">
+                <feFuncA type="linear" slope="1.7" intercept="-0.12"/>
+              </feComponentTransfer>
+            </filter>
+          </defs>
+          <circle class="stamp-ring" cx="170" cy="170" r="150"/>
+          <circle class="stamp-ring2" cx="170" cy="170" r="128"/>
+          <circle class="dot" cx="170" cy="30" r="5"/>
+          <circle class="dot" cx="170" cy="310" r="5"/>
+          <text class="stamp-t" x="170" y="150" font-size="46">VERIFIED</text>
+          <text class="stamp-t" x="170" y="192" font-size="26">HAZMAT</text>
+          <line x1="95" y1="212" x2="245" y2="212" stroke="#D0021B" stroke-width="3"/>
+          <text class="stamp-mono" id="stampDate" x="170" y="240" font-size="15" font-weight="600">--</text>
+          <text class="stamp-mono" x="170" y="262" font-size="11" letter-spacing="2">SAFELOAD SYSTEMS</text>
+        </svg>
+      </div>
+
+      <!-- chrome -->
+      <header class="chrome">
+        <div class="brand">SafeLoad Systems<span class="sub">HAZMAT COMPLIANCE</span></div>
+        <div class="sysid">
+          <div>MANIFEST ID: <b id="manId">—</b></div>
+          <div>SESSION <span class="live" id="session">—</span></div>
+        </div>
+      </header>
+
+      <!-- title -->
+      <div class="titleblock reveal">
+        <h1>Cargo Manifest<br><span class="thin">Verifier</span></h1>
+        <div class="docno">FORM DOC-7.3<b>REV 2024</b></div>
+      </div>
+
+      <!-- form -->
+      <form id="manifestForm" novalidate>
+        <div class="grid">
+          <div class="field" data-field="un">
+            <label for="un">UN Number <span class="req">*</span></label>
+            <input type="text" id="un" name="un" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+            <div class="err-msg" id="err-un">Invalid UN number — 4 digits required</div>
+          </div>
+
+          <div class="field" data-field="psn">
+            <label for="psn">Proper Shipping Name <span class="req">*</span></label>
+            <input type="text" id="psn" name="psn" placeholder="e.g. FLAMMABLE LIQUID, N.O.S." autocomplete="off">
+            <div class="err-msg" id="err-psn">Shipping name is required</div>
+          </div>
+
+          <div class="field" data-field="class">
+            <label for="class">Hazard Class <span class="req">*</span></label>
+            <input type="text" id="class" name="class" maxlength="4" placeholder="e.g. 3, 2.3, 8" autocomplete="off">
+            <div class="err-msg" id="err-class">Valid hazard class required</div>
+          </div>
+
+          <div class="field" data-field="pg">
+            <label for="pg">Packing Group <span class="req">*</span></label>
+            <div class="radio-group" role="radiogroup" aria-label="Packing group">
+              <label><input type="radio" name="pg" value="I"><span>I</span></label>
+              <label><input type="radio" name="pg" value="II"><span>II</span></label>
+              <label><input type="radio" name="pg" value="III"><span>III</span></label>
+            </div>
+            <div class="err-msg" id="err-pg">Select a packing group</div>
+          </div>
+
+          <div class="field" data-field="qty">
+            <label for="qty">Net Quantity <span class="req">*</span></label>
+            <input type="text" id="qty" name="qty" placeholder="e.g. 250 L" autocomplete="off">
+            <div class="err-msg" id="err-qty">Quantity is required</div>
+          </div>
+
+          <div class="field" data-field="shipper">
+            <label for="shipper">Shipper / Consignor <span class="req">*</span></label>
+            <input type="text" id="shipper" name="shipper" placeholder="Company name" autocomplete="off">
+            <div class="err-msg" id="err-shipper">Shipper is required</div>
+          </div>
+        </div>
+
+        <!-- risk slider -->
+        <div class="risk reveal">
+          <div class="risk-head">
+            <span class="lbl">Risk Level</span>
+            <span class="val"><span id="riskVal">1</span><span class="of"> / 5</span></span>
+          </div>
+          <div class="risk-meta">
+            <span class="desc" id="riskDesc">Minimal — standard handling</span>
+            <span class="hint" style="font-size:9px;letter-spacing:.1em;color:rgba(0,0,0,.4)">ADJUST TO SET HAZARD BORDER DENSITY</span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-track"></div>
+            <div class="slider-fill" id="sliderFill"></div>
+            <input type="range" id="risk" min="1" max="5" step="1" value="1" aria-label="Risk level from 1 to 5">
+          </div>
+          <div class="ticks"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>
+        </div>
+
+        <!-- verify -->
+        <button type="submit" class="verify" id="verifyBtn"><span class="ico">▣</span> VERIFY MANIFEST</button>
+        <p class="status" id="status" role="status" aria-live="polite">Awaiting manifest data — complete all required fields.</p>
+      </form>
+
+      <!-- footer -->
+      <footer class="foot">
+        <span>SafeLoad Systems · HazMat Verifier v3.1</span>
+        <span class="cls">■ Restricted Use · DOT / ADR / IMDG</span>
+      </footer>
+
+    </section>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var manifest   = document.getElementById('manifest');
+  var form       = document.getElementById('manifestForm');
+  var risk       = document.getElementById('risk');
+  var riskVal    = document.getElementById('riskVal');
+  var riskDesc   = document.getElementById('riskDesc');
+  var sliderFill = document.getElementById('sliderFill');
+  var verifyBtn  = document.getElementById('verifyBtn');
+  var status     = document.getElementById('status');
+  var stampWrap  = document.getElementById('stampWrap');
+  var stamp      = document.getElementById('stamp');
+  var stampDate  = document.getElementById('stampDate');
+  var manId      = document.getElementById('manId');
+  var session    = document.getElementById('session');
+
+  var verified = false;
+
+  // ---- generated IDs ----
+  function pad(n){ return n < 10 ? '0'+n : ''+n; }
+  (function initIds(){
+    var d = new Date();
+    var rnd = Math.floor(1000 + Math.random()*8999);
+    manId.textContent = 'SL-' + d.getFullYear() + '-' + rnd;
+    session.textContent = 'S-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  })();
+
+  // ---- risk handling ----
+  var riskLabels = {
+    1:'Minimal — standard handling',
+    2:'Low — controlled transport',
+    3:'Moderate — placard required',
+    4:'High — restricted route',
+    5:'Severe — escort mandatory'
+  };
+  function applyRisk(){
+    var v = parseInt(risk.value, 10);
+    var stripe = 8 + (v - 1) * 6; // 8,14,20,26,32
+    manifest.style.setProperty('--stripe', stripe + 'px');
+    riskVal.textContent = v;
+    riskDesc.textContent = riskLabels[v];
+    riskDesc.classList.toggle('warn', v >= 4);
+    sliderFill.style.width = ((v - 1) / 4 * 100) + '%';
+    if (v > 3 && !verified) manifest.classList.add('instab');
+    else manifest.classList.remove('instab');
+  }
+  risk.addEventListener('input', applyRisk);
+  applyRisk();
+
+  // ---- empty-state watermark ----
+  function anyFilled(){
+    var els = form.querySelectorAll('input');
+    for (var i=0;i<els.length;i++){
+      if (els[i].type === 'radio'){ if (els[i].checked) return true; }
+      else if (els[i].value.trim()) return true;
+    }
+    return false;
+  }
+  function refreshEmpty(){
+    manifest.classList.toggle('empty', !anyFilled());
+  }
+  form.addEventListener('input', function(){
+    refreshEmpty();
+    if (verified) resetVerified();
+    // clear individual field error on edit
+    var f = document.activeElement && document.activeElement.closest('.field');
+    if (f) f.classList.remove('error');
+  });
+  form.addEventListener('change', refreshEmpty);
+
+  // ---- validation ----
+  function setError(name, on){
+    var f = form.querySelector('[data-field="'+name+'"]');
+    if (f) f.classList.toggle('error', on);
+  }
+  function validate(){
+    var errs = [];
+    var un = document.getElementById('un').value.trim();
+    var psn = document.getElementById('psn').value.trim();
+    var cls = document.getElementById('class').value.trim();
+    var qty = document.getElementById('qty').value.trim();
+    var ship = document.getElementById('shipper').value.trim();
+    var pg = form.querySelector('input[name="pg"]:checked');
+
+    var unOk = /^\d{4}$/.test(un);
+    setError('un', !unOk);
+    if (!unOk) errs.push('un');
+
+    setError('psn', !psn); if (!psn) errs.push('psn');
+    setError('class', !cls); if (!cls) errs.push('class');
+    setError('qty', !qty); if (!qty) errs.push('qty');
+    setError('shipper', !ship); if (!ship) errs.push('shipper');
+    setError('pg', !pg); if (!pg) errs.push('pg');
+
+    return { ok: errs.length === 0, first: errs[0] };
+  }
+
+  // ---- error handling ----
+  function flashStripes(){
+    if (reduce) return;
+    var n = 0, max = 6;
+    var iv = setInterval(function(){
+      manifest.classList.toggle('flash');
+      if (++n >= max){ clearInterval(iv); manifest.classList.remove('flash'); }
+    }, 200);
+  }
+  function shake(){
+    if (reduce) return;
+    manifest.classList.remove('shake');
+    void manifest.offsetWidth;
+    manifest.classList.add('shake');
+    setTimeout(function(){ manifest.classList.remove('shake'); }, 320);
+  }
+  function resetVerified(){
+    verified = false;
+    stamp.classList.remove('stamped');
+    stampWrap.style.opacity = '0';
+    verifyBtn.classList.remove('verified');
+    verifyBtn.disabled = false;
+    verifyBtn.innerHTML = '<span class="ico">▣</span> VERIFY MANIFEST';
+    status.className = 'status';
+  }
+
+  // ---- success ----
+  function stampIt(){
+    var d = new Date();
+    stampDate.textContent = pad(d.getDate()) + '-' + pad(d.getMonth()+1) + '-' + d.getFullYear();
+    stampWrap.style.opacity = '1';
+    stamp.classList.remove('stamped');
+    void stamp.offsetWidth;
+    stamp.classList.add('stamped');
+    verified = true;
+    manifest.classList.remove('instab');
+    verifyBtn.classList.add('verified');
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<span class="ico">✓</span> VERIFIED';
+    status.className = 'status ok';
+    status.textContent = 'Manifest approved — stamped ' + d.toISOString().slice(0,19).replace('T',' ') + 'Z';
+  }
+
+  // ---- submit ----
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (verified) return;
+    var res = validate();
+    if (!res.ok){
+      shake();
+      flashStripes();
+      status.className = 'status bad';
+      status.textContent = 'Validation failed — ' + res.first.toUpperCase() + ' field invalid.';
+      var f = form.querySelector('[data-field="'+res.first+'"] input');
+      if (f) f.focus();
+      return;
+    }
+    stampIt();
+  });
+
+  // ---- entrance reveal ----
+  if (reduce){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: .2 });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

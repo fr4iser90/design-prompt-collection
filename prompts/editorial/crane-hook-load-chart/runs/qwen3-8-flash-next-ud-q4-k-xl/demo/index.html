@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rated Capacity — Lift & Limit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1A1A1A;
+  --ink:#E0E0E0;
+  --ink-dim:#9C9C9C;
+  --steel:#444444;
+  --steel-line:#2C2C2C;
+  --yellow:#F2C230;
+  --red:#E63946;
+  --orange:#E88A2E;
+  --green:#57C77B;
+  --status:var(--yellow);
+  --font-display:'Oswald',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;border-radius:0!important}
+html{scroll-behavior:auto}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-mono);
+  font-size:16px;
+  line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+::selection{background:var(--yellow);color:#111}
+a{color:var(--yellow);text-decoration:none}
+h1,h2,h3{font-family:var(--font-display);text-transform:uppercase;font-weight:700;letter-spacing:-.02em;line-height:.98}
+
+/* ---------- BACKGROUND LAYERS ---------- */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--steel-line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--steel-line) 1px,transparent 1px);
+  background-size:44px 44px;
+  opacity:.5;
+}
+.cables{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.cables svg{width:100%;height:100%}
+.cable{fill:none;stroke:#3a3a3a;stroke-width:1}
+.cable.thick{stroke:#454545;stroke-width:1.4}
+.cable-node{fill:#F2C230;opacity:.35}
+.vib{animation:vib .13s steps(2,end) infinite}
+.vib2{animation:vib .09s steps(2,end) infinite}
+@keyframes vib{0%{transform:translateX(-1px)}50%{transform:translateX(1px)}100%{transform:translateX(-1px)}}
+
+.noise{
+  position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.vignette{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 0%,transparent 55%,rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- HEADER ---------- */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:60px;z-index:50;
+  background:rgba(20,20,20,.94);border-bottom:1px solid var(--steel);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(16px,4vw,48px);
+}
+.mast{display:flex;align-items:baseline;gap:12px}
+.mast .mark{
+  font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-.01em;
+  color:var(--ink);line-height:1;
+}
+.mast .mark b{color:var(--yellow)}
+.mast .sub{font-family:var(--font-mono);font-size:10px;letter-spacing:.28em;color:var(--ink-dim);text-transform:uppercase}
+.swl{display:flex;align-items:center;gap:14px}
+.swl .lamp{width:12px;height:12px;background:var(--status);border:1px solid rgba(255,255,255,.15);animation:lampPulse 2.4s ease-in-out infinite}
+@keyframes lampPulse{0%,100%{opacity:1}50%{opacity:.55}}
+.swl .read{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;color:var(--ink-dim);text-transform:uppercase}
+.swl .read b{color:var(--status);font-weight:600}
+.swl .bar{width:120px;height:8px;background:#242424;border:1px solid var(--steel);position:relative;overflow:hidden}
+.swl .bar i{position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--status);transition:width .12s linear,background .3s}
+@media(max-width:768px){.swl .bar{display:none}.mast .sub{display:none}}
+
+/* ---------- MOBILE PROGRESS BAR ---------- */
+.mprog{
+  position:fixed;top:60px;left:0;right:0;height:5px;z-index:49;background:#242424;display:none;
+}
+.mprog i{display:block;height:100%;width:0%;background:var(--status);transition:width .12s linear,background .3s}
+@media(max-width:768px){.mprog{display:block}}
+
+/* ---------- LEFT RAIL / LOAD CHART ---------- */
+.rail{
+  position:fixed;top:60px;left:0;width:132px;height:calc(100vh - 60px);z-index:40;
+  border-right:1px solid var(--steel);background:rgba(20,20,20,.55);
+  display:flex;flex-direction:column;padding:22px 14px 26px;
+}
+.rail h4{font-family:var(--font-display);font-size:13px;letter-spacing:.1em;color:var(--yellow);font-weight:600}
+.rail .cap{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;margin-top:3px}
+.chart{position:relative;flex:1;margin-top:20px;border-left:1px solid var(--steel)}
+.chart .tick{position:absolute;left:0;width:100%;display:flex;align-items:center;gap:6px}
+.chart .tick .line{width:14px;height:1px;background:var(--steel)}
+.chart .tick span{font-family:var(--font-mono);font-size:10px;color:var(--ink-dim)}
+.chart .tick.major .line{width:26px;background:var(--steel);height:1px}
+.chart .swl-line{position:absolute;left:0;right:0;top:30%;border-top:1px dashed var(--red)}
+.chart .swl-line span{position:absolute;right:2px;top:-14px;font-family:var(--font-mono);font-size:9px;color:var(--red);letter-spacing:.1em}
+.chart .needle{position:absolute;left:0;right:0;top:0%;transition:top .12s linear}
+.chart .needle .head{width:100%;height:1px;background:var(--status);position:relative;transition:background .3s}
+.chart .needle .head::before{content:"";position:absolute;left:-4px;top:-4px;width:9px;height:9px;background:var(--status);transition:background .3s}
+.chart .needle .val{position:absolute;right:0;top:-16px;font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--status);transition:color .3s}
+.rail .foot{margin-top:16px;font-family:var(--font-mono);font-size:9px;letter-spacing:.1em;color:var(--ink-dim);line-height:1.6;text-transform:uppercase}
+@media(max-width:768px){.rail{display:none}}
+
+/* ---------- MAIN COLUMN ---------- */
+.main{position:relative;z-index:10;padding:60px 0 0}
+@media(min-width:769px){.main{margin-left:132px}}
+
+/* hook */
+.hook{display:flex;flex-direction:column;align-items:center;padding:30px 0 6px}
+.hook .cable{width:1px;height:44px;background:linear-gradient(var(--steel),var(--yellow))}
+.hook .block{width:26px;height:14px;background:var(--yellow);position:relative}
+.hook .block::after{content:"";position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);width:16px;height:20px;border:3px solid var(--yellow);border-top:none}
+
+/* masthead */
+.masthead{max-width:900px;margin:14px auto 0;padding:0 clamp(18px,5vw,40px);position:relative}
+.kicker{font-family:var(--font-mono);font-size:11px;letter-spacing:.34em;color:var(--yellow);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:44px;height:1px;background:var(--yellow)}
+.headline{font-size:clamp(56px,13vw,148px);letter-spacing:-.045em;color:var(--ink)}
+.headline .l2{color:var(--yellow)}
+.deck{max-width:640px;margin-top:26px;font-size:17px;color:var(--ink-dim);line-height:1.7}
+.meta{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:30px;padding-top:22px;border-top:1px solid var(--steel);font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+.meta b{color:var(--ink);font-weight:500}
+
+/* load strip (above article) */
+.loadstrip{max-width:900px;margin:44px auto 0;padding:0 clamp(18px,5vw,40px)}
+.loadstrip .box{border:1px solid var(--steel);background:#141414;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.loadstrip .lbl{font-family:var(--font-display);font-weight:600;font-size:14px;letter-spacing:.08em;color:var(--ink)}
+.loadstrip .lbl small{display:block;font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--ink-dim);margin-top:4px}
+.loadstrip .gauge{display:flex;gap:3px;flex:1;min-width:160px;max-width:340px;height:22px}
+.loadstrip .gauge i{flex:1;background:#242424;border:1px solid #2f2f2f}
+.loadstrip .gauge i.on{background:var(--status);border-color:var(--status)}
+.loadstrip .pct{font-family:var(--font-display);font-weight:700;font-size:30px;color:var(--status);min-width:96px;text-align:right;transition:color .3s}
+
+/* article body */
+.article{max-width:900px;margin:0 auto;padding:46px clamp(18px,5vw,40px) 30px;position:relative}
+.article::before{
+  content:"";position:absolute;left:clamp(18px,5vw,40px);top:0;bottom:0;width:1px;
+  background:repeating-linear-gradient(var(--steel) 0 6px,transparent 6px 12px);
+}
+.article::after{
+  content:"";position:absolute;right:clamp(18px,5vw,40px);top:0;bottom:0;width:1px;
+  background:repeating-linear-gradient(var(--steel) 0 6px,transparent 6px 12px);
+}
+.load-wrap{transform-origin:top center;will-change:transform;transition:transform .18s ease-out}
+.article p{margin:0 0 1.35em;color:#d2d2d2}
+.article p:first-of-type{color:var(--ink)}
+.lead::first-letter{
+  font-family:var(--font-display);font-weight:700;font-size:74px;line-height:.72;float:left;
+  margin:6px 14px 0 0;color:var(--yellow);
+}
+.article h2{font-size:clamp(26px,4.2vw,40px);color:var(--yellow);margin:1.6em 0 .5em;letter-spacing:-.02em}
+.article h2 .num{color:var(--steel);font-size:.5em;vertical-align:top;margin-right:10px;letter-spacing:0}
+.article strong{color:var(--ink);font-weight:600}
+.article em{color:var(--yellow);font-style:normal}
+.article a{border-bottom:1px solid var(--yellow);display:inline-block}
+.article a:hover{animation:rattle .18s steps(2,end) 3}
+@keyframes rattle{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+
+/* pull quote */
+.pull{
+  margin:2.2em 0;padding:22px 26px;border-left:3px solid var(--steel);
+  background:#161616;font-family:var(--font-display);font-weight:500;
+  font-size:clamp(20px,3vw,29px);line-height:1.15;color:var(--ink);letter-spacing:-.01em;
+  transition:transform .12s ease,border-color .12s;
+}
+.pull cite{display:block;margin-top:12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;color:var(--ink-dim);font-style:normal;text-transform:uppercase}
+.pull:hover{transform:translateX(6px);border-left-color:var(--yellow)}
+
+/* data table */
+.datatable{margin:2.2em 0;border:1px solid var(--steel)}
+.datatable .dt-head{display:flex;justify-content:space-between;background:#202020;border-bottom:1px solid var(--steel);padding:10px 16px;font-family:var(--font-display);font-weight:600;font-size:13px;letter-spacing:.08em;color:var(--yellow)}
+.datatable table{width:100%;border-collapse:collapse;font-size:13px}
+.datatable th,.datatable td{padding:9px 16px;text-align:left;border-bottom:1px solid #262626}
+.datatable th{color:var(--ink-dim);font-weight:500;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.datatable td{color:#cfcfcf}
+.datatable tr:last-child td{border-bottom:none}
+.datatable td.hot{color:var(--red);font-weight:600}
+.datatable td.warn{color:var(--orange);font-weight:600}
+.datatable td.ok{color:var(--green)}
+
+/* callout */
+.callout{margin:2.2em 0;border:1px solid var(--red);padding:18px 20px;background:rgba(230,57,70,.06);display:flex;gap:16px;align-items:flex-start}
+.callout .ico{font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--red);line-height:1}
+.callout p{margin:0;font-size:14px;color:#e9c9cc}
+.callout b{color:var(--red)}
+
+/* figure */
+.fig{margin:2.4em 0;border:1px solid var(--steel);background:#141414}
+.fig .fig-body{padding:22px}
+.fig .cap{font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;color:var(--ink-dim);padding:12px 22px;border-top:1px solid var(--steel);text-transform:uppercase}
+.fig .cap b{color:var(--yellow)}
+.loadcurve{width:100%;height:150px;display:block}
+
+/* byline / end */
+.endnote{max-width:900px;margin:20px auto 0;padding:30px clamp(18px,5vw,40px) 0;border-top:1px solid var(--steel);font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);line-height:1.8}
+.endnote b{color:var(--ink)}
+
+/* ---------- FOOTER / RESET ---------- */
+.footer{position:relative;z-index:10;margin-top:70px;border-top:1px solid var(--steel);background:#111;padding:44px clamp(18px,5vw,40px) 60px}
+.foot-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:30px;flex-wrap:wrap}
+.foot-inner .fmark{font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
+.foot-inner .fmark b{color:var(--yellow)}
+.foot-inner .fmeta{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;line-height:1.9}
+.reset{
+  font-family:var(--font-display);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
+  color:#fff;background:var(--red);border:1px solid #ff5b66;padding:16px 26px;cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:background .12s,transform .05s;
+}
+.reset:hover{background:#ff4d5a}
+.reset:active{transform:translateY(2px)}
+.reset .dot{width:14px;height:14px;background:#fff;border:2px solid #b00;animation:dotPulse 1.4s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ---------- WARNING STRIP ---------- */
+.warn{
+  position:fixed;left:0;right:0;bottom:0;height:8px;z-index:45;
+  background:repeating-linear-gradient(45deg,var(--red) 0 16px,#7a1119 16px 32px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.warn.on{opacity:1;animation:warnPulse 1s ease-in-out infinite}
+@keyframes warnPulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* ---------- STRAIN STATE ---------- */
+body.strained .load-wrap{animation:strain .12s steps(2,end) infinite}
+@keyframes strain{0%{transform:skewY(3deg) scaleY(1.02) translateX(0)}50%{transform:skewY(3deg) scaleY(1.02) translateX(1.5px)}100%{transform:skewY(3deg) scaleY(1.02) translateX(0)}}
+body.strained .article::before,body.strained .article::after{background:repeating-linear-gradient(var(--red) 0 6px,transparent 6px 12px)}
+body.strained .hook .block,body.strained .hook .block::after{border-color:var(--red);background:var(--red)}
+body.strained .hook .block::after{background:transparent}
+
+/* ---------- CLUNK ---------- */
+.clunk{animation:clunk .34s ease-out}
+@keyframes clunk{0%{transform:translateY(-14px)}55%{transform:translateY(4px)}80%{transform:translateY(-2px)}100%{transform:translateY(0)}}
+
+/* ---------- REVEAL ---------- */
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.reveal.in{opacity:1;transform:none}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="cables" aria-hidden="true">
+  <svg viewBox="0 0 1200 800" preserveAspectRatio="none">
+    <g class="vib">
+      <path class="cable thick" d="M120 0 L120 800"/>
+      <path class="cable" d="M300 0 L300 800"/>
+      <path class="cable" d="M560 0 L560 800"/>
+    </g>
+    <g class="vib2">
+      <path class="cable" d="M820 0 L820 800"/>
+      <path class="cable thick" d="M1000 0 L1000 800"/>
+      <path class="cable" d="M1140 0 L1140 800"/>
+    </g>
+    <path class="cable" d="M0 210 L1200 210" opacity=".4"/>
+    <path class="cable" d="M0 470 L1200 470" opacity=".4"/>
+    <path class="cable" d="M0 640 L1200 640" opacity=".4"/>
+    <circle class="cable-node" cx="300" cy="210" r="3"/>
+    <circle class="cable-node" cx="820" cy="470" r="3"/>
+    <circle class="cable-node" cx="1000" cy="640" r="3"/>
+  </svg>
+</div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<!-- HEADER -->
+<header class="topbar" id="topbar">
+  <div class="mast">
+    <div class="mark">LIFT <b>&amp;</b> LIMIT</div>
+    <div class="sub">Industrial Safety Journal · Vol. 12</div>
+  </div>
+  <div class="swl">
+    <span class="lamp" id="lamp"></span>
+    <span class="read">SWL <b id="swlState">NOMINAL</b></span>
+    <div class="bar"><i id="swlBar"></i></div>
+  </div>
+</header>
+
+<!-- MOBILE PROGRESS -->
+<div class="mprog"><i id="mprogBar"></i></div>
+
+<!-- LEFT RAIL -->
+<aside class="rail" aria-hidden="true">
+  <h4>LOAD CHART</h4>
+  <div class="cap">Capacity Index</div>
+  <div class="chart">
+    <div class="tick major" style="top:0%"><span class="line"></span><span>0</span></div>
+    <div class="tick" style="top:25%"><span class="line"></span><span>25</span></div>
+    <div class="tick major" style="top:50%"><span class="line"></span><span>50</span></div>
+    <div class="tick" style="top:75%"><span class="line"></span><span>75</span></div>
+    <div class="tick major" style="top:100%"><span class="line"></span><span>100</span></div>
+    <div class="swl-line"><span>SWL</span></div>
+    <div class="needle" id="needle">
+      <div class="val" id="needleVal">0%</div>
+      <div class="head"></div>
+    </div>
+  </div>
+  <div class="foot">Rig No. 4471<br>Rev. 2024-B<br>Do Not Exceed</div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="hook reveal">
+    <div class="cable"></div>
+    <div class="block"></div>
+  </div>
+
+  <section class="masthead reveal">
+    <div class="kicker">Feature · Structural Integrity</div>
+    <h1 class="headline">Rated<br><span class="l2">Capacity</span></h1>
+    <p class="deck">Every crane has a number etched into its steel: the heaviest thing it may lift without failing. This issue treats the page the same way — as a load-bearing structure that strains, sags, and alarms as it carries more of your attention.</p>
+    <div class="meta">
+      <span>By <b>M. Halvorsen</b></span>
+      <span>Rig <b>4471</b></span>
+      <span>Read Depth <b id="readDepth">0%</b></span>
+      <span>Est. <b>9 MIN</b></span>
+    </div>
+  </section>
+
+  <section class="loadstrip reveal">
+    <div class="box">
+      <div class="lbl">CURRENT LOAD<small>Applied by scroll depth</small></div>
+      <div class="gauge" id="gauge"></div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+  </section>
+
+  <article class="article">
+    <div class="load-wrap" id="loadWrap">
+
+      <p class="lead">A load chart is not a suggestion. It is a legal document, a physical promise, and — read carefully — a small piece of narrative. Each cell on the grid answers a single question asked by a crane operator at a single moment in a single shift: <em>at this radius, what can I lift?</em> Get the answer wrong and the machine does not fail politely. It fails all at once, in a direction that was never part of the plan.</p>
+
+      <p>The language of rated capacity is deliberately cold. It speaks in tonnes, metres, and degrees because those are the units that do not negotiate. A chart does not care about your deadline, your client's schedule, or the fact that the load "looks fine." It cares about the geometry of the boom, the pressure in the outrigger pads, and the angle of the ground beneath them. Everything else is noise.</p>
+
+      <h2><span class="num">01</span>The Geometry of Trust</h2>
+      <p>Rated capacity is derived, not guessed. Engineers build a model of the machine, apply loads in simulation, and watch where the structure wants to fold. The chart you see on the cab wall is the distilled residue of that process — the safe envelope, printed at a size you can read from a seat, in the rain, at four in the morning.</p>
+
+      <p>What makes the chart trustworthy is that it is <strong>conservative by construction</strong>. A margin is baked into every figure. The published number is not the number at which the crane breaks; it is the number at which it is permitted to work, with a factor of safety standing between you and the failure point like a wall.</p>
+
+      <div class="pull">
+        A crane does not remember your last job. It only knows the load you are asking it to carry right now.
+        <cite>— Rigging Field Manual, §4.2</cite>
+      </div>
+
+      <p>That conservatism is the whole point of a rating. It exists precisely for the moments when reality deviates from the plan — when the ground is softer than the survey said, when the wind picks up, when the load swings. The margin is the space where human error lives, and it is measured in tonnes.</p>
+
+      <h2><span class="num">02</span>Reading the Chart</h2>
+      <p>A typical mobile-crane chart is a table of numbers arranged so that the load <em>decreases</em> as the radius <em>increases</em>. The closer the load sits to the mast, the more the machine can carry. Push it out on the end of the boom and the capacity falls off a cliff. This is not a curve you can argue with; it is the physics of a lever.</p>
+
+      <div class="fig">
+        <div class="fig-body">
+          <svg class="loadcurve" viewBox="0 0 600 150" preserveAspectRatio="none">
+            <line x1="0" y1="120" x2="600" y2="120" stroke="#444" stroke-width="1"/>
+            <line x1="40" y1="0" x2="40" y2="150" stroke="#444" stroke-width="1"/>
+            <path d="M40 15 C120 22, 200 45, 300 78 C400 110, 500 128, 590 138" fill="none" stroke="#F2C230" stroke-width="2"/>
+            <path d="M40 15 C120 22, 200 45, 300 78 C400 110, 500 128, 590 138 L590 120 L40 120 Z" fill="#F2C230" opacity="0.07"/>
+            <line x1="40" y1="90" x2="590" y2="90" stroke="#E63946" stroke-width="1" stroke-dasharray="6 5"/>
+            <text x="46" y="86" fill="#E63946" font-family="IBM Plex Mono" font-size="10">SWL LIMIT</text>
+            <text x="46" y="10" fill="#F2C230" font-family="IBM Plex Mono" font-size="10">CAPACITY (t)</text>
+            <text x="560" y="135" fill="#9C9C9C" font-family="IBM Plex Mono" font-size="10">RADIUS (m)</text>
+          </svg>
+        </div>
+        <div class="cap"><b>FIG. 1</b> — Capacity falls with radius. The dashed line is the working limit; the curve is the envelope.</div>
+      </div>
+
+      <p>Reading it is a discipline. You locate the radius, read across to the boom length, and take the smaller of the two governing numbers — the one where the machine would tip, and the one where the structure would yield. The lower number wins, every time. There is no averaging, no rounding up, no "close enough."</p>
+
+      <div class="datatable">
+        <div class="dt-head"><span>WORKING LOAD LIMIT TABLE</span><span>REV 2024-B</span></div>
+        <table>
+          <thead><tr><th>Radius (m)</th><th>Boom 24m</th><th>Boom 36m</th><th>Boom 48m</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>3.0</td><td>52.0 t</td><td>41.5 t</td><td>30.2 t</td><td class="ok">OK</td></tr>
+            <tr><td>6.0</td><td>31.4 t</td><td>22.8 t</td><td>15.1 t</td><td class="ok">OK</td></tr>
+            <tr><td>9.0</td><td>19.7 t</td><td>13.2 t</td><td>8.4 t</td><td class="warn">CAUTION</td></tr>
+            <tr><td>12.0</td><td>13.1 t</td><td>8.0 t</td><td>4.9 t</td><td class="warn">CAUTION</td></tr>
+            <tr><td>15.0</td><td>9.2 t</td><td>5.1 t</td><td>2.7 t</td><td class="hot">LIMIT</td></tr>
+            <tr><td>18.0</td><td>6.7 t</td><td>3.3 t</td><td>1.4 t</td><td class="hot">LIMIT</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The numbers shrink fast. That is the tension the chart is designed to create — a slow, deliberate respect for distance. The operator who memorises the shape of the curve is the operator who never has to reach for it in the moment of lifting.</p>
+
+      <h2><span class="num">03</span>When the Margin Vanishes</h2>
+      <p>Accidents rarely happen because a chart was wrong. They happen because the chart was <em>ignored</em> — because the ground settled, because the load was heavier than the manifest claimed, because two lifts were combined into one to save an hour. Each of those is a decision to spend margin you did not budget.</p>
+
+      <div class="callout">
+        <div class="ico">!</div>
+        <p><b>WARNING —</b> Rated capacity assumes level, firm ground and a load that matches its paperwork. Change either assumption and the chart no longer describes your machine. Re-evaluate before every lift.</p>
+      </div>
+
+      <p>The margin is not slack. It is the entire safety system, compressed into a number. When you exceed the rating you are not "pushing a little" — you are removing the only thing standing between a working machine and a falling one.</p>
+
+      <div class="pull">
+        The chart is the machine's memory of every failure it was built to avoid.
+        <cite>— Chief Engineer, Rig 4471</cite>
+      </div>
+
+      <p>So the discipline of rated capacity is really a discipline of humility. You are allowed to know the exact limit of your tools, and you are required to stop short of it. Everything — the physics, the paperwork, the printed steel label — exists to make that stopping point unambiguous.</p>
+
+      <h2><span class="num">04</span>The Page as Load</h2>
+      <p>Which brings us back to what you are holding. This column hangs from a single hook, and as you read, the load climbs. At first the structure is rigid and the indicator holds steady. Past half capacity it begins to sag. Near the limit it strains, jitters, and turns red — because that is what a structure does when it is asked to carry more than it was rated for.</p>
+
+      <p>Nothing here is decorative. The vibration in the cables, the creeping skew, the alarm at the foot of the screen — these are the same signals an operator watches on a load-moment indicator, translated into the language of a page. You have been reading the chart this whole time. You just did not know the chart was you.</p>
+
+      <p class="lead" style="margin-top:1.6em">Release the load. Reset the rig. The margin is still there — as long as you stop before you need it.</p>
+    </div>
+  </article>
+
+  <div class="endnote">
+    <b>Source note.</b> Working load limits shown are illustrative and do not represent any specific manufacturer. Always consult the OEM load chart for the machine in service. Rated capacity is a legal term; misuse of this document is at the reader's risk.
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="foot-inner">
+    <div>
+      <div class="fmark">LIFT <b>&amp;</b> LIMIT</div>
+      <div class="fmeta">Industrial Safety Journal<br>Printed on steel · No. 4471<br>© 2024 Editorial Rig</div>
+    </div>
+    <button class="reset" id="reset" type="button">
+      <span class="dot"></span> Emergency Reset
+    </button>
+  </div>
+</footer>
+
+<div class="warn" id="warn"></div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root = document.documentElement;
+  var loadWrap = document.getElementById('loadWrap');
+  var needle = document.getElementById('needle');
+  var needleVal = document.getElementById('needleVal');
+  var pct = document.getElementById('pct');
+  var swlState = document.getElementById('swlState');
+  var swlBar = document.getElementById('swlBar');
+  var mprogBar = document.getElementById('mprogBar');
+  var warn = document.getElementById('warn');
+  var readDepth = document.getElementById('readDepth');
+  var gauge = document.getElementById('gauge');
+
+  // build gauge segments
+  var SEG = 20;
+  for(var i=0;i<SEG;i++){ gauge.appendChild(document.createElement('i')); }
+  var segs = gauge.children;
+
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+  var ticking=false;
+  function update(){
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - window.innerHeight;
+    var y = window.pageYOffset || doc.scrollTop;
+    var prog = max>0 ? clamp(y/max,0,1) : 0;
+    var load = Math.round(prog*120); // map to 0-120% capacity
+
+    // skew + scale via transform
+    var skew = 0, scaleY = 1;
+    if(prog>=0.5 && prog<0.8){ skew = 1; scaleY = 1; }
+    else if(prog>=0.8){ skew = 3; scaleY = 1.02; }
+    loadWrap.style.transform = 'skewY('+skew+'deg) scaleY('+scaleY+')';
+
+    // strain class
+    var strained = prog>=0.8;
+    document.body.classList.toggle('strained', strained);
+    warn.classList.toggle('on', strained);
+
+    // status colour + label
+    var status, label;
+    if(prog<0.5){ status='#F2C230'; label='NOMINAL'; }
+    else if(prog<0.8){ status='#E88A2E'; label='ELEVATED'; }
+    else { status='#E63946'; label='OVERLOAD'; }
+    root.style.setProperty('--status', status);
+
+    // readouts
+    needle.style.top = (prog*100)+'%';
+    needleVal.textContent = load+'%';
+    pct.textContent = load+'%';
+    swlState.textContent = label;
+    swlBar.style.width = clamp(prog*100,0,100)+'%';
+    mprogBar.style.width = clamp(prog*100,0,100)+'%';
+    readDepth.textContent = Math.round(prog*100)+'%';
+
+    // gauge segments
+    var lit = Math.round(prog*SEG);
+    for(var i=0;i<SEG;i++){ segs[i].classList.toggle('on', i<lit); }
+
+    ticking=false;
+  }
+  function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  update();
+
+  // reset
+  var topbar = document.getElementById('topbar');
+  document.getElementById('reset').addEventListener('click', function(){
+    window.scrollTo({top:0, behavior: reduce?'auto':'smooth'});
+    if(!reduce){
+      topbar.classList.remove('clunk');
+      void topbar.offsetWidth;
+      topbar.classList.add('clunk');
+      setTimeout(function(){ topbar.classList.remove('clunk'); }, 400);
+    }
+    update();
+  });
+
+  // scroll reveal
+  var reveals = document.querySelectorAll('.reveal');
+  if(reduce){
+    reveals.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.15});
+    reveals.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

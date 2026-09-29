@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bioluminescent Firefly Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#001122; --swarm:#AAFF00; --player:#FFFFFF; --fail:#FF3333; --hud:#E0E0E0;
+    --display:'Gill Sans','Gill Sans MT','Trebuchet MS','Space Grotesk',Tahoma,sans-serif;
+    --mono:'Space Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden;background:var(--bg)}
+  body{font-family:var(--display);color:var(--hud);-webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;touch-action:none;position:fixed;inset:0}
+  #stage{position:fixed;inset:0}
+  canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+
+  /* ---------- HUD ---------- */
+  #hud{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:flex-start;
+    justify-content:space-between;padding:16px 22px;gap:18px;pointer-events:none;
+    opacity:0;transition:opacity .6s ease}
+  #hud.show{opacity:1}
+  .hud-block{display:flex;flex-direction:column;gap:7px}
+  .hud-block.right{align-items:flex-end}
+  .hud-block.center{align-items:center}
+  .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#6f93a6}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(224,224,224,.32);transition:.25s}
+  .dot.on{background:var(--fail);border-color:var(--fail);box-shadow:0 0 12px rgba(255,51,51,.85)}
+  .meter{width:150px;height:9px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;
+    border:1px solid rgba(170,255,0,.18)}
+  .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3f7a12,#AAFF00);
+    box-shadow:0 0 14px rgba(170,255,0,.55);transition:width .12s linear}
+  .pct{font-family:var(--mono);font-size:12px;color:var(--swarm);letter-spacing:.05em}
+  .score{font-family:var(--mono);font-weight:700;font-size:34px;line-height:1;color:#fff;
+    text-shadow:0 0 18px rgba(170,255,0,.35)}
+  .cycles{display:flex;gap:7px}
+  .cyc{width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(255,255,255,.3);transition:.3s}
+  .cyc.on{background:var(--swarm);border-color:var(--swarm);box-shadow:0 0 12px rgba(170,255,0,.8)}
+
+  /* ---------- Overlays ---------- */
+  .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
+    padding:28px;text-align:center;background:radial-gradient(120% 90% at 50% 42%,rgba(0,22,44,.30),rgba(0,9,18,.82));
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    opacity:0;visibility:hidden;transition:opacity .7s ease,visibility .7s}
+  .overlay.show{opacity:1;visibility:visible}
+  .panel{max-width:660px;animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.34em;text-transform:uppercase;
+    color:#8fb0c0;margin-bottom:20px}
+  .kicker::before,.kicker::after{content:'';display:inline-block;width:26px;height:1px;
+    background:linear-gradient(90deg,transparent,#8fb0c0);vertical-align:middle;margin:0 12px}
+  .kicker::after{background:linear-gradient(90deg,#8fb0c0,transparent)}
+  .title{font-family:var(--display);font-weight:700;font-size:clamp(2.5rem,8.5vw,5.4rem);
+    line-height:.95;letter-spacing:-.02em;color:#fff;text-shadow:0 0 40px rgba(170,255,0,.22)}
+  .title .accent{color:var(--swarm);text-shadow:0 0 30px rgba(170,255,0,.6)}
+  .lede{margin:24px auto 0;max-width:46ch;font-size:clamp(15px,2.4vw,19px);line-height:1.6;color:#b7c9d4;font-weight:300}
+  .legend{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;margin:30px 0 34px;
+    font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:#9fb6c2}
+  .legend span{display:flex;align-items:center;gap:9px}
+  .swatch{width:13px;height:13px;border-radius:50%}
+  .swatch.g{background:var(--swarm);box-shadow:0 0 12px var(--swarm)}
+  .swatch.w{background:var(--player);box-shadow:0 0 12px var(--player)}
+  .swatch.r{background:var(--fail);box-shadow:0 0 12px var(--fail)}
+  .btn{pointer-events:auto;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.05em;
+    color:#001020;background:var(--swarm);border:none;padding:16px 42px;border-radius:40px;cursor:pointer;
+    box-shadow:0 0 34px rgba(170,255,0,.45);transition:transform .2s,box-shadow .2s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 0 52px rgba(170,255,0,.7)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .hint{margin-top:22px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:#5f7d8c;text-transform:uppercase}
+  .stats{display:flex;gap:44px;justify-content:center;margin:26px 0 34px}
+  .stat{display:flex;flex-direction:column;gap:8px}
+  .stat .v{font-family:var(--mono);font-weight:700;font-size:clamp(28px,6vw,44px);color:#fff;line-height:1}
+  .stat .k{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#7fa0b0}
+  .stat.win .v{color:var(--swarm);text-shadow:0 0 24px rgba(170,255,0,.5)}
+  .stat.lose .v{color:var(--fail);text-shadow:0 0 24px rgba(255,51,51,.5)}
+  #overTitle{font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,7vw,4rem);letter-spacing:-.02em;line-height:1}
+  #overTitle.win{color:var(--swarm);text-shadow:0 0 40px rgba(170,255,0,.45)}
+  #overTitle.lose{color:var(--fail);text-shadow:0 0 40px rgba(255,51,51,.4)}
+
+  /* ---------- Mobile HUD reflow ---------- */
+  @media (max-width:600px){
+    #hud{flex-wrap:wrap;justify-content:center;padding:14px 14px 0;gap:10px 26px}
+    .hud-block{align-items:center!important}
+    .hud-block.left{order:1}
+    .hud-block.right{order:2}
+    .hud-block.center{order:3;flex-basis:100%}
+    .meter{width:min(72vw,240px)}
+    .score{font-size:26px}
+    .stats{gap:30px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .panel{animation:none}
+    #hud{transition:none}
+    .overlay{transition:none}
+    .btn{transition:none}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+
+  <div id="hud" aria-hidden="true">
+    <div class="hud-block left">
+      <span class="lbl">Desync</span>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="hud-block center">
+      <span class="lbl">Swarm Sync</span>
+      <div class="meter"><i id="meterFill"></i></div>
+      <span class="pct" id="syncPct">0%</span>
+    </div>
+    <div class="hud-block right">
+      <span class="lbl">Joined</span>
+      <div class="score" id="score">0</div>
+      <div class="cycles" id="cycles"></div>
+    </div>
+  </div>
+
+  <div class="overlay show" id="start">
+    <div class="panel">
+      <div class="kicker">Emergent Rhythm · Canvas 2D</div>
+      <h1 class="title">Bioluminescent<br><span class="accent">Firefly Pulse</span></h1>
+      <p class="lede">A swarm of fireflies flickers in chaos, then slowly finds its rhythm. Watch the pulse breathe — and flash your own light the instant the swarm peaks. Join the living beat.</p>
+      <div class="legend">
+        <span><i class="swatch g"></i>Swarm · #AAFF00</span>
+        <span><i class="swatch w"></i>You · #FFFFFF</span>
+        <span><i class="swatch r"></i>5 desyncs scatter the swarm</span>
+      </div>
+      <button class="btn" id="startBtn">Click to Begin</button>
+      <div class="hint">Tap / click anywhere · sync within ±110 ms of the peak</div>
+    </div>
+  </div>
+
+  <div class="overlay" id="over">
+    <div class="panel">
+      <div class="kicker" id="overKicker">Session Ended</div>
+      <h2 id="overTitle">Swarm Joined</h2>
+      <div class="stats">
+        <div class="stat"><span class="v" id="statTime">0s</span><span class="k">Time in Sync</span></div>
+        <div class="stat"><span class="v" id="statScore">0</span><span class="k">Syncs</span></div>
+        <div class="stat"><span class="v" id="statCyc">0/3</span><span class="k">Cycles</span></div>
+      </div>
+      <button class="btn" id="restartBtn">Restart</button>
+      <div class="hint">Re-enter the dark · find the pulse again</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+const HUD=document.getElementById('hud'), dotsEl=document.getElementById('dots');
+const meterFill=document.getElementById('meterFill'), syncPct=document.getElementById('syncPct');
+const scoreEl=document.getElementById('score'), cyclesEl=document.getElementById('cycles');
+const startEl=document.getElementById('start'), overEl=document.getElementById('over');
+const startBtn=document.getElementById('startBtn'), restartBtn=document.getElementById('restartBtn');
+const overTitle=document.getElementById('overTitle'), overKicker=document.getElementById('overKicker');
+const statTime=document.getElementById('statTime'), statScore=document.getElementById('statScore'), statCyc=document.getElementById('statCyc');
+
+const TAU=Math.PI*2, TWO_PI=TAU;
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COL={swarm:'#AAFF00',player:'#FFFFFF',fail:'#FF3333'};
+
+// Tuning
+const COUPLING=1.6, BASE_FREQ=1.7, TOL=0.11, WIN_CYCLES=3, CYCLE_TIME=5, MAX_DESYNC=5;
+
+let W=0,H=0,DPR=1, cx=0,cy=0, swarmR=0, playerR=0, baseGlow=0;
+let state='idle', swarm=[], player=null, particles=[];
+let desyncs=0, score=0, cycles=0, syncTime=0, cycleTimer=0, cycleFlash=0, celebrateTimer=0, overTimer=0;
+let lastPeak=-1, swarmPhase=0, swarmOrder=0, swarmFlash=0, swarmFlashPrev=0;
+let mx=0,my=0, pointerActive=false, lastFrame=performance.now(), hudAcc=0;
+
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
+function rand(a,b){return a+Math.random()*(b-a);}
+
+/* ---------- Audio (Web Audio API synth) ---------- */
+let actx=null;
+function initAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function beep(freq,dur,type,gain){ if(!actx) return; const t=actx.currentTime; const o=actx.createOscillator(),g=actx.createGain();
+  o.type=type||'sine'; o.frequency.value=freq; o.connect(g); g.connect(actx.destination);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(gain||0.05,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.start(t); o.stop(t+dur+0.03); }
+function playSwarm(){ beep(120,0.14,'sine',0.03); }
+function playGood(){ beep(660,0.12,'triangle',0.06); beep(990,0.16,'sine',0.03); }
+function playBad(){ beep(150,0.22,'sawtooth',0.07); }
+function playWin(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.3,'sine',0.05),i*130)); }
+
+/* ---------- Layout ---------- */
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.width=Math.floor(W*DPR); canvas.height=Math.floor(H*DPR);
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  cx=W/2; cy=H/2;
+  const minDim=Math.min(W,H);
+  swarmR=Math.min(W,H)*0.42;
+  playerR=Math.min(W,H)*0.22;
+  baseGlow=Math.max(26,Math.min(58,minDim*0.06));
+  for(const f of swarm){ f.x=clamp(f.x,12,W-12); f.y=clamp(f.y,12,H-12); }
+  if(player){ player.x=clamp(player.x,12,W-12); player.y=clamp(player.y,12,H-12); }
+}
+window.addEventListener('resize',resize,{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(resize,120));
+
+/* ---------- Entities ---------- */
+function makeFirefly(x,y){ return {x,y,vx:rand(-.06,.06),vy:rand(-.06,.06),wander:rand(0,TAU),phase:rand(0,TAU),freq:BASE_FREQ+rand(-.2,.2),flash:0,scatter:0}; }
+function initSwarm(){
+  swarm=[]; const N=16;
+  for(let i=0;i<N;i++){
+    const a=rand(0,TAU), r=swarmR*Math.sqrt(Math.random());
+    swarm.push(makeFirefly(cx+Math.cos(a)*r, cy+Math.sin(a)*r));
+  }
+}
+function initPlayer(){ player={x:cx,y:cy,tx:cx,ty:cy,flash:0,fail:0,ring:0}; mx=cx; my=cy; }
+function resetGame(){
+  desyncs=0; score=0; cycles=0; syncTime=0; cycleTimer=0; cycleFlash=0; celebrateTimer=0;
+  lastPeak=-1; swarmOrder=0; swarmPhase=0; swarmFlash=0; swarmFlashPrev=0; particles=[];
+  initSwarm(); initPlayer();
+  for(const d of dotsEl.children) d.classList.remove('on');
+  for(const c of cyclesEl.children) c.classList.remove('on');
+  scoreEl.textContent='0';
+}
+function buildHUD(){
+  dotsEl.innerHTML=''; for(let i=0;i<MAX_DESYNC;i++){ const d=document.createElement('div'); d.className='dot'; dotsEl.appendChild(d); }
+  cyclesEl.innerHTML=''; for(let i=0;i<WIN_CYCLES;i++){ const c=document.createElement('div'); c.className='cyc'; cyclesEl.appendChild(c); }
+}
+
+/* ---------- Simulation ---------- */
+function update(dt){
+  // swarm phase (Kuramoto) + order parameter
+  let sumSin=0,sumCos=0;
+  for(const f of swarm){ sumSin+=Math.sin(f.phase); sumCos+=Math.cos(f.phase); }
+  const n=swarm.length||1;
+  swarmOrder=Math.hypot(sumSin,sumCos)/n;
+  swarmPhase=Math.atan2(sumSin,sumCos);
+
+  const dtc=Math.min(dt,0.05);
+  for(const f of swarm){
+    const dph=f.phase-swarmPhase;
+    const coupling=COUPLING*(0.15+0.85*swarmOrder);
+    f.phase+=(f.freq+coupling*Math.sin(dph))*dtc;
+    if(f.phase>Math.PI) f.phase-=TAU; else if(f.phase<=-Math.PI) f.phase+=TAU;
+
+    f.wander+=(Math.random()-.5)*0.6;
+    let ax=Math.cos(f.wander)*0.00018, ay=Math.sin(f.wander)*0.00018;
+    const dx=cx-f.x, dy=cy-f.y;
+    ax+=dx*0.0000022; ay+=dy*0.0000022;
+    if(swarmOrder>0.6){ const br=Math.sin(swarmPhase)*0.00004; ax+=dx*br; ay+=dy*br; }
+    if(f.scatter>0){ ax+=dx*0.000012; ay+=dy*0.000012; f.scatter-=dtc; }
+    f.vx+=ax*dt; f.vy+=ay*dt;
+    const maxv=0.16*(1+f.scatter*3);
+    const sp=Math.hypot(f.vx,f.vy); if(sp>maxv){ f.vx=f.vx/sp*maxv; f.vy=f.vy/sp*maxv; }
+    f.x+=f.vx*dt; f.y+=f.vy*dt;
+    const m=14;
+    if(f.x<m){f.x=m;f.vx=Math.abs(f.vx);} if(f.x>W-m){f.x=W-m;f.vx=-Math.abs(f.vx);}
+    if(f.y<m){f.y=m;f.vy=Math.abs(f.vy);} if(f.y>H-m){f.y=H-m;f.vy=-Math.abs(f.vy);}
+    f.flash=Math.max(0,f.flash-dtc/0.16);
+  }
+
+  // player follow
+  if(pointerActive){ player.tx=clamp(mx,40,W-40); player.ty=clamp(my,60,H-40); }
+  else { player.tx=cx+Math.cos(performance.now()/2600)*playerR*0.5; player.ty=cy+Math.sin(performance.now()/2100)*playerR*0.32; }
+  const ease=reduce?0.14:0.06;
+  player.x+=(player.tx-player.x)*ease; player.y+=(player.ty-player.y)*ease;
+  player.flash=Math.max(0,player.flash-dt/0.2);
+  player.fail=Math.max(0,player.fail-dt/0.3);
+  player.ring=Math.max(0,player.ring-dt/0.45);
+
+  // particles
+  for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.96; p.vy*=0.96; p.life-=dt; if(p.life<=0) particles.splice(i,1); }
+
+  // swarm beat detection
+  const sf=Math.max(0,Math.sin(swarmPhase));
+  if(swarmOrder>0.5 && swarmFlashPrev<=0 && sf>0){
+    const now=performance.now()/1000;
+    if(now-lastPeak>0.2){ lastPeak=now; if(!reduce) playSwarm(); }
+  }
+  swarmFlashPrev=sf;
+
+  // sync state
+  if(swarmOrder>0.8){
+    cycleTimer+=dt; syncTime+=dt;
+    if(cycleTimer>=CYCLE_TIME && cycles<WIN_CYCLES){
+      cycles++; cycleTimer=0; cycleFlash=1;
+      const el=cyclesEl.children[cycles-1]; if(el) el.classList.add('on');
+      if(!reduce) beep(880,0.18,'triangle',0.05);
+      if(cycles>=WIN_CYCLES) win();
+    }
+  } else { cycleTimer=0; }
+  cycleFlash=Math.max(0,cycleFlash-dt/1.2);
+  celebrateTimer=Math.max(0,celebrateTimer-dt);
+}
+
+/* ---------- Input evaluation ---------- */
+function handleInput(x,y){
+  if(state==='playing'){
+    player.tx=clamp(x,40,W-40); player.ty=clamp(y,60,H-40); mx=x; my=y; pointerActive=true;
+    const now=performance.now()/1000;
+    const sf=Math.max(0,Math.sin(swarmPhase));
+    const inTol=sf>0.86;
+    player.flash=1;
+    if(inTol && swarmOrder>0.35){
+      score++; scoreEl.textContent=score; player.ring=1; spawnParticles(player.x,player.y,COL.player,10);
+      if(!reduce) playGood();
+    } else {
+      desyncs++; player.fail=1; player.ring=1;
+      const el=dotsEl.children[desyncs-1]; if(el) el.classList.add('on');
+      for(const f of swarm){ f.scatter=0.5; f.vx+=rand(-.6,.6); f.vy+=rand(-.6,.6); }
+      if(!reduce) playBad();
+      if(desyncs>=MAX_DESYNC) scatter();
+    }
+  } else if(state==='idle' || state==='over'){
+    if(overTimer>0.4) startGame();
+  }
+}
+
+function spawnParticles(x,y,color,n){
+  for(let i=0;i<n;i++){ const a=rand(0,TAU),s=rand(.3,1.4); particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.4,.9),max:.9,color}); }
+}
+
+/* ---------- State transitions ---------- */
+function startGame(){ initAudio(); resetGame(); state='playing'; startEl.classList.remove('show'); overEl.classList.remove('show'); HUD.classList.add('show'); }
+function scatter(){
+  state='scatter'; overTimer=0;
+  for(const f of swarm){ const dx=f.x-cx, dy=f.y-cy, d=Math.hypot(dx,dy)||1; f.vx=dx/d*rand(2.5,4.5); f.vy=dy/d*rand(2.5,4.5); f.scatter=2.5; }
+  if(!reduce) playBad();
+  setTimeout(()=>{ showOver(false); },1400);
+}
+function win(){
+  state='win'; celebrateTimer=2.6; overTimer=0;
+  for(const f of swarm){ f.flash=1; f.scatter=0; }
+  if(!reduce) playWin();
+  setTimeout(()=>{ showOver(true); },1800);
+}
+function showOver(isWin){
+  state='over';
+  overTitle.textContent=isWin?'Swarm Joined':'Swarm Scattered';
+  overTitle.className=isWin?'win':'lose';
+  overKicker.textContent=isWin?'You became one with the pulse':'The rhythm was lost';
+  statTime.textContent=Math.round(syncTime)+'s';
+  statScore.textContent=score;
+  statCyc.textContent=cycles+'/'+WIN_CYCLES;
+  overEl.classList.add('show');
+  HUD.classList.remove('show');
+}
+
+/* ---------- Rendering ---------- */
+function drawBg(){
+  const g=ctx.createRadialGradient(cx,cy*0.85,0,cx,cy,Math.max(W,H)*0.72);
+  g.addColorStop(0,'#00243d'); g.addColorStop(0.5,'#001629'); g.addColorStop(1,'#000c17');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+function drawFirefly(x,y,bright,color,glowR,whiteCore){
+  if(bright<=0.003) return;
+  const r=glowR*(0.55+bright*0.9);
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,'rgba('+color+','+(bright*0.95).toFixed(3)+')');
+  g.addColorStop(0.35,'rgba('+color+','+(bright*0.35).toFixed(3)+')');
+  g.addColorStop(1,'rgba('+color+',0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill();
+  const cr=2.4+bright*3.4;
+  ctx.fillStyle='rgba(255,255,255,'+Math.min(1,bright*1.15).toFixed(3)+')';
+  ctx.beginPath(); ctx.arc(x,y,cr,0,TAU); ctx.fill();
+}
+function render(){
+  ctx.globalCompositeOperation='source-over';
+  drawBg();
+  ctx.globalCompositeOperation='lighter';
+
+  // swarm
+  for(const f of swarm){
+    const b=Math.max(0.06,Math.max(0,Math.sin(f.phase)));
+    drawFirefly(f.x,f.y,b,'170,255,0',baseGlow*0.85);
+  }
+  // swarm collective pulse
+  if(swarmOrder>0.35){ const sf=Math.max(0,Math.sin(swarmPhase)); const a=(sf-0.5)*swarmOrder*0.16;
+    if(a>0){ const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.5); g.addColorStop(0,'rgba(170,255,0,'+a.toFixed(3)+')'); g.addColorStop(1,'rgba(170,255,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); } }
+  // celebration
+  if(celebrateTimer>0){ const a=Math.sin(celebrateTimer*8)*0.5+0.5; const g=ctx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)); g.addColorStop(0,'rgba(170,255,0,'+(a*0.22).toFixed(3)+')'); g.addColorStop(1,'rgba(170,255,0,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+
+  // player
+  if(player){
+    const pb=Math.max(0.05,player.flash);
+    drawFirefly(player.x,player.y,pb,'255,255,255',baseGlow*1.05,true);
+    if(player.fail>0){ const r=baseGlow*0.7*(1.2-player.fail); ctx.strokeStyle='rgba(255,51,51,'+(player.fail*0.8).toFixed(3)+')'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(player.x,player.y,r,0,TAU); ctx.stroke(); }
+    if(player.ring>0){ const r=baseGlow*(1-player.ring)*2.4+8; ctx.strokeStyle='rgba(255,255,255,'+(player.ring*0.55).toFixed(3)+')'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(player.x,player.y,r,0,TAU); ctx.stroke(); }
+  }
+
+  // particles
+  for(const p of particles){ const a=p.life/p.max; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,10); g.addColorStop(0,'rgba('+p.color+','+(a*0.9).toFixed(3)+')'); g.addColorStop(1,'rgba('+p.color+',0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,10,0,TAU); ctx.fill(); }
+
+  // vignette
+  ctx.globalCompositeOperation='source-over';
+  const v=ctx.createRadialGradient(cx,cy,Math.min(W,H)*0.35,cx,cy,Math.max(W,H)*0.75);
+  v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,6,12,0.55)');
+  ctx.fillStyle=v; ctx.fillRect(0,0,W,H);
+}
+
+/* ---------- HUD ---------- */
+function updateHUD(){
+  const pct=Math.round(swarmOrder*100);
+  meterFill.style.width=pct+'%';
+  syncPct.textContent=pct+'%';
+  const col=swarmOrder>0.8?'#AAFF00':swarmOrder>0.5?'#8fd000':'#6f93a6';
+  syncPct.style.color=col;
+}
+
+/* ---------- Loop ---------- */
+function loop(now){
+  let dt=(now-lastFrame)/1000; lastFrame=now; if(dt>0.05) dt=0.05;
+  if(state==='playing'||state==='scatter'||state==='win') update(dt);
+  render();
+  hudAcc+=dt; if(hudAcc>0.06){ hudAcc=0; if(state==='playing') updateHUD(); }
+  if(state==='over') overTimer+=dt;
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Events ---------- */
+canvas.addEventListener('pointerdown',e=>{ e.preventDefault(); handleInput(e.clientX,e.clientY); },{passive:false});
+canvas.addEventListener('pointermove',e=>{ mx=e.clientX; my=e.clientY; if(state==='playing') pointerActive=true; },{passive:true});
+canvas.addEventListener('pointerleave',()=>{ pointerActive=false; });
+canvas.addEventListener('touchstart',e=>{ e.preventDefault(); },{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+startBtn.addEventListener('click',e=>{ e.stopPropagation(); startGame(); });
+restartBtn.addEventListener('click',e=>{ e.stopPropagation(); startGame(); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) lastFrame=performance.now(); });
+
+/* ---------- Boot ---------- */
+buildHUD(); resize(); initSwarm(); initPlayer();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

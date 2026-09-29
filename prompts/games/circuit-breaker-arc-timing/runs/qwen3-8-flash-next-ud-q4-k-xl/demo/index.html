@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Circuit Breaker · Arc Timing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111111;
+    --arc:#FFFF00;
+    --danger:#FF5500;
+    --success:#00FF00;
+    --ink:#FFFFFF;
+    --muted:#8a8a8a;
+    --line:rgba(255,255,255,.12);
+    --panel:#181818;
+    --panel2:#202020;
+    --mono:'Space Mono', ui-monospace, 'Courier New', monospace;
+    --disp:'Bebas Neue', 'Arial Narrow', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  .app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1a1a1a 0%, #111111 55%, #0b0b0b 100%);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);
+    flex:0 0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .bolt{width:34px;height:34px;color:var(--arc);flex:0 0 auto;
+    filter:drop-shadow(0 0 6px rgba(255,255,0,.55));animation:flick 4s infinite steps(1);}
+  .brand-name{font-family:var(--disp);font-size:clamp(20px,3.4vw,30px);letter-spacing:.14em;line-height:.9;}
+  .brand-name b{color:var(--arc);}
+  .brand-sub{font-size:10px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+  .status{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;}
+  .led{width:10px;height:10px;border-radius:50%;background:#333;box-shadow:inset 0 0 3px #000;transition:.25s;}
+  .led.live{background:var(--danger);box-shadow:0 0 10px var(--danger);animation:blink 1s infinite;}
+  .led.ok{background:var(--success);box-shadow:0 0 10px var(--success);}
+
+  /* ---------- Console ---------- */
+  .console{
+    flex:1 1 auto;display:flex;gap:18px;align-items:stretch;justify-content:center;
+    padding:18px 20px;min-height:0;
+  }
+  .stage{
+    position:relative;flex:0 1 800px;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .frame{
+    position:relative;height:100%;aspect-ratio:3/2;width:auto;max-width:100%;
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;
+    background:#0d0d0d;
+    box-shadow:0 0 0 1px rgba(0,0,0,.6), 0 30px 60px -20px rgba(0,0,0,.9);
+  }
+  .frame::before{ /* corner rivets */
+    content:"";position:absolute;inset:8px;border:1px solid rgba(255,255,255,.05);border-radius:4px;pointer-events:none;z-index:5;
+  }
+  canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:manipulation;}
+
+  /* ---------- Readout panel ---------- */
+  .readout{
+    flex:0 0 262px;display:flex;flex-direction:column;gap:12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);border-radius:6px;padding:16px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .ro-title{font-family:var(--disp);font-size:15px;letter-spacing:.24em;color:var(--muted);
+    border-bottom:1px dashed var(--line);padding-bottom:8px;}
+  .ro-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
+  .ro-label{font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;}
+  .ro-val{font-family:var(--disp);font-size:30px;letter-spacing:.05em;line-height:1;color:var(--ink);}
+  .ro-val.accent{color:var(--arc);}
+  .ro-val.green{color:var(--success);}
+  .ro-val.danger{color:var(--danger);}
+  .ro-val.score{font-size:40px;color:var(--arc);text-shadow:0 0 14px rgba(255,255,0,.35);}
+
+  .meter{height:10px;border:1px solid var(--line);border-radius:2px;background:#000;overflow:hidden;position:relative;}
+  .meter-fill{height:100%;width:0%;background:var(--arc);transition:width .05s linear;}
+  .meter-fill.danger{background:var(--danger);}
+  .meter-fill.safe{background:var(--success);box-shadow:0 0 10px var(--success);}
+
+  .lives{display:flex;gap:6px;}
+  .fuse{width:20px;height:9px;border-radius:2px;background:#333;border:1px solid #444;position:relative;overflow:hidden;}
+  .fuse::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#555,#222);opacity:.6;}
+  .fuse.live{background:var(--arc);border-color:var(--arc);box-shadow:0 0 8px rgba(255,255,0,.5);}
+
+  .circuit-dots{display:flex;gap:8px;}
+  .cdot{flex:1;height:34px;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--disp);font-size:18px;color:#555;background:#000;transition:.3s;}
+  .cdot.active{border-color:var(--arc);color:var(--arc);box-shadow:inset 0 0 12px rgba(255,255,0,.15);}
+  .cdot.done{border-color:var(--success);color:var(--success);background:rgba(0,255,0,.06);}
+
+  .hint{margin-top:auto;font-size:10px;letter-spacing:.14em;color:var(--muted);line-height:1.7;
+    border-top:1px dashed var(--line);padding-top:10px;}
+  .hint b{color:var(--success);}
+
+  /* ---------- Bottom bar ---------- */
+  .bottombar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:10px 20px;border-top:1px solid var(--line);font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:7px;}
+  .sw{width:11px;height:11px;border-radius:2px;}
+  .sw.y{background:var(--arc);box-shadow:0 0 8px rgba(255,255,0,.5);}
+  .sw.o{background:var(--danger);box-shadow:0 0 8px rgba(255,85,0,.5);}
+  .sw.g{background:var(--success);box-shadow:0 0 8px rgba(0,255,0,.5);}
+  .mute{background:transparent;border:1px solid var(--line);color:var(--muted);font-family:var(--mono);
+    font-size:10px;letter-spacing:.2em;padding:6px 12px;border-radius:3px;cursor:pointer;text-transform:uppercase;transition:.2s;}
+  .mute:hover{color:var(--ink);border-color:var(--arc);}
+  .mute.off{color:#555;text-decoration:line-through;}
+
+  /* ---------- Overlays ---------- */
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:24px;background:rgba(8,8,8,.86);backdrop-filter:blur(3px);z-index:10;
+    transition:opacity .35s ease;}
+  .overlay.hidden{opacity:0;pointer-events:none;}
+  .ov-inner{max-width:460px;width:100%;}
+  .ov-kicker{font-size:11px;letter-spacing:.42em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+  .ov-title{font-family:var(--disp);font-size:clamp(46px,10vw,92px);line-height:.86;letter-spacing:.02em;
+    text-transform:uppercase;text-shadow:0 0 30px rgba(255,255,0,.25);}
+  .ov-title .hl{color:var(--arc);text-shadow:0 0 26px rgba(255,255,0,.6);}
+  .ov-title.fail{color:var(--danger);text-shadow:0 0 30px rgba(255,85,0,.6);}
+  .ov-title.win{color:var(--success);text-shadow:0 0 30px rgba(0,255,0,.55);}
+  .ov-sub{font-size:12px;letter-spacing:.18em;color:var(--muted);margin:18px auto 22px;max-width:360px;line-height:1.8;}
+  .ov-btn{font-family:var(--disp);font-size:24px;letter-spacing:.16em;color:#000;background:var(--arc);
+    border:none;padding:12px 30px;border-radius:3px;cursor:pointer;transition:.2s;
+    box-shadow:0 0 24px rgba(255,255,0,.35);}
+  .ov-btn:hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(255,255,0,.6);}
+  .ov-btn:active{transform:translateY(0);}
+  .ov-btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;}
+  .ov-btn.ghost:hover{border-color:var(--arc);color:var(--arc);}
+  .ov-score{font-family:var(--disp);font-size:clamp(52px,13vw,86px);color:var(--arc);
+    text-shadow:0 0 30px rgba(255,255,0,.45);margin:6px 0 2px;}
+  .ov-score-label{font-size:10px;letter-spacing:.4em;color:var(--muted);}
+  .ov-meta{display:flex;justify-content:center;gap:26px;margin:18px 0 24px;font-size:11px;letter-spacing:.16em;color:var(--muted);}
+  .ov-meta b{display:block;font-family:var(--disp);font-size:26px;color:var(--ink);letter-spacing:.05em;}
+  .ov-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+  /* ---------- Animations ---------- */
+  @keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.35}99%{opacity:.7}}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:820px){
+    .console{flex-direction:column;padding:12px;}
+    .stage{flex:1 1 auto;min-height:52vh;}
+    .readout{flex:0 0 auto;width:100%;flex-direction:row;flex-wrap:wrap;gap:10px 18px;padding:12px;}
+    .ro-title{width:100%;padding-bottom:6px;}
+    .ro-block{flex:1 1 90px;}
+    .hint{display:none;}
+    .meter-wrap{flex:1 1 100%;}
+  }
+  @media (max-width:520px){
+    .brand-sub{display:none;}
+    .legend{display:none;}
+    .readout{gap:8px 12px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .bolt,.led.live{animation:none;}
+    .overlay{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="bolt" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M13 2 4 14h6l-1 8 9-12h-6z"/>
+      </svg>
+      <div>
+        <div class="brand-name">CIRCUIT <b>BREAKER</b></div>
+        <div class="brand-sub">Arc Timing · High-Voltage Ops</div>
+      </div>
+    </div>
+    <div class="status">
+      <span class="led" id="statusLed"></span>
+      <span id="statusText">STANDBY</span>
+    </div>
+  </header>
+
+  <!-- CONSOLE -->
+  <main class="console">
+    <section class="stage">
+      <div class="frame">
+        <canvas id="game"></canvas>
+
+        <!-- Title -->
+        <div class="overlay" id="titleScreen">
+          <div class="ov-inner">
+            <div class="ov-kicker">Substation 7 · Live Line</div>
+            <h1 class="ov-title">CIRCUIT<br><span class="hl">BREAKER</span></h1>
+            <p class="ov-sub">Watch the arc pulse between the terminals.<br>
+              CLOSE the breaker the instant the gap is <b>shortest</b>.<br>
+              Too long and you take the shock. Close all 5 circuits.</p>
+            <button class="ov-btn" id="startBtn">ENERGIZE ▸</button>
+          </div>
+        </div>
+
+        <!-- Shock -->
+        <div class="overlay hidden" id="shockScreen">
+          <div class="ov-inner">
+            <div class="ov-kicker" id="shockKicker">Voltage Discharge</div>
+            <h2 class="ov-title fail">SHOCK</h2>
+            <p class="ov-sub" id="shockSub">Arc too long — line not safe.</p>
+            <button class="ov-btn" id="retryBtn">RESET CIRCUIT ▸</button>
+          </div>
+        </div>
+
+        <!-- Win -->
+        <div class="overlay hidden" id="winScreen">
+          <div class="ov-inner">
+            <div class="ov-kicker">All Lines Energized</div>
+            <h2 class="ov-title win">CIRCUITS<br>SECURED</h2>
+            <div class="ov-score-label">FINAL SCORE</div>
+            <div class="ov-score" id="winScore">0</div>
+            <div class="ov-meta">
+              <div>CLOSED<b id="winClosed">0</b></div>
+              <div>PERFECT<b id="winPerfect">0</b></div>
+              <div>SHOCKS<b id="winShocks">0</b></div>
+            </div>
+            <button class="ov-btn" id="playAgainBtn">RUN AGAIN ▸</button>
+          </div>
+        </div>
+
+        <!-- Game Over -->
+        <div class="overlay hidden" id="overScreen">
+          <div class="ov-inner">
+            <div class="ov-kicker">Fuses Blown</div>
+            <h2 class="ov-title fail">LINE DOWN</h2>
+            <p class="ov-sub">Three shocks — the crew pulls you off the line.</p>
+            <div class="ov-meta">
+              <div>CLOSED<b id="overClosed">0</b></div>
+              <div>SCORE<b id="overScore">0</b></div>
+            </div>
+            <button class="ov-btn" id="overRetryBtn">RETRY ▸</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- READOUT -->
+    <aside class="readout">
+      <div class="ro-title">▚ SYSTEM READOUT</div>
+
+      <div class="ro-block">
+        <div class="ro-label">Circuit</div>
+        <div class="ro-val accent" id="circuitVal">—/5</div>
+      </div>
+
+      <div class="ro-block">
+        <div class="ro-label">Score</div>
+        <div class="ro-val score" id="scoreVal">0000</div>
+      </div>
+
+      <div class="ro-block">
+        <div class="ro-label">Fuses</div>
+        <div class="lives" id="lives">
+          <span class="fuse live"></span><span class="fuse live"></span><span class="fuse live"></span>
+        </div>
+      </div>
+
+      <div class="meter-wrap">
+        <div class="ro-label" style="margin-bottom:6px;">Arc Gap</div>
+        <div class="meter"><div class="meter-fill" id="gapFill"></div></div>
+      </div>
+
+      <div class="ro-block">
+        <div class="ro-label">Last Close</div>
+        <div class="ro-val" id="lastVal">--</div>
+      </div>
+
+      <div class="ro-block">
+        <div class="ro-label">Circuits</div>
+        <div class="circuit-dots" id="dots"></div>
+      </div>
+
+      <div class="hint">
+        <b>SAFE</b> = green outline on the gap.<br>
+        Click / tap to close. Precision scores higher.
+      </div>
+    </aside>
+  </main>
+
+  <!-- BOTTOM BAR -->
+  <footer class="bottombar">
+    <div class="legend">
+      <span><i class="sw y"></i>Arc / Safe</span>
+      <span><i class="sw o"></i>Danger Zone</span>
+      <span><i class="sw g"></i>Breaker Closed</span>
+    </div>
+    <button class="mute" id="muteBtn">♪ Audio On</button>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ CONFIG ============ */
+  const PALETTE = { bg:'#111111', arc:'#FFFF00', danger:'#FF5500', success:'#00FF00', ink:'#FFFFFF', muted:'#8a8a8a' };
+  const LEVELS = [
+    { freq:0.55, amp:0.55 },
+    { freq:0.75, amp:0.62 },
+    { freq:0.95, amp:0.68 },
+    { freq:1.20, amp:0.74 },
+    { freq:1.50, amp:0.80 }
+  ];
+  const TOTAL = LEVELS.length;
+  const MAX_LIVES = 3;
+  const SAFE = 0.16;           // arcGap <= SAFE => safe to close
+  const DANGER = 0.55;         // arcGap >= DANGER => shock
+  const MIN_GAP = 0.30;        // shortest possible gap
+  const MAX_GAP = 0.94;        // longest possible gap
+  const GAP_RANGE = MAX_GAP - MIN_GAP;
+
+  /* ============ DOM ============ */
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const el = id => document.getElementById(id);
+  const screens = {
+    title: el('titleScreen'), shock: el('shockScreen'), win: el('winScreen'), over: el('overScreen')
+  };
+  const hud = {
+    circuit: el('circuitVal'), score: el('scoreVal'), gap: el('gapFill'),
+    last: el('lastVal'), dots: el('dots'), lives: el('lives'),
+    led: el('statusLed'), status: el('statusText')
+  };
+
+  /* ============ STATE ============ */
+  let W=0, H=0, dpr=1, scale=1;
+  let state = 'title';          // title | play | shock | win | over
+  let level = 0, score = 0, lives = MAX_LIVES;
+  let perfect = 0, shocks = 0, closed = 0;
+  let t = 0, lastTs = 0;
+  let shockTimer = 0, shockMsg = '', shockSub = '';
+  let breaker = { on:false, pos:0, flash:0 };
+  let shake = 0, flash = 0, flashColor = PALETTE.danger;
+  let particles = [];
+  let confetti = [];
+  let inputLock = false;
+  let reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ AUDIO ============ */
+  let actx = null, muted = false;
+  function audio(){ if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return actx; }
+  function tone(freq, dur, type, gain){
+    if(muted) return; const a = audio(); if(!a) return;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type||'square'; o.frequency.value = freq;
+    o.connect(g); g.connect(a.destination);
+    const now = a.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(gain||0.12, now+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+dur);
+    o.start(now); o.stop(now+dur+0.02);
+  }
+  function sfxClose(prec){ tone(120,0.09,'square',0.16); tone(90,0.14,'triangle',0.12); tone(520+prec*300,0.06,'sine',0.06); }
+  function sfxZap(){ tone(70,0.28,'sawtooth',0.2); tone(1800,0.05,'square',0.08); tone(60,0.35,'square',0.1); }
+  function sfxWin(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,0.2,'triangle',0.12), i*110)); }
+
+  /* ============ CANVAS SIZING ============ */
+  function resize(){
+    const rect = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = Math.max(1, Math.round(rect.width));
+    H = Math.max(1, Math.round(rect.height));
+    canvas.width = Math.round(W*dpr);
+    canvas.height = Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    scale = H/500;   // design height 500
+  }
+
+  /* ============ HELPERS ============ */
+  const rand = (a,b)=>a+Math.random()*(b-a);
+  const clamp = (v,a,b)=>v<a?a:v>b?b:v;
+  const pad = (n,w)=>String(Math.floor(n)).padStart(w,'0');
+  function arcGap(){
+    const L = LEVELS[level] || LEVELS[0];
+    const s = Math.sin(t*L.freq*Math.PI*2);
+    return MIN_GAP + (0.5 - 0.5*s) * L.amp * GAP_RANGE;
+  }
+  function setStatus(txt, cls){ hud.status.textContent = txt; hud.led.className = 'led' + (cls?(' '+cls):''); }
+
+  /* ============ SCREENS ============ */
+  function show(name){
+    Object.keys(screens).forEach(k=>screens[k].classList.add('hidden'));
+    if(name && screens[name]) screens[name].classList.remove('hidden');
+  }
+
+  /* ============ GAME FLOW ============ */
+  function startGame(){
+    score=0; lives=MAX_LIVES; level=0; perfect=0; shocks=0; closed=0;
+    breaker={on:false,pos:0,flash:0}; particles=[]; confetti=[];
+    state='play'; t=0; show(null);
+    setStatus('LIVE LINE','live');
+    updateHUD();
+  }
+  function resetCircuit(){
+    breaker={on:false,pos:0,flash:0}; particles=[];
+    state='play'; show(null);
+    setStatus('LIVE LINE','live');
+  }
+  function attempt(){
+    if(inputLock || state!=='play' || breaker.on) return;
+    inputLock = true; setTimeout(()=>inputLock=false, 140);
+    const gap = arcGap();
+    if(gap <= SAFE){
+      const prec = 1 - (gap/SAFE);                 // 0..1, 1 = dead center
+      const pts = Math.round(100 + prec*900);
+      score += pts;
+      if(prec>0.9) perfect++;
+      closed++;
+      breaker.on = true; breaker.flash = 1;
+      sfxClose(prec);
+      emitSparks(28, PALETTE.success);
+      hud.last.textContent = '+'+pts;
+      hud.last.className = 'ro-val green';
+      if(level >= TOTAL-1){ win(); }
+      else {
+        level++;
+        setTimeout(()=>{ if(state==='play'){ breaker={on:false,pos:0,flash:0}; } }, 520);
+      }
+      updateHUD();
+    } else if(gap >= DANGER){
+      doShock('SHOCK','Arc too long — line not safe.');
+    } else {
+      doShock('MISS','Close the gap — arc still live.');
+    }
+  }
+  function doShock(msg, sub){
+    state='shock'; shocks++; lives--;
+    shockMsg=msg; shockSub=sub; shockTimer = reduced?0.5:1.1;
+    shake = reduced?0:1; flash = 1; flashColor = PALETTE.danger;
+    sfxZap();
+    emitSparks(46, PALETTE.danger);
+    setStatus('FAULT','live');
+    updateHUD();
+    if(lives<=0){ setTimeout(gameOver, 900); }
+  }
+  function win(){
+    state='win'; setStatus('SECURED','ok');
+    el('winScore').textContent = score;
+    el('winClosed').textContent = closed;
+    el('winPerfect').textContent = perfect;
+    el('winShocks').textContent = shocks;
+    sfxWin();
+    for(let i=0;i<130;i++) confetti.push({ x:rand(0,W), y:rand(-H,0), vx:rand(-40,40), vy:rand(40,160), s:rand(2,5), c:Math.random()<.5?PALETTE.arc:PALETTE.success, rot:rand(0,6.28), vr:rand(-6,6) });
+    show('win');
+  }
+  function gameOver(){
+    state='over'; setStatus('DOWN','');
+    el('overClosed').textContent = closed;
+    el('overScore').textContent = score;
+    show('over');
+  }
+
+  /* ============ PARTICLES ============ */
+  function emitSparks(n, color){
+    const cx=W/2, cy=H*0.5;
+    for(let i=0;i<n;i++){
+      const a=rand(0,6.28), sp=rand(60,320);
+      particles.push({ x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:rand(0.3,0.8), max:0.8, c:color });
+    }
+  }
+
+  /* ============ HUD ============ */
+  function buildDots(){
+    hud.dots.innerHTML='';
+    for(let i=0;i<TOTAL;i++){
+      const d=document.createElement('div'); d.className='cdot'; d.textContent=i+1; hud.dots.appendChild(d);
+    }
+  }
+  function updateHUD(){
+    hud.circuit.textContent = (state==='title'?'—':(level+1))+'/'+TOTAL;
+    hud.score.textContent = pad(score,4);
+    const fuses = hud.lives.children;
+    for(let i=0;i<fuses.length;i++) fuses[i].className = 'fuse' + (i<lives?' live':'');
+    const dots = hud.dots.children;
+    for(let i=0;i<dots.length;i++){
+      dots[i].className = 'cdot' + (i<level?' done':(i===level&&state==='play'?' active':''));
+    }
+  }
+
+  /* ============ DRAW ============ */
+  function rr(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  function drawBackground(){
+    ctx.fillStyle = PALETTE.bg; ctx.fillRect(0,0,W,H);
+    // subtle grid
+    ctx.strokeStyle='rgba(255,255,255,0.028)'; ctx.lineWidth=1;
+    const g=44*scale;
+    for(let x=0;x<W;x+=g){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=0;y<H;y+=g){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    // vignette
+    const v=ctx.createRadialGradient(W/2,H*0.45,H*0.2,W/2,H*0.5,H*0.85);
+    v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.65)');
+    ctx.fillStyle=v; ctx.fillRect(0,0,W,H);
+  }
+
+  function drawTerminal(x,y,w,h){
+    const grad=ctx.createLinearGradient(x,y,x,y+h);
+    grad.addColorStop(0,'#3a3a3a'); grad.addColorStop(.5,'#5a5a5a'); grad.addColorStop(1,'#2a2a2a');
+    ctx.fillStyle=grad; rr(x,y,w,h,4*scale); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.stroke();
+    // bolts
+    ctx.fillStyle='#111';
+    const bx=[x+8*scale, x+w-8*scale];
+    bx.forEach(bx=>{ ctx.beginPath(); ctx.arc(bx,y+h/2,2.4*scale,0,6.28); ctx.fill(); });
+    // contact nub
+    ctx.fillStyle='#777'; ctx.fillRect(x+w*0.35, y+h-3*scale, w*0.3, 3*scale);
+  }
+
+  function drawArc(cx, yTop, yBot, gap){
+    const len = (yBot-yTop)*gap;
+    const topY = yTop, botY = topY+len;
+    const pulse = 0.6 + 0.4*Math.sin(t*9);
+    const danger = gap>=DANGER;
+    const safe = gap<=SAFE;
+    const col = danger?PALETTE.danger:PALETTE.arc;
+
+    // safe-zone indicator (only near the safe gap)
+    if(safe && state==='play'){
+      ctx.save();
+      ctx.globalAlpha=0.5+0.5*pulse;
+      ctx.strokeStyle=PALETTE.success; ctx.lineWidth=2*scale;
+      ctx.setLineDash([6*scale,5*scale]);
+      rr(cx-26*scale, topY-6*scale, 52*scale, len+12*scale, 6*scale); ctx.stroke();
+      ctx.restore();
+    }
+
+    // danger zone band (top region = long arc)
+    if(danger){
+      ctx.save();
+      ctx.globalAlpha=0.10+0.06*pulse;
+      ctx.fillStyle=PALETTE.danger;
+      ctx.fillRect(cx-30*scale, topY, 60*scale, (yBot-yTop)*DANGER);
+      ctx.restore();
+    }
+
+    // build jagged path
+    const segs = 16;
+    const amp = (danger?12:8)*scale*(0.6+0.6*pulse);
+    const pts=[];
+    for(let i=0;i<=segs;i++){
+      const p=i/segs;
+      const yy = topY + p*len;
+      const jitter = (i===0||i===segs)?0:(Math.random()*2-1)*amp;
+      pts.push([cx+jitter, yy]);
+    }
+    // glow layers
+    ctx.save();
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    const layers=[
+      {w:9*scale, a:0.10, c:col},
+      {w:5*scale, a:0.35, c:col},
+      {w:2*scale, a:1,    c:danger?'#FFD9B0':'#FFFFFF'}
+    ];
+    layers.forEach(L=>{
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+      ctx.globalAlpha=L.a*pulse;
+      ctx.shadowBlur=18*scale; ctx.shadowColor=col;
+      ctx.strokeStyle=L.c; ctx.lineWidth=L.w; ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawBreaker(cx, yTop, yBot){
+    const bw=64*scale, bh=150*scale;
+    const bx=cx-bw/2, by=yBot+18*scale;
+    // housing
+    ctx.fillStyle='#1c1c1c'; rr(bx,by,bw,bh,5*scale); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1; ctx.stroke();
+    // label
+    ctx.fillStyle=PALETTE.muted; ctx.font=`${9*scale}px "Space Mono", monospace`;
+    ctx.textAlign='center'; ctx.fillText('BRKR', cx, by+14*scale);
+    // track
+    ctx.fillStyle='#000'; rr(bx+10*scale, by+22*scale, bw-20*scale, bh-40*scale, 3*scale); ctx.fill();
+    // handle (snap animation)
+    const target = breaker.on?1:0;
+    const pos = breaker.pos;
+    const trackTop=by+24*scale, trackH=bh-44*scale;
+    const hy = trackTop + (1-pos)*trackH;
+    const on = pos>0.5;
+    const hcol = on?PALETTE.success:'#c9c9c9';
+    ctx.save();
+    if(on){ ctx.shadowBlur=16*scale; ctx.shadowColor=PALETTE.success; }
+    ctx.fillStyle=hcol; rr(bx+12*scale, hy, bw-24*scale, trackH*0.42, 3*scale); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#000'; ctx.font=`bold ${10*scale}px "Space Mono", monospace`;
+    ctx.fillText(on?'ON':'OFF', cx, hy+trackH*0.26);
+    // LED
+    ctx.save();
+    const ledOn = breaker.on;
+    ctx.fillStyle = ledOn?PALETTE.success:'#333';
+    if(ledOn){ ctx.shadowBlur=12*scale; ctx.shadowColor=PALETTE.success; }
+    ctx.beginPath(); ctx.arc(cx, by+bh-10*scale, 4*scale, 0, 6.28); ctx.fill();
+    ctx.restore();
+    // flash
+    if(breaker.flash>0){
+      ctx.save(); ctx.globalAlpha=breaker.flash*0.5; ctx.fillStyle=PALETTE.success;
+      rr(bx,by,bw,bh,5*scale); ctx.fill(); ctx.restore();
+    }
+  }
+
+  function drawHUDCanvas(){
+    ctx.textAlign='left';
+    ctx.font=`${11*scale}px "Space Mono", monospace`;
+    ctx.fillStyle=PALETTE.muted;
+    ctx.fillText('CIRCUIT '+(level+1)+'/'+TOTAL, 14*scale, 22*scale);
+    ctx.textAlign='right';
+    ctx.fillStyle=PALETTE.arc;
+    ctx.font=`bold ${13*scale}px "Space Mono", monospace`;
+    ctx.fillText('SCORE '+pad(score,4), W-14*scale, 22*scale);
+    // lives pips
+    ctx.textAlign='left';
+    for(let i=0;i<MAX_LIVES;i++){
+      ctx.fillStyle = i<lives?PALETTE.arc:'#333';
+      ctx.fillRect(14*scale + i*14*scale, 30*scale, 10*scale, 5*scale);
+    }
+  }
+
+  function drawParticles(dt){
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.life-=dt; if(p.life<=0){ particles.splice(i,1); continue; }
+      p.vy+=520*dt; p.x+=p.vx*dt; p.y+=p.vy*dt;
+      ctx.save(); ctx.globalAlpha=clamp(p.life/p.max,0,1);
+      ctx.shadowBlur=8*scale; ctx.shadowColor=p.c; ctx.fillStyle=p.c;
+      ctx.fillRect(p.x-1.5*scale,p.y-1.5*scale,3*scale,3*scale); ctx.restore();
+    }
+  }
+  function drawConfetti(dt){
+    for(let i=confetti.length-1;i>=0;i--){
+      const c=confetti[i];
+      c.vy+=140*dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.rot+=c.vr*dt;
+      if(c.y>H+20){ confetti.splice(i,1); continue; }
+      ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.rot);
+      ctx.fillStyle=c.c; ctx.fillRect(-c.s/2,-c.s/2,c.s,c.s*0.6); ctx.restore();
+    }
+  }
+
+  function render(dt){
+    ctx.save();
+    if(shake>0 && !reduced){
+      const s=shake*10*scale;
+      ctx.translate(rand(-s,s), rand(-s,s));
+    }
+    drawBackground();
+
+    const cx=W/2;
+    const yTop=H*0.13, yBot=H*0.62;
+    const gap = (state==='play'||state==='shock') ? arcGap() : (state==='win'?MIN_GAP:0.6);
+
+    drawTerminal(cx-26*scale, yTop-14*scale, 52*scale, 16*scale);
+    drawTerminal(cx-26*scale, yBot-2*scale, 52*scale, 16*scale);
+
+    if(state==='play' || state==='shock' || state==='win'){
+      drawArc(cx, yTop, yBot, gap);
+    }
+    drawBreaker(cx, yTop, yBot);
+    drawHUDCanvas();
+    drawParticles(dt);
+    drawConfetti(dt);
+
+    ctx.restore();
+
+    // shock text overlay on canvas
+    if(state==='shock' && !screens.shock.classList.contains('hidden')){
+      // handled by HTML overlay
+    }
+    if(flash>0){
+      ctx.save(); ctx.globalAlpha=flash*0.55; ctx.fillStyle=flashColor;
+      ctx.fillRect(0,0,W,H); ctx.restore();
+    }
+  }
+
+  /* ============ LOOP ============ */
+  function tick(ts){
+    if(!lastTs) lastTs=ts;
+    let dt=(ts-lastTs)/1000; lastTs=ts;
+    if(dt>0.05) dt=0.05;
+
+    t+=dt;
+    if(shake>0) shake=Math.max(0,shake-dt*2.4);
+    if(flash>0) flash=Math.max(0,flash-dt*1.6);
+    breaker.flash=Math.max(0,breaker.flash-dt*2.2);
+    // breaker snap easing
+    const target=breaker.on?1:0;
+    breaker.pos += (target-breaker.pos)*Math.min(1,dt*14);
+
+    if(state==='play'){
+      const gap=arcGap();
+      const pct=clamp((gap-MIN_GAP)/GAP_RANGE,0,1)*100;
+      hud.gap.style.width=pct+'%';
+      hud.gap.className='meter-fill'+(gap<=SAFE?' safe':(gap>=DANGER?' danger':''));
+    }
+
+    if(state==='shock'){
+      shockTimer-=dt;
+      if(shockTimer<=0){
+        if(lives<=0){ gameOver(); }
+        else {
+          el('shockSub').textContent=shockSub;
+          el('shockKicker').textContent = shockMsg==='MISS'?'Timing Error':'Voltage Discharge';
+          show('shock');
+        }
+      }
+    }
+
+    render(dt);
+    requestAnimationFrame(tick);
+  }
+
+  /* ============ EVENTS ============ */
+  canvas.addEventListener('pointerdown', e=>{ e.preventDefault(); if(state==='play') attempt(); });
+  el('startBtn').addEventListener('click', ()=>{ audio(); startGame(); });
+  el('retryBtn').addEventListener('click', ()=>{ resetCircuit(); });
+  el('playAgainBtn').addEventListener('click', ()=>{ startGame(); });
+  el('overRetryBtn').addEventListener('click', ()=>{ startGame(); });
+  el('muteBtn').addEventListener('click', ()=>{
+    muted=!muted; const b=el('muteBtn');
+    b.textContent = muted?'♪ Audio Off':'♪ Audio On';
+    b.classList.toggle('off', muted);
+  });
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'||e.code==='Enter'){
+      e.preventDefault();
+      if(state==='title') startGame();
+      else if(state==='play') attempt();
+      else if(state==='shock' && !screens.shock.classList.contains('hidden')) resetCircuit();
+      else if(state==='win') startGame();
+      else if(state==='over') startGame();
+    }
+  });
+
+  let rz;
+  window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(resize,80); });
+
+  /* ============ INIT ============ */
+  buildDots();
+  resize();
+  updateHUD();
+  setStatus('STANDBY','');
+  show('title');
+  requestAnimationFrame(tick);
+
+  // ensure canvas sizes correctly after fonts/layout settle
+  window.addEventListener('load', resize);
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(resize); }
+})();
+</script>
+</body>
+</html>
