@@ -1,0 +1,26 @@
+id: aquamarine-silk-drape-tide
+title: "Aquamarine Silk Drape Tide"
+category: animations
+tags:
+  - aquatic-depth
+  - silk-texture
+  - cloth-sim
+  - saline-palette
+  - liquid-motion
+  - quiet-luxury
+  - refraction
+status: polished
+summary: "Weighted aquamarine silk ripples like gentle water, catching refracted light to reveal typography through subsurface scattering."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

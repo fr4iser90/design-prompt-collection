@@ -1,0 +1,26 @@
+id: halocline-density-layer
+title: "Halocline Density Layer"
+category: animations
+tags:
+  - aquatic-depth
+  - fluid-dynamics
+  - density-stratification
+  - data-viz
+  - saline-palette
+  - ambient
+  - abstraction
+status: polished
+summary: "Abstract visualization of ocean haloclines where fresh and salt water mix, visualizing data flow through shifting density bands and refractive boundaries."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

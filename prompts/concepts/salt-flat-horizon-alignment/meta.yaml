@@ -1,0 +1,27 @@
+id: salt-flat-horizon-alignment
+title: "Salt Flat Horizon Alignment"
+category: concepts
+tags:
+  - salt-flats
+  - horizon
+  - alignment
+  - ultra-wide
+  - perspective
+  - arid
+  - bone-white
+  - long-shadows
+status: polished
+summary: "An interface where text and UI elements align to a distant, flat salt horizon, using extreme perspective and shadow length to convey scale and stillness."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

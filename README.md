@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 178 | 182 | 155 | 23 |
+| 185 | 182 | 162 | 23 |
 
 ## Quick start
 
@@ -36,6 +36,20 @@ A landing page for 'Thermal Flow', a high-end audio amplifier brand, where the h
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/anodized-aluminum-heatsink-fins/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 372ms | 248s | 6 | [open](prompts/landing-pages/anodized-aluminum-heatsink-fins/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Apothecary Cabinet Organization
+
+A landing page for 'Cabinet & Code', a digital knowledge management tool. The interface mimics a physical library card catalog or apothecary cabinet with sliding drawers and precise indexing.
+
+**Status:** polished · `library` `cabinet` `organization` `north-light` `serif` `trust` `indexing` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/landing-pages/apothecary-cabinet-organization/prompt.md) · [extended](prompts/landing-pages/apothecary-cabinet-organization/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -1226,6 +1240,20 @@ A brushed anodized aluminum knob rotates with weighted inertia and magnetic dete
 
 ---
 
+### Aquamarine Silk Drape Tide
+
+Weighted aquamarine silk ripples like gentle water, catching refracted light to reveal typography through subsurface scattering.
+
+**Status:** polished · `aquatic-depth` `silk-texture` `cloth-sim` `saline-palette` `liquid-motion` `quiet-luxury` `refraction` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/animations/aquamarine-silk-drape-tide/prompt.md) · [extended](prompts/animations/aquamarine-silk-drape-tide/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Asphalt Lane Marking Reveal
 
 A top-down view of a gray asphalt texture where a bright yellow lane marking sprays onto the surface, revealing text as the paint line cuts through grain and imperfections.
@@ -1530,6 +1558,20 @@ A macro view of a red rubber gasket being compressed between two aluminum plates
 
 ---
 
+### Glass Buoy Fresnel Focus
+
+A rotating glass Fresnel lens buoy distorts the background water texture, focusing light into sharp, readable text as it aligns with the viewer.
+
+**Status:** polished · `aquatic-depth` `optics` `refraction` `maritime` `interaction` `glass-texture` `quiet-luxury` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/animations/glass-buoy-fresnel-focus/prompt.md) · [extended](prompts/animations/glass-buoy-fresnel-focus/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Glazed Porcelain Crackle
 
 Macro animation of white porcelain cooling, revealing intricate crackle glaze patterns with a shifting subsurface light reflection.
@@ -1560,6 +1602,20 @@ Overlapping CMYK halftone dot grids rotate slowly, creating hypnotic moiré inte
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.8s | 8 | [open](prompts/animations/halftone-moir-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Halocline Density Layer
+
+Abstract visualization of ocean haloclines where fresh and salt water mix, visualizing data flow through shifting density bands and refractive boundaries.
+
+**Status:** polished · `aquatic-depth` `fluid-dynamics` `density-stratification` `data-viz` `saline-palette` `ambient` `abstraction` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/animations/halocline-density-layer/prompt.md) · [extended](prompts/animations/halocline-density-layer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -1896,7 +1952,7 @@ A brass analog pressure gauge needle trembles and snaps against the redline zone
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.7s | 262s | — | — |
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 201ms | 195s | — | — |
 
 ---
 
@@ -2254,6 +2310,20 @@ An interactive visualization of cast iron pan seasoning buildup, showing how hea
 
 ---
 
+### Desert Varnish Patina Map
+
+A data visualization where information is revealed by simulating the slow accumulation of desert varnish on rock surfaces, using time-based oxidation effects.
+
+**Status:** polished · `desert-varnish` `patina` `rock-surface` `data-layer` `oxidation` `clay` `slow-reveal` `geology` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/concepts/desert-varnish-patina-map/prompt.md) · [extended](prompts/concepts/desert-varnish-patina-map/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Dune Strata Geology Map
 
 An interactive topographical visualization of desert strata, featuring long, sharp shadows and heat-haze distortion on a bone-white background.
@@ -2379,6 +2449,20 @@ A UI layer covered in diagonal hazard tape that peels away to reveal safe, clean
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/hazard-tape-peel-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.6s | 171s | 6 | [open](prompts/concepts/hazard-tape-peel-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Heat Haze Text Warp
+
+Typography that vibrates and distorts via simulated heat haze, using SVG filters and displacement maps to mimic air refraction in a hot desert.
+
+**Status:** polished · `heat-haze` `optical-distortion` `kinetic-type` `sun-bleached` `air-refraction` `minimal` `bone` `vibration` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/concepts/heat-haze-text-warp/prompt.md) · [extended](prompts/concepts/heat-haze-text-warp/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -2651,6 +2735,20 @@ A countdown UI where time is measured by the geometric growth of salt crystals i
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/saline-crystal-growth-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 349ms | 457s | 6 | [open](prompts/concepts/saline-crystal-growth-timer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Salt Flat Horizon Alignment
+
+An interface where text and UI elements align to a distant, flat salt horizon, using extreme perspective and shadow length to convey scale and stillness.
+
+**Status:** polished · `salt-flats` `horizon` `alignment` `ultra-wide` `perspective` `arid` `bone-white` `long-shadows` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/concepts/salt-flat-horizon-alignment/prompt.md) · [extended](prompts/concepts/salt-flat-horizon-alignment/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

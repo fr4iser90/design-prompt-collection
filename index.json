@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T06:29:23.688Z",
+  "generated_at": "2026-09-29T06:39:02.323Z",
   "schema": "schema/entry.schema.json",
-  "count": 178,
+  "count": 185,
   "categories": [
     "landing-pages",
     "animations",
@@ -68,6 +68,38 @@
           "review_summary": "Strong industrial aesthetic and layout, but the background lacks material realism and body text suffers from poor contrast."
         }
       ]
+    },
+    {
+      "id": "apothecary-cabinet-organization",
+      "title": "Apothecary Cabinet Organization",
+      "category": "landing-pages",
+      "tags": [
+        "library",
+        "cabinet",
+        "organization",
+        "north-light",
+        "serif",
+        "trust",
+        "indexing"
+      ],
+      "status": "polished",
+      "summary": "A landing page for 'Cabinet & Code', a digital knowledge management tool. The interface mimics a physical library card catalog or apothecary cabinet with sliding drawers and precise indexing.",
+      "path": "prompts/landing-pages/apothecary-cabinet-organization",
+      "preview": null,
+      "prompt": "prompts/landing-pages/apothecary-cabinet-organization/prompt.md",
+      "extended": "prompts/landing-pages/apothecary-cabinet-organization/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "archer-scope-stabilization",
@@ -4526,6 +4558,38 @@
       ]
     },
     {
+      "id": "aquamarine-silk-drape-tide",
+      "title": "Aquamarine Silk Drape Tide",
+      "category": "animations",
+      "tags": [
+        "aquatic-depth",
+        "silk-texture",
+        "cloth-sim",
+        "saline-palette",
+        "liquid-motion",
+        "quiet-luxury",
+        "refraction"
+      ],
+      "status": "polished",
+      "summary": "Weighted aquamarine silk ripples like gentle water, catching refracted light to reveal typography through subsurface scattering.",
+      "path": "prompts/animations/aquamarine-silk-drape-tide",
+      "preview": null,
+      "prompt": "prompts/animations/aquamarine-silk-drape-tide/prompt.md",
+      "extended": "prompts/animations/aquamarine-silk-drape-tide/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "asphalt-lane-marking-reveal",
       "title": "Asphalt Lane Marking Reveal",
       "category": "animations",
@@ -5662,6 +5726,38 @@
       ]
     },
     {
+      "id": "glass-buoy-fresnel-focus",
+      "title": "Glass Buoy Fresnel Focus",
+      "category": "animations",
+      "tags": [
+        "aquatic-depth",
+        "optics",
+        "refraction",
+        "maritime",
+        "interaction",
+        "glass-texture",
+        "quiet-luxury"
+      ],
+      "status": "polished",
+      "summary": "A rotating glass Fresnel lens buoy distorts the background water texture, focusing light into sharp, readable text as it aligns with the viewer.",
+      "path": "prompts/animations/glass-buoy-fresnel-focus",
+      "preview": null,
+      "prompt": "prompts/animations/glass-buoy-fresnel-focus/prompt.md",
+      "extended": "prompts/animations/glass-buoy-fresnel-focus/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "glazed-porcelain-crackle",
       "title": "Glazed Porcelain Crackle",
       "category": "animations",
@@ -5807,6 +5903,38 @@
           "review_summary": "Strong execution of the brief with excellent typographic hierarchy and accurate color blending, though the background pattern is static rather than showing the requested circular/rotational moiré interference."
         }
       ]
+    },
+    {
+      "id": "halocline-density-layer",
+      "title": "Halocline Density Layer",
+      "category": "animations",
+      "tags": [
+        "aquatic-depth",
+        "fluid-dynamics",
+        "density-stratification",
+        "data-viz",
+        "saline-palette",
+        "ambient",
+        "abstraction"
+      ],
+      "status": "polished",
+      "summary": "Abstract visualization of ocean haloclines where fresh and salt water mix, visualizing data flow through shifting density bands and refractive boundaries.",
+      "path": "prompts/animations/halocline-density-layer",
+      "preview": null,
+      "prompt": "prompts/animations/halocline-density-layer/prompt.md",
+      "extended": "prompts/animations/halocline-density-layer/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "hammered-copper-pulse",
@@ -7071,11 +7199,11 @@
           "stream": true,
           "temperature": 0.65,
           "context_tokens": null,
-          "duration_ms": 261696,
-          "gen_ms": 261696,
-          "ttft_ms": 1685,
-          "queue_wait_ms": 105,
-          "wall_ms": 263564,
+          "duration_ms": 195109,
+          "gen_ms": 195109,
+          "ttft_ms": 201,
+          "queue_wait_ms": 146,
+          "wall_ms": 195535,
           "prompt_tokens": null,
           "completion_tokens": null,
           "total_tokens": null,
@@ -8409,6 +8537,39 @@
       ]
     },
     {
+      "id": "desert-varnish-patina-map",
+      "title": "Desert Varnish Patina Map",
+      "category": "concepts",
+      "tags": [
+        "desert-varnish",
+        "patina",
+        "rock-surface",
+        "data-layer",
+        "oxidation",
+        "clay",
+        "slow-reveal",
+        "geology"
+      ],
+      "status": "polished",
+      "summary": "A data visualization where information is revealed by simulating the slow accumulation of desert varnish on rock surfaces, using time-based oxidation effects.",
+      "path": "prompts/concepts/desert-varnish-patina-map",
+      "preview": null,
+      "prompt": "prompts/concepts/desert-varnish-patina-map/prompt.md",
+      "extended": "prompts/concepts/desert-varnish-patina-map/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "dune-strata-geology-map",
       "title": "Dune Strata Geology Map",
       "category": "concepts",
@@ -8888,6 +9049,39 @@
           "review_summary": "Strong visual execution of the hazard tape concept with correct colors and typography, but the peel effect is static in the screenshot and the layout feels repetitive."
         }
       ]
+    },
+    {
+      "id": "heat-haze-text-warp",
+      "title": "Heat Haze Text Warp",
+      "category": "concepts",
+      "tags": [
+        "heat-haze",
+        "optical-distortion",
+        "kinetic-type",
+        "sun-bleached",
+        "air-refraction",
+        "minimal",
+        "bone",
+        "vibration"
+      ],
+      "status": "polished",
+      "summary": "Typography that vibrates and distorts via simulated heat haze, using SVG filters and displacement maps to mimic air refraction in a hot desert.",
+      "path": "prompts/concepts/heat-haze-text-warp",
+      "preview": null,
+      "prompt": "prompts/concepts/heat-haze-text-warp/prompt.md",
+      "extended": "prompts/concepts/heat-haze-text-warp/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "kiln-fired-glaze-sample",
@@ -9919,6 +10113,39 @@
           "review_summary": "Clean, on-brand layout with strong typography, but the hero visual is a flat gradient blob rather than the required sharp, faceted crystal growth."
         }
       ]
+    },
+    {
+      "id": "salt-flat-horizon-alignment",
+      "title": "Salt Flat Horizon Alignment",
+      "category": "concepts",
+      "tags": [
+        "salt-flats",
+        "horizon",
+        "alignment",
+        "ultra-wide",
+        "perspective",
+        "arid",
+        "bone-white",
+        "long-shadows"
+      ],
+      "status": "polished",
+      "summary": "An interface where text and UI elements align to a distant, flat salt horizon, using extreme perspective and shadow length to convey scale and stillness.",
+      "path": "prompts/concepts/salt-flat-horizon-alignment",
+      "preview": null,
+      "prompt": "prompts/concepts/salt-flat-horizon-alignment/prompt.md",
+      "extended": "prompts/concepts/salt-flat-horizon-alignment/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "slaked-lime-cure-timer",
