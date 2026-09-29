@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desert Varnish Patina Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sandstone:#D2B48C;
+    --oxide:#8B5A2B;
+    --manganese:#5C4033;
+    --cracked:#F4E4BC;
+    --ink:#2A1C12;
+    --ink-soft:#4a3626;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --disp:'Fraunces', Georgia, serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--sandstone);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+  }
+  /* ---- atmospheric rock substrate ---- */
+  .substrate{
+    position:fixed;inset:0;z-index:-2;
+    background:
+      radial-gradient(120% 90% at 20% 10%, #e4c99c 0%, rgba(228,201,156,0) 55%),
+      radial-gradient(100% 80% at 85% 90%, #b99a6d 0%, rgba(185,154,109,0) 60%),
+      linear-gradient(160deg, #d9bd93 0%, #c9a977 100%);
+  }
+  .substrate::after{
+    content:"";position:absolute;inset:-20%;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;opacity:.5;
+    animation:drift 60s linear infinite;
+  }
+  @keyframes drift{to{transform:translate(-300px,-300px)}}
+  .vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    box-shadow:inset 0 0 220px 40px rgba(42,28,18,.35);}
+
+  /* ---- masthead ---- */
+  header.mast{
+    position:relative;z-index:5;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:26px clamp(18px,4vw,54px);
+    font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  header.mast .mark{display:flex;align-items:center;gap:9px;font-weight:500}
+  header.mast .dot{width:10px;height:10px;background:var(--manganese);
+    border-radius:50%;box-shadow:0 0 0 3px rgba(92,64,51,.25);animation:breathe 6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.25);opacity:1}}
+  header.mast .coord{text-align:right;line-height:1.9}
+
+  /* ---- hero ---- */
+  .hero{
+    position:relative;z-index:3;
+    padding:clamp(30px,6vw,70px) clamp(18px,4vw,54px) 10px;
+    max-width:1400px;margin:0 auto;
+  }
+  .hero .over{font-size:12px;letter-spacing:.35em;text-transform:uppercase;color:var(--oxide);margin-bottom:18px}
+  .hero h1{
+    font-family:var(--disp);font-weight:900;line-height:.86;
+    font-size:clamp(3.2rem,13vw,12rem);letter-spacing:-.02em;
+    color:var(--ink);
+    text-shadow:2px 3px 0 rgba(244,228,188,.5), -1px -1px 1px rgba(42,28,18,.3);
+    position:relative;
+  }
+  .hero h1 .ln{display:block}
+  .hero h1 .ln.two{margin-left:.14em;color:var(--manganese)}
+  .hero h1 .ln.three{margin-left:.05em;font-style:italic;font-weight:500;font-size:.62em;color:var(--ink-soft)}
+  .hero .lead{
+    margin-top:34px;max-width:52ch;font-size:13px;line-height:1.95;
+    letter-spacing:.04em;color:var(--ink-soft);
+  }
+  .hero .lead b{color:var(--ink);font-weight:500}
+
+  /* ---- the slab ---- */
+  .slab-wrap{position:relative;z-index:2;margin:clamp(20px,4vw,50px) auto 0;max-width:1400px;padding:0 clamp(14px,4vw,54px)}
+  .slab{
+    position:relative;width:100%;height:clamp(460px,74vh,780px);
+    border-radius:6px;overflow:hidden;
+    background:
+      radial-gradient(90% 70% at 30% 30%, #e2c89b 0%, rgba(226,200,155,0) 60%),
+      radial-gradient(80% 90% at 80% 80%, #c19f70 0%, rgba(193,159,112,0) 55%),
+      linear-gradient(150deg,#d8bc90,#c6a573);
+    box-shadow:inset 0 0 0 1px rgba(42,28,18,.25), inset 0 0 90px rgba(42,28,18,.4), 0 30px 60px -20px rgba(42,28,18,.5);
+    cursor:crosshair;
+  }
+  .slab::before{ /* rock grain */
+    content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)' opacity='0.6'/%3E%3C/svg%3E");
+  }
+  .slab::after{ /* crevice shading */
+    content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.45;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.012 0.02' numOctaves='3' seed='7'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0 0 0.9 0.2 0'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E");
+  }
+
+  /* ---- varnish overlay (canvas) ---- */
+  #varnish{
+    position:absolute;inset:0;z-index:2;width:100%;height:100%;
+    pointer-events:none;mix-blend-mode:multiply;
+    transition:filter 1.2s ease;
+  }
+  /* ---- content layer beneath varnish ---- */
+  .content{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .node{
+    position:absolute;width:clamp(150px,20vw,230px);
+    transform:translate(-50%,-50%);
+    opacity:var(--o,0);
+    transition:opacity .9s cubic-bezier(.4,0,.2,1), filter .9s ease, transform .9s ease;
+    filter:blur(3px) contrast(.8);
+  }
+  .node.revealed{opacity:1;filter:blur(0) contrast(1.05)}
+  .node .tag{
+    display:inline-block;font-size:9px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--cracked);background:rgba(92,64,51,.85);padding:3px 8px;margin-bottom:7px;
+    border-left:2px solid var(--oxide);
+  }
+  .node h3{font-family:var(--disp);font-weight:900;font-size:clamp(1.1rem,2.4vw,1.7rem);line-height:.95;
+    color:var(--cracked);text-shadow:1px 1px 2px rgba(42,28,18,.9);letter-spacing:-.01em}
+  .node .val{font-size:11px;letter-spacing:.12em;color:var(--cracked);margin-top:6px;opacity:.92}
+  .node .desc{font-size:10px;line-height:1.7;color:var(--cracked);margin-top:5px;opacity:.8;max-width:20ch}
+  .node .glyph{font-size:22px;line-height:1;margin-bottom:4px;color:var(--cracked);text-shadow:1px 1px 2px rgba(42,28,18,.9)}
+  /* rotated to sit in crevices */
+  .node[data-r="1"]{transform:translate(-50%,-50%) rotate(-4deg)}
+  .node[data-r="2"]{transform:translate(-50%,-50%) rotate(3deg)}
+  .node[data-r="3"]{transform:translate(-50%,-50%) rotate(-2deg)}
+  .node[data-r="1"].revealed{transform:translate(-50%,-50%) rotate(-4deg) translateY(-4px)}
+  .node[data-r="2"].revealed{transform:translate(-50%,-50%) rotate(3deg) translateY(-4px)}
+  .node[data-r="3"].revealed{transform:translate(-50%,-50%) rotate(-2deg) translateY(-4px)}
+
+  /* ---- time slider ---- */
+  .control{
+    position:relative;z-index:6;max-width:1400px;margin:clamp(24px,4vw,44px) auto;
+    padding:0 clamp(18px,4vw,54px);
+    display:flex;align-items:center;gap:clamp(14px,3vw,30px);flex-wrap:wrap;
+  }
+  .control .yr{font-family:var(--disp);font-weight:900;font-size:clamp(2rem,5vw,3.4rem);
+    line-height:1;color:var(--manganese);min-width:5.5ch;text-align:right;
+    text-shadow:1px 2px 0 rgba(244,228,188,.5)}
+  .control .yr small{font-family:var(--mono);font-size:.28em;letter-spacing:.2em;color:var(--ink-soft);display:block;text-align:right;margin-top:4px}
+  .slider-box{flex:1;min-width:240px}
+  .slider-box .cap{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;
+    background:linear-gradient(90deg,#e6cfa4,#8B5A2B 45%,#5C4033);
+    outline:none;cursor:pointer;box-shadow:inset 0 1px 2px rgba(42,28,18,.5);
+  }
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#F4E4BC,#8B5A2B 70%,#5C4033);
+    border:2px solid #3a271a;box-shadow:0 3px 8px rgba(42,28,18,.6);cursor:grab}
+  input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#F4E4BC,#8B5A2B 70%,#5C4033);border:2px solid #3a271a;cursor:grab}
+  .playbtn{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    background:var(--manganese);color:var(--cracked);border:none;padding:12px 18px;cursor:pointer;
+    box-shadow:0 3px 0 #3a271a;transition:transform .15s,box-shadow .15s}
+  .playbtn:active{transform:translateY(3px);box-shadow:0 0 0 #3a271a}
+
+  /* ---- legend ---- */
+  .legend{max-width:1400px;margin:0 auto;padding:0 clamp(18px,4vw,54px) 20px;
+    display:flex;gap:22px;flex-wrap:wrap;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .legend i{width:16px;height:16px;display:inline-block;border:1px solid rgba(42,28,18,.4)}
+  .sw1{background:#e6cfa4}.sw2{background:#8B5A2B}.sw3{background:#5C4033}.sw4{background:#F4E4BC}
+
+  /* ---- dossier section ---- */
+  .dossier{position:relative;z-index:4;max-width:1400px;margin:clamp(40px,7vw,90px) auto;
+    padding:0 clamp(18px,4vw,54px)}
+  .dossier .eyebrow{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--oxide);
+    border-top:1px solid rgba(92,64,51,.4);padding-top:16px;margin-bottom:30px;
+    display:flex;justify-content:space-between}
+  .dgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(16px,2.4vw,34px)}
+  .card{background:rgba(92,64,51,.06);border:1px solid rgba(92,64,51,.22);padding:clamp(18px,2.4vw,30px);
+    position:relative;transition:transform .4s ease,background .4s ease}
+  .card:hover{transform:translateY(-6px);background:rgba(92,64,51,.12)}
+  .card .num{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,6vw,4.4rem);line-height:.8;
+    color:var(--manganese);text-shadow:1px 2px 0 rgba(244,228,188,.5)}
+  .card .num em{font-style:normal;font-size:.4em;color:var(--oxide)}
+  .card h4{font-family:var(--disp);font-weight:600;font-size:1.15rem;margin:14px 0 8px;color:var(--ink)}
+  .card p{font-size:11px;line-height:1.85;color:var(--ink-soft);letter-spacing:.03em}
+  .c-a{grid-column:span 5}.c-b{grid-column:span 7}
+  .c-c{grid-column:span 4}.c-d{grid-column:span 4}.c-e{grid-column:span 4}
+
+  /* process timeline */
+  .process{margin-top:clamp(40px,6vw,70px)}
+  .process .eyebrow{margin-bottom:24px}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-left:1px solid rgba(92,64,51,.3)}
+  .step{padding:22px clamp(14px,2vw,26px);border-bottom:1px solid rgba(92,64,51,.2);position:relative}
+  .step::before{content:"";position:absolute;left:-5px;top:26px;width:9px;height:9px;background:var(--oxide);border-radius:50%}
+  .step .k{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--oxide)}
+  .step h5{font-family:var(--disp);font-weight:600;font-size:1.05rem;margin:8px 0 6px;color:var(--ink)}
+  .step p{font-size:10.5px;line-height:1.75;color:var(--ink-soft)}
+
+  footer{position:relative;z-index:4;margin-top:clamp(50px,8vw,100px);
+    padding:34px clamp(18px,4vw,54px) 46px;border-top:1px solid rgba(92,64,51,.35);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  footer .brand{font-family:var(--disp);font-weight:900;font-size:1.4rem;letter-spacing:-.01em;color:var(--manganese);text-transform:none}
+
+  /* reveal on scroll */
+  .rise{opacity:0;transform:translateY(26px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+  .rise.in{opacity:1;transform:none}
+
+  @media(max-width:820px){
+    .dgrid{grid-template-columns:1fr}
+    .c-a,.c-b,.c-c,.c-d,.c-e{grid-column:auto}
+    .steps{grid-template-columns:1fr}
+    .control{flex-direction:column;align-items:stretch}
+    .control .yr{text-align:left}.control .yr small{text-align:left}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto}
+    .node{opacity:1;filter:none}
+    .rise{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+  <div class="substrate"></div>
+  <div class="vignette"></div>
+
+  <header class="mast">
+    <div class="mark"><span class="dot"></span> Desert Varnish Patina Map</div>
+    <div class="coord">34°02′N&nbsp; 118°16′W<br>EXPOSURE&nbsp;·&nbsp;SSE&nbsp;·&nbsp;ARID</div>
+  </header>
+
+  <section class="hero">
+    <div class="over">Geological Time as Interface</div>
+    <h1>
+      <span class="ln">DESERT</span>
+      <span class="ln two">VARNISH</span>
+      <span class="ln three">patina map</span>
+    </h1>
+    <p class="lead">Manganese and iron oxides stain desert rock over <b>millennia</b> — thicker in the crevices, thin on the ridges. Here, that slow chemistry becomes a data layer. Drag the time slider and watch knowledge <b>stain</b> onto the surface. Rub a ridge to polish the varnish away and read what lies beneath.</p>
+  </section>
+
+  <div class="slab-wrap">
+    <div class="slab" id="slab">
+      <div class="content" id="content">
+        <div class="node" data-year="3000"  data-x="18" data-y="24" data-r="1"><span class="tag">Stratum</span><h3>BASE<br>SANDSTONE</h3><div class="val">~142 MYA · AEO-LIAN</div><div class="desc">Unvarnished substrate. Porous, iron-poor, pale.</div></div>
+        <div class="node" data-year="9000"  data-x="42" data-y="16" data-r="2"><span class="glyph">◍</span><span class="tag">Exposure</span><h3>SSE FACE</h3><div class="val">FACET · 158°</div><div class="desc">Sun-facing slope; fastest oxidation.</div></div>
+        <div class="node" data-year="18000" data-x="70" data-y="30" data-r="3"><span class="tag">Oxide</span><h3>IRON RIM</h3><div class="val">Fe₂O₃ · 0.4 μm</div><div class="desc">Rusty early-stage varnish creeps from edges.</div></div>
+        <div class="node" data-year="32000" data-x="26" data-y="60" data-r="2"><span class="tag">Manganese</span><h3>MN POOL</h3><div class="val">Mn/Fe · 2.1</div><div class="desc">Dark coating deepens where water lingers.</div></div>
+        <div class="node" data-year="48000" data-x="58" data-y="56" data-r="1"><span class="glyph">✦</span><span class="tag">Patina</span><h3>MATURE<br>COATING</h3><div class="val">~48 KYR · GLOSS</div><div class="desc">Lustrous manganese-rich varnish, near-black.</div></div>
+        <div class="node" data-year="66000" data-x="82" data-y="66" data-r="3"><span class="tag">Crevice</span><h3>LOW-POINT</h3><div class="val">STAIN · MAX</div><div class="desc">Thickest accumulation; text buried in darkness.</div></div>
+        <div class="node" data-year="84000" data-x="40" data-y="82" data-r="1"><span class="tag">Ridge</span><h3>WEATHER<br>CROWN</h3><div class="val">THIN · POLISH</div><div class="desc">High point sheds varnish; brightest surface.</div></div>
+        <div class="node" data-year="98000" data-x="66" data-y="86" data-r="2"><span class="tag">Cracked</span><h3>CHIPPED<br>LIGHT</h3><div class="val">SPALL · 12%</div><div class="desc">Exfoliation exposes pale rock beneath the crust.</div></div>
+      </div>
+      <canvas id="varnish"></canvas>
+    </div>
+  </div>
+
+  <div class="control">
+    <div class="yr"><span id="yrVal">0</span><small>YEARS OF EXPOSURE</small></div>
+    <div class="slider-box">
+      <div class="cap"><span>Bare rock</span><span>Fully patinated</span></div>
+      <input type="range" id="time" min="0" max="100000" value="0" step="100" aria-label="Time slider — years of exposure">
+    </div>
+    <button class="playbtn" id="play">▶ Advance time</button>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw1"></i> Sandstone base</span>
+    <span><i class="sw2"></i> Iron oxide</span>
+    <span><i class="sw3"></i> Manganese rich</span>
+    <span><i class="sw4"></i> Cracked light</span>
+  </div>
+
+  <section class="dossier">
+    <div class="eyebrow rise"><span>Field Dossier</span><span>Sheet 07 / Patina Survey</span></div>
+    <div class="dgrid">
+      <div class="card c-a rise">
+        <div class="num">0.4<em>μm</em></div>
+        <h4>The coating itself</h4>
+        <p>Desert varnish is a skin thinner than a fingernail — yet it records tens of thousands of years of arid exposure. Its darkness is chemistry, not pigment: manganese and iron oxides drawn up from dust and rainwater and cemented into the rock's surface.</p>
+      </div>
+      <div class="card c-b rise">
+        <div class="num">Topography<em> drives the stain</em></div>
+        <h4>Why it pools</h4>
+        <p>Water films run downhill and evaporate in hollows, so varnish accumulates thickest in crevices and low points while ridges stay pale and polished. The map obeys this rule exactly — the data is legible only where the surface geometry allows it, and interaction re-stains what the wind has rubbed clear.</p>
+      </div>
+      <div class="card c-c rise"><div class="num">Mn<em>/Fe</em></div><h4>Ratio</h4><p>Manganese rises with age and shelter; iron dominates the sun-baked edges.</p></div>
+      <div class="card c-d rise"><div class="num">KYR<em> scale</em></div><h4>Time unit</h4><p>Every drag of the slider lays down a millennium of slow, textured deposition.</p></div>
+      <div class="card c-e rise"><div class="num">12<em>%</em></div><h4>Spalling</h4><p>Cracked-light zones where the mature crust flakes and reveals raw clay.</p></div>
+    </div>
+
+    <div class="process">
+      <div class="eyebrow rise"><span>Formation Sequence</span><span>Four stages</span></div>
+      <div class="steps">
+        <div class="step rise"><div class="k">Stage 01</div><h5>Substrate</h5><p>Pale, porous sandstone. No coating. All surfaces equal.</p></div>
+        <div class="step rise"><div class="k">Stage 02</div><h5>Iron creep</h5><p>Rusty reds edge inward from the margins as oxides mobilise.</p></div>
+        <div class="step rise"><div class="k">Stage 03</div><h5>Manganese pool</h5><p>Dark varnish deepens in hollows; content begins to surface.</p></div>
+        <div class="step rise"><div class="k">Stage 04</div><h5>Mature patina</h5><p>Glossy near-black crust. Only ridges and polish read clearly.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="brand">Desert Varnish Patina Map</span>
+    <span>Concept · Oxidation as data layer · Qwen3.8</span>
+    <span>Rendered on stone · No gradients · Only grain</span>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const slab   = document.getElementById('slab');
+  const canvas = document.getElementById('varnish');
+  const ctx    = canvas.getContext('2d');
+  const slider = document.getElementById('time');
+  const yrVal  = document.getElementById('yrVal');
+  const play   = document.getElementById('play');
+  const nodes  = Array.from(document.querySelectorAll('.node'));
+
+  const MAX = 100000;
+  let W=0,H=0;
+
+  // ---- value-noise (smooth, seeded) ----
+  const perm = new Uint8Array(512);
+  (function(){
+    const p = new Uint8Array(256);
+    for(let i=0;i<256;i++) p[i]=i;
+    let s = 1337;
+    const rnd = ()=> (s = (s*16807)%2147483647)/2147483647;
+    for(let i=255;i>0;i--){const j=Math.floor(rnd()*(i+1));const t=p[i];p[i]=p[j];p[j]=t;}
+    for(let i=0;i<512;i++) perm[i]=p[i&255];
+  })();
+  const fade=t=>t*t*t*(t*(t*6-15)+10);
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  function grad(h,x,y){const g=h&7;const u=g<4?x:y;const v=g<4?y:x;return ((g&1)?-u:u)+((g&2)?-2*v:2*v);}
+  function noise(x,y){
+    const X=Math.floor(x)&255, Y=Math.floor(y)&255;
+    const xf=x-Math.floor(x), yf=y-Math.floor(y);
+    const u=fade(xf), v=fade(yf);
+    const aa=perm[perm[X]+Y],ab=perm[perm[X]+Y+1],ba=perm[perm[X+1]+Y],bb=perm[perm[X+1]+Y+1];
+    return lerp(lerp(grad(aa,xf,yf),grad(ba,xf-1,yf),u),
+                lerp(grad(ab,xf,yf-1),grad(bb,xf-1,yf-1),u), v);
+  }
+  function fbm(x,y){let a=0,amp=.5,f=1;for(let o=0;o<4;o++){a+=amp*noise(x*f,y*f);f*=2;amp*=.5;}return a;}
+
+  // ---- topography field (0 ridge .. 1 crevice) ----
+  function topo(u,v){
+    let n = fbm(u*2.6, v*2.6)*0.6 + fbm(u*5.5+11, v*5.5+7)*0.3;
+    n = (n+1)*0.5; // 0..1
+    n = Math.pow(Math.min(1,Math.max(0,n)),1.35); // bias toward crevices
+    return n;
+  }
+
+  // ---- speckle grain pattern ----
+  const grain = document.createElement('canvas');
+  grain.width = grain.height = 200;
+  (function(){
+    const g = grain.getContext('2d');
+    const id = g.createImageData(200,200);
+    let s=99; const rnd=()=> (s=(s*16807)%2147483647)/2147483647;
+    for(let i=0;i<id.data.length;i+=4){
+      const r=rnd();
+      id.data[i]=id.data[i+1]=id.data[i+2]=255;
+      id.data[i+3]= r>0.985 ? 255 : (r>0.9 ? 60 : 0); // sparse dark speckles
+    }
+    g.putImageData(id,0,0);
+  })();
+
+  let basePattern=null;
+  function ensurePattern(){ if(!basePattern) basePattern = ctx.createPattern(grain,'repeat'); }
+
+  function resize(){
+    const r = slab.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = W; canvas.height = H;
+    ensurePattern();
+    draw(currentYear());
+  }
+
+  function currentYear(){ return parseFloat(slider.value); }
+
+  // ---- draw varnish at a given year ----
+  function draw(year){
+    if(!W||!H) return;
+    ctx.clearRect(0,0,W,H);
+    const t = year/MAX; // 0..1
+
+    // base stain, driven by topography + slow noise
+    const img = ctx.createImageData(W,H);
+    const d = img.data;
+    for(let y=0;y<H;y++){
+      const v=y/H;
+      for(let x=0;x<W;x++){
+        const u=x/W;
+        const n = topo(u,v);
+        // per-pixel offset noise so coverage is uneven / organic
+        const off = fbm(u*7+3, v*7+9)*0.18;
+        let cov = t*1.18 + off - (1-n)*0.35; // ridges resist, crevices gather
+        cov = Math.min(1,Math.max(0,cov));
+        if(cov<=0.001) continue;
+        // color: early iron -> mature manganese, darker in crevices
+        const maturity = Math.min(1, t*1.25 + n*0.4);
+        const R = lerp(139, 60, maturity);   // 8B -> 3C
+        const G = lerp( 90, 42, maturity);   // 5A -> 2A
+        const B = lerp( 43, 28, maturity);   // 2B -> 1C
+        const alpha = cov * (0.55 + n*0.4) * 255;
+        const i=(y*W+x)*4;
+        d[i]=R; d[i+1]=G; d[i+2]=B; d[i+3]=alpha;
+      }
+    }
+    ctx.putImageData(img,0,0);
+
+    // organic speckle multiplied over the stain
+    ctx.globalCompositeOperation='source-atop';
+    ctx.fillStyle=basePattern;
+    ctx.globalAlpha=0.9;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=1;
+    ctx.globalCompositeOperation='source-over';
+
+    updateNodes(t);
+  }
+
+  function updateNodes(t){
+    nodes.forEach(nd=>{
+      const ny = parseFloat(nd.dataset.year)/MAX;
+      const reveal = Math.min(1, Math.max(0, (t - ny + 0.05)/0.12));
+      nd.style.setProperty('--o', reveal.toFixed(3));
+      nd.classList.toggle('revealed', reveal>0.55);
+    });
+  }
+
+  // ---- polish interaction (rub stone) ----
+  const polishes = [];
+  let pointerDown=false;
+  function addPolish(px,py,strength){
+    polishes.push({x:px,y:py,s:strength,life:1});
+    if(polishes.length>60) polishes.shift();
+  }
+  function localPolish(u,v){
+    let m=1;
+    for(const p of polishes){
+      const dx=(p.x - u), dy=(p.y - v);
+      const d2=dx*dx+dy*dy;
+      const rad=0.13;
+      if(d2 < rad*rad){
+        const fall = 1 - Math.sqrt(d2)/rad;
+        m = Math.min(m, 1 - fall*p.life*p.s);
+      }
+    }
+    return m; // 1 = full varnish, 0 = polished away
+  }
+
+  let rafId=null;
+  function scheduleDraw(){ if(rafId) return; rafId=requestAnimationFrame(()=>{rafId=null;draw(currentYear());}); }
+
+  // override draw to apply polish by punching holes
+  const _draw = draw;
+  draw = function(year){
+    _draw(year);
+    if(polishes.length){
+      const t=year/MAX;
+      ctx.globalCompositeOperation='destination-out';
+      for(const p of polishes){
+        const cx=p.x*W, cy=p.y*H, rad=0.13*Math.min(W,H);
+        const g=ctx.createRadialGradient(cx,cy,0,cx,cy,rad);
+        const a=p.life*p.s;
+        g.addColorStop(0,`rgba(0,0,0,${0.95*a})`);
+        g.addColorStop(0.55,`rgba(0,0,0,${0.5*a})`);
+        g.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=g;
+        ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
+      }
+      ctx.globalCompositeOperation='source-over';
+    }
+  };
+
+  // ---- ambient dust motes ----
+  const dust=document.createElement('canvas');
+  dust.style.cssText='position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen;opacity:.5';
+  slab.appendChild(dust);
+  const dctx=dust.getContext('2d');
+  let dw,dh,motes=[];
+  function initDust(){
+    const r=slab.getBoundingClientRect();dw=dust.width=r.width;dh=dust.height=r.height;
+    motes=[];const n=Math.min(46,Math.floor(dw/26));
+    for(let i=0;i<n;i++)motes.push({x:Math.random()*dw,y:Math.random()*dh,r:Math.random()*1.6+.4,vy:Math.random()*.15+.03,vx:(Math.random()-.5)*.08,a:Math.random()*.5+.2});
+  }
+  function tickDust(){
+    if(reduce)return;
+    dctx.clearRect(0,0,dw,dh);
+    for(const m of motes){
+      m.y+=m.vy;m.x+=m.vx;
+      if(m.y>dh){m.y=-2;m.x=Math.random()*dw;}
+      dctx.beginPath();dctx.arc(m.x,m.y,m.r,0,Math.PI*2);
+      dctx.fillStyle=`rgba(244,228,188,${m.a})`;dctx.fill();
+    }
+    requestAnimationFrame(tickDust);
+  }
+
+  // ---- slow ambient re-stain of polished spots ----
+  function reStain(){
+    if(reduce)return;
+    for(let i=polishes.length-1;i>=0;i--){
+      polishes[i].life-=0.012;
+      if(polishes[i].life<=0) polishes.splice(i,1);
+    }
+    if(polishes.length) scheduleDraw();
+    setTimeout(reStain, 90);
+  }
+
+  // ---- events ----
+  let lastU=-1,lastV=-1;
+  function onMove(e){
+    const r=slab.getBoundingClientRect();
+    const u=(e.clientX-r.left)/r.width, v=(e.clientY-r.top)/r.height;
+    if(u<0||u>1||v<0||v>1) return;
+    const dist=Math.hypot(u-lastU,v-lastV);
+    if(dist>0.008){
+      addPolish(u,v, pointerDown?1:0.72);
+      lastU=u;lastV=v;
+      scheduleDraw();
+    }
+  }
+  slab.addEventListener('pointermove',onMove);
+  slab.addEventListener('pointerdown',e=>{pointerDown=true;onMove(e);});
+  window.addEventListener('pointerup',()=>pointerDown=false);
+
+  slider.addEventListener('input',()=>{yrVal.textContent=slider.value;scheduleDraw();});
+
+  // ---- auto advance ----
+  let playing=false,pTimer=null;
+  play.addEventListener('click',()=>{
+    playing=!playing;
+    play.textContent = playing?'❚❚ Hold time':'▶ Advance time';
+    if(playing){
+      pTimer=setInterval(()=>{
+        let v=parseFloat(slider.value)+ (reduce?MAX:420);
+        if(v>=MAX){v=MAX;playing=false;play.textContent='▶ Advance time';clearInterval(pTimer);}
+        slider.value=v;yrVal.textContent=Math.round(v);draw(v);
+      },30);
+    } else clearInterval(pTimer);
+  });
+
+  // ---- scroll reveal ----
+  const io=new IntersectionObserver((es)=>{es.forEach(en=>{if(en.isIntersecting)en.target.classList.add('in');});},{threshold:.18});
+  document.querySelectorAll('.rise').forEach(el=>io.observe(el));
+
+  // ---- init ----
+  window.addEventListener('resize',()=>{resize();initDust();});
+  resize();initDust();
+  yrVal.textContent=slider.value;
+  if(!reduce){tickDust();reStain();}
+})();
+</script>
+</body>
+</html>

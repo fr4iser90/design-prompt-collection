@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heat Haze Text Warp — Optical Distortion Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#FFFDF7;
+    --dust:#E6DCCD;
+    --clay:#B8A995;
+    --heat:#FFFFFF;
+    --ink:#948671;
+    --ink-soft:#C4B7A4;
+    --display:'Space Grotesk', system-ui, sans-serif;
+    --sans:'Archivo', system-ui, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{ height:100%; }
+
+  body{
+    background:var(--bone);
+    color:var(--clay);
+    font-family:var(--sans);
+    overflow:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- Layer: grain (dust motes) ---------- */
+  .grain{
+    position:fixed; inset:0; z-index:6;
+    pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+    mix-blend-mode:multiply;
+    opacity:.06;
+  }
+
+  /* ---------- Layer: ambient heat shimmer ---------- */
+  .heat{
+    position:fixed; inset:0; z-index:1;
+    pointer-events:none;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0) 0 3px, rgba(255,255,255,.55) 3px 4px, rgba(255,255,255,0) 4px 9px);
+    mix-blend-mode:screen;
+    opacity:.10;
+    background-size:140px 100%;
+    animation:heatDrift 16s linear infinite;
+  }
+  @keyframes heatDrift{
+    from{ background-position:0 0; }
+    to{ background-position:140px 0; }
+  }
+
+  /* ---------- Stage ---------- */
+  .stage{
+    position:relative; z-index:2;
+    min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+    padding:clamp(24px,6vw,80px);
+  }
+
+  .warp{
+    position:relative;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(14px,3.2vh,30px);
+    will-change:transform;
+  }
+
+  /* ---------- Hero word ---------- */
+  .hero{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:clamp(4.2rem, 22vw, 20rem);
+    line-height:.82;
+    letter-spacing:-.055em;
+    color:var(--clay);
+    white-space:nowrap;
+    user-select:none;
+    filter:url(#heatWarp);
+    transform:translateX(-24px);
+    padding:0 .18em;
+  }
+
+  /* ---------- Sub line ---------- */
+  .sub{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(.85rem, 2.4vw, 1.7rem);
+    letter-spacing:.02em;
+    color:var(--ink);
+    white-space:nowrap;
+    user-select:none;
+    filter:url(#heatWarpSoft);
+    transform:translateX(-24px);
+  }
+
+  /* ---------- HUD chrome ---------- */
+  .hud{
+    position:fixed; inset:0; z-index:4;
+    pointer-events:none;
+    font-family:var(--sans);
+    color:var(--ink);
+  }
+  .hud .corner{
+    position:absolute;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    display:flex; align-items:center; gap:9px;
+  }
+  .tl{ top:clamp(18px,3.4vw,34px); left:clamp(18px,3.4vw,40px); }
+  .tr{ top:clamp(18px,3.4vw,34px); right:clamp(18px,3.4vw,40px); }
+  .bl{ bottom:clamp(18px,3.4vw,34px); left:clamp(18px,3.4vw,40px); }
+  .br{ bottom:clamp(18px,3.4vw,34px); right:clamp(18px,3.4vw,40px); }
+
+  .brand{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.30em;
+    color:var(--ink);
+  }
+  .brand span{ color:var(--ink-soft); font-weight:500; }
+
+  .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--clay);
+    box-shadow:0 0 0 0 rgba(184,169,149,.6);
+    animation:pulse 2.4s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(184,169,149,.55); }
+    70%{ box-shadow:0 0 0 10px rgba(184,169,149,0); }
+    100%{ box-shadow:0 0 0 0 rgba(184,169,149,0); }
+  }
+
+  .readout{
+    display:flex; align-items:center; gap:10px;
+    font-variant-numeric:tabular-nums;
+  }
+  .meter{
+    position:relative;
+    width:clamp(120px, 22vw, 220px);
+    height:5px;
+    background:var(--dust);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .meter i{
+    position:absolute; inset:0 auto 0 0;
+    width:0%;
+    background:var(--clay);
+    border-radius:3px;
+    transition:width .12s linear;
+  }
+  .val{ min-width:3ch; text-align:right; }
+
+  .hint{
+    display:flex; align-items:center; gap:9px;
+    color:var(--ink-soft);
+  }
+  .hint .ico{
+    width:11px; height:11px; border-radius:50%;
+    border:1.5px solid var(--ink-soft);
+    position:relative;
+  }
+  .hint .ico::after{
+    content:''; position:absolute; inset:2px;
+    border-radius:50%; background:var(--ink-soft);
+    animation:breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe{ 0%,100%{opacity:.25;} 50%{opacity:1;} }
+
+  .legend{
+    display:grid; grid-template-columns:auto auto; gap:3px 14px;
+    line-height:1.5;
+  }
+  .legend b{ font-weight:500; color:var(--ink); }
+  .legend em{ font-style:normal; color:var(--ink-soft); }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:640px){
+    .hud .br{ display:none; }
+    .hero{ font-size:clamp(3.4rem, 26vw, 9rem); }
+    .sub{ font-size:clamp(.75rem, 4.4vw, 1.1rem); }
+    .meter{ width:34vw; }
+  }
+  @media (max-width:420px){
+    .hud .tr{ display:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .heat{ animation:none; opacity:.05; }
+    .dot, .hint .ico::after{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Ambient layers -->
+  <div class="heat" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- SVG filter definitions -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="heatWarp" x="-30%" y="-45%" width="160%" height="190%" color-interpolation-filters="sRGB">
+        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.006 0.014" numOctaves="2" seed="2" result="noise"/>
+        <feDisplacementMap id="disp" in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="heatWarpSoft" x="-30%" y="-60%" width="160%" height="220%" color-interpolation-filters="sRGB">
+        <feTurbulence id="turbSoft" type="fractalNoise" baseFrequency="0.010 0.020" numOctaves="2" seed="7" result="noise"/>
+        <feDisplacementMap id="dispSoft" in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Center stage -->
+  <main class="stage">
+    <div class="warp" id="warp">
+      <h1 class="hero" id="hero">HEAT HAZE</h1>
+      <p class="sub" id="sub">air, refracted</p>
+    </div>
+  </main>
+
+  <!-- HUD chrome -->
+  <div class="hud">
+    <div class="corner tl">
+      <span class="brand">HEAT&nbsp;HAZE<span> / STUDY</span></span>
+    </div>
+    <div class="corner tr">
+      <span class="dot" aria-hidden="true"></span>
+      <span>OPTICAL&nbsp;DISTORTION&nbsp;·&nbsp;01</span>
+    </div>
+    <div class="corner bl">
+      <span class="readout">
+        <span>TEMP</span>
+        <span class="meter"><i id="meterFill"></i></span>
+        <span class="val" id="meterVal">0%</span>
+      </span>
+    </div>
+    <div class="corner br">
+      <div class="legend">
+        <b>MOVE</b><em>— stir the air</em>
+        <b>HOLD STILL</b><em>— settle to clarity</em>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var turb     = document.getElementById('turb');
+  var disp     = document.getElementById('disp');
+  var turbSoft = document.getElementById('turbSoft');
+  var dispSoft = document.getElementById('dispSoft');
+  var warp     = document.getElementById('warp');
+  var meterFill= document.getElementById('meterFill');
+  var meterVal = document.getElementById('meterVal');
+
+  // ---- State ----
+  var energy   = 0;      // 0 (calm) .. 1 (violent)
+  var target   = 0;      // where energy is heading
+  var lastMove = 0;      // timestamp of last cursor movement
+  var seed     = 1;      // turbulence seed, advances with energy
+  var last     = performance.now();
+  var lastReadout = 0;
+
+  var settleMs = 500;    // stillness threshold before cooling
+
+  // ---- Input: moving the cursor stirs the air ----
+  function stir(amount){
+    target = Math.min(1, target + amount);
+    lastMove = performance.now();
+  }
+
+  window.addEventListener('mousemove', function(e){
+    // velocity-based stirring
+    var v = Math.hypot(e.movementX || 0, e.movementY || 0);
+    stir(0.05 + Math.min(0.55, v * 0.012));
+  }, {passive:true});
+
+  window.addEventListener('touchmove', function(){
+    stir(0.30);
+  }, {passive:true});
+
+  // ---- Render loop ----
+  function frame(now){
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+
+    // Cool down when the cursor has been still past the threshold
+    if (now - lastMove > settleMs) target = 0;
+
+    // Smooth approach toward target (responsive both ways)
+    energy += (target - energy) * (1 - Math.exp(-dt * 9));
+
+    // Decay the stir target itself so bursts fade
+    target *= Math.exp(-dt * 1.4);
+
+    // Advance turbulence seed only while there is energy -> organic shimmer
+    seed += energy * dt * 34;
+
+    // Map energy -> distortion. Calm = near-zero (sharp), hot = violent.
+    var scale     = 1.5 + energy * 46;
+    var freqX     = 0.005 + energy * 0.010;
+    var freqY     = 0.012 + energy * 0.030;
+    var fStr      = freqX.toFixed(4) + ' ' + freqY.toFixed(4);
+    var sStr      = seed.toFixed(2);
+    var sStrSoft  = (seed * 0.7).toFixed(2);
+
+    turb.setAttribute('baseFrequency', fStr);
+    turb.setAttribute('seed', sStr);
+    disp.setAttribute('scale', scale.toFixed(2));
+
+    turbSoft.setAttribute('baseFrequency', fStr);
+    turbSoft.setAttribute('seed', sStrSoft);
+    dispSoft.setAttribute('scale', (scale * 0.55).toFixed(2));
+
+    // Ambient global drift of the heat wave, left to right
+    var drift = reduce ? 0 : Math.sin(now * 0.00018) * 8;
+    warp.style.transform = 'translateX(' + drift.toFixed(2) + 'px)';
+
+    // Throttle HUD readout to ~12fps
+    if (now - lastReadout > 80){
+      lastReadout = now;
+      var pct = Math.round(energy * 100);
+      meterFill.style.width = pct + '%';
+      meterVal.textContent = pct + '%';
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

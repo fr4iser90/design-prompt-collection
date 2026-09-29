@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 185 | 178 | 162 | 23 |
+| 185 | 189 | 162 | 23 |
 
 ## Quick start
 
@@ -47,9 +47,11 @@ A landing page for 'Cabinet & Code', a digital knowledge management tool. The in
 
 [prompt](prompts/landing-pages/apothecary-cabinet-organization/prompt.md) · [extended](prompts/landing-pages/apothecary-cabinet-organization/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/apothecary-cabinet-organization/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 166ms | 390s | 6 | [open](prompts/landing-pages/apothecary-cabinet-organization/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -961,6 +963,7 @@ A landing page for Solaris Energy, a desert-focused solar power startup, using d
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 329s | — | — |
 
 ---
@@ -1247,9 +1250,11 @@ Weighted aquamarine silk ripples like gentle water, catching refracted light to 
 
 [prompt](prompts/animations/aquamarine-silk-drape-tide/prompt.md) · [extended](prompts/animations/aquamarine-silk-drape-tide/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/aquamarine-silk-drape-tide/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 186ms | 207s | 2 | [open](prompts/animations/aquamarine-silk-drape-tide/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -1565,9 +1570,11 @@ A rotating glass Fresnel lens buoy distorts the background water texture, focusi
 
 [prompt](prompts/animations/glass-buoy-fresnel-focus/prompt.md) · [extended](prompts/animations/glass-buoy-fresnel-focus/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/glass-buoy-fresnel-focus/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 232ms | 274s | 8 | [open](prompts/animations/glass-buoy-fresnel-focus/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -1583,6 +1590,7 @@ Macro animation of white porcelain cooling, revealing intricate crackle glaze pa
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 96s | — | — |
 
 ---
@@ -1611,9 +1619,11 @@ Abstract visualization of ocean haloclines where fresh and salt water mix, visua
 
 [prompt](prompts/animations/halocline-density-layer/prompt.md) · [extended](prompts/animations/halocline-density-layer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/halocline-density-layer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.7s | 309s | 8 | [open](prompts/animations/halocline-density-layer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -1853,6 +1863,7 @@ Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold f
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | — | — | — | — | — | — | — | — |
 
 ---
@@ -2315,9 +2326,11 @@ A data visualization where information is revealed by simulating the slow accumu
 
 [prompt](prompts/concepts/desert-varnish-patina-map/prompt.md) · [extended](prompts/concepts/desert-varnish-patina-map/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/desert-varnish-patina-map/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.5s | 411s | 8 | [open](prompts/concepts/desert-varnish-patina-map/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2457,9 +2470,11 @@ Typography that vibrates and distorts via simulated heat haze, using SVG filters
 
 [prompt](prompts/concepts/heat-haze-text-warp/prompt.md) · [extended](prompts/concepts/heat-haze-text-warp/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/heat-haze-text-warp/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.5s | 159s | 9 | [open](prompts/concepts/heat-haze-text-warp/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2743,9 +2758,11 @@ An interface where text and UI elements align to a distant, flat salt horizon, u
 
 [prompt](prompts/concepts/salt-flat-horizon-alignment/prompt.md) · [extended](prompts/concepts/salt-flat-horizon-alignment/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/concepts/salt-flat-horizon-alignment/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | 1.6s | 145s | 2 | [open](prompts/concepts/salt-flat-horizon-alignment/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2969,6 +2986,7 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 190s | — | — |
 
 ---

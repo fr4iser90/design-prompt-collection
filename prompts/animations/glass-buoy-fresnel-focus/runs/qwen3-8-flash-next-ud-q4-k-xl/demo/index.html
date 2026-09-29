@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucerne — Optical Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --deep:#051f29; --mid:#144d5c; --glass:#5ba4b5; --light:#ffffff;
+  --ink:#e9f4f7; --muted:#8fb2bc;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Space Grotesk",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  background:#051f29;color:var(--ink);font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+::selection{background:rgba(120,205,220,.3);color:#fff}
+
+/* ---------- STAGE ---------- */
+.stage{position:fixed;inset:0;overflow:hidden;cursor:crosshair;
+  background:radial-gradient(130% 120% at 50% 42%,#0b3a49 0%,#06242f 46%,#04161f 100%);
+  --rot:-1deg;
+}
+
+/* ---------- WATER (deep-sea backdrop) ---------- */
+.water{position:absolute;inset:-14%;z-index:1;overflow:hidden;
+  background:
+    radial-gradient(120% 95% at 50% 38%, rgba(40,120,145,.55), rgba(8,38,48,.15) 55%, rgba(4,18,26,0) 78%),
+    linear-gradient(180deg,#072a37 0%,#051f29 55%,#041620 100%);
+  filter:blur(11px) saturate(1.12);
+}
+.water::before,.water::after{content:"";position:absolute;inset:0;pointer-events:none}
+.water::before{
+  background:
+    radial-gradient(38% 30% at 30% 32%, rgba(120,210,225,.42), transparent 62%),
+    radial-gradient(30% 24% at 68% 58%, rgba(90,175,195,.34), transparent 60%),
+    radial-gradient(46% 34% at 52% 82%, rgba(70,150,170,.30), transparent 62%),
+    radial-gradient(26% 22% at 82% 24%, rgba(150,225,235,.30), transparent 60%),
+    radial-gradient(34% 28% at 16% 68%, rgba(80,160,180,.26), transparent 60%);
+  mix-blend-mode:screen;opacity:.9;animation:drift1 22s ease-in-out infinite alternate;
+}
+.water::after{
+  background:
+    radial-gradient(24% 20% at 44% 44%, rgba(160,235,245,.40), transparent 60%),
+    radial-gradient(20% 18% at 74% 36%, rgba(120,205,220,.32), transparent 60%),
+    radial-gradient(28% 22% at 60% 70%, rgba(90,175,195,.30), transparent 60%),
+    radial-gradient(18% 16% at 28% 54%, rgba(140,220,232,.30), transparent 60%);
+  mix-blend-mode:screen;opacity:.75;animation:drift2 27s ease-in-out infinite alternate;
+}
+@keyframes drift1{0%{transform:translate3d(-2%,-1%,0) scale(1.06)}100%{transform:translate3d(3%,2%,0) scale(1.16)}}
+@keyframes drift2{0%{transform:translate3d(2%,1%,0) scale(1.12)}100%{transform:translate3d(-3%,-2%,0) scale(1.02)}}
+
+/* ---------- LENS ---------- */
+.lens{position:absolute;left:50%;top:50%;z-index:5;
+  width:clamp(340px,58vmin,620px);height:clamp(340px,58vmin,620px);
+  transform:translate(-50%,-50%);
+  transition:transform .8s cubic-bezier(.16,1,.3,1);
+}
+.lens-inner{position:absolute;inset:0;border-radius:50%;
+  box-shadow:
+    inset 0 0 40px 8px rgba(120,205,220,.20),
+    inset 0 0 130px 26px rgba(6,30,40,.55),
+    0 40px 120px -20px rgba(0,0,0,.7);
+}
+.rings{position:absolute;inset:0;transform:rotate(var(--rot));will-change:transform}
+.rings::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%,
+    rgba(120,205,220,.11) 0 1px, rgba(255,255,255,.02) 1px 3px, transparent 3px 9px);
+  mix-blend-mode:screen;opacity:.6;
+}
+.rings::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%,
+    transparent 0 13px, rgba(5,25,33,.55) 13px 15px);
+  opacity:.9;
+}
+.ring{position:absolute;top:50%;left:50%;border-radius:50%;transform:translate(-50%,-50%)}
+.ring::before{content:"";position:absolute;inset:-2px;border-radius:50%;
+  border:2px solid rgba(120,205,220,.10);box-shadow:0 0 10px rgba(90,175,195,.25)}
+.ring::after{content:"";position:absolute;inset:-3px;border-radius:50%;
+  border-top:2px solid rgba(255,255,255,.5);border-right:2px solid rgba(255,255,255,.28);
+  filter:drop-shadow(0 0 4px rgba(180,240,250,.6));opacity:.75}
+.ring::before,.ring::after{animation:glint 5s ease-in-out infinite}
+.ring:nth-child(2)::before,.ring:nth-child(2)::after{animation-delay:-.5s}
+.ring:nth-child(3)::before,.ring:nth-child(3)::after{animation-delay:-1s}
+.ring:nth-child(4)::before,.ring:nth-child(4)::after{animation-delay:-1.5s}
+.ring:nth-child(5)::before,.ring:nth-child(5)::after{animation-delay:-2s}
+.ring:nth-child(6)::before,.ring:nth-child(6)::after{animation-delay:-2.5s}
+.ring:nth-child(7)::before,.ring:nth-child(7)::after{animation-delay:-3s}
+.ring:nth-child(8)::before,.ring:nth-child(8)::after{animation-delay:-3.5s}
+.ring:nth-child(9)::before,.ring:nth-child(9)::after{animation-delay:-4s}
+.ring:nth-child(10)::before,.ring:nth-child(10)::after{animation-delay:-4.5s}
+@keyframes glint{0%,100%{opacity:.22}45%{opacity:.95}}
+.ring:nth-child(1){width:100%;height:100%}
+.ring:nth-child(2){width:90%;height:90%}
+.ring:nth-child(3){width:80%;height:80%}
+.ring:nth-child(4){width:70%;height:70%}
+.ring:nth-child(5){width:60%;height:60%}
+.ring:nth-child(6){width:50%;height:50%}
+.ring:nth-child(7){width:40%;height:40%}
+.ring:nth-child(8){width:30%;height:30%}
+.ring:nth-child(9){width:20%;height:20%}
+.ring:nth-child(10){width:10%;height:10%}
+
+/* ---------- CAUSTIC TEXT (refracted light, no mask) ---------- */
+.text-wrap{position:absolute;left:50%;top:50%;z-index:4;
+  width:clamp(300px,50vmin,540px);height:clamp(300px,50vmin,540px);
+  transform:translate(-50%,-50%) rotate(var(--rot));will-change:transform}
+.caustic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  transform:scale(1.5);transform-origin:center;
+  animation:causticBreath 14s ease-in-out infinite alternate}
+@keyframes causticBreath{0%{filter:blur(15px) brightness(.95) saturate(1.2);opacity:.5}100%{filter:blur(19px) brightness(1.15) saturate(1.45);opacity:.72}}
+.word{font-family:var(--serif);font-weight:600;font-size:clamp(3.4rem,15vmin,10rem);
+  letter-spacing:.015em;line-height:1;white-space:nowrap;color:#eafcff;
+  text-shadow:0 0 14px rgba(150,235,245,.85),0 0 42px rgba(90,190,215,.55),0 0 90px rgba(60,160,190,.35)}
+
+/* ---------- LENS GLASS OVERLAY (depth + focus) ---------- */
+.lens-glass{position:absolute;inset:0;z-index:6;border-radius:50%;pointer-events:none;
+  backdrop-filter:blur(16px) saturate(1.1) brightness(1.05);
+  -webkit-backdrop-filter:blur(16px) saturate(1.1) brightness(1.05);
+  box-shadow:inset 0 0 40px 8px rgba(120,205,220,.2),inset 0 0 130px 26px rgba(6,30,40,.55);
+  background:radial-gradient(circle at 42% 36%,rgba(150,220,235,.10),rgba(255,255,255,0) 42%),
+             radial-gradient(circle at 50% 50%,rgba(6,28,38,.28),rgba(6,28,38,0) 70%)}
+.lens-glass::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(from 210deg,rgba(255,255,255,.16),rgba(255,255,255,0) 18%,rgba(255,255,255,0) 60%,rgba(120,205,220,.10) 78%,rgba(255,255,255,.16))}
+.lens-glass::after{content:"";position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.35),rgba(255,255,255,0) 20%),
+             radial-gradient(circle at 66% 74%,rgba(120,205,220,.22),rgba(255,255,255,0) 22%)}
+
+/* ---------- HUD ---------- */
+.hud{position:absolute;inset:0;z-index:10;pointer-events:none}
+.hud>*{pointer-events:auto}
+.topbar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+  align-items:center;padding:clamp(18px,3vw,34px) clamp(20px,4vw,54px)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:26px;height:26px;border-radius:50%;flex:none;
+  background:conic-gradient(from 0deg,rgba(150,225,235,.9),rgba(20,77,92,.5),rgba(150,225,235,.9));
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.25),0 0 16px rgba(120,205,220,.4)}
+.brand .name{font-family:var(--serif);font-weight:500;font-size:1.15rem;letter-spacing:.18em;
+  text-transform:uppercase;color:#d6ecf1}
+.brand .name b{font-weight:600;color:#fff}
+.nav{display:flex;gap:clamp(14px,2.4vw,34px);font-size:.72rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted)}
+.nav a{color:inherit;text-decoration:none;transition:color .3s}
+.nav a:hover{color:#fff}
+.nav a.act{color:#cfeef4}
+
+.meta{position:absolute;top:clamp(78px,11vw,120px);left:clamp(20px,4vw,54px);
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);line-height:2.1}
+.meta .k{color:#5f8590}
+.meta .v{color:#bcd9e0}
+
+.spec{position:absolute;top:clamp(78px,11vw,120px);right:clamp(20px,4vw,54px);text-align:right;
+  font-size:.66rem;letter-spacing:.18em;color:var(--muted);line-height:2.2}
+.spec .v{color:#cfe8ef;font-variant-numeric:tabular-nums}
+
+.status{position:absolute;left:clamp(20px,4vw,54px);bottom:clamp(20px,3vw,30px);
+  display:flex;align-items:center;gap:10px;font-size:.68rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--muted)}
+.status .dot{width:7px;height:7px;border-radius:50%;background:#7fe0d0;
+  box-shadow:0 0 10px #7fe0d0;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+
+/* ---------- FOCUS METER ---------- */
+.meter{position:absolute;right:clamp(20px,4vw,54px);bottom:clamp(20px,3vw,30px);
+  display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.meter .lbl{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.meter .lbl b{color:#eafcff;font-weight:500;font-variant-numeric:tabular-nums}
+.meter .bar{width:clamp(120px,20vw,220px);height:2px;background:rgba(120,205,220,.18);position:relative;overflow:hidden}
+.meter .fill{position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,#3f8698,#a9ecf4);box-shadow:0 0 12px rgba(140,230,240,.6);
+  transition:width .08s linear}
+.meter .ticks{display:flex;justify-content:space-between;width:clamp(120px,20vw,220px);
+  font-size:.55rem;letter-spacing:.15em;color:#4d707b;text-transform:uppercase}
+
+/* ---------- BRAND (hero signal, lower-left) ---------- */
+.brand-block{position:absolute;left:clamp(20px,4vw,54px);bottom:clamp(58px,8vw,86px);max-width:min(46vw,520px)}
+.kicker{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:#7fb0bc;margin-bottom:14px}
+.brand-title{font-family:var(--serif);font-weight:300;font-size:clamp(2.6rem,7.5vw,5.4rem);
+  line-height:.92;letter-spacing:-.01em;color:#f2fbfd}
+.brand-title em{font-style:italic;font-weight:400;color:#bfeaf2}
+.brand-sub{margin-top:16px;font-size:clamp(.85rem,1.4vw,1rem);color:var(--muted);max-width:34ch;line-height:1.6}
+
+/* ---------- CTA ---------- */
+.cta{position:absolute;right:clamp(20px,4vw,54px);bottom:clamp(96px,14vw,150px);
+  display:flex;flex-direction:column;align-items:flex-end;gap:14px}
+.cta .note{font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:#5f8590}
+.cta .btn{font-family:var(--sans);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+  color:#eafcff;background:rgba(120,205,220,.08);border:1px solid rgba(150,225,235,.35);
+  padding:13px 26px;border-radius:2px;cursor:pointer;position:relative;overflow:hidden;
+  transition:color .4s,background .4s,border-color .4s}
+.cta .btn span{position:relative;z-index:1}
+.cta .btn::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#a9ecf4,#5ba4b5);
+  transform:translateX(-101%);transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.cta .btn:hover{color:#052029;border-color:#a9ecf4}
+.cta .btn:hover::before{transform:translateX(0)}
+
+/* ---------- VIGNETTE ---------- */
+.vignette{position:absolute;inset:0;z-index:9;pointer-events:none;
+  background:radial-gradient(120% 100% at 50% 45%,transparent 55%,rgba(3,14,20,.55) 100%)}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:820px){
+  .nav,.spec{display:none}
+  .cta{bottom:118px}
+  .brand-block{max-width:78vw}
+  .meter{bottom:70px}
+}
+@media (max-width:520px){
+  .meta{display:none}
+  .cta{right:auto;left:clamp(20px,4vw,54px);align-items:flex-start;bottom:150px}
+  .meter{right:clamp(16px,4vw,20px);bottom:20px}
+  .brand-block{bottom:210px}
+}
+
+/* ---------- REDUCED MOTION ---------- */
+@media (prefers-reduced-motion:reduce){
+  .rings,.text-wrap,.water::before,.water::after,.caustic,.status .dot,.ring::before,.ring::after{animation:none!important}
+  .lens,.meter .fill{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <div class="water"></div>
+
+  <div class="text-wrap" id="textWrap">
+    <div class="caustic"><span class="word">CLARITY</span></div>
+  </div>
+
+  <div class="lens" id="lens">
+    <div class="lens-inner">
+      <div class="rings" id="rings">
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div>
+      </div>
+    </div>
+    <div class="lens-glass"></div>
+  </div>
+
+  <div class="vignette"></div>
+
+  <div class="hud">
+    <div class="topbar">
+      <div class="brand"><span class="mark"></span><span class="name"><b>Lucerne</b></span></div>
+      <nav class="nav">
+        <a href="#">Optics</a><a href="#">Depth</a><a href="#">Archive</a><a class="act" href="#">Focus</a>
+      </nav>
+    </div>
+
+    <div class="meta">
+      <div><span class="k">Model</span> · <span class="v">Fresnel No. 1850</span></div>
+      <div><span class="k">Aperture</span> · <span class="v">ƒ / 1.4</span></div>
+      <div><span class="k">Refractive index</span> · <span class="v">n = 1.52</span></div>
+    </div>
+
+    <div class="spec">
+      <div><span class="v">10.0</span> RPM</div>
+      <div>DEPTH OF FIELD · <span class="v">f/1.4</span></div>
+      <div>LIGHT SOURCE · <span class="v">REAR · 5600K</span></div>
+    </div>
+
+    <div class="status"><span class="dot"></span> Live · rotating</div>
+
+    <div class="brand-block">
+      <div class="kicker">Optical Intelligence</div>
+      <h1 class="brand-title">Lucerne<br><em>Focus</em></h1>
+      <p class="brand-sub">A search engine that bends the noise of the deep web until meaning surfaces — sharp, legible, true.</p>
+    </div>
+
+    <div class="cta">
+      <div class="note">Drag the lens to steer the angle</div>
+      <button class="btn" id="btn"><span>Enter the Lens</span></button>
+    </div>
+
+    <div class="meter">
+      <div class="lbl">Clarity <b id="pct">0%</b></div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="ticks"><span>Blurred</span><span>Focused</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const stage=document.getElementById('stage');
+  const rings=document.getElementById('rings');
+  const textWrap=document.getElementById('textWrap');
+  const lens=document.getElementById('lens');
+  const fill=document.getElementById('fill');
+  const pct=document.getElementById('pct');
+  const btn=document.getElementById('btn');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let angle=0, dragging=false, lastX=0, paused=false, raf;
+  const SPEED=1.2; // deg per frame ≈ 10 RPM
+
+  function render(){
+    const a=((angle%360)+360)%360;
+    stage.style.setProperty('--rot', a.toFixed(2)+'deg');
+    // optical focus: sharp at 0/180, blurred at 90/270
+    const f=Math.pow(Math.abs(Math.cos(a*Math.PI/180)),1.3);
+    const blur=(16-14.5*f).toFixed(2);
+    const bright=(0.98+0.5*f).toFixed(3);
+    const sat=(1.0+0.35*f).toFixed(3);
+    const sc=(1+0.16*(1-f)).toFixed(4);
+    const glass=document.querySelector('.lens-glass');
+    glass.style.backdropFilter='blur('+blur+'px) saturate('+sat+') brightness('+bright+')';
+    glass.style.webkitBackdropFilter='blur('+blur+'px) saturate('+sat+') brightness('+bright+')';
+    const ca=document.querySelector('.caustic');
+    ca.style.filter='blur('+(2.4-2.2*f).toFixed(2)+'px) brightness('+(0.95+0.4*f).toFixed(3)+') saturate('+(1.15+0.3*f).toFixed(3)+')';
+    ca.style.opacity=(0.5+0.45*f).toFixed(3);
+    ca.style.transform='scale('+sc+')';
+    const p=Math.round(f*100);
+    fill.style.width=p+'%';
+    pct.textContent=p+'%';
+  }
+  function loop(){
+    if(!dragging && !paused) angle+=SPEED;
+    render();
+    raf=requestAnimationFrame(loop);
+  }
+
+  // drag to steer
+  function down(x){dragging=true;lastX=x;lens.style.transition='none';}
+  function move(x){if(!dragging)return;angle+=(x-lastX)*0.7;lastX=x;render();}
+  function up(){dragging=false;lens.style.transition='';}
+  stage.addEventListener('pointerdown',e=>{down(e.clientX);});
+  window.addEventListener('pointermove',e=>{move(e.clientX);});
+  window.addEventListener('pointerup',up);
+
+  // subtle parallax on pointer
+  window.addEventListener('pointermove',e=>{
+    if(dragging)return;
+    const nx=(e.clientX/window.innerWidth-0.5);
+    const ny=(e.clientY/window.innerHeight-0.5);
+    lens.style.transform='translate(-50%,-50%) translate('+(nx*14).toFixed(1)+'px,'+(ny*14).toFixed(1)+'px)';
+  });
+
+  // pause on button
+  btn.addEventListener('click',()=>{
+    paused=!paused;
+    btn.querySelector('span').textContent=paused?'Resume Rotation':'Enter the Lens';
+  });
+
+  render();
+  if(reduce){
+    angle=0;render(); // hold at focus
+  }else{
+    raf=requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>

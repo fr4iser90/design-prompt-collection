@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cabinet &amp; Code — The Finite Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#EAE6DF;
+    --bone-2:#E3DDD2;
+    --ink:#2C3539;
+    --ink-soft:#556064;
+    --patina:#8A9A9B;
+    --patina-2:#6E7C7D;
+    --paper:#F0E6D2;
+    --paper-2:#F6F0E2;
+    --brass:#A8906A;
+    --brass-lt:#CDBB93;
+    --line:rgba(44,53,57,.13);
+    --line-2:rgba(44,53,57,.07);
+    --shadow:0 1px 2px rgba(44,53,57,.10), 0 3px 4px rgba(44,53,57,.06);
+    --shadow-lift:0 2px 3px rgba(44,53,57,.12), 0 4px 4px rgba(44,53,57,.10);
+    --shadow-cab:0 2px 4px rgba(44,53,57,.06), 0 14px 26px -16px rgba(44,53,57,.20);
+    --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+    --mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--mono);
+    color:var(--ink);
+    background:var(--bone);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    position:relative;
+    min-height:100vh;
+  }
+
+  /* ---------- atmospheric background ---------- */
+  .bg{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+  .bg-light{
+    position:absolute;top:-12%;left:-10%;width:75%;height:95%;
+    background:radial-gradient(ellipse at 30% 22%, rgba(255,255,255,.9), rgba(255,255,255,0) 62%);
+  }
+  .bg-shade{
+    position:absolute;right:-18%;bottom:-22%;width:80%;height:85%;
+    background:radial-gradient(ellipse at 70% 80%, rgba(138,154,155,.16), rgba(138,154,155,0) 60%);
+  }
+  .bg-grid{
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(var(--line-2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:56px 56px;
+    -webkit-mask-image:radial-gradient(ellipse at 40% 25%,#000 30%,transparent 85%);
+            mask-image:radial-gradient(ellipse at 40% 25%,#000 30%,transparent 85%);
+    opacity:.7;
+  }
+  .bg-noise{
+    position:absolute;inset:0;opacity:.045;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead{
+    max-width:1200px;margin:0 auto;
+    padding:clamp(28px,4vw,52px) clamp(18px,4vw,40px) clamp(20px,3vw,34px);
+    display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{max-width:640px}
+  .brand .kicker{
+    font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--patina-2);
+    display:flex;align-items:center;gap:12px;margin-bottom:14px;
+  }
+  .brand .kicker::before{content:"";width:34px;height:1px;background:var(--brass)}
+  .brand h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:clamp(2.6rem,7vw,5.1rem);line-height:.92;letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  .brand h1 .amp{font-style:italic;font-weight:500;color:var(--brass);padding:0 .06em}
+  .brand .lede{
+    margin-top:18px;font-size:13px;color:var(--ink-soft);max-width:46ch;line-height:1.7;
+  }
+  .brand .lede b{color:var(--ink);font-weight:600}
+
+  .mast-meta{
+    display:flex;flex-direction:column;gap:14px;align-items:flex-start;
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .mast-meta .row{display:flex;align-items:center;gap:10px}
+  .mast-meta .row .k{color:var(--patina-2)}
+  .mast-meta .row .v{color:var(--ink);font-weight:500}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--brass);box-shadow:0 0 0 0 rgba(168,144,106,.5);animation:pulse 2.6s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(168,144,106,.45)}70%{box-shadow:0 0 0 7px rgba(168,144,106,0)}100%{box-shadow:0 0 0 0 rgba(168,144,106,0)}}
+
+  /* ---------- cabinet ---------- */
+  .cabinet{
+    max-width:1200px;margin:clamp(26px,4vw,46px) auto;
+    padding:0 clamp(18px,4vw,40px);
+    position:relative;
+    opacity:0;transform:translateY(18px);
+    transition:opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .cabinet.ready{opacity:1;transform:none}
+  .cabinet-frame{
+    position:relative;
+    background:linear-gradient(180deg,#F1EDE6,#E9E4DA);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-cab);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  /* brass frame edge */
+  .cabinet-frame::before{
+    content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(168,144,106,.28), inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .sweep{
+    position:absolute;top:-10%;left:-40%;width:34%;height:120%;
+    background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));
+    transform:rotate(8deg);filter:blur(2px);pointer-events:none;z-index:5;
+    animation:sweep 1.5s .35s ease-out both;
+  }
+  @keyframes sweep{0%{left:-45%;opacity:0}18%{opacity:1}100%{left:120%;opacity:0}}
+
+  /* drawer rail */
+  .rail{
+    display:flex;align-items:stretch;gap:0;
+    background:linear-gradient(180deg,#DAD4C9,#CFC8BB);
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .rail::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--brass-lt),var(--brass),var(--brass-lt));opacity:.55}
+  .tab{
+    appearance:none;border:none;background:transparent;cursor:pointer;
+    flex:1 1 0;min-width:0;
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--patina-2);
+    padding:14px 8px 15px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    position:relative;transition:color .18s ease, background .18s ease;
+  }
+  .tab + .tab{border-left:1px solid var(--line-2)}
+  .tab .tab-code{font-size:9px;letter-spacing:.2em;color:var(--patina);opacity:.7}
+  .tab .tab-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .tab .handle{
+    width:34px;height:4px;border-radius:3px;
+    background:linear-gradient(180deg,var(--brass-lt),var(--brass));
+    box-shadow:0 1px 1px rgba(44,53,57,.25), inset 0 1px 0 rgba(255,255,255,.5);
+    transition:width .2s ease, transform .2s ease;
+  }
+  .tab:hover{color:var(--ink);background:rgba(255,255,255,.35)}
+  .tab:hover .handle{width:44px}
+  .tab:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+  .tab[aria-selected="true"]{color:var(--ink);background:linear-gradient(180deg,#F4EFE7,#EDE7DC)}
+  .tab[aria-selected="true"]::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--brass-lt),var(--brass));
+  }
+  .tab[aria-selected="true"] .handle{width:52px;transform:translateY(-1px)}
+
+  /* drawer body */
+  .drawer-body{position:relative;min-height:360px;background:linear-gradient(180deg,#F3EEE6,#EAE4D9)}
+  .drawer{
+    padding:clamp(24px,3.4vw,42px);
+    opacity:0;transform:translateY(-16px);
+    transition:opacity .26s ease, transform .26s cubic-bezier(.2,.7,.2,1);
+  }
+  .drawer.is-active{opacity:1;transform:none}
+
+  .drawer-head{
+    display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:14px;
+    padding-bottom:18px;margin-bottom:26px;border-bottom:1px solid var(--line);
+  }
+  .drawer-head .dtitle{
+    font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,3.6vw,2.5rem);
+    line-height:1.05;letter-spacing:-.01em;
+  }
+  .drawer-head .dtitle .dcode{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--brass);margin-bottom:8px;font-weight:500;
+  }
+  .drawer-head .dcount{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .drawer-head .dcount b{color:var(--ink)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .card{
+    position:relative;
+    background:linear-gradient(180deg,var(--paper-2),var(--paper));
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:22px 20px 24px;
+    box-shadow:var(--shadow);
+    transition:transform .18s ease, box-shadow .18s ease;
+    will-change:transform;
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;width:100%;height:3px;
+    background:linear-gradient(90deg,transparent,var(--brass-lt),transparent);opacity:0;transition:opacity .18s ease;
+  }
+  .card .c-code{font-size:10px;letter-spacing:.16em;color:var(--brass);text-transform:uppercase}
+  .card h3{
+    font-family:var(--serif);font-weight:600;font-size:1.4rem;line-height:1.15;
+    margin:10px 0 8px;letter-spacing:-.01em;
+  }
+  .card .c-body{font-size:12px;color:var(--ink-soft);line-height:1.65}
+  .card .c-foot{
+    margin-top:16px;padding-top:12px;border-top:1px solid var(--line-2);
+    display:flex;align-items:center;justify-content:space-between;
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--patina-2);
+  }
+  .card .c-foot .cat{color:var(--ink-soft)}
+  .card .stamp{
+    position:absolute;top:14px;right:14px;
+    font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--brass);border:1px solid var(--brass);border-radius:2px;
+    padding:3px 7px;opacity:0;transform:translateY(-4px) rotate(-3deg);
+    transition:opacity .18s ease, transform .18s ease;
+    background:rgba(240,230,210,.6);
+  }
+  .card:hover,.card:focus-within{transform:translateY(-4px);box-shadow:var(--shadow-lift)}
+  .card:hover::before,.card:focus-within::before{opacity:1}
+  .card:hover .stamp,.card:focus-within .stamp{opacity:1;transform:translateY(0) rotate(-3deg)}
+
+  /* stagger reveal inside active drawer */
+  .drawer.is-active .drawer-head{animation:rise .3s ease both}
+  .drawer.is-active .card{animation:rise .3s ease both;animation-delay:calc(var(--i,0)*50ms + 60ms)}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- principles ---------- */
+  .principles{max-width:1200px;margin:clamp(40px,6vw,80px) auto;padding:0 clamp(18px,4vw,40px)}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:26px}
+  .sec-head .n{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--brass)}
+  .sec-head h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,3.4vw,2.3rem);letter-spacing:-.01em}
+  .sec-head .rule{flex:1;height:1px;background:var(--line)}
+
+  .prin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;border:1px solid var(--line);background:linear-gradient(180deg,#F1EDE6,#EAE4D9);border-radius:3px;overflow:hidden}
+  .prin{padding:26px 24px;border-right:1px solid var(--line-2);transition:background .2s ease}
+  .prin:last-child{border-right:none}
+  .prin:hover{background:rgba(255,255,255,.4)}
+  .prin .p-num{font-family:var(--serif);font-style:italic;font-size:2.4rem;color:var(--brass);line-height:1}
+  .prin h3{font-family:var(--serif);font-weight:600;font-size:1.3rem;margin:12px 0 8px}
+  .prin p{font-size:12px;color:var(--ink-soft);line-height:1.65}
+
+  /* ---------- ledger ---------- */
+  .ledger{max-width:1200px;margin:clamp(30px,5vw,60px) auto;padding:0 clamp(18px,4vw,40px)}
+  .ledger-inner{
+    display:flex;flex-wrap:wrap;gap:0;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(240,230,210,.35),rgba(240,230,210,.12));
+  }
+  .stat{flex:1 1 180px;padding:28px 22px;border-right:1px solid var(--line-2)}
+  .stat:last-child{border-right:none}
+  .stat .num{font-family:var(--serif);font-weight:600;font-size:clamp(2.2rem,5vw,3.2rem);line-height:1;letter-spacing:-.02em}
+  .stat .num .u{font-family:var(--mono);font-size:.9rem;color:var(--brass);vertical-align:super;margin-left:2px}
+  .stat .lbl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-top:10px}
+
+  /* ---------- footer ---------- */
+  footer{max-width:1200px;margin:clamp(40px,6vw,80px) auto 0;padding:0 clamp(18px,4vw,40px) clamp(40px,6vw,70px)}
+  .foot-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;align-items:flex-end;padding-bottom:28px;border-bottom:1px solid var(--line)}
+  .foot-top .fbrand{font-family:var(--serif);font-weight:600;font-size:1.9rem;letter-spacing:-.01em}
+  .foot-top .fbrand .amp{font-style:italic;color:var(--brass)}
+  .foot-top p{font-size:11px;color:var(--ink-soft);max-width:34ch;line-height:1.7}
+  .foot-cols{display:flex;flex-wrap:wrap;gap:48px;margin-top:26px}
+  .foot-cols .col h4{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--patina-2);margin-bottom:12px}
+  .foot-cols .col a{display:block;font-size:12px;color:var(--ink-soft);text-decoration:none;padding:4px 0;transition:color .15s ease}
+  .foot-cols .col a:hover{color:var(--ink)}
+  .foot-bottom{margin-top:30px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--patina-2)}
+
+  /* ---------- mobile ---------- */
+  @media(max-width:720px){
+    .rail{flex-direction:column}
+    .tab + .tab{border-left:none;border-top:1px solid var(--line-2)}
+    .tab{flex-direction:row;justify-content:space-between;align-items:center;text-align:left;padding:15px 16px}
+    .tab .handle{order:3;width:26px}
+    .tab .tab-name{flex:1}
+    .tab .tab-code{order:1;margin-right:12px}
+    .tab[aria-selected="true"]::before{width:3px;height:100%;left:0;top:0;right:auto;bottom:0}
+    .tab[aria-selected="true"] .handle{width:34px;transform:none}
+    .prin{border-right:none;border-bottom:1px solid var(--line-2)}
+    .prin:last-child{border-bottom:none}
+    .stat{border-right:none;border-bottom:1px solid var(--line-2)}
+    .stat:last-child{border-bottom:none}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .cabinet{opacity:1;transform:none}
+    .drawer{opacity:1;transform:none}
+    .card,.drawer-head{animation:none!important;opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-light"></div>
+    <div class="bg-shade"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+  </div>
+
+  <header class="masthead">
+    <div class="brand">
+      <div class="kicker">The Finite Archive · Est. MMXIX</div>
+      <h1>Cabinet<span class="amp">&amp;</span>Code</h1>
+      <p class="lede">A knowledge base for researchers who need to <b>find</b>, not just browse. Infinite scroll is a cabinet with no drawers — we offer finite, curated order.</p>
+    </div>
+    <div class="mast-meta">
+      <div class="row"><span class="live-dot"></span><span class="v">Reading Room Open</span></div>
+      <div class="row"><span class="k">Collection</span><span class="v">4,128 cards</span></div>
+      <div class="row"><span class="k">Index</span><span class="v">Rev. 24.11</span></div>
+      <div class="row"><span class="k">Light</span><span class="v">North-facing</span></div>
+    </div>
+  </header>
+
+  <main class="cabinet" id="cabinet">
+    <div class="cabinet-frame">
+      <div class="sweep" aria-hidden="true"></div>
+
+      <div class="rail" role="tablist" aria-label="Archive drawers">
+        <button class="tab" role="tab" id="tab-collections" aria-controls="drawer-collections" aria-selected="true" tabindex="0">
+          <span class="tab-code">01</span><span class="tab-name">Collections</span><span class="handle"></span>
+        </button>
+        <button class="tab" role="tab" id="tab-index" aria-controls="drawer-index" aria-selected="false" tabindex="-1">
+          <span class="tab-code">02</span><span class="tab-name">Index</span><span class="handle"></span>
+        </button>
+        <button class="tab" role="tab" id="tab-method" aria-controls="drawer-method" aria-selected="false" tabindex="-1">
+          <span class="tab-code">03</span><span class="tab-name">Method</span><span class="handle"></span>
+        </button>
+        <button class="tab" role="tab" id="tab-provenance" aria-controls="drawer-provenance" aria-selected="false" tabindex="-1">
+          <span class="tab-code">04</span><span class="tab-name">Provenance</span><span class="handle"></span>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Collections -->
+        <section class="drawer is-active" role="tabpanel" id="drawer-collections" aria-labelledby="tab-collections">
+          <div class="drawer-head">
+            <h2 class="dtitle"><span class="dcode">Drawer 01 · Holdings</span>Curated Collections</h2>
+            <div class="dcount"><b>4</b> drawers · <b>1,204</b> cards</div>
+          </div>
+          <div class="cards">
+            <article class="card" style="--i:0" tabindex="0">
+              <span class="stamp">Verified</span>
+              <div class="c-code">MS-001</div>
+              <h3>The Botanical Folios</h3>
+              <p class="c-body">Pressed specimens and field notes, 1890–1932. Cross-referenced by genus and collection site.</p>
+              <div class="c-foot"><span>1890–1932</span><span class="cat">Flora</span></div>
+            </article>
+            <article class="card" style="--i:1" tabindex="0">
+              <span class="stamp">Verified</span>
+              <div class="c-code">MS-014</div>
+              <h3>Cartographer's Margins</h3>
+              <p class="c-body">Survey drafts and corrections, annotated in graphite. Each fold traced to a source plate.</p>
+              <div class="c-foot"><span>1901–1948</span><span class="cat">Maps</span></div>
+            </article>
+            <article class="card" style="--i:2" tabindex="0">
+              <span class="stamp">Draft</span>
+              <div class="c-code">MS-027</div>
+              <h3>Correspondence, Vol. II</h3>
+              <p class="c-body">Letters between archivists and binders. Retrieval by sender, decade, and binding method.</p>
+              <div class="c-foot"><span>1912–1939</span><span class="cat">Letters</span></div>
+            </article>
+            <article class="card" style="--i:3" tabindex="0">
+              <span class="stamp">Verified</span>
+              <div class="c-code">MS-041</div>
+              <h3>Alchemical Registers</h3>
+              <p class="c-body">Transmutations logged by weight and vessel. A study in precision before the metric standard.</p>
+              <div class="c-foot"><span>1877–1905</span><span class="cat">Chemistry</span></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Index -->
+        <section class="drawer" role="tabpanel" id="drawer-index" aria-labelledby="tab-index" hidden>
+          <div class="drawer-head">
+            <h2 class="dtitle"><span class="dcode">Drawer 02 · Retrieval</span>The Index System</h2>
+            <div class="dcount"><b>3</b> drawers · <b>2,610</b> entries</div>
+          </div>
+          <div class="cards">
+            <article class="card" style="--i:0" tabindex="0">
+              <span class="stamp">Live</span>
+              <div class="c-code">IDX-A</div>
+              <h3>Card Catalogue</h3>
+              <p class="c-body">Every object assigned a unique code. No duplicates, no orphans. Search by code or title.</p>
+              <div class="c-foot"><span>26,400 codes</span><span class="cat">Core</span></div>
+            </article>
+            <article class="card" style="--i:1" tabindex="0">
+              <span class="stamp">Live</span>
+              <div class="c-code">IDX-B</div>
+              <h3>Cross-Reference Rails</h3>
+              <p class="c-body">Linked entries pull related cards into view, the way a brass rail guides a drawer home.</p>
+              <div class="c-foot"><span>8,120 links</span><span class="cat">Graph</span></div>
+            </article>
+            <article class="card" style="--i:2" tabindex="0">
+              <span class="stamp">Beta</span>
+              <div class="c-code">IDX-C</div>
+              <h3>Find, Not Browse</h3>
+              <p class="c-body">A single query field returns the exact card. The interface stays closed until you ask.</p>
+              <div class="c-foot"><span>&lt; 40ms</span><span class="cat">Query</span></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Method -->
+        <section class="drawer" role="tabpanel" id="drawer-method" aria-labelledby="tab-method" hidden>
+          <div class="drawer-head">
+            <h2 class="dtitle"><span class="dcode">Drawer 03 · Practice</span>Method &amp; Materials</h2>
+            <div class="dcount"><b>3</b> drawers · <b>314</b> notes</div>
+          </div>
+          <div class="cards">
+            <article class="card" style="--i:0" tabindex="0">
+              <span class="stamp">Guide</span>
+              <div class="c-code">MTH-01</div>
+              <h3>North Light</h3>
+              <p class="c-body">Diffused, shadow-soft reading conditions. Every card is legible under even, glare-free illumination.</p>
+              <div class="c-foot"><span>Standard</span><span class="cat">Studio</span></div>
+            </article>
+            <article class="card" style="--i:1" tabindex="0">
+              <span class="stamp">Guide</span>
+              <div class="c-code">MTH-02</div>
+              <h3>Material Honesty</h3>
+              <p class="c-body">Matte paper, thin brass, glass fronts. Hints of the physical — never a dashboard pretending to be one.</p>
+              <div class="c-foot"><span>Principle</span><span class="cat">Form</span></div>
+            </article>
+            <article class="card" style="--i:2" tabindex="0">
+              <span class="stamp">Guide</span>
+              <div class="c-code">MTH-03</div>
+              <h3>Finite by Design</h3>
+              <p class="c-body">Drawers have bottoms. The archive ends, and that end is where trust begins.</p>
+              <div class="c-foot"><span>Doctrine</span><span class="cat">Order</span></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Provenance -->
+        <section class="drawer" role="tabpanel" id="drawer-provenance" aria-labelledby="tab-provenance" hidden>
+          <div class="drawer-head">
+            <h2 class="dtitle"><span class="dcode">Drawer 04 · Trust</span>Provenance Ledger</h2>
+            <div class="dcount"><b>3</b> drawers · <b>1,000</b> records</div>
+          </div>
+          <div class="cards">
+            <article class="card" style="--i:0" tabindex="0">
+              <span class="stamp">Sealed</span>
+              <div class="c-code">PRV-001</div>
+              <h3>Chain of Custody</h3>
+              <p class="c-body">Each card records who entered it, when, and from which source. Nothing arrives unattributed.</p>
+              <div class="c-foot"><span>Audit trail</span><span class="cat">Trust</span></div>
+            </article>
+            <article class="card" style="--i:1" tabindex="0">
+              <span class="stamp">Sealed</span>
+              <div class="c-code">PRV-002</div>
+              <h3>Immutable Revisions</h3>
+              <p class="c-body">Corrections stack as new cards. The original is never overwritten — only shelved beside it.</p>
+              <div class="c-foot"><span>Versioned</span><span class="cat">Trust</span></div>
+            </article>
+            <article class="card" style="--i:2" tabindex="0">
+              <span class="stamp">Sealed</span>
+              <div class="c-code">PRV-003</div>
+              <h3>Signed Exports</h3>
+              <p class="c-body">Pull any collection as a stamped ledger. The document carries its own proof of origin.</p>
+              <div class="c-foot"><span>Export</span><span class="cat">Trust</span></div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <section class="principles">
+    <div class="sec-head"><span class="n">§</span><h2>Why a cabinet, not a feed</h2><span class="rule"></span></div>
+    <div class="prin-grid">
+      <div class="prin"><div class="p-num">i</div><h3>Finite</h3><p>Scroll has no floor. A drawer does. You always know the size of what you hold.</p></div>
+      <div class="prin"><div class="p-num">ii</div><h3>Retrievable</h3><p>Every object answers to a code. Find it once, find it forever, exactly where you left it.</p></div>
+      <div class="prin"><div class="p-num">iii</div><h3>Trustworthy</h3><p>Provenance is not a feature bolted on — it is the material the cabinet is built from.</p></div>
+    </div>
+  </section>
+
+  <section class="ledger">
+    <div class="ledger-inner">
+      <div class="stat"><div class="num">4,128</div><div class="lbl">Cards catalogued</div></div>
+      <div class="stat"><div class="num">128<span class="u">ms</span></div><div class="lbl">Median retrieval</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">Orphaned entries</div></div>
+      <div class="stat"><div class="num">24<span class="u">yr</span></div><div class="lbl">Custody, unbroken</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="foot-top">
+      <div class="fbrand">Cabinet<span class="amp">&amp;</span>Code</div>
+      <p>A reading room for the finite archive. Order is a form of care.</p>
+    </div>
+    <div class="foot-cols">
+      <div class="col"><h4>Archive</h4><a href="#cabinet">Collections</a><a href="#cabinet">Index</a><a href="#cabinet">Method</a><a href="#cabinet">Provenance</a></div>
+      <div class="col"><h4>Reading Room</h4><a href="#cabinet">Open hours</a><a href="#cabinet">Request a card</a><a href="#cabinet">Export ledger</a><a href="#cabinet">Custody policy</a></div>
+      <div class="col"><h4>Contact</h4><a href="#cabinet">desk@cabinetandcode.org</a><a href="#cabinet">North Wing, Room 12</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© MMXXV Cabinet &amp; Code</span>
+      <span>Set in Cormorant &amp; Plex Mono</span>
+      <span>North light, always</span>
+    </div>
+  </footer>
+
+<script>
+  (function(){
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    var drawers = Array.prototype.slice.call(document.querySelectorAll('.drawer'));
+
+    function activate(tab){
+      tabs.forEach(function(t){
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true':'false');
+        t.tabIndex = on ? 0 : -1;
+      });
+      drawers.forEach(function(d){
+        var match = d.id === tab.getAttribute('aria-controls');
+        if(match){
+          d.hidden = false;
+          // force reflow so the staggered reveal replays
+          void d.offsetWidth;
+          d.classList.add('is-active');
+        }else{
+          d.classList.remove('is-active');
+          d.hidden = true;
+        }
+      });
+    }
+
+    tabs.forEach(function(tab){
+      tab.addEventListener('click', function(){ activate(tab); });
+    });
+
+    // keyboard: arrow navigation across the rail
+    document.querySelector('.rail').addEventListener('keydown', function(e){
+      var idx = tabs.indexOf(document.activeElement);
+      if(idx === -1) return;
+      var next = null;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){ next = tabs[(idx+1)%tabs.length]; }
+      else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){ next = tabs[(idx-1+tabs.length)%tabs.length]; }
+      else if(e.key === 'Home'){ next = tabs[0]; }
+      else if(e.key === 'End'){ next = tabs[tabs.length-1]; }
+      if(next){ e.preventDefault(); next.focus(); activate(next); }
+    });
+
+    // cabinet entrance
+    var cab = document.getElementById('cabinet');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ cab.classList.add('ready'); }); });
+  })();
+</script>
+</body>
+</html>

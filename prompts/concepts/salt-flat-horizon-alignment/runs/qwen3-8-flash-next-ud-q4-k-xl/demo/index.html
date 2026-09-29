@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salt Flat Horizon Alignment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bone:#F5F5F0;
+    --ash:#E0D8D0;
+    --dust:#8A857C;
+    --shadow:#6E7A8A;
+    --ink:#5b574e;
+    --horizon:50%;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--bone);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- ATMOSPHERE LAYERS ---------- */
+  .atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .atmosphere .sky{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,
+      #E0D8D0 0%,
+      #E7E2DA 26%,
+      #F0EEE8 46%,
+      #F6F6F2 50%,
+      #F0EEE9 54%,
+      #E9E5DE 74%,
+      #E0D8D0 100%);
+  }
+  /* faint zenith glow where the sun sits */
+  .atmosphere .zenith{
+    position:absolute;top:-10%;left:50%;transform:translateX(-50%);
+    width:70vw;height:60vh;
+    background:radial-gradient(ellipse at center, rgba(255,255,255,.9) 0%, rgba(255,255,255,0) 70%);
+    opacity:.7;
+  }
+  /* subtle grain so the flat never looks like a dead gradient */
+  .atmosphere .grain{
+    position:absolute;inset:0;opacity:.05;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* heat haze at the very bottom */
+  .atmosphere .haze{
+    position:absolute;left:0;right:0;bottom:0;height:26vh;
+    background:linear-gradient(180deg, rgba(245,245,240,0) 0%, rgba(245,245,240,.35) 55%, rgba(245,245,240,.72) 100%);
+    -webkit-mask-image:linear-gradient(180deg, transparent 0%, #000 40%, #000 100%);
+            mask-image:linear-gradient(180deg, transparent 0%, #000 40%, #000 100%);
+    animation:haze 7s ease-in-out infinite;
+  }
+  @keyframes haze{
+    0%,100%{filter:blur(0px);transform:translateY(0);}
+    50%{filter:blur(1.5px);transform:translateY(-3px);}
+  }
+  #dust{position:fixed;inset:0;z-index:1;pointer-events:none;}
+
+  /* ---------- HORIZON ---------- */
+  .horizon{
+    position:fixed;left:0;right:0;top:var(--horizon);z-index:2;pointer-events:none;
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(110,122,138,.55) 12%, rgba(110,122,138,.7) 50%, rgba(110,122,138,.55) 88%, transparent);
+    transform:scaleX(0);transform-origin:center;
+    transition:transform 1.9s cubic-bezier(.16,1,.3,1);
+    box-shadow:0 0 22px rgba(110,122,138,.35);
+  }
+  .horizon::after{
+    content:"";position:absolute;left:0;right:0;top:-1px;height:2px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.9) 50%, transparent);
+    opacity:.5;
+  }
+  body.revealed .horizon{transform:scaleX(1);}
+
+  /* ---------- CONTENT ---------- */
+  .content{position:relative;z-index:3;}
+  .hero{
+    min-height:100vh;min-height:100svh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 24px;
+  }
+  .kicker{
+    font-family:'Space Mono',monospace;
+    font-size:11px;letter-spacing:.42em;text-transform:uppercase;
+    color:var(--dust);margin-bottom:34px;
+    opacity:0;transform:translateY(-18px);
+  }
+  .title{
+    font-weight:100;
+    font-size:clamp(3.2rem,12vw,10.5rem);
+    line-height:.9;letter-spacing:.02em;
+    color:var(--ink);
+    text-shadow:0 0 1px rgba(110,122,138,.25);
+    opacity:0;transform:translateY(-26px);
+  }
+  .title .line{display:block;}
+  .title .thin{font-weight:200;}
+  .subtitle{
+    font-family:'Space Mono',monospace;
+    font-size:clamp(11px,1.4vw,13px);letter-spacing:.28em;text-transform:uppercase;
+    color:var(--dust);margin-top:40px;
+    opacity:0;transform:translateY(-18px);
+  }
+  .scrollcue{
+    position:absolute;bottom:38px;left:50%;transform:translateX(-50%);
+    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.35em;
+    text-transform:uppercase;color:var(--dust);
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    opacity:0;transition:opacity 1.2s ease 1.6s;
+  }
+  body.revealed .scrollcue{opacity:.75;}
+  .scrollcue .bar{width:1px;height:46px;background:linear-gradient(var(--dust),transparent);
+    animation:cue 2.6s ease-in-out infinite;transform-origin:top;}
+  @keyframes cue{0%,100%{transform:scaleY(.4);opacity:.4;}50%{transform:scaleY(1);opacity:.9;}}
+
+  /* entrance choreography */
+  body.revealed .kicker{animation:settle 1.1s cubic-bezier(.2,.9,.25,1) .35s both;}
+  body.revealed .title{animation:settle 1.4s cubic-bezier(.18,1,.28,1) .55s both;}
+  body.revealed .subtitle{animation:settle 1.2s cubic-bezier(.2,.9,.25,1) 1s both;}
+  @keyframes settle{
+    0%{opacity:0;transform:translateY(-30px);}
+    70%{opacity:1;transform:translateY(6px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
+
+  /* ---------- FLOATING MARKERS ---------- */
+  .markers{
+    position:relative;
+    min-height:150vh;
+    padding:16vh 24px 26vh;
+  }
+  .marker{
+    position:absolute;left:50%;
+    text-align:center;
+    transform:translateX(-50%);
+    opacity:0;
+    transition:opacity .9s ease;
+    cursor:default;
+    will-change:transform;
+  }
+  .marker.in{opacity:1;}
+  .marker .label{
+    font-family:'Space Mono',monospace;
+    font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--dust);
+    text-shadow:0 0 1px rgba(110,122,138,.2);
+  }
+  .marker .num{
+    font-weight:100;
+    font-size:clamp(2.4rem,7vw,5.5rem);
+    line-height:1;color:var(--ink);letter-spacing:.01em;
+    margin-top:6px;
+  }
+  .marker .cap{
+    font-weight:200;
+    font-size:clamp(1.6rem,4.4vw,3.2rem);
+    line-height:1.05;color:var(--ink);letter-spacing:.02em;
+    margin-top:10px;
+  }
+  .marker .note{
+    font-family:'Space Mono',monospace;
+    font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--dust);margin-top:16px;
+  }
+
+  /* ---------- FOOTER / COORDS ---------- */
+  .coords{
+    position:relative;z-index:3;
+    display:flex;flex-wrap:wrap;justify-content:center;gap:10px 34px;
+    padding:0 24px 60px;
+    font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--dust);
+  }
+  .coords span{white-space:nowrap;}
+
+  /* mobile: horizon to top third */
+  @media (max-width:640px){
+    :root{--horizon:33%;}
+    .title{letter-spacing:.01em;}
+    .markers{min-height:120vh;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .horizon{transform:scaleX(1);}
+    .kicker,.title,.subtitle,.marker{opacity:1!important;transform:none!important;}
+    .scrollcue{opacity:.75!important;}
+    .atmosphere .haze{animation:none;}
+  }
+</style>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="sky"></div>
+    <div class="zenith"></div>
+    <div class="grain"></div>
+    <div class="haze"></div>
+  </div>
+  <canvas id="dust" aria-hidden="true"></canvas>
+  <div class="horizon" aria-hidden="true"></div>
+
+  <main class="content">
+    <section class="hero">
+      <p class="kicker">Salar&nbsp;de&nbsp;Uyuni · 20°13′S&nbsp;67°29′W</p>
+      <h1 class="title">
+        <span class="line">Salt Flat</span>
+        <span class="line thin">Horizon Alignment</span>
+      </h1>
+      <p class="subtitle">Alignment through clarity</p>
+      <div class="scrollcue"><span>Descend to the flat</span><span class="bar"></span></div>
+    </section>
+
+    <section class="markers" id="markers">
+      <div class="marker" style="top:6%"  data-x="-14" data-depth="0.30">
+        <div class="label">Elevation</div>
+        <div class="num">3,656 m</div>
+        <div class="note">above mean sea level</div>
+      </div>
+      <div class="marker" style="top:22%" data-x="12"  data-depth="0.45">
+        <div class="label">Surface</div>
+        <div class="num">10,582 km²</div>
+        <div class="note">the world's largest salt flat</div>
+      </div>
+      <div class="marker" style="top:40%" data-x="-8"  data-depth="0.60">
+        <div class="label">Gradient</div>
+        <div class="num">± 0.5 mm</div>
+        <div class="note">deviation across 1 km</div>
+      </div>
+      <div class="marker" style="top:58%" data-x="10"  data-depth="0.78">
+        <div class="label">Reflection</div>
+        <div class="num">Mirror</div>
+        <div class="note">sky and crust indistinguishable</div>
+      </div>
+      <div class="marker" style="top:76%" data-x="-12" data-depth="0.95">
+        <div class="cap">The horizon<br>is a decision.</div>
+        <div class="note">scroll back toward the zenith</div>
+      </div>
+    </section>
+
+    <div class="coords">
+      <span>Light source — zenith</span>
+      <span>Shadow — infinite toward viewer</span>
+      <span>Depth — length, not layer</span>
+      <span>© Salt Flat Horizon Alignment</span>
+    </div>
+  </main>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* reveal on load */
+  requestAnimationFrame(function(){ document.body.classList.add('revealed'); });
+
+  /* ---------- dust motes ---------- */
+  var canvas = document.getElementById('dust');
+  var ctx = canvas.getContext('2d');
+  var motes = [], W, H, dpr;
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    W = canvas.width = innerWidth*dpr;
+    H = canvas.height = innerHeight*dpr;
+    canvas.style.width = innerWidth+'px';
+    canvas.style.height = innerHeight+'px';
+  }
+  function makeMotes(){
+    motes = [];
+    var n = Math.round(innerWidth/16);
+    for(var i=0;i<n;i++){
+      motes.push({
+        x:Math.random()*W, y:Math.random()*H,
+        r:(Math.random()*1.6+0.4)*dpr,
+        vx:(Math.random()*0.25+0.05)*dpr,
+        vy:(Math.random()*0.12-0.06)*dpr,
+        a:Math.random()*0.10+0.02,
+        ph:Math.random()*Math.PI*2
+      });
+    }
+  }
+  resize(); makeMotes();
+  window.addEventListener('resize', function(){ resize(); makeMotes(); });
+
+  function drawDust(t){
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<motes.length;i++){
+      var m = motes[i];
+      m.x += m.vx; m.y += m.vy + Math.sin(t*0.0006+m.ph)*0.05*dpr;
+      if(m.x > W+m.r){ m.x = -m.r; m.y = Math.random()*H; }
+      if(m.y < -m.r) m.y = H+m.r;
+      if(m.y > H+m.r) m.y = -m.r;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(110,122,138,'+m.a+')';
+      ctx.fill();
+    }
+  }
+
+  /* ---------- perspective shadows ---------- */
+  var markers = Array.prototype.slice.call(document.querySelectorAll('.marker'));
+  var hoverState = {};
+  markers.forEach(function(el){
+    el.addEventListener('mouseenter', function(){ hoverState[el._id]=1; });
+    el.addEventListener('mouseleave', function(){ hoverState[el._id]=0; });
+  });
+  var idc = 0;
+  markers.forEach(function(el){ el._id = idc++; hoverState[el._id]=0; el._cur=0; });
+
+  function updateMarkers(){
+    var vh = innerHeight;
+    markers.forEach(function(el){
+      var r = el.getBoundingClientRect();
+      var cy = r.top + r.height/2;
+      var p = cy / vh;                 /* 0 top .. 1 bottom */
+      var depth = parseFloat(el.dataset.depth)||0;
+      var x = parseFloat(el.dataset.x)||0;
+
+      /* settle into view */
+      if(p > 0.05 && p < 1.15) el.classList.add('in');
+
+      /* hover eases toward 1, else toward 0 */
+      var target = hoverState[el._id];
+      el._cur += (target - el._cur)*0.12;
+
+      /* scale grows toward foreground */
+      var scale = 0.86 + depth*0.34;
+      el.style.transform = 'translateX(-50%) scale('+scale.toFixed(3)+')';
+
+      /* shadow length + softness grow toward viewer; hover stretches further */
+      var len = (10 + depth*150) + el._cur*(120 + depth*220);
+      var blur = (8 + depth*34) + el._cur*(26 + depth*40);
+      var alpha = (0.05 + depth*0.10) + el._cur*0.08;
+
+      var shadow =
+        '0 '+(len*0.34).toFixed(1)+'px '+(blur*0.55).toFixed(1)+'px rgba(110,122,138,'+(alpha*0.55).toFixed(3)+'),'+
+        '0 '+(len*0.66).toFixed(1)+'px '+(blur).toFixed(1)+'px rgba(110,122,138,'+(alpha*0.42).toFixed(3)+'),'+
+        '0 '+(len).toFixed(1)+'px '+(blur*1.7).toFixed(1)+'px rgba(110,122,138,'+(alpha*0.3).toFixed(3)+')';
+
+      var num = el.querySelector('.num'), cap = el.querySelector('.cap');
+      if(num) num.style.textShadow = shadow;
+      if(cap) cap.style.textShadow = shadow;
+    });
+  }
+
+  function loop(t){
+    if(!reduce) drawDust(t);
+    updateMarkers();
+    requestAnimationFrame(loop);
+  }
+  if(reduce){
+    /* static render for reduced motion */
+    updateMarkers();
+  } else {
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
