@@ -1,0 +1,26 @@
+id: lattice-city-block-generator
+title: "Lattice City Fabric"
+category: webgl
+tags:
+  - webgl
+  - three-js
+  - instanced-mesh
+  - procedural-generation
+  - urban-design
+  - wireframe
+  - parameter-scrub
+status: polished
+summary: "Procedural city block where wireframes solidify into instanced buildings. Scrub density to extrude or collapse masses, revealing raw urban geometry."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

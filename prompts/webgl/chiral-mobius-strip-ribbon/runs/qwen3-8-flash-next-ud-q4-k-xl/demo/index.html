@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobius Dynamics — Topological Chiral Ribbon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1a1a;
+    --mint:#00ffaa;
+    --magenta:#ff00aa;
+    --white:#ffffff;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    background:var(--bg);
+    color:var(--white);
+    font-family:'Space Mono', ui-monospace, monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  #gl{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    z-index:0;
+    cursor:grab;
+    touch-action:none;
+  }
+  #gl:active{ cursor:grabbing; }
+
+  /* ---- overlay layer ---- */
+  .overlay{
+    position:fixed;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+  }
+
+  header{
+    position:absolute;
+    top:9%;
+    left:0;
+    right:0;
+    text-align:center;
+    opacity:0;
+    animation:rise 1.4s cubic-bezier(.16,1,.3,1) .25s forwards;
+  }
+  header h1{
+    font-family:'DM Serif Text', Georgia, serif;
+    font-weight:400;
+    font-size:clamp(2.4rem, 6.4vw, 5rem);
+    letter-spacing:-0.02em;
+    color:var(--white);
+    opacity:0.82;
+    line-height:0.95;
+  }
+  header .sub{
+    margin-top:0.7rem;
+    font-size:0.66rem;
+    letter-spacing:0.42em;
+    text-transform:uppercase;
+    color:var(--mint);
+    opacity:0.6;
+  }
+
+  /* ---- control dock ---- */
+  .dock{
+    position:absolute;
+    left:50%;
+    bottom:13%;
+    transform:translateX(-50%);
+    width:min(560px, 84vw);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.55rem;
+    opacity:0;
+    animation:rise 1.4s cubic-bezier(.16,1,.3,1) .55s forwards;
+  }
+  .slider-row{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    width:100%;
+    justify-content:center;
+  }
+  .slider-label{
+    font-size:0.8rem;
+    letter-spacing:0.02em;
+    color:var(--white);
+    opacity:0.85;
+    white-space:nowrap;
+  }
+  .slider-label b{
+    color:var(--mint);
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:min(320px, 52vw);
+    height:2px;
+    background:rgba(255,255,255,0.18);
+    outline:none;
+    cursor:pointer;
+    pointer-events:auto;
+    accent-color:var(--mint);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px; height:14px;
+    border-radius:50%;
+    background:var(--mint);
+    box-shadow:0 0 12px rgba(0,255,170,0.55);
+    cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border:none;
+    border-radius:50%;
+    background:var(--mint);
+    box-shadow:0 0 12px rgba(0,255,170,0.55);
+    cursor:pointer;
+  }
+
+  .formula{
+    font-size:0.72rem;
+    letter-spacing:0.01em;
+    color:var(--mint);
+    text-align:center;
+    opacity:0.9;
+    max-width:94vw;
+    line-height:1.5;
+  }
+  .formula .muted{ color:rgba(0,255,170,0.55); }
+  .formula .em{ color:var(--white); opacity:0.9; }
+
+  .readout{
+    position:absolute;
+    top:22px;
+    left:24px;
+    font-size:0.62rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.4);
+    line-height:1.7;
+    opacity:0;
+    animation:rise 1.4s ease .8s forwards;
+  }
+  .readout span{ color:var(--mint); }
+
+  .hint{
+    position:absolute;
+    top:22px;
+    right:24px;
+    font-size:0.62rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,0.34);
+    text-align:right;
+    opacity:0;
+    animation:rise 1.4s ease .8s forwards;
+  }
+
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .dock{ animation-name:riseDock; }
+  @keyframes riseDock{
+    from{ opacity:0; transform:translate(-50%,12px); }
+    to{ opacity:1; transform:translate(-50%,0); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    header, .dock, .readout, .hint{ animation:none; opacity:1; transform:none; }
+    .dock{ transform:translateX(-50%); }
+  }
+
+  @media (max-width:560px){
+    .slider-row{ flex-direction:column; gap:0.6rem; }
+    .readout, .hint{ display:none; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+
+  <div class="overlay">
+    <header>
+      <h1>Mobius Dynamics</h1>
+      <div class="sub">Topological Chiral Ribbon</div>
+    </header>
+
+    <div class="readout">
+      Twist&nbsp;θ&nbsp;=&nbsp;<span id="ro-twist">180.0°</span><br>
+      State&nbsp;=&nbsp;<span id="ro-state">Möbius band</span><br>
+      Self-int&nbsp;=&nbsp;<span id="ro-int">off</span>
+    </div>
+
+    <div class="hint">
+      drag&nbsp;canvas&nbsp;·&nbsp;orbit&nbsp;Y<br>
+      raw&nbsp;webgl&nbsp;·&nbsp;128×128
+    </div>
+
+    <div class="dock">
+      <div class="slider-row">
+        <span class="slider-label">Twist Factor: <b id="twistVal">180.0°</b></span>
+        <input id="twist" type="range" min="180" max="360" step="0.1" value="180" aria-label="Twist Factor">
+      </div>
+      <div class="formula" id="formula"></div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  var canvas = document.getElementById('gl');
+  var gl = canvas.getContext('webgl', {antialias:true, alpha:false, powerPreference:'high-performance'})
+        || canvas.getContext('experimental-webgl', {antialias:true, alpha:false});
+  if(!gl){
+    document.body.innerHTML = '<div style="display:flex;height:100vh;align-items:center;justify-content:center;font-family:monospace;color:#00ffaa">WebGL not supported</div>';
+    return;
+  }
+
+  /* ---------------- Shaders ---------------- */
+  var VS = `
+  attribute vec2 a_uv;
+  uniform mat4 u_proj;
+  uniform mat4 u_view;
+  uniform mat4 u_model;
+  uniform float u_twist;   // radians (pi .. 2pi)
+  uniform float u_time;
+  uniform float u_scale;
+  uniform float u_namp;
+
+  varying vec3 v_normal;
+  varying vec3 v_worldPos;
+  varying float v_curv;
+
+  const float PI = 3.141592653589793;
+
+  vec3 surface(float u, float v, float tw){
+    float R = 1.0;
+    float c = cos(u), s = sin(u);
+    float vt = v * tw;
+    float cvt = cos(vt), svt = sin(vt);
+    float x = (R + v * cvt) * c;
+    float y = (R + v * cvt) * s;
+    float z = v * svt;
+    return vec3(x, y, z);
+  }
+
+  float noise3(vec3 p){
+    return sin(p.x*1.7 + p.y*1.3) * sin(p.y*2.1 + p.z*1.1) * sin(p.z*1.9 + p.x*0.9);
+  }
+
+  void main(){
+    float u = a_uv.x * 2.0 * PI;
+    float v = (a_uv.y * 2.0 - 1.0) * 0.45;
+
+    vec3 P  = surface(u, v, u_twist);
+    vec3 Pu = surface(u + 0.01, v, u_twist);
+    vec3 Pv = surface(u, v + 0.01, u_twist);
+
+    vec3 nrm = normalize(cross(Pu - P, Pv - P));
+
+    float d = noise3(P * 2.0 + vec3(u_time * 0.5));
+    P += nrm * d * u_namp;
+
+    v_curv = clamp(0.5 + 0.5 * nrm.y, 0.0, 1.0);
+
+    vec4 world = u_model * vec4(P, 1.0);
+    v_worldPos = world.xyz;
+    v_normal   = normalize((u_model * vec4(nrm, 0.0)).xyz);
+
+    vec4 pos = u_view * world;
+    pos.xyz *= u_scale;
+    gl_Position = u_proj * pos;
+  }`;
+
+  var FS = `
+  precision highp float;
+  varying vec3 v_normal;
+  varying vec3 v_worldPos;
+  varying float v_curv;
+  uniform float u_twist;
+  uniform float u_time;
+
+  const vec3 LIGHT = normalize(vec3(-0.55, 0.85, 0.55)); // top-left
+  const vec3 VIEW  = vec3(0.0, 0.0, 1.0);
+  const vec3 MINT  = vec3(0.0, 1.0, 0.667);   // #00ffaa
+  const vec3 MAG   = vec3(1.0, 0.0, 0.667);   // #ff00aa
+  const vec3 WHITE = vec3(1.0);
+
+  void main(){
+    vec3 N = normalize(v_normal);
+    vec3 V = normalize(VIEW - v_worldPos);
+    if(dot(N, V) < 0.0) N = -N;
+
+    float diff = max(dot(N, LIGHT), 0.0);
+    vec3 H = normalize(LIGHT + V);
+    float spec = pow(max(dot(N, H), 0.0), 42.0);
+    float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+
+    vec3 base = mix(MINT, MAG, v_curv);
+    vec3 col = base * (0.14 + 0.86 * diff);
+    col += base * fres * 0.9;
+    col += vec3(1.0) * spec * 0.55;
+
+    float thr = mix(2.36, 3.14, smoothstep(4.5, 6.2831853, u_twist));
+    float inter = smoothstep(thr, 6.2831853, u_twist)
+                * smoothstep(0.80, 0.97, abs(N.y));
+    inter *= (0.75 + 0.25 * sin(u_time * 3.0 + v_curv * 12.0));
+    col = mix(col, WHITE, clamp(inter, 0.0, 1.0));
+
+    gl_FragColor = vec4(col, 1.0);
+  }`;
+
+  function compile(type, src){
+    var s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+  var prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){
+    console.error(gl.getProgramInfoLog(prog));
+  }
+  gl.useProgram(prog);
+
+  var aUV   = gl.getAttribLocation(prog, 'a_uv');
+  var uProj = gl.getUniformLocation(prog, 'u_proj');
+  var uView = gl.getUniformLocation(prog, 'u_view');
+  var uModel= gl.getUniformLocation(prog, 'u_model');
+  var uTwist= gl.getUniformLocation(prog, 'u_twist');
+  var uTime = gl.getUniformLocation(prog, 'u_time');
+  var uScale= gl.getUniformLocation(prog, 'u_scale');
+  var uNamp = gl.getUniformLocation(prog, 'u_namp');
+
+  /* ---------------- Geometry (128 x 128 grid) ---------------- */
+  var N = 128;
+  var uv = new Float32Array(N * N * 2);
+  var idx = 0;
+  for(var j=0; j<N; j++){
+    for(var i=0; i<N; i++){
+      uv[idx++] = i / (N - 1);
+      uv[idx++] = j / (N - 1);
+    }
+  }
+  var tri = (N - 1) * (N - 1) * 6;
+  var ind = new Uint16Array(tri);
+  var k = 0;
+  for(var j=0; j<N-1; j++){
+    for(var i=0; i<N-1; i++){
+      var a = j * N + i, b = a + 1, c = a + N, d = c + 1;
+      ind[k++] = a; ind[k++] = c; ind[k++] = b;
+      ind[k++] = b; ind[k++] = c; ind[k++] = d;
+    }
+  }
+  var uvBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
+  var idxBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ind, gl.STATIC_DRAW);
+
+  gl.enableVertexAttribArray(aUV);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.CULL_FACE);
+  gl.depthFunc(gl.LEQUAL);
+  gl.clearColor(0.10196078, 0.10196078, 0.10196078, 1.0); // #1a1a1a
+
+  /* ---------------- Math helpers ---------------- */
+  function persp(fovy, aspect, near, far){
+    var f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far);
+    return new Float32Array([
+      f/aspect,0,0,0,
+      0,f,0,0,
+      0,0,(far+near)*nf,-1,
+      0,0,2*far*near*nf,0
+    ]);
+  }
+  function lookAt(eye, ctr, up){
+    var zx=eye[0]-ctr[0], zy=eye[1]-ctr[1], zz=eye[2]-ctr[2];
+    var zl=Math.hypot(zx,zy,zz); zx/=zl; zy/=zl; zz/=zl;
+    var xx=up[1]*zz-up[2]*zy, xy=up[2]*zx-up[0]*zz, xz=up[0]*zy-up[1]*zx;
+    var xl=Math.hypot(xx,xy,xz)||1; xx/=xl; xy/=xl; xz/=xl;
+    var yx=zy*xz-zz*xy, yy=zz*xx-zx*xz, yz=zx*xy-zy*xx;
+    return new Float32Array([
+      xx,yx,zx,0, xy,yy,zy,0, xz,yz,zz,0,
+      -(xx*eye[0]+xy*eye[1]+xz*eye[2]),
+      -(yx*eye[0]+yy*eye[1]+yz*eye[2]),
+      -(zx*eye[0]+zy*eye[1]+zz*eye[2]), 1
+    ]);
+  }
+  function rotY(a){
+    var c=Math.cos(a), s=Math.sin(a);
+    return new Float32Array([c,0,-s,0, 0,1,0,0, s,0,c,0, 0,0,0,1]);
+  }
+
+  var proj, view;
+  function resize(){
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.floor(canvas.clientWidth * dpr);
+    var h = Math.floor(canvas.clientHeight * dpr);
+    if(canvas.width !== w || canvas.height !== h){
+      canvas.width = w; canvas.height = h;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    var aspect = canvas.width / canvas.height;
+    proj = persp(45 * Math.PI / 180, aspect, 0.1, 100);
+    view = lookAt([0,0,4.2], [0,0,0], [0,1,0]);
+  }
+  window.addEventListener('resize', resize);
+
+  /* ---------------- Interaction ---------------- */
+  var slider = document.getElementById('twist');
+  var twistVal = document.getElementById('twistVal');
+  var formulaEl = document.getElementById('formula');
+  var roTwist = document.getElementById('ro-twist');
+  var roState = document.getElementById('ro-state');
+  var roInt = document.getElementById('ro-int');
+
+  var userTouched = false;
+  var currentDeg = 180.0;
+
+  function updateLabel(deg){
+    twistVal.textContent = deg.toFixed(1) + '°';
+    roTwist.textContent = deg.toFixed(1) + '°';
+    var t = deg / 360;
+    var state;
+    if(t < 0.60) state = 'Möbius band';
+    else if(t < 0.83) state = 'transition';
+    else state = 'figure-8 immersion';
+    roState.textContent = state;
+    roInt.textContent = deg > 270 ? 'active' : 'off';
+
+    var tw = (t * 360).toFixed(0);
+    var theta = (t * Math.PI).toFixed(3);
+    formulaEl.innerHTML =
+      '<span class="muted">r(u,v)&nbsp;=&nbsp;</span>' +
+      '( R&nbsp;+&nbsp;v·cos(θ·u),&nbsp; R&nbsp;+&nbsp;v·sin(θ·u),&nbsp; v·sin(θ·u) )' +
+      '<br><span class="muted">θ&nbsp;=&nbsp;</span><span class="em">' + tw + '°&nbsp;=&nbsp;' + theta + ' rad</span>' +
+      '&nbsp;&nbsp;<span class="muted">u∈[0,2π)&nbsp;&nbsp;v∈[−0.45,0.45]&nbsp;&nbsp;R=1</span>';
+  }
+  slider.addEventListener('input', function(){
+    userTouched = true;
+    currentDeg = parseFloat(slider.value);
+    updateLabel(currentDeg);
+  });
+  updateLabel(180);
+
+  // orbit (drag on canvas, Y-axis only, no zoom/pan)
+  var rotY = 0.4, rotX = 0.35;
+  var dragging = false, lastX = 0, lastY = 0;
+  function down(x, y){ dragging = true; lastX = x; lastY = y; }
+  function move(x, y){
+    if(!dragging) return;
+    var dx = x - lastX, dy = y - lastY;
+    lastX = x; lastY = y;
+    rotY += dx * 0.005;
+    rotX = Math.max(-1.3, Math.min(1.3, rotX + dy * 0.005));
+  }
+  function up(){ dragging = false; }
+  canvas.addEventListener('mousedown', function(e){ down(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', function(e){ move(e.clientX, e.clientY); });
+  window.addEventListener('mouseup', up);
+  canvas.addEventListener('touchstart', function(e){ if(e.touches.length){ down(e.touches[0].clientX, e.touches[0].clientY); } }, {passive:true});
+  window.addEventListener('touchmove', function(e){ if(e.touches.length){ move(e.touches[0].clientX, e.touches[0].clientY); } }, {passive:true});
+  window.addEventListener('touchend', up);
+
+  /* ---------------- Render loop ---------------- */
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var startTime = performance.now();
+  var lastT = startTime;
+
+  function render(now){
+    var t = (now - startTime) / 1000;
+    var dt = Math.min(0.05, (now - lastT) / 1000);
+    lastT = now;
+
+    // entrance: scale 0 -> 1 ease-out-cubic over 1.5s
+    var k = Math.min(1, t / 1.5);
+    var scale = 1 - Math.pow(1 - k, 3);
+
+    // entrance twist reveal (unless user already touched slider)
+    if(!userTouched){
+      var reveal = 180 + 90 * k;
+      currentDeg = reveal;
+      slider.value = reveal.toFixed(1);
+      updateLabel(reveal);
+    }
+
+    var namp = reduced ? 0.0 : 0.05;
+    var twistRad = currentDeg * Math.PI / 180;
+
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var model = rotY(rotY);
+    // apply rotX by composing around X via view tweak: rotate model on X too
+    var cx = Math.cos(rotX), sx = Math.sin(rotX);
+    var rx = new Float32Array([1,0,0,0, 0,cx,sx,0, 0,-sx,cx,0, 0,0,0,1]);
+    var m = new Float32Array(16);
+    for(var r=0;r<4;r++){
+      for(var c2=0;c2<4;c2++){
+        m[c2*4+r] = rx[0*4+r]*model[c2*4+0] + rx[1*4+r]*model[c2*4+1] + rx[2*4+r]*model[c2*4+2] + rx[3*4+r]*model[c2*4+3];
+      }
+    }
+
+    gl.uniformMatrix4fv(uProj, false, proj);
+    gl.uniformMatrix4fv(uView, false, view);
+    gl.uniformMatrix4fv(uModel, false, m);
+    gl.uniform1f(uTwist, twistRad);
+    gl.uniform1f(uTime, reduced ? 0.0 : t);
+    gl.uniform1f(uScale, scale);
+    gl.uniform1f(uNamp, namp);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+    gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+    gl.drawElements(gl.TRIANGLES, ind.length, gl.UNSIGNED_SHORT, 0);
+
+    requestAnimationFrame(render);
+  }
+
+  resize();
+  requestAnimationFrame(render);
+
+  // graceful context loss
+  canvas.addEventListener('webglcontextlost', function(e){
+    e.preventDefault();
+    console.warn('WebGL context lost — reloading');
+    setTimeout(function(){ location.reload(); }, 100);
+  });
+})();
+</script>
+</body>
+</html>

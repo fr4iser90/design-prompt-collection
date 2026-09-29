@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-09-29"
+updated: "2026-09-29"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+duration_ms: 270576
+gen_ms: 270576
+ttft_ms: 5099
+queue_wait_ms: 30321
+wall_ms: 336205
+review_score: 1
+review_summary: "The page is effectively blank, showing only a dark background and a grid, with no content or typography visible."
+reviewed_at: "2026-09-29T13:33:00.163Z"
+review_issues:
+  - "Missing brand/product name ('THE IRON OXIDE ARCHIVE') in the first viewport"
+  - "No visible content, headings, or body text"
+  - "Fails the 'blank page' rejection criteria"

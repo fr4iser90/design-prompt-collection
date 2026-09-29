@@ -1,0 +1,31 @@
+id: seismograph-ink-trace
+title: "Seismograph Ink Trace"
+category: interfaces
+tags:
+  - monitoring
+  - seismograph
+  - ink
+  - hardware
+  - latency
+  - permanent
+  - canvas2d
+  - physics
+  - tactile
+  - infrastructure
+  - minimal
+  - precision
+status: polished
+summary: "A physical seismograph UI for server health. A rotating drum renders latency as permanent ink traces. Users drag the pen arm to annotate incidents, creating irreversible ink blots."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

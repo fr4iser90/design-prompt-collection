@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 212 | 204 | 180 | 32 |
+| 218 | 212 | 186 | 32 |
 
 ## Quick start
 
@@ -3029,9 +3029,11 @@ Engage a sliding gear exactly when teeth align with rotating drivers. Misalignme
 
 [prompt](prompts/games/gear-shift-syncthron/prompt.md) · [extended](prompts/games/gear-shift-syncthron/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/gear-shift-syncthron/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.0s | 531s | 6 | [open](prompts/games/gear-shift-syncthron/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3059,9 +3061,11 @@ Defibrillate the arrhythmia. Click precisely on the QRS spike to stabilize the E
 
 [prompt](prompts/games/heartbeat-defibrillator/prompt.md) · [extended](prompts/games/heartbeat-defibrillator/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/heartbeat-defibrillator/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.0s | 450s | 7 | [open](prompts/games/heartbeat-defibrillator/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3089,9 +3093,11 @@ Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to 
 
 [prompt](prompts/games/sonar-pulse-echo-sync/prompt.md) · [extended](prompts/games/sonar-pulse-echo-sync/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/sonar-pulse-echo-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 6.0s | 485s | 8 | [open](prompts/games/sonar-pulse-echo-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3137,6 +3143,22 @@ A raw WebGL parametric surface morphing between Mobius and hyperbolic paraboloid
 
 [prompt](prompts/webgl/chiral-mobius-strip-ribbon/prompt.md) · [extended](prompts/webgl/chiral-mobius-strip-ribbon/prompt.full.md)
 
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/chiral-mobius-strip-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.1s | 272s | 1 | [open](prompts/webgl/chiral-mobius-strip-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Deltaic Fractal Erosion
+
+Real-time recursive heightmap shader carving river deltas. Slider controls viscosity, altering channel depth and flow dynamics in a navigable 3D landscape.
+
+**Status:** polished · `webgl` `three-js` `r3f` `heightmap` `glsl` `erosion` `procedural-terrain` `camera-orbit` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/fractal-deltaic-erosion-mesh/prompt.md) · [extended](prompts/webgl/fractal-deltaic-erosion-mesh/prompt.full.md)
+
 _No shot preview yet._
 
 _No model runs yet — `npm run ai:build` then `npm run shots`._
@@ -3151,9 +3173,11 @@ A full-screen WebGL simulation of two coherent light sources creating shifting m
 
 [prompt](prompts/webgl/holographic-interference-plate/prompt.md) · [extended](prompts/webgl/holographic-interference-plate/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/holographic-interference-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.7s | 166s | 9 | [open](prompts/webgl/holographic-interference-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3170,6 +3194,20 @@ GPU-accelerated Navier-Stokes fluid simulation. Drag mouse to inject sumi ink in
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.4s | 324s | 1 | [open](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Lattice City Fabric
+
+Procedural city block where wireframes solidify into instanced buildings. Scrub density to extrude or collapse masses, revealing raw urban geometry.
+
+**Status:** polished · `webgl` `three-js` `instanced-mesh` `procedural-generation` `urban-design` `wireframe` `parameter-scrub` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/lattice-city-block-generator/prompt.md) · [extended](prompts/webgl/lattice-city-block-generator/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3213,9 +3251,11 @@ Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; comput
 
 [prompt](prompts/webgl/voxel-erosion-hydraulic-map/prompt.md) · [extended](prompts/webgl/voxel-erosion-hydraulic-map/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/voxel-erosion-hydraulic-map/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.9s | 385s | 2 | [open](prompts/webgl/voxel-erosion-hydraulic-map/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3228,6 +3268,22 @@ Editorial design for Matrix Quarterly simulating lead type casting. Features Bod
 **Status:** polished · `typography` `casting` `lead` `weight` `grid` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/editorial/hammered-lead-type/prompt.md) · [extended](prompts/editorial/hammered-lead-type/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/hammered-lead-type/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.5s | 325s | 3 | [open](prompts/editorial/hammered-lead-type/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### The Edge
+
+A culinary manual where scroll velocity acts as friction. Text columns split by a central steel spine, snapping into perfect alignment only when scrolled slowly, simulating the honing of a keen edge.
+
+**Status:** polished · `precision` `steel` `geometry` `sharpness` `editorial` `interactive` `monochrome` `kinetic-type` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/knife-edge-registration/prompt.md) · [extended](prompts/editorial/knife-edge-registration/prompt.full.md)
 
 _No shot preview yet._
 
@@ -3258,6 +3314,22 @@ A digital folio where black stamped text oxidizes into rust flakes as you scroll
 **Status:** polished · `oxidation` `decay` `history` `reveal` `iron` `editorial` `tactile` `scroll-driven` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/editorial/oxidized-iron-marginalia/prompt.md) · [extended](prompts/editorial/oxidized-iron-marginalia/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/oxidized-iron-marginalia/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.1s | 271s | 1 | [open](prompts/editorial/oxidized-iron-marginalia/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Cure
+
+High-fidelity editorial landing page for 'Saline Press' featuring industrial precision, monochrome palette, and crystallization-based text animations.
+
+**Status:** polished · `organic` `geometry` `growth` `texture` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/salt-crystallization-growth/prompt.md) · [extended](prompts/editorial/salt-crystallization-growth/prompt.full.md)
 
 _No shot preview yet._
 
@@ -3331,6 +3403,20 @@ A long-form essay on pasta engineering where text strands stretch, thin, and vib
 
 ## Interfaces
 
+### Verdigris OS: Oxidative Data Excavation
+
+Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, clearing green bloom to reveal crisp white data lines beneath.
+
+**Status:** polished · `environmental` `oxidation` `canvas` `reactive` `dashboard` `verdigris` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/ferrous-oxide-bloom-filter/prompt.md) · [extended](prompts/interfaces/ferrous-oxide-bloom-filter/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Furoshiki Wrapping
 
 A gift registry interface where privacy is determined by knot complexity. Users drag virtual fabric corners to tie knots; simple knots are public, double knots encrypt the message. Physics-based cloth simulation…
@@ -3376,6 +3462,20 @@ A conceptual grocery interface using physical ledger metaphors: items hang as pa
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 499ms | 169s | 1 | [open](prompts/interfaces/mon-nob-grocery-ledger/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Seismograph Ink Trace
+
+A physical seismograph UI for server health. A rotating drum renders latency as permanent ink traces. Users drag the pen arm to annotate incidents, creating irreversible ink blots.
+
+**Status:** polished · `monitoring` `seismograph` `ink` `hardware` `latency` `permanent` `canvas2d` `physics` `tactile` `infrastructure` `minimal` `precision` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/seismograph-ink-trace/prompt.md) · [extended](prompts/interfaces/seismograph-ink-trace/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

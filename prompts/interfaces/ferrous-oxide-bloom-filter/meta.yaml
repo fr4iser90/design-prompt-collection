@@ -1,0 +1,25 @@
+id: ferrous-oxide-bloom-filter
+title: "Verdigris OS: Oxidative Data Excavation"
+category: interfaces
+tags:
+  - environmental
+  - oxidation
+  - canvas
+  - reactive
+  - dashboard
+  - verdigris
+status: polished
+summary: "Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, clearing green bloom to reveal crisp white data lines beneath."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

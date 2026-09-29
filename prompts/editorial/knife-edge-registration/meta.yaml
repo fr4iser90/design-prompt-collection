@@ -1,0 +1,27 @@
+id: knife-edge-registration
+title: "The Edge"
+category: editorial
+tags:
+  - precision
+  - steel
+  - geometry
+  - sharpness
+  - editorial
+  - interactive
+  - monochrome
+  - kinetic-type
+status: polished
+summary: "A culinary manual where scroll velocity acts as friction. Text columns split by a central steel spine, snapping into perfect alignment only when scrolled slowly, simulating the honing of a keen edge."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foundry &amp; Flaw — Matrix Quarterly</title>
+<meta name="description" content="Matrix Quarterly — a journal of type, casting, and the weight of words.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050505;
+    --lead:#c0c0c0;
+    --meta:#8a8a8a;
+    --furn:#2a2a2a;
+    --furn-hi:#4a4a4a;
+    --furn-lo:#000000;
+    --impression:#0a0a0a;
+    --molten:#ffffff;
+    --gap:clamp(1.25rem, 3vw, 2.5rem);
+    --ease-drop:cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  *{ box-sizing:border-box; border-radius:0; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--lead);
+    font-family:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size:1rem;
+    line-height:1.6;
+    letter-spacing:0.02em;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Atmosphere: press-bed texture + vignette ---------- */
+  .atmos{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+  .atmos::before{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.014) 0px,
+      rgba(255,255,255,0.014) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode:screen;
+    opacity:.6;
+  }
+  .atmos::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 30%, transparent 55%, rgba(0,0,0,0.75) 100%);
+  }
+
+  /* ---------- Scroll progress (molten bar) ---------- */
+  .progress{
+    position:fixed; top:0; left:0; height:2px; width:0%;
+    background:var(--molten); z-index:100;
+    box-shadow:0 0 6px rgba(255,255,255,0.4);
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    position:relative; z-index:2;
+    border-bottom:1px solid var(--furn);
+    box-shadow:0 1px 0 var(--furn-lo), inset 0 1px 0 var(--furn-hi);
+    padding:0.85rem clamp(1rem, 4vw, 3rem);
+    display:flex; align-items:center; justify-content:space-between;
+    gap:1rem; flex-wrap:wrap;
+    background:var(--bg);
+  }
+  .mast-brand{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    letter-spacing:0.32em;
+    font-size:0.82rem;
+    color:var(--lead);
+    text-transform:uppercase;
+  }
+  .mast-brand .amp{ color:var(--meta); }
+  .mast-meta{
+    font-size:0.66rem; letter-spacing:0.22em; color:var(--meta);
+    text-transform:uppercase; display:flex; gap:1.25rem; flex-wrap:wrap;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; z-index:2;
+    min-height:44vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding:clamp(2.5rem, 8vh, 6rem) 1.25rem clamp(2rem, 5vh, 3.5rem);
+    overflow:hidden;
+  }
+  .hero-kicker{
+    font-size:0.7rem; letter-spacing:0.5em; color:var(--meta);
+    text-transform:uppercase; margin-bottom:1.6rem;
+    opacity:0; animation:fadeUp .8s ease .1s forwards;
+  }
+  .hero-title{
+    font-family:'Bodoni Moda', serif;
+    font-weight:700;
+    font-size:clamp(3rem, 11vw, 9.5rem);
+    line-height:0.9;
+    letter-spacing:-0.02em;
+    color:var(--lead);
+    text-shadow:0 4px 10px rgba(0,0,0,0.8);
+    transform:translateY(-110px);
+    opacity:0;
+    animation:dropIn .8s var(--ease-drop) .2s forwards;
+    will-change:transform, opacity;
+  }
+  .hero-title .amp{ font-style:italic; font-weight:400; }
+  .hero-sub{
+    max-width:34ch; margin-top:1.8rem;
+    color:var(--meta); font-size:0.95rem; line-height:1.7;
+    opacity:0; animation:fadeUp .8s ease .55s forwards;
+  }
+  .hero-line{
+    width:min(560px, 80%); height:1px; margin-top:2.4rem;
+    background:var(--furn);
+    box-shadow:0 1px 0 var(--furn-lo), inset 0 1px 0 var(--furn-hi);
+    transform:translateY(0);
+  }
+  .hero-line.vibrate{ animation:vibrate .3s linear .95s; }
+
+  @keyframes dropIn{
+    0%{ transform:translateY(-110px); opacity:0; text-shadow:0 0 0 rgba(0,0,0,0); }
+    100%{ transform:translateY(0); opacity:1; text-shadow:0 4px 10px rgba(0,0,0,0.8); }
+  }
+  @keyframes fadeUp{
+    from{ transform:translateY(14px); opacity:0; }
+    to{ transform:translateY(0); opacity:1; }
+  }
+  @keyframes vibrate{
+    0%{ transform:translateY(0); } 25%{ transform:translateY(1px); }
+    50%{ transform:translateY(-1px); } 75%{ transform:translateY(1px); }
+    100%{ transform:translateY(0); }
+  }
+
+  /* ---------- Press body: sticky rail + grid ---------- */
+  .press{
+    position:relative; z-index:2;
+    max-width:1280px; margin:0 auto;
+    padding:clamp(2rem, 5vh, 4rem) clamp(1rem, 4vw, 3rem) 4rem;
+    display:grid;
+    grid-template-columns:150px minmax(0, 1fr);
+    gap:clamp(1.5rem, 4vw, 3.5rem);
+  }
+
+  .rail{ position:relative; }
+  .rail-inner{ position:sticky; top:2rem; }
+  .rail-label{
+    font-size:0.6rem; letter-spacing:0.35em; color:var(--meta);
+    text-transform:uppercase; margin-bottom:1.4rem;
+    padding-bottom:0.6rem;
+    border-bottom:1px solid var(--furn);
+    box-shadow:0 1px 0 var(--furn-lo), inset 0 1px 0 var(--furn-hi);
+  }
+  .rail-item{
+    display:flex; gap:0.75rem; align-items:baseline;
+    padding:0.55rem 0;
+    font-size:0.78rem; color:var(--meta);
+    border-bottom:1px solid transparent;
+    transition:color .3s ease;
+  }
+  .rail-item .num{ font-variant-numeric:tabular-nums; opacity:.7; }
+  .rail-item.active{ color:var(--lead); }
+  .rail-item.active .num{ opacity:1; }
+
+  /* 12-column grid with furniture lines */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(12, 1fr);
+    column-gap:var(--gap);
+    row-gap:clamp(1.5rem, 3vh, 2.5rem);
+    position:relative;
+  }
+  .grid::before{
+    content:""; position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(to right, transparent 0, transparent calc(100% / 12 - 1px), var(--furn) calc(100% / 12 - 1px), var(--furn) calc(100% / 12));
+    pointer-events:none;
+    z-index:0;
+    animation:hum 4s ease-in-out infinite;
+  }
+  @keyframes hum{ 0%,100%{ opacity:0.8; } 50%{ opacity:1; } }
+
+  .block{
+    position:relative; z-index:1;
+    background:var(--impression);
+    padding:clamp(1.1rem, 2vw, 1.6rem);
+    border:1px solid var(--furn);
+    box-shadow:inset 1px 1px 0 var(--furn-lo), inset -1px -1px 0 var(--furn-hi);
+  }
+
+  /* reveal on scroll */
+  .reveal{ opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  .reveal-head{
+    opacity:0; transform:translateY(-40px);
+    transition:opacity .5s ease, transform .7s var(--ease-drop);
+  }
+  .reveal-head.in{ opacity:1; transform:translateY(0); }
+
+  /* ---------- Typography within blocks ---------- */
+  .eyebrow{
+    font-size:0.66rem; letter-spacing:0.3em; color:var(--meta);
+    text-transform:uppercase; margin-bottom:0.9rem;
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .eyebrow::before{ content:""; width:22px; height:1px; background:var(--meta); display:inline-block; }
+
+  .col-head{
+    font-family:'Bodoni Moda', serif;
+    font-weight:700;
+    font-size:clamp(2rem, 3.4vw, 3rem);
+    line-height:1.02;
+    letter-spacing:-0.02em;
+    color:var(--lead);
+    text-shadow:0 3px 8px rgba(0,0,0,0.7);
+    margin-bottom:1.1rem;
+  }
+  .col-head .amp{ font-style:italic; font-weight:400; }
+
+  .dropcap{
+    font-family:'Bodoni Moda', serif;
+    font-weight:700;
+    font-size:4.4rem; line-height:0.72;
+    float:left; margin:0.12rem 0.7rem 0 0;
+    color:var(--lead);
+    text-shadow:0 2px 5px rgba(0,0,0,0.6);
+  }
+
+  .body{
+    color:var(--lead);
+    font-size:0.95rem; line-height:1.75;
+    cursor:pointer;
+    transition:color .2s ease;
+    will-change:transform;
+  }
+  .body + .body{ margin-top:1.1rem; }
+  .body.recast{ animation:recast .45s ease; }
+  @keyframes recast{
+    0%{ color:var(--molten); transform:scaleX(1.015) skewX(-1.5deg); filter:blur(1px) contrast(1.6); }
+    35%{ color:var(--molten); }
+    100%{ color:var(--lead); transform:none; filter:none; }
+  }
+
+  .pull{
+    font-family:'Bodoni Moda', serif;
+    font-style:italic; font-weight:500;
+    font-size:clamp(1.5rem, 2.6vw, 2.3rem);
+    line-height:1.2; letter-spacing:-0.01em;
+    color:var(--lead);
+    border-left:2px solid var(--furn-hi);
+    padding:0.4rem 0 0.4rem 1.3rem;
+  }
+  .pull cite{
+    display:block; margin-top:0.9rem;
+    font-family:'IBM Plex Mono', monospace; font-style:normal;
+    font-size:0.68rem; letter-spacing:0.24em; color:var(--meta);
+    text-transform:uppercase;
+  }
+
+  .caption{
+    font-size:0.78rem; color:var(--meta); line-height:1.6;
+    margin-top:0.9rem;
+  }
+  .caption strong{ color:var(--lead); font-weight:500; }
+
+  .meta-list{ list-style:none; font-size:0.78rem; color:var(--meta); }
+  .meta-list li{
+    padding:0.55rem 0; border-bottom:1px solid var(--furn);
+    display:flex; justify-content:space-between; gap:1rem;
+    box-shadow:0 1px 0 var(--furn-lo);
+  }
+  .meta-list li span:last-child{ color:var(--lead); }
+
+  /* ---------- Specimen block ---------- */
+  .specimen{
+    font-family:'Bodoni Moda', serif; font-weight:700;
+    font-size:clamp(3.4rem, 9vw, 7rem); line-height:1;
+    letter-spacing:-0.02em; color:var(--lead);
+    text-shadow:0 4px 10px rgba(0,0,0,0.8);
+  }
+  .specimen .amp{ font-style:italic; font-weight:400; }
+  .spec-row{
+    display:flex; flex-wrap:wrap; gap:0.4rem 1.4rem;
+    font-family:'Bodoni Moda', serif; font-weight:400;
+    font-size:clamp(1.1rem, 2vw, 1.6rem); color:var(--lead);
+    margin-top:1.4rem; line-height:1.3;
+  }
+  .spec-row .amp{ font-style:italic; }
+
+  /* ---------- Colophon ---------- */
+  .colophon{
+    position:relative; z-index:2;
+    border-top:1px solid var(--furn);
+    box-shadow:0 -1px 0 var(--furn-hi);
+    margin-top:2rem;
+    padding:clamp(2.5rem, 6vh, 4rem) clamp(1rem, 4vw, 3rem);
+    max-width:1280px; margin-left:auto; margin-right:auto;
+    display:grid; grid-template-columns:repeat(12, 1fr);
+    gap:clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .colophon .col-12{ grid-column:1 / -1; }
+  .colophon .col-6{ grid-column:span 6; }
+  .colophon .col-4{ grid-column:span 4; }
+  .colo-h{
+    font-family:'Bodoni Moda', serif; font-weight:700;
+    font-size:clamp(1.6rem, 3vw, 2.4rem); letter-spacing:-0.01em;
+    color:var(--lead); line-height:1.1;
+  }
+  .colo-h .amp{ font-style:italic; font-weight:400; }
+  .colo-p{ color:var(--meta); font-size:0.85rem; line-height:1.7; max-width:42ch; margin-top:0.8rem; }
+  .colo-links{ list-style:none; margin-top:0.4rem; }
+  .colo-links a{
+    display:block; color:var(--lead); text-decoration:none;
+    font-size:0.8rem; letter-spacing:0.06em; padding:0.5rem 0;
+    border-bottom:1px solid var(--furn);
+    transition:color .25s ease, padding-left .25s ease;
+  }
+  .colo-links a:hover{ color:var(--molten); padding-left:0.5rem; }
+  .colo-foot{
+    grid-column:1 / -1; margin-top:1.5rem; padding-top:1.2rem;
+    border-top:1px solid var(--furn);
+    font-size:0.66rem; letter-spacing:0.2em; color:var(--meta);
+    text-transform:uppercase; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  }
+
+  /* ---------- Particles ---------- */
+  .spark{
+    position:fixed; width:3px; height:3px; background:var(--molten);
+    pointer-events:none; z-index:60;
+    box-shadow:0 0 5px rgba(255,255,255,0.8);
+    animation:spark .5s ease-out forwards;
+  }
+  @keyframes spark{
+    0%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--dx)), calc(-50% - 20px)) scale(0.4); opacity:0; }
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px){
+    .press{ grid-template-columns:1fr; }
+    .rail{ display:none; }
+    .grid::before{ display:none; }
+    .grid{ grid-template-columns:1fr; }
+    .block{ border-top:1px solid var(--furn); border-bottom:1px solid var(--furn); }
+    .colophon{ grid-template-columns:1fr; }
+    .colophon .col-6, .colophon .col-4{ grid-column:1 / -1; }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation:none !important;
+      transition:none !important;
+    }
+    .hero-title, .hero-kicker, .hero-sub, .reveal, .reveal-head{
+      opacity:1 !important; transform:none !important;
+    }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+  <div class="atmos" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <!-- MASTHEAD -->
+  <header class="masthead">
+    <div class="mast-brand">Matrix&nbsp;<span class="amp">&amp;</span>&nbsp;Quarterly</div>
+    <nav class="mast-meta">
+      <span>Vol. IV</span>
+      <span>No. 03</span>
+      <span>Autumn</span>
+      <span>Set in Bodoni &amp; Plex</span>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-kicker">A Journal of Cast Letter &amp; Press</p>
+    <h1 class="hero-title">FOUNDRY <span class="amp">&amp;</span> FLAW</h1>
+    <p class="hero-sub">On the weight of lead, the honesty of the impression, and why the best type still remembers the hand that cast it.</p>
+    <div class="hero-line" id="heroLine"></div>
+  </section>
+
+  <!-- PRESS BODY -->
+  <div class="press">
+    <!-- Sticky rail -->
+    <aside class="rail" aria-hidden="true">
+      <div class="rail-inner">
+        <div class="rail-label">Index / Press</div>
+        <div class="rail-item active" data-target="col-1"><span class="num">01</span><span>Foundry</span></div>
+        <div class="rail-item" data-target="col-2"><span class="num">02</span><span>Casting</span></div>
+        <div class="rail-item" data-target="col-3"><span class="num">03</span><span>Flaw</span></div>
+        <div class="rail-item" data-target="col-4"><span class="num">04</span><span>Impression</span></div>
+        <div class="rail-item" data-target="col-5"><span class="num">05</span><span>Specimen</span></div>
+        <div class="rail-item" data-target="col-6"><span class="num">06</span><span>Colophon</span></div>
+      </div>
+    </aside>
+
+    <!-- Grid -->
+    <main class="grid">
+
+      <!-- 01 -->
+      <article class="block reveal-head" id="col-1" style="grid-column:span 12;">
+        <p class="eyebrow">Column 01 — The Foundry</p>
+        <h2 class="col-head">The Weight <span class="amp">&amp;</span> the Word</h2>
+        <p class="body"><span class="dropcap">L</span>ead is heavier than it looks. A single sort — a lowercase <em>e</em>, barely a centimetre tall — carries a mass that no pixel ever will. In the foundry, letters were not designed so much as poured: molten metal, cooled fast, filed true. The result was a typeface you could drop on your foot. That physicality is the first principle of the press. Every glyph has a body, a shoulder, a face. It has weight, and weight is the reason it holds the eye.</p>
+      </article>
+
+      <article class="block reveal" id="col-2" style="grid-column:span 7;">
+        <p class="eyebrow">Column 02 — Casting</p>
+        <p class="body">The matrix is a mirror. Punch steel into copper, sink a counter-punch, and you have a mould that throws copies forever. Each cast is identical in intent yet never quite identical in fact — a fleck of grit, a hairline burr, a whisper of ink that the press could not fully lay down. These are not errors. They are the signature of the machine, the proof that something real passed through it.</p>
+        <p class="body">To set type by hand is to build a sentence out of objects. You lock the lines between furniture — the metal bars that hold the block square — and you feel the whole thing grow dense in your palm. A paragraph becomes a brick. You carry it to the bed and it does not shift, because it cannot.</p>
+      </article>
+
+      <aside class="block reveal" id="col-3" style="grid-column:span 5;">
+        <p class="eyebrow">Specimen</p>
+        <div class="specimen">Aa<span class="amp">&amp;</span>Q</div>
+        <div class="spec-row">
+          <span>Aa</span><span>Bb</span><span>Cc</span><span>Dd</span><span>Ee</span>
+          <span>0123456789</span><span>&amp;?!</span>
+        </div>
+        <p class="caption"><strong>Bodoni Moda</strong> — hairline to thick, cut for the sharp edge of the punch. Contrast is not decoration here; it is the trace of the tool.</p>
+      </aside>
+
+      <!-- 03 -->
+      <article class="block reveal-head" id="col-4" style="grid-column:span 12;">
+        <p class="eyebrow">Column 03 — Flaw</p>
+        <h2 class="col-head">Flaw <span class="amp">&amp;</span> Feature</h2>
+        <p class="body"><span class="dropcap">T</span>he digital page promised perfection and delivered sterility. Kerning solved. Ligatures automatic. Ink, however, is gone — and with it, the small betrayals that made a page feel made. The flaw is not the enemy of craft; it is the evidence of it. A slightly uneven baseline, a letter that inked heavier than its neighbour, a widow that refuses to behave: these are the fingerprints left behind when a human and a machine negotiate a sentence.</p>
+      </article>
+
+      <article class="block reveal" id="col-5" style="grid-column:span 6;">
+        <blockquote class="pull">“The impression is the argument. If the type does not press, it does not persuade.”
+          <cite>— Foundry notes, colophon</cite>
+        </blockquote>
+      </article>
+
+      <article class="block reveal" id="col-6" style="grid-column:span 6;">
+        <p class="body">We keep the flaw on purpose. This page is built to behave like metal: headlines drop and settle, furniture hums as the bed runs warm, and a struck paragraph flashes white — molten for a moment before it cools back to lead. Nothing here is frictionless. Friction is the point. Read slowly; the letters are heavy.</p>
+      </article>
+
+      <!-- Impression / meta -->
+      <article class="block reveal" id="col-7" style="grid-column:span 4;">
+        <p class="eyebrow">Colophon</p>
+        <ul class="meta-list">
+          <li><span>Display</span><span>Bodoni Moda</span></li>
+          <li><span>Text</span><span>IBM Plex Mono</span></li>
+          <li><span>Bed</span><span>#050505</span></li>
+          <li><span>Lead</span><span>#C0C0C0</span></li>
+          <li><span>Furniture</span><span>#2A2A2A</span></li>
+        </ul>
+      </article>
+
+      <article class="block reveal" id="col-8" style="grid-column:span 8;">
+        <p class="eyebrow">Column 04 — Impression</p>
+        <p class="body">Every block on this page sits in a shallow impression — a rectangle pressed slightly into the bed, a shade lighter than the void around it. That is what a press does: it does not lay ink on paper, it pushes paper into ink. The depth you read is a depth you feel. Click any paragraph and watch it re-cast: the metal heats, sparks fly, and the letter settles back into place, cooler and truer than before.</p>
+      </article>
+
+    </main>
+  </div>
+
+  <!-- COLOPHON FOOTER -->
+  <footer class="colophon">
+    <div class="col-6">
+      <h3 class="colo-h">Matrix <span class="amp">&amp;</span> Quarterly</h3>
+      <p class="colo-p">A journal for typographers, compositors, and anyone who believes a word should have a body. Printed in the browser, set by hand, cast in code.</p>
+    </div>
+    <div class="col-4">
+      <p class="eyebrow">Sections</p>
+      <ul class="colo-links">
+        <li><a href="#col-1">Foundry — The Weight &amp; the Word</a></li>
+        <li><a href="#col-4">Flaw — Flaw &amp; Feature</a></li>
+        <li><a href="#col-7">Colophon — Materials</a></li>
+      </ul>
+    </div>
+    <div class="col-4">
+      <p class="eyebrow">The Foundry</p>
+      <ul class="colo-links">
+        <li><a href="#">Submissions</a></li>
+        <li><a href="#">Specimen Archive</a></li>
+        <li><a href="#">Masthead</a></li>
+      </ul>
+    </div>
+    <div class="colo-foot">
+      <span>© Matrix Quarterly — Vol. IV / No. 03</span>
+      <span>Set in Bodoni Moda &amp; IBM Plex Mono</span>
+      <span>Cast on the press bed</span>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Scroll progress ---- */
+  var progress = document.getElementById('progress');
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    progress.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+
+  /* ---- Hero line vibration on landing ---- */
+  var heroLine = document.getElementById('heroLine');
+  if (heroLine && !reduced){
+    setTimeout(function(){ heroLine.classList.add('vibrate'); }, 950);
+  }
+
+  /* ---- Reveal on scroll ---- */
+  var revealEls = document.querySelectorAll('.reveal, .reveal-head');
+  if ('IntersectionObserver' in window && !reduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold:0.15, rootMargin:'0px 0px -8% 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---- Active rail tracking ---- */
+  var railItems = Array.prototype.slice.call(document.querySelectorAll('.rail-item'));
+  var targets = railItems.map(function(r){ return document.getElementById(r.getAttribute('data-target')); });
+  if ('IntersectionObserver' in window){
+    var ro = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){
+          var id = e.target.id;
+          railItems.forEach(function(r){
+            r.classList.toggle('active', r.getAttribute('data-target') === id);
+          });
+        }
+      });
+    }, { threshold:0.5, rootMargin:'-20% 0px -40% 0px' });
+    targets.forEach(function(t){ if (t) ro.observe(t); });
+  }
+
+  /* ---- Re-casting: click body text -> flash + sparks ---- */
+  function spawnSparks(x, y){
+    var count = 3 + Math.floor(Math.random() * 3);
+    for (var i = 0; i < count; i++){
+      var s = document.createElement('div');
+      s.className = 'spark';
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      var dx = (Math.random() * 60 - 30) + 'px';
+      s.style.setProperty('--dx', dx);
+      document.body.appendChild(s);
+      (function(node){
+        setTimeout(function(){ if (node.parentNode) node.parentNode.removeChild(node); }, 520);
+      })(s);
+    }
+  }
+
+  document.querySelectorAll('.body').forEach(function(p){
+    p.addEventListener('click', function(ev){
+      if (reduced) return;
+      p.classList.remove('recast');
+      void p.offsetWidth; // reflow to restart animation
+      p.classList.add('recast');
+      spawnSparks(ev.clientX, ev.clientY);
+    });
+  });
+})();
+</script>
+</body>
+</html>

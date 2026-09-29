@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Iron Oxide Archive — Ferrous Annual</title>
+<meta name="description" content="Ferrous Annual — Vol. 4: Decay & Memory. An editorial on industrial history where text rusts as you read.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THE IRON OXIDE ARCHIVE — Ferrous Annual
+   Material simulation: stamped metal → rust, via scroll.
+   Palette: void #1a1a1a · rust #b34a26 · steel #8c8c8c
+   ============================================================ */
+
+:root{
+  --void:#1a1a1a;
+  --rust:#b34a26;
+  --steel:#8c8c8c;
+  --display:'Oswald',sans-serif;
+  --body:'Source Serif 4',Georgia,serif;
+  --rail:0;            /* oxidation progress of the rail 0..1 */
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--void);
+  color:var(--steel);
+  font-family:var(--body);
+  font-size:19px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+
+/* ---------- Ambient grain layer ---------- */
+.grain{
+  position:fixed; inset:-50%;
+  background-image:var(--grain);
+  background-size:160px 160px;
+  opacity:.05; mix-blend-mode:screen;
+  pointer-events:none; z-index:3;
+  animation:grainDrift 14s steps(6) infinite;
+}
+@keyframes grainDrift{
+  0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)} 60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)}
+}
+
+/* ---------- Vignette (atmospheric depth) ---------- */
+.vignette{
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 30%, transparent 55%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- Sticky rusting rail ---------- */
+.rail{
+  position:fixed; left:22px; top:0; bottom:0; width:4px; z-index:40;
+  background:linear-gradient(var(--void),#2a2a2a 22%,#2a2a2a 78%,var(--void));
+}
+.rail::before{ /* steel base */
+  content:""; position:absolute; inset:0; background:var(--steel); opacity:.35;
+}
+.rail-fill{
+  position:absolute; left:0; top:0; width:100%; height:0;
+  background:linear-gradient(var(--rust),#8f3a1d);
+  box-shadow:0 0 10px rgba(179,74,38,.45);
+}
+.rail-dot{
+  position:absolute; left:50%; width:11px; height:11px; margin-left:-5.5px;
+  border-radius:50%; background:var(--rust);
+  box-shadow:0 0 0 3px rgba(26,26,26,1),0 0 14px rgba(179,74,38,.7);
+  top:0; transform:translateY(-50%);
+}
+
+/* ---------- Masthead ---------- */
+.masthead{
+  position:relative; z-index:5;
+  min-height:100vh;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:clamp(28px,5vw,64px);
+  overflow:hidden;
+}
+.masthead::before{ /* faint blueprint grid */
+  content:""; position:absolute; inset:0; z-index:0; opacity:.12;
+  background-image:
+    linear-gradient(var(--steel) 1px,transparent 1px),
+    linear-gradient(90deg,var(--steel) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(70% 60% at 50% 45%,#000,transparent 85%);
+}
+.mast-top,.mast-foot{
+  position:relative; z-index:1;
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  font-family:var(--display); font-weight:500; font-size:12px;
+  letter-spacing:.28em; text-transform:uppercase; color:var(--steel);
+}
+.mast-top .brand{color:var(--rust)}
+.mast-center{position:relative; z-index:1; text-align:center}
+
+.kicker{
+  font-family:var(--display); font-weight:500; font-size:13px;
+  letter-spacing:.5em; text-transform:uppercase; color:var(--steel);
+  margin-bottom:26px;
+}
+.mast-title{
+  font-family:var(--display); font-weight:700; text-transform:uppercase;
+  font-size:clamp(2.6rem,10.5vw,9.2rem); line-height:.9; letter-spacing:-.02em;
+  color:var(--void);
+  -webkit-text-stroke:1px var(--rust);
+  text-shadow:0 0 34px rgba(179,74,38,.16);
+}
+.mast-title .accent{ color:var(--rust); -webkit-text-stroke:0; }
+.mast-sub{
+  margin-top:30px; font-family:var(--display); font-weight:300;
+  font-size:clamp(1rem,2.6vw,1.7rem); letter-spacing:.16em;
+  text-transform:uppercase; color:var(--steel);
+}
+.mast-sub b{color:var(--rust); font-weight:500}
+.mast-rule{
+  width:min(420px,70%); height:1px; margin:34px auto 0;
+  background:linear-gradient(90deg,transparent,var(--rust),transparent);
+}
+
+/* stamping entrance */
+.stamp{opacity:0; transform:translateY(-14px) scale(1.06);
+  animation:stamp .55s cubic-bezier(.16,1,.3,1) forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.2s}.d3{animation-delay:.36s}.d4{animation-delay:.52s}
+@keyframes stamp{to{opacity:1;transform:none}}
+
+.scroll-cue{
+  font-family:var(--display); font-size:11px; letter-spacing:.4em;
+  text-transform:uppercase; color:var(--steel); display:flex; align-items:center; gap:12px;
+}
+.scroll-cue span{display:inline-block; width:1px; height:34px; background:var(--rust);
+  animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%,100%{transform:scaleY(.3);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+/* ---------- Folio content ---------- */
+.folio{position:relative; z-index:5; padding:clamp(40px,10vh,120px) 0}
+
+.intro{
+  max-width:1100px; margin:0 auto clamp(60px,10vh,120px);
+  padding:0 clamp(24px,6vw,64px);
+  border-top:1px solid #333; padding-top:48px;
+}
+.intro .lead{
+  font-family:var(--body); font-weight:300;
+  font-size:clamp(1.25rem,2.4vw,1.75rem); line-height:1.5; color:var(--steel);
+}
+.intro .lead .drop{
+  float:left; font-family:var(--display); font-weight:700; color:var(--rust);
+  font-size:4.6em; line-height:.72; margin:.06em .12em -.04em 0;
+}
+
+/* ---------- Text block (the oxidation unit) ---------- */
+.text-block{
+  position:relative;
+  max-width:1100px; margin:0 auto;
+  padding:clamp(56px,11vh,120px) clamp(24px,6vw,64px);
+  isolation:isolate;
+}
+.text-block::after{ /* ambient rust bloom, keyed to oxidation */
+  content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(58% 44% at 26% 30%,rgba(179,74,38,.16),transparent 70%);
+  opacity:calc(var(--oxidation,0) * .85);
+  transition:opacity .4s ease;
+}
+
+/* hidden archival layer (palimpsest) */
+.reveal{
+  position:absolute; inset:6% 4%; z-index:1; pointer-events:none;
+  opacity:0; filter:grayscale(1) contrast(1.35) brightness(.62);
+  transition:opacity .5s ease;
+  background-size:cover; background-position:center;
+  mix-blend-mode:screen;
+}
+.text-block:hover .reveal{opacity:.15}
+
+/* the ink layer sits above the reveal */
+.ink{position:relative; z-index:2}
+
+/* text colour driven by oxidation + rust texture masked to glyphs */
+.text-block .ink{
+  color:var(--void);
+  background:linear-gradient(118deg,#b34a26,#e07a4a 28%,#7a3318 52%,#c85c33 76%,#8a3a1c);
+  background-size:220% 220%;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+  transition:color .3s ease-in-out;
+}
+.text-block:hover .ink{ color:var(--void); } /* hover restores readable black */
+.text-block:hover .ink::before{animation:none}
+/* flaking rust texture, masked to the text itself */
+.text-block .ink::before{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background-image:var(--grain); background-size:130px 130px;
+  mix-blend-mode:overlay; opacity:calc(var(--oxidation,0) * .5);
+  -webkit-mask-image:linear-gradient(180deg,#000,#000);
+  animation:flake 6s steps(4) infinite;
+}
+@keyframes flake{0%{background-position:0 0}25%{background-position:30px -18px}
+  50%{background-position:-20px 22px}75%{background-position:14px 12px}100%{background-position:0 0}}
+
+/* moving shine on hover */
+.text-block .ink::after{
+  content:""; position:absolute; inset:0; z-index:2; pointer-events:none;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,240,230,.55) 50%,transparent 62%);
+  background-size:250% 100%; background-position:170% 0; opacity:0;
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.text-block:hover .ink::after{opacity:1; animation:shine .7s ease-in-out forwards}
+@keyframes shine{to{background-position:-70% 0}}
+
+/* headings */
+.block-head{
+  position:relative; z-index:2;
+  font-family:var(--display); font-weight:600; text-transform:uppercase;
+  font-size:clamp(1.5rem,3.4vw,2.4rem); letter-spacing:.04em; line-height:1.05;
+  margin-bottom:34px;
+}
+.block-head .num{
+  display:inline-block; font-weight:300; font-size:.62em; color:var(--steel);
+  margin-right:16px; vertical-align:baseline; letter-spacing:.1em;
+}
+.body{
+  position:relative; z-index:2;
+  font-size:clamp(1.02rem,1.35vw,1.2rem); line-height:1.8;
+  max-width:66ch;
+}
+.body p+p{margin-top:1.3em}
+.body em{color:var(--steel); font-style:italic}
+
+/* pull-quote */
+.quote{
+  position:relative; z-index:2;
+  font-family:var(--display); font-weight:300; text-transform:uppercase;
+  font-size:clamp(1.6rem,4.6vw,3.2rem); line-height:1.12; letter-spacing:.01em;
+  max-width:20ch; margin:0 auto; text-align:center;
+}
+.quote .mark{color:var(--rust); font-weight:700}
+
+/* ---------- Figure plates ---------- */
+.plate{
+  position:relative; max-width:1100px; margin:0 auto; padding:clamp(20px,4vw,40px) clamp(24px,6vw,64px);
+}
+.plate .frame{
+  position:relative; height:clamp(280px,46vw,520px); overflow:hidden;
+  border:1px solid #333; background:#111;
+  filter:grayscale(1) contrast(1.25) brightness(.72);
+  transition:filter .6s ease;
+}
+.plate:hover .frame{filter:grayscale(.25) contrast(1.05) brightness(.92)}
+.plate .frame::after{ /* grain on plate */
+  content:""; position:absolute; inset:0; background-image:var(--grain);
+  background-size:150px; opacity:.14; mix-blend-mode:overlay;
+}
+.plate .frame .scan{
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.28) 3px 4px);
+  opacity:.5;
+}
+.plate figcaption{
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  margin-top:14px; font-family:var(--display); font-weight:500; font-size:12px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--steel);
+}
+.plate figcaption .id{color:var(--rust)}
+
+/* ---------- Specimen grid ---------- */
+.specimens{
+  max-width:1100px; margin:0 auto; padding:clamp(56px,10vh,110px) clamp(24px,6vw,64px);
+}
+.spec-head{
+  font-family:var(--display); font-weight:600; text-transform:uppercase;
+  font-size:clamp(1.4rem,3vw,2.1rem); letter-spacing:.05em; color:var(--rust);
+  margin-bottom:44px; padding-bottom:18px; border-bottom:1px solid #333;
+}
+.spec-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#333; border:1px solid #333}
+.spec{
+  background:var(--void); padding:26px 22px; min-height:230px;
+  display:flex; flex-direction:column; justify-content:space-between;
+  transition:background .4s ease;
+}
+.spec:hover{background:#211a17}
+.spec .swatch{height:70px; margin-bottom:22px; border:1px solid #2c2c2c}
+.spec .swatch.s0{background:var(--void)}
+.spec .swatch.s1{background:linear-gradient(135deg,#b34a26,#7a3318)}
+.spec .swatch.s2{background:linear-gradient(135deg,#8c8c8c,#5a5a5a)}
+.spec .swatch.s3{background:linear-gradient(135deg,#e07a4a,#b34a26 60%,#5c2a15)}
+.spec .name{font-family:var(--display); font-weight:500; font-size:14px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--steel)}
+.spec .hex{font-family:var(--display); font-weight:300; font-size:12px;
+  letter-spacing:.1em; color:var(--rust); margin-top:6px}
+.spec .note{font-size:13px; line-height:1.5; color:#6d6d6d; margin-top:10px}
+
+/* ---------- Colophon ---------- */
+.colophon{
+  position:relative; z-index:5;
+  border-top:1px solid #333; padding:clamp(48px,8vh,90px) clamp(24px,6vw,64px);
+  max-width:1100px; margin:clamp(40px,8vh,90px) auto 0;
+  display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:40px;
+}
+.colophon h3{
+  font-family:var(--display); font-weight:600; text-transform:uppercase;
+  font-size:14px; letter-spacing:.24em; color:var(--rust); margin-bottom:16px;
+}
+.colophon p{font-size:14px; line-height:1.7; color:var(--steel); max-width:34ch}
+.colophon .wordmark{
+  font-family:var(--display); font-weight:700; text-transform:uppercase;
+  font-size:clamp(1.8rem,4vw,2.8rem); letter-spacing:-.01em; color:var(--void);
+  -webkit-text-stroke:1px var(--rust); line-height:1; margin-bottom:18px;
+}
+.colophon a{color:var(--steel); text-decoration:none; border-bottom:1px solid #444;
+  display:inline-block; margin-top:6px; transition:color .3s,border-color .3s}
+.colophon a:hover{color:var(--rust); border-color:var(--rust)}
+
+/* ---------- Responsive ---------- */
+@media(max-width:860px){
+  .rail{display:none}
+  .spec-grid{grid-template-columns:repeat(2,1fr)}
+  .colophon{grid-template-columns:1fr; gap:30px}
+}
+@media(max-width:560px){
+  body{font-size:17px}
+  .masthead{min-height:92vh}
+  .spec-grid{grid-template-columns:1fr}
+}
+
+/* ---------- Reduced motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .stamp{opacity:1;transform:none;animation:none}
+  .grain,.scroll-cue span,.text-block .ink::before{text-transform:none;animation:none}
+  .grain{animation:none}
+  .text-block .ink::before{animation:none}
+  .text-block:hover .ink::after{animation:none}
+  .text-block:hover .reveal{opacity:.12}
+  .text-block .ink{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- Sticky rusting rail -->
+<div class="rail" aria-hidden="true">
+  <div class="rail-fill" id="railFill"></div>
+  <div class="rail-dot" id="railDot"></div>
+</div>
+
+<!-- ============ MASTHEAD ============ -->
+<header class="masthead">
+  <div class="mast-top stamp d1">
+    <span class="brand">Ferrous Annual</span>
+    <span>ISSN 0000-4417</span>
+    <span>Issue No. 04</span>
+  </div>
+
+  <div class="mast-center">
+    <p class="kicker stamp d2">A Field Record of Industrial Decay</p>
+    <h1 class="mast-title stamp d2">The Iron<br><span class="accent">Oxide</span> Archive</h1>
+    <p class="mast-sub stamp d3">Vol. 4 — <b>Decay</b> &amp; <b>Memory</b></p>
+    <div class="mast-rule stamp d3"></div>
+  </div>
+
+  <div class="mast-foot stamp d4">
+    <span>Est. MMXIX · Pittsburgh</span>
+    <span class="scroll-cue">Scroll to oxidate <span></span></span>
+    <span>148 pp · Iron &amp; Ash</span>
+  </div>
+</header>
+
+<!-- ============ FOLIO ============ -->
+<main class="folio">
+
+  <section class="intro">
+    <p class="lead"><span class="drop">F</span>errous Annual is a publication devoted to the afterlife of iron — to the slow chemistry that turns our most permanent material into powder, and to the histories that surface in the process. What follows is not a static record. Read it the way the metal itself is read: over time, the words corrode, and what lies beneath them begins to show.</p>
+  </section>
+
+  <!-- I -->
+  <article class="text-block" data-level="0.9">
+    <div class="reveal" style="background-image:linear-gradient(115deg,#241d1a,#3a2a22 45%,#141414),repeating-linear-gradient(48deg,rgba(140,140,140,.18) 0 2px,transparent 2px 15px),repeating-linear-gradient(-42deg,rgba(140,140,140,.12) 0 1px,transparent 1px 22px)"></div>
+    <div class="ink">
+      <h2 class="block-head"><span class="num">I.</span>On the Nature of Rust</h2>
+      <div class="body">
+        <p>Rust is not the end of iron; it is the iron becoming legible. For decades the plate holds its shape in silence, cold and grey and unbothered, until moisture finds a scratch and the reaction begins — <em>iron, oxygen, water</em> — a slow combustion that writes its own text across the surface.</p>
+        <p>We photograph these surfaces the way others photograph portraits. The flaking is the expression. The pitting is the punctuation. A bridge that has stood for a century speaks more clearly in its corrosion than in its commissioning plaque.</p>
+      </div>
+    </div>
+  </article>
+
+  <figure class="plate">
+    <div class="frame" style="background-image:repeating-linear-gradient(90deg,#2a2a2a 0 24px,#3a3a3a 24px 25px),repeating-linear-gradient(0deg,#242424 0 24px,#333 24px 25px),radial-gradient(60% 50% at 30% 40%,#4a4a4a,#161616)"></div>
+    <figcaption><span>Plate 01 — Riveted girder, abandoned span</span><span class="id">Ref. IOA-118</span></figcaption>
+  </figure>
+
+  <!-- II -->
+  <article class="text-block" data-level="1">
+    <div class="reveal" style="background-image:radial-gradient(50% 60% at 60% 40%,rgba(140,140,140,.35),transparent 70%),repeating-radial-gradient(circle at 50% 50%,rgba(120,120,120,.14) 0 6px,transparent 6px 20px)"></div>
+    <div class="ink">
+      <h2 class="block-head"><span class="num">II.</span>The Chemistry of Memory</h2>
+      <div class="body">
+        <p>Oxidation is a form of record-keeping. Every rainstorm, every salt-laden wind off the harbour, every night of condensation is logged in the thickness of the oxide layer. To read rust is to read a climate history compressed into colour.</p>
+        <p>The archive holds no dates because the dates are the colour itself. We index by hue: the bright orange of a fresh wound, the deep umber of a decade, the near-black of a century. Time, in iron, is a spectrum.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- Quote -->
+  <article class="text-block" data-level="0.55">
+    <div class="reveal" style="background-image:linear-gradient(180deg,#1c1c1c,#2a2320 60%,#141414),repeating-linear-gradient(0deg,rgba(140,140,140,.1) 0 1px,transparent 1px 14px)"></div>
+    <div class="ink">
+      <blockquote class="quote"><span class="mark">"</span>Time is not the enemy of iron. Time is the author of its colour.<span class="mark">"</span></blockquote>
+    </div>
+  </article>
+
+  <!-- III -->
+  <article class="text-block" data-level="0.7">
+    <div class="reveal" style="background-image:linear-gradient(60deg,#202020,#3a2a22 50%,#161616),repeating-linear-gradient(135deg,rgba(140,140,140,.14) 0 2px,transparent 2px 18px)"></div>
+    <div class="ink">
+      <h2 class="block-head"><span class="num">III.</span>Field Notes from the Yard</h2>
+      <div class="body">
+        <p>The scrapyard at the edge of town is our most honest library. Here the machines are stacked like manuscripts, each one a draft of a century of labour. We catalog by decay rather than by make.</p>
+        <p>A turbine casing, split along a weld, reveals the grain of the metal like the rings of a tree. We press our thumbs into the flaking surface and feel the years come away in powder. <em>Nothing here is permanent, and that is precisely why it endures.</em></p>
+      </div>
+    </div>
+  </article>
+
+  <figure class="plate">
+    <div class="frame" style="background-image:repeating-linear-gradient(0deg,#222 0 3px,rgba(140,140,140,.15) 3px 4px),radial-gradient(70% 60% at 65% 55%,#3f2a20,#141414),linear-gradient(120deg,#2a2a2a,#1a1a1a)"></div>
+    <figcaption><span>Plate 02 — Split turbine casing, grain exposed</span><span class="id">Ref. IOA-204</span></figcaption>
+  </figure>
+
+  <!-- IV -->
+  <article class="text-block" data-level="0.95">
+    <div class="reveal" style="background-image:radial-gradient(55% 50% at 40% 45%,rgba(140,140,140,.3),transparent 72%),repeating-linear-gradient(90deg,rgba(120,120,120,.12) 0 2px,transparent 2px 16px)"></div>
+    <div class="ink">
+      <h2 class="block-head"><span class="num">IV.</span>What the Rust Reveals</h2>
+      <div class="body">
+        <p>Polish a plate and you recover the surface; leave it and you recover the story. This publication is built on that tension — between the shine we preserve and the corrosion we let speak.</p>
+        <p>As you have read, the words have changed colour. That is the point. The archive does not pretend to be new. It shows you the layer beneath the ink, the history under the headline, the ghost of the machine that once stood where these letters now rest.</p>
+      </div>
+    </div>
+  </article>
+
+  <!-- Specimen grid -->
+  <section class="specimens">
+    <h2 class="spec-head">Oxide Specimen Index</h2>
+    <div class="spec-grid">
+      <div class="spec"><div class="swatch s0"></div><div><div class="name">Void</div><div class="hex">#1A1A1A</div><p class="note">Unoxidised substrate. The absence before the reaction.</p></div></div>
+      <div class="spec"><div class="swatch s1"></div><div><div class="name">Ferrous</div><div class="hex">#B34A26</div><p class="note">Primary oxide. The working ink of the archive.</p></div></div>
+      <div class="spec"><div class="swatch s2"></div><div><div class="name">Steel</div><div class="hex">#8C8C8C</div><p class="note">Cold metal. The structure beneath the rust.</p></div></div>
+      <div class="spec"><div class="swatch s3"></div><div><div class="name">Bloom</div><div class="hex">#E07A4A</div><p class="note">Fresh oxidation. The colour of a new wound.</p></div></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ COLOPHON ============ -->
+<footer class="colophon">
+  <div>
+    <div class="wordmark">Ferrous Annual</div>
+    <p>An annual journal of industrial history and material culture. Set in Oswald and Source Serif. Printed on the screen, oxidised in the browser.</p>
+  </div>
+  <div>
+    <h3>Volume</h3>
+    <p>Vol. 4 — Decay &amp; Memory<br>Issue No. 04 · MMXXIV</p>
+    <a href="#">Subscribe to the archive →</a>
+  </div>
+  <div>
+    <h3>Colophon</h3>
+    <p>Words corrode as you read. Hover a passage to polish it and reveal the layer beneath. No images were harmed; all textures are synthetic.</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   THE IRON OXIDE ARCHIVE — interaction engine (vanilla JS)
+   ============================================================ */
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --- Organic, noise-driven easing (non-linear corrosion) --- */
+  function noise(x){
+    const s = Math.sin(x * 12.9898) * 43758.5453;
+    return s - Math.floor(s);
+  }
+  function corrosion(t){
+    // smooth base + stepped wobble so the transition feels flaky, not linear
+    const base = t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
+    const wob  = (noise(Math.floor(t * 7)) - 0.5) * 0.10;
+    return Math.max(0, Math.min(1, base + wob));
+  }
+
+  /* --- Scroll-driven oxidation on visible blocks --- */
+  const blocks = Array.from(document.querySelectorAll('.text-block'));
+  const railFill = document.getElementById('railFill');
+  const railDot  = document.getElementById('railDot');
+  const visible  = new Set();
+  let ticking = false;
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting) visible.add(e.target);
+      else visible.delete(e.target);
+    });
+    requestUpdate();
+  },{ threshold:0, rootMargin:'-10% 0px -10% 0px' });
+  blocks.forEach(b=>io.observe(b));
+
+  function update(){
+    const docH = document.documentElement.scrollHeight - window.innerHeight;
+    const p = docH > 0 ? window.scrollY / docH : 0;
+
+    // rail
+    railFill.style.height = (p * 100) + '%';
+    railDot.style.top = (p * 100) + '%';
+
+    // oxidation per visible block
+    const vh = window.innerHeight;
+    visible.forEach(b=>{
+      const r = b.getBoundingClientRect();
+      const center = r.top + r.height / 2;
+      const t = 1 - (center / vh);              // 0 entering → 1 passed
+      const target = corrosion(t);
+      const max = parseFloat(b.dataset.level) || 1;
+      const lvl = Math.max(0, Math.min(max, target));
+      b.style.setProperty('--oxidation', lvl.toFixed(3));
+    });
+    ticking = false;
+  }
+  function requestUpdate(){
+    if(!ticking && !reduce){ ticking = true; requestAnimationFrame(update); }
+  }
+
+  window.addEventListener('scroll', requestUpdate, {passive:true});
+  window.addEventListener('resize', requestUpdate);
+  requestUpdate();
+
+  /* --- Reduced-motion: keep text readable, static state --- */
+  if(reduce){
+    blocks.forEach(b=>b.style.setProperty('--oxidation','0'));
+    railFill.style.height = '0%';
+  }
+})();
+</script>
+</body>
+</html>

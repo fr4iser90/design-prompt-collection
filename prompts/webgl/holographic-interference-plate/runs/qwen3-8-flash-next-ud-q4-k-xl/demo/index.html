@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>HoloLab — Laser Interference Pattern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:#000;
+    overflow:hidden;
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    color:#fff;
+  }
+  #gl{
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    display:block; z-index:0;
+    cursor:crosshair;
+    touch-action:none;
+  }
+  /* ---- overlays ---- */
+  .ui{
+    position:fixed; inset:0;
+    z-index:10;
+    pointer-events:none;
+  }
+  .brand{
+    position:absolute; top:2rem; left:2rem;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.16em;
+    font-size:clamp(1.25rem,2.3vw,2.15rem);
+    line-height:1;
+    color:#fff;
+    mix-blend-mode:difference;
+  }
+  .brand .dot{ color:#00ffff; }
+  .sub{
+    position:absolute; top:calc(2rem + 2.55rem); left:2rem;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.68rem; letter-spacing:.34em; text-transform:uppercase;
+    color:#666;
+  }
+  .hint{
+    position:absolute; bottom:2rem; right:2rem;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.82rem; letter-spacing:.04em;
+    color:#666;
+    display:flex; align-items:center; gap:.55rem;
+    mix-blend-mode:difference;
+  }
+  .hint::before{
+    content:""; width:10px; height:10px; border-radius:50%;
+    background:#666; box-shadow:0 0 0 3px rgba(102,102,102,.18);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:.35; transform:scale(.85);} 50%{opacity:1; transform:scale(1);} }
+  .fade{ animation:fadein 1.2s ease .2s both; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  @media (max-width:520px){
+    .brand{ top:1.25rem; left:1.25rem; }
+    .sub{ top:calc(1.25rem + 2.1rem); left:1.25rem; }
+    .hint{ bottom:1.25rem; right:1.25rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hint::before{ animation:none; }
+    .fade{ animation:none; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <div class="ui">
+    <div class="brand fade">Holo<span class="dot">Lab</span></div>
+    <div class="sub fade">Coherent&nbsp;Wave&nbsp;Interference</div>
+    <div class="hint fade">Drag&nbsp;Sources</div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl', { antialias:false, alpha:false, powerPreference:'high-performance' });
+  if(!gl){ document.body.innerHTML = '<div style="color:#fff;font-family:sans-serif;padding:2rem">WebGL is required.</div>'; return; }
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------------- shaders ---------------- */
+  const VERT = `
+  attribute vec2 a_pos;
+  void main(){ gl_Position = vec4(a_pos, 0.0, 1.0); }`;
+
+  const FRAG = `
+  precision highp float;
+  uniform vec2  u_res;
+  uniform float u_time;
+  uniform vec2  u_srcA;
+  uniform vec2  u_srcB;
+  uniform float u_freq;
+  uniform float u_speed;
+  uniform float u_orbA;
+  uniform float u_orbB;
+
+  // soft point-glow halo (bloom around each coherent source)
+  float glow(vec2 p, vec2 s, float r){
+    float d = length(p - s);
+    return 1.0 / (1.0 + d * d / (r * r));
+  }
+
+  void main(){
+    vec2 frag = gl_FragCoord.xy;
+    vec2 p = frag / u_res;
+    p.x *= u_res.x / u_res.y;                 // aspect-correct -> isotropic fringes
+
+    float t  = u_time * u_speed;
+    float r1 = distance(p, u_srcA);
+    float r2 = distance(p, u_srcB);
+
+    // wave superposition of two coherent point sources
+    float a1 = sin(r1 * u_freq - t);
+    float a2 = sin(r2 * u_freq - t);
+    float amp = (a1 + a2) * 0.5;              // -1 .. +1
+    float I   = amp * 0.5 + 0.5;              // 0 .. 1  (constructive -> 1)
+
+    // distance-based falloff keeps the far field readable
+    float fall1 = 1.0 / (1.0 + r1 * r1 * 0.30);
+    float fall2 = 1.0 / (1.0 + r2 * r2 * 0.30);
+
+    // constructive light carries the hue of the source that dominates at this point
+    vec3 col = mix(vec3(0.0, 1.0, 1.0), vec3(1.0, 0.0, 1.0), fall2 / (fall1 + fall2 + 1e-4));
+
+    vec3 c = col * pow(I, 2.2);               // bright where constructive, black where destructive
+
+    // near the midpoint the two sources overlap -> blend toward white
+    float overlap = pow(1.0 - abs(a1 - a2) * 0.5, 4.0);
+    c = mix(c, vec3(1.0), overlap * 0.55);
+
+    // additive halos
+    c += vec3(0.0, 1.0, 1.0) * glow(p, u_srcA, 0.028) * 1.15;
+    c += vec3(1.0, 0.0, 1.0) * glow(p, u_srcB, 0.028) * 1.15;
+
+    // subtle vignette
+    float vig = smoothstep(1.15, 0.25, length(p - vec2(0.5 * u_res.x / u_res.y, 0.5)));
+    c *= 0.72 + 0.28 * vig;
+
+    gl_FragColor = vec4(c, 1.0);
+  }`;
+
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const U = {
+    res:   gl.getUniformLocation(prog, 'u_res'),
+    time:  gl.getUniformLocation(prog, 'u_time'),
+    srcA:  gl.getUniformLocation(prog, 'u_srcA'),
+    srcB:  gl.getUniformLocation(prog, 'u_srcB'),
+    freq:  gl.getUniformLocation(prog, 'u_freq'),
+    speed: gl.getUniformLocation(prog, 'u_speed'),
+    orbA:  gl.getUniformLocation(prog, 'u_orbA'),
+    orbB:  gl.getUniformLocation(prog, 'u_orbB'),
+  };
+
+  /* ---------------- state ---------------- */
+  let W = 0, H = 0, DPR = 1;
+  let aspect = 1;
+  const baseFreq = 78.0;
+  let speed = reduced ? 0.0 : 3.4;
+
+  // positions in "aspect-corrected" coords: x in [0, aspect], y in [0, 1]
+  const homeA = { x:0.30, y:0.5 };
+  const homeB = { x:0.70, y:0.5 };
+  const srcA = { x:0.5, y:0.5 };
+  const srcB = { x:0.5, y:0.5 };
+
+  let dragging = null;      // 'A' | 'B' | null
+  let dragOffset = { x:0, y:0 };
+  let interactionStart = -1e9;
+  let lastInteract = -1e9;
+  let introDone = false;
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.floor(window.innerWidth  * DPR);
+    H = Math.floor(window.innerHeight * DPR);
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    aspect = W / H;
+    gl.viewport(0, 0, W, H);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ---------------- pointer mapping ---------------- */
+  function toWorld(clientX, clientY){
+    const rect = canvas.getBoundingClientRect();
+    let nx = (clientX - rect.left) / rect.width;
+    let ny = 1 - (clientY - rect.top) / rect.height;
+    return { x: nx * aspect, y: ny };
+  }
+
+  function nearest(p){
+    const dA = Math.hypot(p.x - srcA.x, p.y - srcA.y);
+    const dB = Math.hypot(p.x - srcB.x, p.y - srcB.y);
+    const grab = 0.16;
+    if(dA <= dB && dA < grab) return 'A';
+    if(dB < dA && dB < grab) return 'B';
+    return dA <= dB ? 'A' : 'B';
+  }
+
+  function setHover(p){
+    const dA = Math.hypot(p.x - srcA.x, p.y - srcA.y);
+    const dB = Math.hypot(p.x - srcB.x, p.y - srcB.y);
+    canvas.style.cursor = Math.min(dA, dB) < 0.16 ? 'grab' : 'crosshair';
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    const p = toWorld(e.clientX, e.clientY);
+    dragging = nearest(p);
+    const s = dragging === 'A' ? srcA : srcB;
+    dragOffset.x = p.x - s.x;
+    dragOffset.y = p.y - s.y;
+    interactionStart = e.timeStamp;
+    lastInteract = e.timeStamp;
+    canvas.setPointerCapture(e.pointerId);
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const p = toWorld(e.clientX, e.clientY);
+    if(dragging){
+      const s = dragging === 'A' ? srcA : srcB;
+      s.x = Math.max(0.03, Math.min(aspect - 0.03, p.x - dragOffset.x));
+      s.y = Math.max(0.03, Math.min(0.97, p.y - dragOffset.y));
+      lastInteract = e.timeStamp;
+    } else {
+      setHover(p);
+    }
+  });
+
+  function endDrag(e){
+    if(!dragging) return;
+    const moved = Math.hypot(e.clientX - lastDownX, e.clientY - lastDownY);
+    dragging = null;
+    lastInteract = e.timeStamp;
+    canvas.style.cursor = 'crosshair';
+    try{ canvas.releasePointerCapture(e.pointerId); }catch(_){}
+  }
+  let lastDownX = 0, lastDownY = 0;
+  canvas.addEventListener('pointerdown', (e) => { lastDownX = e.clientX; lastDownY = e.clientY; });
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  /* ---------------- entrance + ambient ---------------- */
+  function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+
+  const start = performance.now();
+  const INTRO = 1500;
+
+  function orbit(now, src, home, orbPhase, rx, ry){
+    const idle = (now - lastInteract) > 1200 && !dragging;
+    if(!idle) return;
+    const tt = (now / 1000) * (2 * Math.PI / 13.0); // ~13s period
+    src.x = home.x + Math.cos(tt + orbPhase) * rx;
+    src.y = home.y + Math.sin(tt + orbPhase) * ry;
+  }
+
+  function frame(now){
+    const elapsed = now - start;
+
+    // entrance: explode outward from center
+    if(!introDone){
+      const t = Math.min(elapsed / INTRO, 1);
+      const k = easeOutCubic(t);
+      srcA.x = 0.5 + (homeA.x - 0.5) * k;
+      srcA.y = 0.5 + (homeA.y - 0.5) * k;
+      srcB.x = 0.5 + (homeB.x - 0.5) * k;
+      srcB.y = 0.5 + (homeB.y - 0.5) * k;
+      if(t >= 1){ introDone = true; lastInteract = now; }
+    } else if(!dragging){
+      // ambient elliptical drift
+      orbit(now, srcA, homeA, 0.0, 0.055, 0.035);
+      orbit(now, srcB, homeB, Math.PI, 0.055, 0.035);
+    }
+
+    const time = reduced ? 1.2 : elapsed / 1000;
+
+    gl.uniform2f(U.res, W, H);
+    gl.uniform1f(U.time, time);
+    gl.uniform1f(U.freq, baseFreq);
+    gl.uniform1f(U.speed, speed);
+    gl.uniform2f(U.srcA, srcA.x, srcA.y);
+    gl.uniform2f(U.srcB, srcB.x, srcB.y);
+    gl.uniform1f(U.orbA, 0);
+    gl.uniform1f(U.orbB, 0);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

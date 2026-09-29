@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a202c">
+<title>Hydraulic Voxel Erosion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a202c;
+    --ink:#f7fafc;
+    --blue:#4299e1;
+    --orange:#f6ad55;
+    --slate:#4a5568;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg);
+    color:var(--ink);
+    overflow:hidden;
+    font-family:'Source Serif 4', Georgia, 'Times New Roman', serif;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior:none;
+  }
+  #scene{
+    position:fixed; inset:0;
+    width:100vw; height:100vh;
+    display:block;
+    touch-action:none;
+    cursor:crosshair;
+  }
+  .overlay{
+    position:fixed; inset:0;
+    pointer-events:none;
+    z-index:5;
+  }
+  .overlay::before{
+    content:"";
+    position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 42%, rgba(0,0,0,0) 52%, rgba(9,12,18,0.55) 100%);
+  }
+  .brand{
+    position:absolute;
+    top:clamp(20px, 4.2vw, 54px);
+    left:clamp(20px, 4.2vw, 54px);
+    max-width:min(46vw, 560px);
+    text-shadow:0 2px 26px rgba(0,0,0,0.65), 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    font-size:clamp(9px, 1.15vw, 12px);
+    letter-spacing:0.34em;
+    text-transform:uppercase;
+    color:rgba(247,250,252,0.72);
+    margin:0 0 12px;
+  }
+  .eyebrow .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--orange);
+    box-shadow:0 0 0 0 rgba(246,173,85,0.6);
+    animation:pulse 2.6s ease-out infinite;
+  }
+  .eyebrow .rule{
+    flex:1; min-width:24px; max-width:70px; height:1px;
+    background:linear-gradient(90deg, rgba(247,250,252,0.5), rgba(247,250,252,0));
+  }
+  .brand h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    line-height:0.9;
+    letter-spacing:-0.01em;
+    margin:0;
+    font-size:clamp(38px, 7.6vw, 94px);
+    color:var(--ink);
+  }
+  .brand h1 .thin{
+    display:block;
+    font-weight:500;
+    color:rgba(247,250,252,0.86);
+  }
+  .brand .sub{
+    margin:18px 0 0;
+    font-style:italic;
+    font-size:clamp(13px, 1.5vw, 17px);
+    color:rgba(247,250,252,0.6);
+    max-width:34ch;
+    line-height:1.45;
+  }
+  .hint{
+    position:absolute;
+    right:clamp(20px, 4.2vw, 54px);
+    bottom:clamp(20px, 4vw, 46px);
+    text-align:right;
+    font-size:clamp(12px, 1.4vw, 14.5px);
+    color:rgba(247,250,252,0.78);
+    text-shadow:0 2px 16px rgba(0,0,0,0.7);
+    line-height:1.5;
+  }
+  .hint .k{
+    color:var(--orange);
+    font-style:italic;
+  }
+  .hint .meta{
+    margin-top:6px;
+    font-family:'Oswald', sans-serif;
+    font-weight:500;
+    letter-spacing:0.24em;
+    text-transform:uppercase;
+    font-size:10px;
+    color:rgba(247,250,252,0.4);
+  }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(246,173,85,0.55); }
+    70%{ box-shadow:0 0 0 12px rgba(246,173,85,0); }
+    100%{ box-shadow:0 0 0 0 rgba(246,173,85,0); }
+  }
+  @media (max-width:640px){
+    .brand .sub{ display:none; }
+    .eyebrow .rule{ max-width:44px; }
+    .hint .meta{ display:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .eyebrow .dot{ animation:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<div class="overlay" aria-hidden="true">
+  <div class="brand">
+    <p class="eyebrow"><span class="dot"></span><span>WebGL&nbsp;·&nbsp;Hydraulic&nbsp;Voxels</span><span class="rule"></span></p>
+    <h1>Hydraulic<span class="thin">Erosion</span></h1>
+    <p class="sub">Slow violence, compressed into seconds — water finds the path, then keeps it.</p>
+  </div>
+  <div class="hint">
+    <div><span class="k">Click &amp; hold</span> to rain</div>
+    <div class="meta">Drag to orbit · Channels deepen ~5s</div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- Constants ---------------- */
+const N = 128;                 // simulation + mesh resolution
+const SIZE = 100;              // world size
+const HEIGHT_SCALE = 11.0;     // height -> world units
+const MAX_H = 0.9;             // clamp for height buffer
+const MAX_W = 1.0;             // clamp for water buffer
+const EVAP = 0.972;            // evaporation factor per step
+const CAP_K = 0.05;            // sediment capacity constant
+const CAP_MIN = 0.015;         // min capacity
+const FLOW_R = 0.35;           // flow rate
+const SOL_R = 0.001;           // dissolution rate
+const DEP_R = 0.004;           // deposition rate
+const RAIN_R = 0.02;           // rain radius
+const RAIN_AMT = 0.045;        // rain amount per step
+const AMBIENT = 0.0035;        // ambient peak rain
+const SIM_STEPS = 3;           // sim steps per frame
+const MAX_PARTICLES = 5000;
+const PARTICLE_SPEED = 0.28;   // world units / sec
+const PARTICLE_LIFE = 2.4;     // seconds
+
+const SIM = `
+precision highp float;
+uniform sampler2D uHeight;
+uniform sampler2D uWater;
+uniform sampler2D uSediment;
+uniform vec2 uTexel;
+uniform vec2 uRainPos;
+uniform float uRainAmt;
+uniform float uAmbient;
+uniform float uMaxH;
+uniform float uMaxW;
+uniform float uEvap;
+uniform float uCapK;
+uniform float uCapMin;
+uniform float uFlowR;
+uniform float uSolR;
+uniform float uDepR;
+uniform float uRainR;
+varying vec2 vUv;
+const float M = 1.0 / 8.0;
+
+float sampleH(vec2 uv){
+  vec2 g = uv / uTexel;
+  g = clamp(g, vec2(0.5), vec2(127.5));
+  return texture2D(uHeight, g * uTexel).r;
+}
+float sampleW(vec2 uv){
+  vec2 g = uv / uTexel;
+  g = clamp(g, vec2(0.5), vec2(127.5));
+  return texture2D(uWater, g * uTexel).r;
+}
+float sampleS(vec2 uv){
+  vec2 g = uv / uTexel;
+  g = clamp(g, vec2(0.5), vec2(127.5));
+  return texture2D(uSediment, g * uTexel).r;
+}
+vec3 flowTo(vec2 uv){
+  float h = sampleH(uv);
+  float w = sampleW(uv);
+  float s = sampleS(uv);
+  vec3 outF = vec3(0.0);
+  vec3 inF  = vec3(0.0);
+  for(int i=-1;i<=1;i++){
+    for(int j=-1;j<=1;j++){
+      if(i==0 && j==0) continue;
+      vec2 duv = vec2(float(i), float(j)) * uTexel;
+      float nh = sampleH(uv + duv);
+      float nw = sampleW(uv + duv);
+      float diff = (h + w) - (nh + nw);
+      float flow = diff * uFlowR * M;
+      if(flow > 0.0){
+        outF += vec3(flow, flow * s, 0.0);
+      } else {
+        inF += vec3(-flow, -flow * sampleS(uv + duv), 0.0);
+      }
+    }
+  }
+  return vec3(outF.xy, inF.x);
+}
+void main(){
+  vec2 uv = vUv;
+  float h = sampleH(uv);
+  float w = sampleW(uv);
+  float s = sampleS(uv);
+
+  vec3 f = flowTo(uv);
+  float outW = f.x, outS = f.y, inW = f.z;
+  float inS = 0.0;
+  for(int i=-1;i<=1;i++){
+    for(int j=-1;j<=1;j++){
+      if(i==0 && j==0) continue;
+      vec2 duv = vec2(float(i), float(j)) * uTexel;
+      vec3 f2 = flowTo(uv + duv);
+      inS += f2.y;
+    }
+  }
+  w += inW - outW;
+  s += inS - outS;
+
+  float cap = clamp((h - sampleH(uv)) * uCapK + uCapMin, uCapMin, 1.0);
+  if(s > cap){
+    float dep = (s - cap) * uDepR;
+    h += dep; s -= dep;
+  } else {
+    float sol = (cap - s) * uSolR;
+    sol = min(sol, h);
+    h -= sol; s += sol;
+  }
+
+  w *= uEvap;
+  float d = distance(uv, uRainPos);
+  if(d < uRainR) w += uRainAmt;
+
+  float ambient = uAmbient * smoothstep(0.62, 0.86, h);
+  w += ambient;
+
+  h = clamp(h, 0.0, uMaxH);
+  w = clamp(w, 0.0, uMaxW);
+  s = clamp(s, 0.0, 1.0);
+  gl_FragColor = vec4(h, w, s, 1.0);
+}`;
+
+const INIT = `
+precision highp float;
+uniform float uProgress;
+uniform float uMaxH;
+varying vec2 vUv;
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+float vnoise(vec2 p){
+  vec2 i = floor(p); vec2 f = fract(p);
+  vec2 u = f*f*(3.0-2.0*f);
+  float a = hash(i);
+  float b = hash(i+vec2(1.0,0.0));
+  float c = hash(i+vec2(0.0,1.0));
+  float d = hash(i+vec2(1.0,1.0));
+  return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+}
+float fbm(vec2 p){
+  float v=0.0, a=0.5;
+  for(int i=0;i<4;i++){ v += a*vnoise(p); p*=2.0; a*=0.5; }
+  return v;
+}
+void main(){
+  vec2 uv = vUv;
+  vec2 p = uv * 5.0;
+  float v = fbm(p);
+  v = pow(v, 1.25);
+  vec2 c = uv - 0.5;
+  float edge = 1.0 - smoothstep(0.28, 0.5, length(c));
+  v *= edge;
+  float h = v * uMaxH * uProgress;
+  gl_FragColor = vec4(h, 0.0, 0.0, 1.0);
+}`;
+
+const RENDER = `
+precision highp float;
+uniform sampler2D uHeight;
+uniform sampler2D uWater;
+uniform sampler2D uSediment;
+uniform float uTexel;
+uniform float uHeightScale;
+uniform float uTime;
+varying vec2 vUv;
+varying float vH;
+varying vec3 vWPos;
+
+vec3 sampleHW(vec2 uv){
+  vec2 g = uv / uTexel;
+  g = clamp(g, vec2(0.5), vec2(127.5));
+  return texture2D(uHeight, g * uTexel).rgb;
+}
+void main(){
+  vec3 rock = vec3(0.290, 0.333, 0.408);
+  vec3 waterCol = vec3(0.259, 0.600, 0.882);
+  vec3 sedCol = vec3(0.965, 0.678, 0.333);
+  vec3 sediment = vec3(0.60, 0.50, 0.40);
+
+  float h = vH;
+  vec3 c = sampleHW(vUv);
+  float w = c.g;
+  float s = c.b;
+
+  float e = uTexel;
+  float hl = sampleHW(vUv - vec2(e,0.0)).r;
+  float hr = sampleHW(vUv + vec2(e,0.0)).r;
+  float hd = sampleHW(vUv - vec2(0.0,e)).r;
+  float hu = sampleHW(vUv + vec2(0.0,e)).r;
+  vec3 nrm = normalize(vec3(-(hr-hl), -(hu-hd), 2.0 * uHeightScale * e));
+
+  vec3 V = normalize(cameraPosition - vWPos);
+  vec3 L = normalize(vec3(0.5, 1.0, 0.5));
+  float diff = max(dot(nrm, L), 0.0);
+  vec3 Hh = normalize(L + V);
+  float spec = pow(max(dot(nrm, Hh), 0.0), 24.0);
+
+  float ao = clamp((h - (hl+hr+hd+hu)*0.25) * 1.6 + 0.7, 0.45, 1.0);
+
+  vec3 base = mix(rock, sediment, smoothstep(0.15, 0.5, s));
+  float wet = smoothstep(0.005, 0.08, w);
+  base = mix(base, waterCol, wet * 0.8);
+
+  float fres = pow(1.0 - max(dot(nrm, V), 0.0), 3.0);
+  vec3 lit = base * (0.35 + 0.75 * diff) * ao;
+  lit += spec * (0.25 + wet * 1.2 + fres * wet * 0.6);
+  lit += waterCol * fres * wet * 0.35;
+
+  vec3 sky = vec3(0.10, 0.12, 0.16);
+  float fog = smoothstep(55.0, 130.0, length(cameraPosition - vWPos));
+  lit = mix(lit, sky, fog);
+  lit += (hash21(vUv * 512.0 + fract(uTime)) - 0.5) * 0.018;
+  gl_FragColor = vec4(lit, 1.0);
+}`;
+
+const PARTICLE_V = `
+attribute vec3 aOffset;
+attribute float aLife;
+uniform float uSize;
+varying float vLife;
+void main(){
+  vLife = aLife;
+  vec4 mv = modelViewMatrix * vec4(aOffset, 1.0);
+  gl_Position = projectionMatrix * mv;
+  gl_PointSize = uSize * (1.0 - aLife * 0.4) * (300.0 / max(-mv.z, 1.0));
+}`;
+
+const PARTICLE_F = `
+precision mediump float;
+varying float vLife;
+void main(){
+  vec2 pc = gl_PointCoord - 0.5;
+  float d = length(pc);
+  if(d > 0.5) discard;
+  float a = smoothstep(0.5, 0.0, d) * (1.0 - vLife) * 0.9;
+  vec3 col = mix(vec3(0.30,0.62,0.92), vec3(0.62,0.82,1.0), vLife);
+  gl_FragColor = vec4(col, a);
+}`;
+
+/* ---------------- Renderer / Scene ---------------- */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(new THREE.Color('#1a202c'), 1);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(new THREE.Color('#1a202c'), 70, 150);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 500);
+camera.position.set(0, 30, 46);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.enableZoom = false;
+controls.minPolarAngle = 0.35;
+controls.maxPolarAngle = 1.32;
+controls.target.set(0, 3, 0);
+controls.autoRotate = !reduceMotion;
+controls.autoRotateSpeed = reduceMotion ? 0 : 0.4;
+controls.enabled = false;
+
+/* ---------------- Simulation buffers ---------------- */
+const simMat = new THREE.ShaderMaterial({
+  uniforms:{
+    uHeight:{value:null}, uWater:{value:null}, uSediment:{value:null},
+    uTexel:{value:new THREE.Vector2(1/N,1/N)},
+    uRainPos:{value:new THREE.Vector2(-10,-10)},
+    uRainAmt:{value:RAIN_AMT},
+    uAmbient:{value:reduceMotion?0:AMBIENT},
+    uMaxH:{value:MAX_H}, uMaxW:{value:MAX_W},
+    uEvap:{value:EVAP}, uCapK:{value:CAP_K}, uCapMin:{value:CAP_MIN},
+    uFlowR:{value:FLOW_R}, uSolR:{value:SOL_R}, uDepR:{value:DEP_R},
+    uRainR:{value:RAIN_R}
+  },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:SIM,
+  depthTest:false, depthWrite:false
+});
+
+function makeSimTex(){
+  const t = new THREE.DataTexture(new Float32Array(N*N*4), N, N, THREE.RGBAFormat, THREE.FloatType);
+  t.minFilter = THREE.NearestFilter;
+  t.magFilter = THREE.NearestFilter;
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  t.needsUpdate = true;
+  return t;
+}
+let simTexA = makeSimTex();
+let simTexB = makeSimTex();
+simMat.uniforms.uHeight.value = simTexA;
+simMat.uniforms.uWater.value  = simTexA;
+simMat.uniforms.uSediment.value = simTexA;
+
+const simScene = new THREE.Scene();
+const simCam = new THREE.OrthographicCamera(-0.5, 0.5, 0.5, -0.5, 0, 1);
+const simQuad = new THREE.Mesh(new THREE.PlaneGeometry(1,1), simMat);
+simQuad.frustumCulled = false;
+simScene.add(simQuad);
+
+/* ---------------- Terrain mesh ---------------- */
+const geo = new THREE.PlaneGeometry(SIZE, SIZE, N-1, N-1);
+geo.rotateX(-Math.PI/2);
+const renderMat = new THREE.ShaderMaterial({
+  uniforms:{
+    uHeight:{value:simTexA}, uWater:{value:simTexA}, uSediment:{value:simTexA},
+    uTexel:{value:1/N}, uHeightScale:{value:HEIGHT_SCALE}, uTime:{value:0}
+  },
+  vertexShader:`
+    uniform sampler2D uHeight;
+    uniform float uTexel;
+    uniform float uHeightScale;
+    varying vec2 vUv;
+    varying float vH;
+    varying vec3 vWPos;
+    void main(){
+      vUv = uv;
+      float h = texture2D(uHeight, clamp(uv, vec2(0.0), vec2(1.0))).r;
+      vH = h;
+      vec3 p = position;
+      p.y += h * uHeightScale;
+      vWPos = p;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+    }`,
+  fragmentShader:RENDER,
+  side:THREE.DoubleSide
+});
+const terrain = new THREE.Mesh(geo, renderMat);
+terrain.frustumCulled = false;
+scene.add(terrain);
+
+/* ---------------- Water particles ---------------- */
+const pGeo = new THREE.BufferGeometry();
+const pPos = new Float32Array(MAX_PARTICLES*3);
+const pLife = new Float32Array(MAX_PARTICLES);
+for(let i=0;i<MAX_PARTICLES;i++) pLife[i]=1.0;
+const pPosAttr = new THREE.BufferAttribute(pPos,3); pPosAttr.setUsage(THREE.DynamicDrawUsage);
+const pLifeAttr = new THREE.BufferAttribute(pLife,1); pLifeAttr.setUsage(THREE.DynamicDrawUsage);
+pGeo.setAttribute('position', pPosAttr);
+pGeo.setAttribute('aLife', pLifeAttr);
+const pMat = new THREE.ShaderMaterial({
+  uniforms:{ uSize:{value:2.4} },
+  vertexShader:PARTICLE_V,
+  fragmentShader:PARTICLE_F,
+  transparent:true, depthWrite:false, blending:THREE.AdditiveBlending
+});
+const particles = new THREE.Points(pGeo, pMat);
+particles.frustumCulled = false;
+scene.add(particles);
+
+/* ---------------- Helpers ---------------- */
+const heightCPU = new Float32Array(N*N);
+const waterCPU  = new Float32Array(N*N);
+const sedCPU    = new Float32Array(N*N);
+const readBuf   = new Float32Array(N*N*4);
+const raycaster = new THREE.Raycaster();
+const groundPlane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+const tmpV = new THREE.Vector3();
+const pointer = new THREE.Vector2();
+const rainUV = new THREE.Vector2(-10,-10);
+let rainActive = false;
+let idleTimer = 0;
+let pIndex = 0;
+
+function readSim(){
+  try{
+    renderer.readRenderTargetPixels(simTexA, 0, 0, N, N, readBuf);
+  }catch(e){ return; }
+  for(let i=0;i<N*N;i++){
+    heightCPU[i] = readBuf[i*4+0];
+    waterCPU[i]  = readBuf[i*4+1];
+    sedCPU[i]    = readBuf[i*4+2];
+  }
+}
+function idx(x,y){ return y*N + x; }
+function hAt(x,y){
+  if(x<0||x>=N||y<0||y>=N) return 0;
+  return heightCPU[y*N+x];
+}
+function wAt(x,y){
+  if(x<0||x>=N||y<0||y>=N) return 0;
+  return waterCPU[y*N+x];
+}
+function uvToPos(u,v){
+  const x = (u - 0.5) * SIZE;
+  const z = (0.5 - v) * SIZE;
+  const y = hAt(Math.round(u*(N-1)), Math.round(v*(N-1))) * HEIGHT_SCALE;
+  return [x,y,z];
+}
+function spawnParticle(u,v){
+  const p = uvToPos(u,v);
+  const i = pIndex % MAX_PARTICLES;
+  pPos[i*3]=p[0]; pPos[i*3+1]=p[1]+0.15; pPos[i*3+2]=p[2];
+  pLife[i]=0.0;
+  pIndex++;
+}
+function updateParticles(dt){
+  const cell = SIZE/(N-1);
+  for(let i=0;i<MAX_PARTICLES;i++){
+    if(pLife[i]>=1.0) continue;
+    pLife[i]+=dt/PARTICLE_LIFE;
+    if(pLife[i]>=1.0){ pLife[i]=1.0; continue; }
+    const x=pPos[i*3], y=pPos[i*3+1], z=pPos[i*3+2];
+    const gx=x/SIZE+0.5, gz=0.5-z/SIZE;
+    const cx=Math.round(gx*(N-1)), cy=Math.round((1.0-gz)*(N-1));
+    const h0=hAt(cx,cy);
+    const dl=hAt(cx-1,cy), dr=hAt(cx+1,cy), dd=hAt(cx,cy+1), du=hAt(cx,cy-1);
+    let fx=(dl-dr), fz=(dd-du);
+    const m=Math.hypot(fx,fz);
+    if(m>1e-5){ fx/=m; fz/=m; }
+    const sp=PARTICLE_SPEED*(0.5+Math.min(wAt(cx,cy),0.5)*1.4);
+    let nx=x+fx*sp*dt, nz=z+fz*sp*dt;
+    const nh=hAt(Math.round((nx/SIZE+0.5)*(N-1)), Math.round((0.5-nz/SIZE)*(N-1)))*HEIGHT_SCALE;
+    pPos[i*3]=nx; pPos[i*3+1]=nh+0.15; pPos[i*3+2]=nz;
+    if(nx<-SIZE*0.5||nx>SIZE*0.5||nz<-SIZE*0.5||nz>SIZE*0.5) pLife[i]=1.0;
+  }
+  pPosAttr.needsUpdate=true;
+  pLifeAttr.needsUpdate=true;
+}
+
+/* ---------------- Init progress ---------------- */
+const initMat = new THREE.ShaderMaterial({
+  uniforms:{ uProgress:{value:0}, uMaxH:{value:MAX_H} },
+  vertexShader:`varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:INIT,
+  depthTest:false, depthWrite:false
+});
+const initQuad = new THREE.Mesh(new THREE.PlaneGeometry(1,1), initMat);
+initQuad.frustumCulled = false;
+
+function runInit(){
+  simScene.remove(simQuad);
+  simScene.add(initQuad);
+  simMat.uniforms.uHeight.value = simTexA;
+  simMat.uniforms.uWater.value  = simTexA;
+  simMat.uniforms.uSediment.value = simTexA;
+}
+function runSim(){
+  simScene.remove(initQuad);
+  simScene.add(simQuad);
+}
+runInit();
+
+/* ---------------- Interaction ---------------- */
+function setPointer(e){
+  const r = canvas.getBoundingClientRect();
+  pointer.x = ((e.clientX-r.left)/r.width)*2-1;
+  pointer.y = -((e.clientY-r.top)/r.height)*2+1;
+}
+function updateRainUV(){
+  raycaster.setFromCamera(pointer, camera);
+  if(raycaster.ray.intersectPlane(groundPlane, tmpV)){
+    rainUV.set(tmpV.x/SIZE+0.5, 0.5-tmpV.z/SIZE);
+  }
+}
+function onDown(e){
+  rainActive = true;
+  setPointer(e);
+  updateRainUV();
+  simMat.uniforms.uRainAmt.value = RAIN_AMT;
+  controls.enabled = true;
+  controls.autoRotate = false;
+  idleTimer = 0;
+}
+function onMove(e){
+  setPointer(e);
+  if(rainActive) updateRainUV();
+}
+function onUp(){
+  rainActive = false;
+  simMat.uniforms.uRainAmt.value = 0.0;
+  controls.enabled = false;
+  idleTimer = 0;
+}
+canvas.addEventListener('pointerdown', onDown);
+window.addEventListener('pointermove', onMove);
+window.addEventListener('pointerup', onUp);
+window.addEventListener('pointercancel', onUp);
+
+/* ---------------- Loop ---------------- */
+let last = performance.now();
+let introT = 0;
+const introDur = reduceMotion ? 0 : 2.5;
+let simStarted = false;
+
+function loop(now){
+  requestAnimationFrame(loop);
+  let dt = Math.min((now-last)/1000, 0.05);
+  last = now;
+
+  if(!simStarted){
+    introT += dt;
+    const p = introDur>0 ? Math.min(introT/introDur,1) : 1;
+    const e = p*p*(3-2*p);
+    initMat.uniforms.uProgress.value = e;
+    renderer.setRenderTarget(simTexA);
+    renderer.render(simScene, simCam);
+    if(p>=1){ simStarted=true; runSim(); }
+  } else {
+    for(let s=0;s<SIM_STEPS;s++){
+      simMat.uniforms.uHeight.value = simTexA;
+      simMat.uniforms.uWater.value  = simTexA;
+      simMat.uniforms.uSediment.value = simTexA;
+      simMat.uniforms.uRainPos.value = rainUV;
+      renderer.setRenderTarget(simTexB);
+      renderer.render(simScene, simCam);
+      const t=simTexA; simTexA=simTexB; simTexB=t;
+    }
+    if(rainActive){
+      for(let s=0;s<SIM_STEPS;s++){
+        for(let k=0;k<2;k++){
+          const ang=Math.random()*Math.PI*2;
+          const rad=Math.random()*RAIN_R*0.8;
+          spawnParticle(rainUV.x+Math.cos(ang)*rad, rainUV.y+Math.sin(ang)*rad);
+        }
+      }
+    }
+    readSim();
+    updateParticles(dt);
+  }
+
+  renderMat.uniforms.uHeight.value = simTexA;
+  renderMat.uniforms.uWater.value  = simTexA;
+  renderMat.uniforms.uSediment.value = simTexA;
+  renderMat.uniforms.uTime.value = now*0.001;
+
+  if(!controls.enabled){
+    if(!reduceMotion){
+      idleTimer += dt;
+      if(idleTimer>1.6) controls.autoRotate = true;
+    }
+  }
+  controls.update();
+  renderer.setRenderTarget(null);
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(loop);
+
+/* ---------------- Resize ---------------- */
+function onResize(){
+  const w=window.innerWidth, h=window.innerHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+}
+window.addEventListener('resize', onResize);
+</script>
+</body>
+</html>
