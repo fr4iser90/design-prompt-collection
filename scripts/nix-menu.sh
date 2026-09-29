@@ -19,6 +19,8 @@ cheat() {
 │                                                              │
 │  Pipeline                                                    │
 │    ai-new            Neue Prompt-Briefs                      │
+│                      (-c landing-pages|animations|concepts|  │
+│                       games|webgl|editorial|interfaces …)    │
 │    ai-build          Demos bauen                             │
 │    shots             Screenshots                             │
 │    review            Vision-Score / rebuild                  │
@@ -58,6 +60,8 @@ options=(
   "Worker stoppen --force"
   "Slots anzeigen"
   "ai:new  (3 landing-pages)"
+  "ai:new  (2 games)"
+  "ai:new  (2 webgl)"
   "ai:build"
   "shots"
   "review"
@@ -82,20 +86,22 @@ select opt in "${options[@]}"; do
     4) run "npm run stop -- --force"; break ;;
     5) run "npm run slots"; break ;;
     6) run "npm run ai:new -- -c landing-pages -n 3"; break ;;
-    7) run "npm run ai:build"; break ;;
-    8) run "npm run shots"; break ;;
-    9) run "npm run review"; break ;;
-    10) run "npm run review -- --force"; break ;;
-    11) run "npm run playwright:check"; break ;;
-    12) run "npm run pipeline"; break ;;
-    13) run "npm run ship"; break ;;
-    14) run "npm run pages"; break ;;
-    15) run "npm run pages:deploy"; break ;;
-    16) run "npm run build"; break ;;
-    17) run "npm run check"; break ;;
-    18) run "git status -sb"; break ;;
-    19) cheat; continue ;;
-    20|q|Q) echo "bye"; break ;;
+    7) run "npm run ai:new -- -c games -n 2"; break ;;
+    8) run "npm run ai:new -- -c webgl -n 2"; break ;;
+    9) run "npm run ai:build"; break ;;
+    10) run "npm run shots"; break ;;
+    11) run "npm run review"; break ;;
+    12) run "npm run review -- --force"; break ;;
+    13) run "npm run playwright:check"; break ;;
+    14) run "npm run pipeline"; break ;;
+    15) run "npm run ship"; break ;;
+    16) run "npm run pages"; break ;;
+    17) run "npm run pages:deploy"; break ;;
+    18) run "npm run build"; break ;;
+    19) run "npm run check"; break ;;
+    20) run "git status -sb"; break ;;
+    21) cheat; continue ;;
+    22|q|Q) echo "bye"; break ;;
     *) echo "Ungültig: $REPLY"; continue ;;
   esac
 done

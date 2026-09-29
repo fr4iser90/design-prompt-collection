@@ -29,7 +29,16 @@
     },
     "category": {
       "type": "string",
-      "enum": ["landing-pages", "animations", "concepts", "experiments"]
+      "enum": [
+        "landing-pages",
+        "animations",
+        "concepts",
+        "games",
+        "webgl",
+        "editorial",
+        "interfaces",
+        "experiments"
+      ]
     },
     "tags": {
       "type": "array",

@@ -2,7 +2,19 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const CATEGORIES = ["landing-pages", "animations", "concepts", "experiments"];
+export const CATEGORIES = [
+  "landing-pages",
+  "animations",
+  "concepts",
+  "games",
+  "webgl",
+  "editorial",
+  "interfaces",
+  "experiments",
+];
+
+/** Categories the worker fill loop invents into (no experiments dump). */
+export const FILL_CATEGORIES = CATEGORIES.filter((c) => c !== "experiments");
 
 export function envFlag(name, defaultValue = false) {
   const v = process.env[name];
@@ -96,7 +108,7 @@ export function parseArgs(argv) {
     brief: null,
     temperature: null,
     listLanes: false,
-    maxSimilarity: 0.42,
+    maxSimilarity: 0.38,
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];

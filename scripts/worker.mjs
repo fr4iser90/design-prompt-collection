@@ -19,7 +19,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { modelSlug, hasRunDemo, listRuns, migrateLegacyRun, isAbandonedRun, repairStaleEntryPointers } from "./lib/runs.mjs";
 import { fetchModelSlots, waitForIdleSlot } from "./lib/slots.mjs";
-import { envFlag, gitPushEnv, loadEnvFile } from "./lib/helpers.mjs";
+import { envFlag, gitPushEnv, loadEnvFile, FILL_CATEGORIES } from "./lib/helpers.mjs";
 import { resolveAiConfig, walkEntries, updateMetaFields } from "./lib/provider.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -324,9 +324,9 @@ function reportProgress(cfg, opts, state, cycle) {
   return inv;
 }
 
-/** Split N across landing-pages / animations / concepts (catalog-aware per call). */
+/** Split N across fill categories (catalog-aware per call). */
 function fillPlan(total) {
-  const cats = ["landing-pages", "animations", "concepts"];
+  const cats = FILL_CATEGORIES;
   const base = Math.floor(total / cats.length);
   let rem = total - base * cats.length;
   return cats.map((c) => {
@@ -337,15 +337,21 @@ function fillPlan(total) {
 }
 
 async function runFill(cfg, fillN, state) {
-  console.log(`\n📝 fill batch n=${fillN} (uses catalog.json anti-overlap)`);
-  // Refresh catalog/index view before inventing niches
+  console.log(`\n📝 fill batch n=${fillN} (2-pass ai:new + catalog anti-overlap)`);
   await runNpm("build", []);
   let filled = 0;
+  const mood = (process.env.FILL_MOOD || "").trim();
+  const avoid = (process.env.FILL_AVOID || "").trim();
+  const lane = (process.env.FILL_LANE || "").trim();
   for (const { category, n } of fillPlan(fillN)) {
     if (shouldStop()) break;
     try {
       await waitForIdleSlot(cfg, { need: 1, signal: null, label: `fill:${category}` });
-      const code = await runNpm("ai:new", ["-c", category, "-n", String(n)]);
+      const fillArgs = ["-c", category, "-n", String(n)];
+      if (mood) fillArgs.push("--mood", mood);
+      if (avoid) fillArgs.push("--avoid", avoid);
+      if (lane) fillArgs.push("--lane", lane);
+      const code = await runNpm("ai:new", fillArgs);
       if (code === 0) {
         filled += n;
         state.filled += n;

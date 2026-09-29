@@ -7,7 +7,7 @@
  *   npm run scaffold -- -c animations -i magnetic-nav -t "Magnetic Nav"
  *
  * Flags:
- *   --category / -c   landing-pages | animations | concepts | experiments
+ *   --category / -c   landing-pages | animations | concepts | games | webgl | editorial | interfaces | experiments
  *   --id / -i         kebab-case folder name
  *   --title / -t      human title
  *   --force           overwrite existing folder
@@ -15,10 +15,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const CATEGORIES = ["landing-pages", "animations", "concepts", "experiments"];
 
 function parseArgs(argv) {
   const out = { force: false };

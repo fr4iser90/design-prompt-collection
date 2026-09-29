@@ -6,10 +6,12 @@ You are contributing to a **design prompt collection**. Every entry is a self-co
 
 1. **One folder = one prompt** under `prompts/<category>/<kebab-id>/`
 2. Required files: `meta.yaml`, `preview.svg|png|webp`, `prompt.md`, `prompt.full.md`
-3. Categories: `landing-pages` | `animations` | `concepts` | `experiments`
+3. Categories: `landing-pages` | `animations` | `concepts` | `games` | `webgl` | `editorial` | `interfaces` | `experiments`
 4. Status: `draft` until art direction is sharp → then `polished`
 5. After edits: run `npm run build` (validate + regenerate `README.md` + `index.json`)
 6. Do **not** invent co-authors or Cursor attribution in commits
+
+Stack (Three.js, Svelte, vanilla, Canvas…) belongs in **tags** + the brief deliverable — not as a category name.
 
 ## Create a new entry
 
@@ -24,8 +26,8 @@ Then replace template placeholders with a **high-refined** brief. Never leave `{
 ```yaml
 id: my-concept-name          # == folder name
 title: "My Concept Name"
-category: landing-pages      # == parent folder
-tags: [saas, hero, motion]   # kebab-case, 1–12
+category: landing-pages      # == parent folder (also: animations|concepts|games|webgl|editorial|interfaces|experiments)
+tags: [saas, hero, motion]   # kebab-case, 1–12 — stack (three/svelte) goes in tags, not category
 status: draft                # draft | polished | archived
 summary: "20–220 char teaser shown in README"
 preview: preview.svg

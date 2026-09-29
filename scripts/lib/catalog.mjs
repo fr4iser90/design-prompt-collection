@@ -156,14 +156,105 @@ export const LANES = {
     "Water as plane: tide, glass, refraction. Quiet luxury, saline palette.",
   "signal-warning":
     "Utility / safety / infrastructure aesthetics. Stripes, stamps, mono labels — intentional tension.",
+  // games
+  "arcade-precision":
+    "Tight one-screen arcade loop: readable risk, fair fail, juicy feedback. No endless runner clones.",
+  "puzzle-tactile":
+    "Spatial / logic puzzle with physical metaphor (blocks, ink, magnets). Satisfaction over difficulty spike.",
+  "rhythm-timing":
+    "Beat / timing skill: sync input to pulse. Visual metronome, not just music wallpaper.",
+  "stealth-signal":
+    "Light/shadow or detection games: tension from being seen. Sparse HUD, strong silhouette read.",
+  "toybox-physics":
+    "Playable physics toy: catapult, balance, fluid. Toys first, score second.",
+  // webgl
+  "shader-sculpt":
+    "Fragment/vertex craft as the hero: SDF, noise, light models. Composition over UI chrome.",
+  "material-lab":
+    "PBR / filmic materials under a single key light. Metal, glass, cloth — object study in 3D.",
+  "volumetric-atmosphere":
+    "Fog, godrays, particles as space. Camera glide; stillness with depth, not busy particle spam.",
+  "procedural-terrain":
+    "Generated landscape / city fabric. Readable silhouette at distance; detail on approach.",
+  "interactive-sculpture":
+    "One 3D object/scene you orbit/deform. Interaction reveals form — not a product configurator.",
+  // editorial
+  "folio-spread":
+    "Magazine spread energy: monumental crop, pull-quotes, ink hierarchy. Scroll as page-turn, not card stack.",
+  "longform-rail":
+    "Essay / reportage: sticky type rail, chapter marks, quiet photography. Reading rhythm over CTA spam.",
+  "print-reconstruction":
+    "Reconstruct a print artifact on screen (folio, gazette, annual). Paper grain, registration — not fake newspaper pastiche.",
+  // interfaces
+  "tool-surface":
+    "Working UI: panels exist because the user acts. Density with calm; cards only for interactive units.",
+  "instrument-panel":
+    "Console / instrument metaphor: meters, sends, queues. Precise controls, no marketing chrome.",
+  "review-split":
+    "Compare / annotate / decide surfaces. Split panes, selection states, decisive primary action.",
 };
 
-export function pickLane(name, seed) {
-  const keys = Object.keys(LANES);
-  if (name && LANES[name]) return { id: name, brief: LANES[name] };
+/** Which categories a lane is eligible for. Untagged = design cats only (not games/webgl). */
+const DESIGN_CATS = [
+  "landing-pages",
+  "animations",
+  "concepts",
+  "editorial",
+  "interfaces",
+  "experiments",
+];
+export const LANE_FOR = {
+  "arcade-precision": ["games"],
+  "puzzle-tactile": ["games"],
+  "rhythm-timing": ["games"],
+  "stealth-signal": ["games"],
+  "toybox-physics": ["games"],
+  "shader-sculpt": ["webgl"],
+  "material-lab": ["webgl"],
+  "volumetric-atmosphere": ["webgl", "animations"],
+  "procedural-terrain": ["webgl"],
+  "interactive-sculpture": ["webgl", "concepts"],
+  "folio-spread": ["editorial", "concepts"],
+  "longform-rail": ["editorial"],
+  "print-reconstruction": ["editorial", "landing-pages"],
+  "tool-surface": ["interfaces"],
+  "instrument-panel": ["interfaces"],
+  "review-split": ["interfaces"],
+  "kinetic-type": DESIGN_CATS,
+  "editorial-print": [...DESIGN_CATS.filter((c) => c !== "interfaces"), "editorial"],
+  "sports-precision": [...DESIGN_CATS, "games"],
+  "archival-tech": [...DESIGN_CATS],
+  "soft-machine": [...DESIGN_CATS],
+};
+
+export function lanesForCategory(category) {
+  const keys = Object.keys(LANES).filter((id) => {
+    const allowed = LANE_FOR[id];
+    if (!allowed) return DESIGN_CATS.includes(category);
+    return allowed.includes(category);
+  });
+  return Object.fromEntries(keys.map((id) => [id, LANES[id]]));
+}
+
+export function pickLane(name, seed, category = null) {
+  const pool = category ? lanesForCategory(category) : LANES;
+  if (name && LANES[name]) {
+    if (category && !pool[name]) {
+      // explicit --lane always wins if it exists globally
+      return { id: name, brief: LANES[name] };
+    }
+    return { id: name, brief: LANES[name] };
+  }
+  const keys = Object.keys(pool);
+  if (!keys.length) {
+    const fallback = Object.keys(LANES);
+    const n = seedToInt(seed);
+    const id = fallback[n % fallback.length];
+    return { id, brief: LANES[id] };
+  }
   const n = seedToInt(seed);
   const id = keys[n % keys.length];
-  return { id, brief: LANES[id] };
+  return { id, brief: pool[id] };
 }
 
 export function seedToInt(seed) {
@@ -181,5 +272,9 @@ export function seedToInt(seed) {
 }
 
 export function listLanes() {
-  return Object.entries(LANES).map(([id, brief]) => ({ id, brief }));
+  return Object.entries(LANES).map(([id, brief]) => ({
+    id,
+    brief,
+    categories: LANE_FOR[id] || DESIGN_CATS,
+  }));
 }

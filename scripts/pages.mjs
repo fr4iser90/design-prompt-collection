@@ -6,11 +6,12 @@ import { fileURLToPath } from "node:url";
 import { walkEntries } from "./lib/provider.mjs";
 import { buildCatalog, writeCatalog } from "./lib/catalog.mjs";
 import { listRuns, migrateLegacyRun, pickDefaultRun } from "./lib/runs.mjs";
+import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const OUT = path.join(ROOT, "site", "dist");
-const CAT_ORDER = ["landing-pages", "animations", "concepts", "experiments"];
+const CAT_ORDER = CATEGORIES;
 
 function esc(s) {
   return String(s)

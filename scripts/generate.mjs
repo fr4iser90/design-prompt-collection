@@ -9,11 +9,12 @@ import {
   pickDefaultRun,
   visibleRuns,
 } from "./lib/runs.mjs";
+import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const PROMPTS = path.join(ROOT, "prompts");
-const CATEGORY_ORDER = ["landing-pages", "animations", "concepts", "experiments"];
+const CATEGORY_ORDER = CATEGORIES;
 
 // generate.mjs — build README.md + index.json + catalog.json from all prompt meta.yaml files.
 
@@ -132,7 +133,7 @@ function renderReadme(entries) {
 
   let md = `# Design Prompt Collection
 
-High-refined prompts for **landing pages**, **animations**, and **design concepts**.
+High-refined prompts for **landing pages**, **animations**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
 
 Each entry has a shared prompt brief; **model runs** live under \`runs/<model-slug>/\` (demo + screenshot) so models never overwrite each other.
 

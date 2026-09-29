@@ -65,7 +65,7 @@ npm run slots
 | Flag / Env | Default | Meaning |
 |------------|---------|---------|
 | `--fill` / `WORKER_FILL` | off | neue Prompts wenn Queue leer |
-| `--fill-n` / `WORKER_FILL_N` | `10` | Batch-Größe (split über 3 Kategorien) |
+| `--fill-n` / `WORKER_FILL_N` | `10` | Batch-Größe **gesamt** (gleichmäßig split). Fill = **2-pass** `ai:new` (pitch→expand). Vision-Score = `review`, nicht Fill. Steer: `FILL_MOOD` / `FILL_AVOID` / `FILL_LANE` / `AI_FILL_MODEL`. |
 | `--fill-when-below` | `1` | fill erst wenn `build_queue < N` (1 = erst wenn leer) |
 | `--max-parallel` | `2` | parallele Builds (1 Slot frei lassen) |
 | `--commit` / `WORKER_COMMIT` | off | nach Cycle wenn shots+scores fertig (Builds dürfen noch offen sein) |
@@ -116,12 +116,13 @@ Pre-commit scaffold skip: `SKIP_COMPLETE_CHECK=1 git commit -m "…"`
 
 | Command | Ergebnis |
 |---------|----------|
-| `review` | Vision-Score → README; niedrig → Rebuild |
+| `review` | Vision-Score → README (one-shot; no score-based demo rebuild) |
 | `worker` | autonomous loop (slots + build + shots + review + optional fill/commit/push/gh-pages) |
 | `stop` | touch STOP + SIGTERM worker/build/fill (`--force` → SIGKILL) |
 | `slots` | print idle/busy from gateway |
 | `ship` | one-shot pipeline + check |
-| `ai:new` / `ai:build` / `shots` / `pages` | single steps |
+| `ai:new` / `ai:build` / `shots` / `pages` | single steps — cats: landing-pages, animations, concepts, games, webgl, editorial, interfaces, experiments |
+| `ai:lanes` | list creative lanes (games/webgl have dedicated pools) |
 | `pages:deploy` | build `site/dist` + trigger GitHub Pages workflow |
 | `check` | ship-ready gate |
 | `hooks` | install pre-commit |

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T06:39:02.331Z",
+  "generated_at": "2026-09-29T07:17:46.835Z",
   "count": 185,
   "ids": [
     "abyssal-pressure-depth-scale",
@@ -4237,6 +4237,10 @@
         ]
       }
     ],
+    "games": [],
+    "webgl": [],
+    "editorial": [],
+    "interfaces": [],
     "experiments": []
   }
 }

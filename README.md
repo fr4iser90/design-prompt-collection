@@ -1,12 +1,12 @@
 # Design Prompt Collection
 
-High-refined prompts for **landing pages**, **animations**, and **design concepts**.
+High-refined prompts for **landing pages**, **animations**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
 
 Each entry has a shared prompt brief; **model runs** live under `runs/<model-slug>/` (demo + screenshot) so models never overwrite each other.
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 185 | 182 | 162 | 23 |
+| 185 | 178 | 162 | 23 |
 
 ## Quick start
 
@@ -961,7 +961,6 @@ A landing page for Solaris Energy, a desert-focused solar power startup, using d
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 329s | — | — |
 
 ---
@@ -1584,7 +1583,6 @@ Macro animation of white porcelain cooling, revealing intricate crackle glaze pa
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 96s | — | — |
 
 ---
@@ -1855,7 +1853,6 @@ Scroll-driven mask reveal for Obsidian Loom where woven headline strips unfold f
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | — | — | — | — | — | — | — | — |
 
 ---
@@ -2972,7 +2969,6 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `qwen3-8-flash-next` | — | — | — | — | — | — | — | — | — |
 | — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 190s | — | — |
 
 ---

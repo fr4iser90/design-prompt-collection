@@ -5,11 +5,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { CATEGORIES } from "./lib/helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const PROMPTS = path.join(ROOT, "prompts");
-const CATEGORIES = ["landing-pages", "animations", "concepts", "experiments"];
 const STATUSES = ["draft", "polished", "archived"];
 
 function parseMeta(text, filePath) {
