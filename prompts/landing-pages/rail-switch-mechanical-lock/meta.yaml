@@ -1,0 +1,29 @@
+id: rail-switch-mechanical-lock
+title: "SwitchPoint: Mechanical Rail Lock Interface"
+category: landing-pages
+tags:
+  - landing-page
+  - railway
+  - industrial-safety
+  - interactive
+  - monochrome
+  - heavy-ui
+  - physics
+  - html5
+  - css3
+  - js
+status: polished
+summary: "Full-bleed macro of a steel rail switch. Drag a heavy lever to physically shift rails into a locked position with magnetic resistance, revealing route data in a tactile industrial interface."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-09-29"
+updated: "2026-09-29"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

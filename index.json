@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-29T07:54:51.813Z",
+  "generated_at": "2026-09-29T09:09:06.715Z",
   "schema": "schema/entry.schema.json",
-  "count": 185,
+  "count": 186,
   "categories": [
     "landing-pages",
     "animations",
@@ -3304,6 +3304,41 @@
           "review_summary": "Strong execution of the retro-terminal aesthetic with excellent typography and color usage, though the layout feels slightly sparse in the first viewport."
         }
       ]
+    },
+    {
+      "id": "rail-switch-mechanical-lock",
+      "title": "SwitchPoint: Mechanical Rail Lock Interface",
+      "category": "landing-pages",
+      "tags": [
+        "landing-page",
+        "railway",
+        "industrial-safety",
+        "interactive",
+        "monochrome",
+        "heavy-ui",
+        "physics",
+        "html5",
+        "css3",
+        "js"
+      ],
+      "status": "polished",
+      "summary": "Full-bleed macro of a steel rail switch. Drag a heavy lever to physically shift rails into a locked position with magnetic resistance, revealing route data in a tactile industrial interface.",
+      "path": "prompts/landing-pages/rail-switch-mechanical-lock",
+      "preview": null,
+      "prompt": "prompts/landing-pages/rail-switch-mechanical-lock/prompt.md",
+      "extended": "prompts/landing-pages/rail-switch-mechanical-lock/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-09-29",
+      "updated": "2026-09-29",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "ramen-broth-turbidity-scale",

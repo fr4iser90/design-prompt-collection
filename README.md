@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 185 | 185 | 153 | 32 |
+| 186 | 185 | 154 | 32 |
 
 ## Quick start
 
@@ -900,6 +900,20 @@ A landing page for 'ScanArchive', a digital radio signal archive, using CRT scan
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 7.5s | 8 | [open](prompts/landing-pages/radio-scan-archive/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### SwitchPoint: Mechanical Rail Lock Interface
+
+Full-bleed macro of a steel rail switch. Drag a heavy lever to physically shift rails into a locked position with magnetic resistance, revealing route data in a tactile industrial interface.
+
+**Status:** polished · `landing-page` `railway` `industrial-safety` `interactive` `monochrome` `heavy-ui` `physics` `html5` `css3` `js` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/landing-pages/rail-switch-mechanical-lock/prompt.md) · [extended](prompts/landing-pages/rail-switch-mechanical-lock/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

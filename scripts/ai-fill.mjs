@@ -286,6 +286,23 @@ const BANNED_PHRASE_RE =
 const VAGUE_PAD_RE =
   /\b(modern|sleek|minimal|elegant|stunning|beautiful|vibrant|clean|simple|unique|innovative)\b/gi;
 const GENERIC_STACK_RE = /\b(Inter|Roboto|Arial|system[- ]ui|Helvetica Neue)\b/;
+/** True when a line *prescribes* a forbidden stack (not when it bans them). */
+function textPrescribesGenericStack(text) {
+  for (const line of String(text || "").split(/\r?\n/)) {
+    if (!GENERIC_STACK_RE.test(line)) continue;
+    if (
+      /\b(never|avoid|ban(?:ned)?|forbidden|do\s+not|don't|ohne|kein|not\s+use|must\s+not|no\s+Inter)\b/i.test(
+        line
+      )
+    ) {
+      continue;
+    }
+    return true;
+  }
+  return false;
+}
+const DELIVERABLE_RE =
+  /\b(deliverable|single[- ]file\s+html|single\s+html|html\s*\/\s*css(?:\s*\/\s*js)?|one\s+html(?:5)?\s+(?:file|demo|page)|output:\s*html|\.html)\b/i;
 const TYPE_HINT_RE =
   /\b(typeface|typography|font[- ]family|serif|sans[- ]serif|display type|mono(?:space)?|pairing)\b/i;
 const MOTION_HINT_RE =
@@ -457,6 +474,56 @@ Acceptance criteria must be fail-able checklists.
 Ban vague padding. No {{placeholders}}.`;
 }
 
+/** Concrete repair instructions for expand retries (extend draft, don't discard). */
+function repairExpandHint(err, category, previousRaw) {
+  const targets = WORD_TARGETS[category] || WORD_TARGETS.concepts;
+  const parts = [
+    "",
+    `PREVIOUS EXPAND FAILED: ${err}`,
+    `Keep the same id/title/thesis. Fix EVERY listed issue — rewrite only what fails.`,
+  ];
+  if (/too short/i.test(err)) {
+    parts.push(
+      `LENGTH HARD REQUIREMENT: prompt_md = ${targets.md[0]}–${targets.md[1]} words; prompt_full_md = ${targets.full[0]}–${targets.full[1]} words.`,
+      `Extend with concrete layout (desktop+mobile), motion beats, constraints checklist, fail-able acceptance criteria — never adjective padding.`
+    );
+    if (previousRaw?.prompt_md) {
+      parts.push(
+        "",
+        "DRAFT TO EXTEND (preserve concept; lengthen and fix):",
+        "---prompt_md---",
+        String(previousRaw.prompt_md).slice(0, 7000),
+        "---prompt_full_md---",
+        String(previousRaw.prompt_full_md || "").slice(0, 9000),
+        "---end draft---"
+      );
+    }
+  }
+  if (/font stack/i.test(err)) {
+    parts.push(
+      `TYPE: set type_pairing to two named expressive faces only.`,
+      `Never prescribe Inter/Roboto/Arial/system-ui/Helvetica. Ban-lines ("never use Inter") are OK.`
+    );
+  }
+  if (/card|inset-hero|hero card/i.test(err)) {
+    parts.push(
+      `LAYOUT: full-bleed hero only — no cards, inset hero images, rounded media panels, or floating image blocks in the first viewport.`
+    );
+  }
+  if (/deliverable/i.test(err)) {
+    parts.push(
+      `Add an explicit oneshot line: "Deliverable: single-file HTML/CSS/JS."`
+    );
+  }
+  if (/fluff|vague|banned phrase/i.test(err)) {
+    parts.push(`Replace marketing fluff with concrete visual/mechanic instructions.`);
+  }
+  if (/heading|prompt_full_md missing/i.test(err)) {
+    parts.push(`prompt_full_md must include every required ## heading for this category.`);
+  }
+  return "\n\n" + parts.join("\n");
+}
+
 function buildPitchUser({
   category,
   count,
@@ -552,25 +619,49 @@ async function chatJson(cfg, messages, temperature) {
 
 function normalizePayload(content, keyHints = ["entries", "pitches", "items", "prompts"]) {
   let parsed = extractJson(content);
+
+  const isEntryLike = (o) =>
+    o &&
+    typeof o === "object" &&
+    !Array.isArray(o) &&
+    (o.prompt_md || o.prompt_full_md || o.hook || o.id || o.title);
+
+  const isObjectArray = (v) =>
+    Array.isArray(v) &&
+    v.length > 0 &&
+    v.every((x) => x && typeof x === "object" && !Array.isArray(x));
+
+  // Single entry/pitch object — must win before tags/colors string arrays
+  if (isEntryLike(parsed)) {
+    for (const k of keyHints) {
+      if (isObjectArray(parsed[k])) return parsed[k];
+    }
+    return [parsed];
+  }
+
   if (!Array.isArray(parsed) && parsed && typeof parsed === "object") {
     for (const k of keyHints) {
-      if (Array.isArray(parsed[k])) {
+      if (isObjectArray(parsed[k])) {
         parsed = parsed[k];
         break;
       }
     }
     if (!Array.isArray(parsed)) {
-      parsed = Object.values(parsed).find(Array.isArray);
+      parsed = Object.values(parsed).find(isObjectArray);
     }
   }
+
   if (!Array.isArray(parsed)) {
-    // single object expand response
-    if (parsed && typeof parsed === "object" && (parsed.prompt_md || parsed.id)) {
-      return [parsed];
-    }
-    throw new Error("Expected array in JSON");
+    throw new Error("Expected entry object or array of entries in JSON");
   }
-  return parsed;
+  // Drop accidental primitives (e.g. tag strings leaking into an array)
+  const objects = parsed.filter(
+    (x) => x && typeof x === "object" && !Array.isArray(x)
+  );
+  if (!objects.length) {
+    throw new Error("JSON array contained no entry objects");
+  }
+  return objects;
 }
 
 function requireFullSections(full, id, category) {
@@ -659,7 +750,10 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
   const targets = WORD_TARGETS[category] || WORD_TARGETS.concepts;
   const mdWords = wordCount(prompt_md);
   const fullWords = wordCount(prompt_full_md);
-  if (mdWords < targets.md[0]) {
+  // ~5% slack: Flash often lands just under the floor on first try
+  const mdFloor = Math.floor(targets.md[0] * 0.95);
+  const fullFloor = Math.floor(targets.full[0] * 0.95);
+  if (mdWords < mdFloor) {
     throw new Error(
       `prompt_md too short for ${category}: ${mdWords} words < ${targets.md[0]} (${targets.label})`
     );
@@ -669,7 +763,7 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
       `prompt_md too bloated for ${category}: ${mdWords} words > ~${targets.md[1]} target`
     );
   }
-  if (fullWords < targets.full[0]) {
+  if (fullWords < fullFloor) {
     throw new Error(
       `prompt_full_md too short for ${category}: ${fullWords} words < ${targets.full[0]}`
     );
@@ -686,9 +780,9 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
     throw new Error(`Template leftovers in ${id}`);
   }
   if (
-    GENERIC_STACK_RE.test(prompt_md) ||
-    GENERIC_STACK_RE.test(prompt_full_md) ||
-    GENERIC_STACK_RE.test(String(raw.type_pairing || ""))
+    textPrescribesGenericStack(prompt_md) ||
+    textPrescribesGenericStack(prompt_full_md) ||
+    textPrescribesGenericStack(String(raw.type_pairing || ""))
   ) {
     throw new Error(`Forbidden default font stack in ${id}`);
   }
@@ -993,14 +1087,16 @@ async function generateForCategory(cfg, args, catalog, category) {
     return [];
   }
 
-  // ── Pass 2: expand (+ sanitize retry) ────────────────────────
+  // ── Pass 2: expand (+ repair retries — extend draft, don't discard) ──
+  const EXPAND_ATTEMPTS = 4;
   const accepted = [];
   for (const pitch of pitches) {
     if (accepted.length >= count) break;
     console.log(`  pass2 expand ${pitch.id}…`);
     let entry = null;
     let lastErr = null;
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    let previousRaw = null;
+    for (let attempt = 1; attempt <= EXPAND_ATTEMPTS; attempt++) {
       try {
         const expandContent = await chatJson(
           cfg,
@@ -1011,14 +1107,20 @@ async function generateForCategory(cfg, args, catalog, category) {
               content:
                 buildExpandUser({ category, pitch, lane, mood: args.mood, catalog }) +
                 (attempt > 1
-                  ? `\n\nPREVIOUS EXPAND FAILED: ${lastErr}\nFix every listed issue. Keep the same id.`
+                  ? repairExpandHint(lastErr, category, previousRaw)
                   : ""),
             },
           ],
-          expandTemp
+          attempt === 1 ? expandTemp : Math.min(0.55, expandTemp)
         );
         const raws = normalizePayload(expandContent, ["entries"]);
-        const raw = raws[0] || {};
+        const picked = raws[0];
+        if (!picked || typeof picked !== "object" || Array.isArray(picked)) {
+          throw new Error(
+            `expand returned ${typeof picked}, expected entry object`
+          );
+        }
+        const raw = { ...picked };
         raw.id = pitch.id;
         raw.title = raw.title || pitch.title;
         raw.tags = raw.tags?.length ? raw.tags : pitch.tags;
@@ -1031,6 +1133,7 @@ async function generateForCategory(cfg, args, catalog, category) {
             raw.summary = `${pitch.title} — ${pitch.niche || pitch.hook}`.slice(0, 220);
           }
         }
+        previousRaw = raw;
 
         entry = sanitizeEntry(raw, {
           category,
@@ -1049,10 +1152,10 @@ async function generateForCategory(cfg, args, catalog, category) {
       } catch (e) {
         lastErr = e.message;
         entry = null;
-        if (attempt === 2) {
+        if (attempt === EXPAND_ATTEMPTS) {
           rejected.push({ id: pitch.id, reason: `expand: ${lastErr}` });
         } else {
-          console.warn(`  retry ${pitch.id}: ${lastErr}`);
+          console.warn(`  retry ${attempt}/${EXPAND_ATTEMPTS} ${pitch.id}: ${lastErr}`);
         }
       }
     }
