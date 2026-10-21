@@ -1,0 +1,21 @@
+id: volt-route-explainer
+title: "Volt Route Explainer"
+category: motion-graphics
+tags:
+  - explainer
+  - data-story
+  - kinetic-type
+  - infrastructure
+  - timeline
+status: draft
+summary: "10s four-beat explainer for Volt Route: grid problem → path solve → capacity payoff with hazard-stripe diagram motion."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

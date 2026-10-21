@@ -10,6 +10,7 @@
 //   npm run ai:new -- -c games -n 2 --lane arcade-precision
 //   npm run ai:new -- -c webgl -n 2 --mood "filmic glass SDF"
 //   npm run ai:new -- -c animations -n 3 --mood "brutal kinetic type"
+//   npm run ai:new -- -c motion-graphics -n 3 --lane kinetic-identity
 //   npm run ai:new -- -c concepts -n 2 --lane arid-minimal --seed 42
 //   npm run ai:new -- --all -n 2 --avoid "fintech,ocean,parallax"
 //   npm run ai:lanes
@@ -167,6 +168,8 @@ const FEW_SHOT = {
 BAD: feature-card SaaS; purple glow; another coffee/pasta/pottery/ledger clone; inset hero card.`,
   animations: `GOOD: one kinetic object/system; motion parameters named; interaction changes the motion language.
 BAD: "animated landing page"; Lottie wallpaper; marketing copy around a looping GIF.`,
+  "motion-graphics": `GOOD: timed sequence with named beats (0.0s–Ns), kinetic type / diagram / lower-third / title card; freeze-frame at t=0 and mid-beat still readable; single HTML timeline (rAF/CSS/Canvas).
+BAD: interactive UI knob study; landing-page hero with ambient loop; unexplained particle wallpaper; "AE vibe" without beat sheet.`,
   concepts: `GOOD: named artifact (e.g. "ORBIT desk lamp UI that grows shadows as tasks overdue") + exact layout + type + 3 motions + HTML deliverable.
 BAD: "a concept exploring the future of productivity" with no artifact, no layout, no fails.`,
   games: `GOOD: "HOLDFAST — one-screen tug: hold to tension a cable; release to fling a weight into a moving socket. Fail = slack snap. Score = sockets cleared. Input: pointer down/up."
@@ -205,6 +208,19 @@ ANIMATION-SPECIFIC:
 - Deliverable: single HTML (+ canvas/CSS/WebGL as needed); tags carry stack
 - Ban: autoplaying marketing video headers; unexplained particle spam
 ${FEW_SHOT.animations}`,
+
+  "motion-graphics": `CATEGORY = motion-graphics
+${DESIGN_CANON}
+MOTION-GRAPHICS-SPECIFIC (timeline piece — NOT an interactive material study):
+- Deliver a TIMED SEQUENCE: named beats with clock times (e.g. 0.0–0.8s / 0.8–2.2s / …) totaling a loop duration (prefer 4–12s)
+- Genres: kinetic identity, title sequence, lower-thirds pack, explainer beats, data-story arc — pick ONE
+- Brand / show title / product name must appear as a hero-level type signal in at least one beat
+- Specify: frame aspect (16:9 default), loop vs once, cut/dissolve language, type hierarchy per beat
+- Still-frame readable: composition at t=0 AND at one mid beat must work as a poster (shots pipeline captures a still)
+- Interaction optional: Space/click = replay; scrub bar OK — but story must play without pointer
+- Deliverable: single HTML (+ CSS/Canvas/SVG/WebGL as needed); Remotion/AE names may appear only as TAGS, never as required runtime
+- Ban: landing-page hero chrome; UI knob/physics demos (those belong in animations); particle spam without beat sheet; purple-glow SaaS explainers
+${FEW_SHOT["motion-graphics"]}`,
 
   concepts: `CATEGORY = concepts
 ${DESIGN_CANON}
@@ -319,6 +335,8 @@ const GAME_CLONE_RE =
   /\b(flappy|snake game|endless runner|2048 clone|pong clone|tetris clone)\b/i;
 const ANIM_HINT_RE =
   /\b(motion|kinetic|easing|spring|timeline|scrub|parallax|loop|raf|requestAnimationFrame|gsap|keyframes)\b/i;
+const MG_HINT_RE =
+  /\b(timeline|beat|beats?|lower[- ]?third|title\s*card|kinetic|explainer|sequence|loop\s*duration|0\.\d\s*s|\d+\s*s\b|frame|16:9|credit|nameplate|count[- ]?up)\b/i;
 const EXPERIMENT_HINT_RE =
   /\b(experiment|thesis|prototype|generative|research|hypothesis|unusual|speculative)\b/i;
 const LANDING_HINT_RE =
@@ -328,6 +346,7 @@ const LANDING_HINT_RE =
 const WORD_TARGETS = {
   "landing-pages": { md: [500, 1200], full: [800, 1800], label: "complete landing page" },
   animations: { md: [300, 700], full: [500, 1100], label: "hero / motion section" },
+  "motion-graphics": { md: [400, 900], full: [700, 1400], label: "timed motion-graphics sequence" },
   concepts: { md: [300, 700], full: [600, 1200], label: "concept / artifact oneshot" },
   games: { md: [300, 700], full: [600, 1200], label: "browser one-shot game" },
   webgl: { md: [300, 700], full: [500, 1100], label: "WebGL scene oneshot" },
@@ -370,6 +389,15 @@ Concepts pitch EXTRA:
 "artifact": "named thing the demo IS",
 "first_interaction": "what user does in first 5 seconds"`
       : "";
+  const mgExtra =
+    category === "motion-graphics"
+      ? `
+Motion-graphics pitch EXTRA required fields:
+"loop_duration": "e.g. 8s loop",
+"beats": ["0.0–0.8s: …", "0.8–2.4s: …", "…"],
+"aspect": "16:9 (default) or named"
+Brand / show title required. Do NOT pitch an interactive UI physics study.`
+      : "";
   return `You are a ruthless senior web designer / creative director inventing DISTINCT concept pitches.
 
 Return ONLY JSON: { "pitches": [ /* … */ ] }
@@ -389,6 +417,7 @@ Each pitch shape:
 }
 ${gameExtra}
 ${conceptExtra}
+${mgExtra}
 
 ${catBlock}
 
@@ -398,6 +427,7 @@ Rules:
 - Motions specific (not "subtle fade" / "smooth transitions")
 - If category is landing-pages: brand required; hero = one composition; no card-based hero
 - If category is games: playable loop required — unplayable pitches are failures
+- If category is motion-graphics: timed beat sheet required — interactive knob demos are failures
 - Do NOT write prompt_md yet`;
 }
 
@@ -439,7 +469,17 @@ function buildExpandSystem(category) {
 ## Motion
 ## Constraints
 ## Acceptance criteria`
-          : `prompt_full_md with EXACT headings:
+          : category === "motion-graphics"
+            ? `prompt_full_md with EXACT headings:
+## Concept
+## Beat sheet
+## Palette
+## Type
+## Frame
+## Motion
+## Constraints
+## Acceptance criteria`
+            : `prompt_full_md with EXACT headings:
 ## Concept
 ## Palette
 ## Type
@@ -737,6 +777,11 @@ function requireFullSections(full, id, category) {
       ["## Layout", /##\s*Layout\b/i],
       ["## Motion", /##\s*Motion\b/i],
     ],
+    "motion-graphics": [
+      ["## Beat sheet", /##\s*Beat sheet\b/i],
+      ["## Frame", /##\s*Frame\b/i],
+      ["## Motion", /##\s*Motion\b/i],
+    ],
   };
   const needed = [...base, ...(byCat[category] || byCat.default)];
   const missing = needed.filter(([, re]) => !re.test(full)).map(([n]) => n);
@@ -931,6 +976,15 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
   if (category === "animations" && !ANIM_HINT_RE.test(blob)) {
     throw new Error(`animations entry lacks motion craft language: ${id}`);
   }
+  if (category === "motion-graphics" && !MG_HINT_RE.test(blob)) {
+    throw new Error(`motion-graphics entry lacks timeline/beat language: ${id}`);
+  }
+  if (
+    category === "motion-graphics" &&
+    /\b(draggable|magnetic detent|knob|landing page|feature cards?|pricing)\b/i.test(blob)
+  ) {
+    throw new Error(`motion-graphics entry looks like UI/landing, not a sequence: ${id}`);
+  }
   if (category === "landing-pages" && !LANDING_HINT_RE.test(blob)) {
     throw new Error(`landing-pages entry lacks brand/hero/cta language: ${id}`);
   }
@@ -938,7 +992,9 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
     throw new Error(`experiments entry lacks thesis/experiment language: ${id}`);
   }
   if (
-    (category === "landing-pages" || category === "interfaces") &&
+    (category === "landing-pages" ||
+      category === "interfaces" ||
+      category === "motion-graphics") &&
     !/\b[A-Z][A-Za-z0-9&' .-]{1,40}\b/.test(prompt_md)
   ) {
     throw new Error(`Missing brand/product name signal in ${id}`);
@@ -989,10 +1045,24 @@ function sanitizePitch(raw, existingIds, category) {
   if (hook.length < 16) throw new Error(`Pitch hook too weak: ${id}`);
   const brand = String(raw.brand || "").trim();
   if (
-    (category === "landing-pages" || category === "interfaces" || category === "editorial") &&
+    (category === "landing-pages" ||
+      category === "interfaces" ||
+      category === "editorial" ||
+      category === "motion-graphics") &&
     brand.length < 2
   ) {
     throw new Error(`Pitch missing brand: ${id}`);
+  }
+  if (category === "motion-graphics") {
+    const beats = Array.isArray(raw.beats)
+      ? raw.beats.map((b) => String(b).trim()).filter(Boolean)
+      : [];
+    const loop = String(raw.loop_duration || "").trim();
+    if (beats.length < 3) throw new Error(`Motion-graphics pitch needs ≥3 beats: ${id}`);
+    if (loop.length < 2) throw new Error(`Motion-graphics pitch missing loop_duration: ${id}`);
+    if (!MG_HINT_RE.test(`${hook} ${beats.join(" ")} ${loop} ${raw.niche || ""}`)) {
+      throw new Error(`Motion-graphics pitch lacks timeline language: ${id}`);
+    }
   }
   if (category === "games") {
     const loop = String(raw.core_loop || "").trim();
@@ -1292,6 +1362,7 @@ async function main() {
         `  npm run ai:new -- -c games --lane arcade-precision -n 2\n` +
         `  npm run ai:new -- -c webgl --lane shader-sculpt -n 2\n` +
         `  npm run ai:new -- -c animations --lane kinetic-type -n 2\n` +
+        `  npm run ai:new -- -c motion-graphics --lane kinetic-identity -n 2\n` +
         `  npm run ai:new -- --all -n 2 --mood "unexpected luxury"`
     );
   }

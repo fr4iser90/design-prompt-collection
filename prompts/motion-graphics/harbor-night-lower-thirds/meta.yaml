@@ -1,0 +1,21 @@
+id: harbor-night-lower-thirds
+title: "Harbor Night Lower Thirds"
+category: motion-graphics
+tags:
+  - lower-third
+  - broadcast
+  - nameplate
+  - kinetic-type
+  - timeline
+status: draft
+summary: "6s broadcast lower-third pack for Harbor Night: nameplate enter/hold/exit with marine ink palette and safe-margin discipline."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -156,6 +156,17 @@ export const LANES = {
     "Water as plane: tide, glass, refraction. Quiet luxury, saline palette.",
   "signal-warning":
     "Utility / safety / infrastructure aesthetics. Stripes, stamps, mono labels — intentional tension.",
+  // motion-graphics
+  "kinetic-identity":
+    "Brand lockup as timeline: monogram → wordmark → tagline. Path morph, stroke draw, light sweep — not a UI knob study.",
+  "explainer-beat":
+    "3–5 beat explainer: problem → mechanism → payoff. Title cards + diagram motion; readable at 0:00 freeze.",
+  "lower-third-pack":
+    "Broadcast lower-thirds / nameplate system: enter, hold, exit. Safe margins, readable type, loopable.",
+  "data-story-arc":
+    "One chart/metric becomes a story beat (count-up, bar grow, map draw). Numbers legible; no dashboard soup.",
+  "title-sequence":
+    "Opening titles: atmosphere → credit stack → brand land. Cinematic pacing, hard cuts or dissolves named.",
   // games
   "arcade-precision":
     "Tight one-screen arcade loop: readable risk, fair fail, juicy feedback. No endless runner clones.",
@@ -198,11 +209,13 @@ export const LANES = {
 const DESIGN_CATS = [
   "landing-pages",
   "animations",
+  "motion-graphics",
   "concepts",
   "editorial",
   "interfaces",
   "experiments",
 ];
+const MG_CATS = ["motion-graphics"];
 export const LANE_FOR = {
   "arcade-precision": ["games"],
   "puzzle-tactile": ["games"],
@@ -220,7 +233,12 @@ export const LANE_FOR = {
   "tool-surface": ["interfaces"],
   "instrument-panel": ["interfaces"],
   "review-split": ["interfaces"],
-  "kinetic-type": DESIGN_CATS,
+  "kinetic-identity": MG_CATS,
+  "explainer-beat": MG_CATS,
+  "lower-third-pack": MG_CATS,
+  "data-story-arc": [...MG_CATS, "editorial"],
+  "title-sequence": MG_CATS,
+  "kinetic-type": [...DESIGN_CATS],
   "editorial-print": [...DESIGN_CATS.filter((c) => c !== "interfaces"), "editorial"],
   "sports-precision": [...DESIGN_CATS, "games"],
   "archival-tech": [...DESIGN_CATS],

@@ -78,7 +78,13 @@ ANIMATION CATEGORY (static screenshot):
 - Do NOT deduct for motion/entrance/ambient/magnetic effects that cannot appear in a still frame
 - Do NOT list "motion not visible", "no stagger", "no magnetic field" as issues
 - Score composition, brand, type, palette, layout, and UI fidelity as frozen in the shot`
-      : "";
+      : entry.category === "motion-graphics"
+        ? `
+MOTION-GRAPHICS CATEGORY (static screenshot of a timeline piece):
+- Do NOT deduct for mid-sequence motion that cannot appear in a still frame
+- DO score: title/brand hierarchy, beat composition as a poster, type pairing, palette, safe margins, absence of landing-page chrome
+- Deduct hard if it looks like a SaaS landing or interactive UI widget instead of a title/explainer frame`
+        : "";
   const system = `You score design screenshots honestly for a prompt collection benchmark.
 
 Rate 1–10 against the brief + these rules (low if violated):

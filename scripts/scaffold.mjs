@@ -7,7 +7,7 @@
  *   npm run scaffold -- -c animations -i magnetic-nav -t "Magnetic Nav"
  *
  * Flags:
- *   --category / -c   landing-pages | animations | concepts | games | webgl | editorial | interfaces | experiments
+ *   --category / -c   landing-pages | animations | motion-graphics | concepts | games | webgl | editorial | interfaces | experiments
  *   --id / -i         kebab-case folder name
  *   --title / -t      human title
  *   --force           overwrite existing folder

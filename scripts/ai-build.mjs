@@ -62,6 +62,17 @@ function buildMessages(entry, model) {
   const prompt = fs.readFileSync(path.join(entry.dir, "prompt.md"), "utf8");
   const full = fs.readFileSync(path.join(entry.dir, "prompt.full.md"), "utf8");
 
+  const mgNote =
+    entry.category === "motion-graphics"
+      ? `
+MOTION-GRAPHICS BUILD RULES:
+- This is a TIMED SEQUENCE (title/identity/explainer/lower-third), not a landing page and not a draggable UI study
+- Autoplay the timeline on load; Space or click may restart; optional scrub — story must not require pointer
+- Honor the beat sheet clock times from the brief; prefer a seamless loop of the stated duration
+- Stage is a 16:9 (or brief-specified) frame; composition must read as a poster at t≈0 for screenshots
+- prefers-reduced-motion: jump to final hold / static title card`
+      : "";
+
   const system = `You are an elite front-end designer-engineer.
 Build a single self-contained HTML file that executes the design prompt.
 
@@ -74,7 +85,7 @@ HARD OUTPUT RULES:
 - BRAND: the exact brand/product name from the brief must appear as a hero-level signal in the first viewport (large type or dominant wordmark — not only tiny nav text). If the brief names a brand, render that string visibly.
 - Follow the prompt art direction precisely (no hero cards/badges, expressive type, atmospheric background, 2–3 motions, prefers-reduced-motion)
 - Avoid purple-glow SaaS and cream+terracotta clichés unless the brief asks for them
-- Output is stored under runs/<model>/demo/index.html and screenshotted for README`;
+- Output is stored under runs/<model>/demo/index.html and screenshotted for README${mgNote}`;
 
   const user = `Category: ${entry.category}
 Title: ${entry.title}

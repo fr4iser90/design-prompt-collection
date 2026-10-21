@@ -1,10 +1,11 @@
 {
-  "generated_at": "2026-09-29T19:07:12.207Z",
+  "generated_at": "2026-10-21T11:35:28.320Z",
   "schema": "schema/entry.schema.json",
-  "count": 237,
+  "count": 240,
   "categories": [
     "landing-pages",
     "animations",
+    "motion-graphics",
     "concepts",
     "games",
     "webgl",
@@ -8420,6 +8421,96 @@
           "review_summary": "Strong typography and atmospheric background, but the 3D scene fails to render the actual 'woven' structure, appearing as disconnected floating pills."
         }
       ]
+    },
+    {
+      "id": "harbor-night-lower-thirds",
+      "title": "Harbor Night Lower Thirds",
+      "category": "motion-graphics",
+      "tags": [
+        "lower-third",
+        "broadcast",
+        "nameplate",
+        "kinetic-type",
+        "timeline"
+      ],
+      "status": "draft",
+      "summary": "6s broadcast lower-third pack for Harbor Night: nameplate enter/hold/exit with marine ink palette and safe-margin discipline.",
+      "path": "prompts/motion-graphics/harbor-night-lower-thirds",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/harbor-night-lower-thirds/prompt.md",
+      "extended": "prompts/motion-graphics/harbor-night-lower-thirds/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "meridian-audit-lockup",
+      "title": "Meridian Audit Lockup",
+      "category": "motion-graphics",
+      "tags": [
+        "kinetic-identity",
+        "logo-morph",
+        "title-sequence",
+        "brand-motion",
+        "timeline"
+      ],
+      "status": "draft",
+      "summary": "8s identity sequence for Meridian Audit: monogram stroke-draw into wordmark with ledger-ink palette and metallic light sweep.",
+      "path": "prompts/motion-graphics/meridian-audit-lockup",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/meridian-audit-lockup/prompt.md",
+      "extended": "prompts/motion-graphics/meridian-audit-lockup/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "volt-route-explainer",
+      "title": "Volt Route Explainer",
+      "category": "motion-graphics",
+      "tags": [
+        "explainer",
+        "data-story",
+        "kinetic-type",
+        "infrastructure",
+        "timeline"
+      ],
+      "status": "draft",
+      "summary": "10s four-beat explainer for Volt Route: grid problem → path solve → capacity payoff with hazard-stripe diagram motion.",
+      "path": "prompts/motion-graphics/volt-route-explainer",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/volt-route-explainer/prompt.md",
+      "extended": "prompts/motion-graphics/volt-route-explainer/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "abyssal-pressure-depth-scale",

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "High-refined design prompts for landing pages, animations, and concepts",
+  "description": "High-refined design prompts for landing pages, animations, motion graphics, and concepts",
   "scripts": {
     "prepare": "node scripts/install-hooks.mjs",
     "hooks": "node scripts/install-hooks.mjs",

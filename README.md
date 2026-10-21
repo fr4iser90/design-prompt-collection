@@ -1,12 +1,12 @@
 # Design Prompt Collection
 
-High-refined prompts for **landing pages**, **animations**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
+High-refined prompts for **landing pages**, **animations**, **motion graphics**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
 
 Each entry has a shared prompt brief; **model runs** live under `runs/<model-slug>/` (demo + screenshot) so models never overwrite each other.
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 237 | 232 | 205 | 32 |
+| 240 | 232 | 205 | 35 |
 
 ## Quick start
 
@@ -2198,6 +2198,50 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo](https://github.com/gufo-org/gufo) | off | — | — | — | — | 8.1s | 6 | [open](prompts/animations/woven-reed-flex/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+## Motion Graphics
+
+### Harbor Night Lower Thirds
+
+6s broadcast lower-third pack for Harbor Night: nameplate enter/hold/exit with marine ink palette and safe-margin discipline.
+
+**Status:** draft · `lower-third` `broadcast` `nameplate` `kinetic-type` `timeline`
+
+[prompt](prompts/motion-graphics/harbor-night-lower-thirds/prompt.md) · [extended](prompts/motion-graphics/harbor-night-lower-thirds/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Meridian Audit Lockup
+
+8s identity sequence for Meridian Audit: monogram stroke-draw into wordmark with ledger-ink palette and metallic light sweep.
+
+**Status:** draft · `kinetic-identity` `logo-morph` `title-sequence` `brand-motion` `timeline`
+
+[prompt](prompts/motion-graphics/meridian-audit-lockup/prompt.md) · [extended](prompts/motion-graphics/meridian-audit-lockup/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Volt Route Explainer
+
+10s four-beat explainer for Volt Route: grid problem → path solve → capacity payoff with hazard-stripe diagram motion.
+
+**Status:** draft · `explainer` `data-story` `kinetic-type` `infrastructure` `timeline`
+
+[prompt](prompts/motion-graphics/volt-route-explainer/prompt.md) · [extended](prompts/motion-graphics/volt-route-explainer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

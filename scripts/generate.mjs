@@ -136,7 +136,7 @@ function renderReadme(entries) {
 
   let md = `# Design Prompt Collection
 
-High-refined prompts for **landing pages**, **animations**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
+High-refined prompts for **landing pages**, **animations**, **motion graphics**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
 
 Each entry has a shared prompt brief; **model runs** live under \`runs/<model-slug>/\` (demo + screenshot) so models never overwrite each other.
 

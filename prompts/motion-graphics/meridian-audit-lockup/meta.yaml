@@ -1,0 +1,21 @@
+id: meridian-audit-lockup
+title: "Meridian Audit Lockup"
+category: motion-graphics
+tags:
+  - kinetic-identity
+  - logo-morph
+  - title-sequence
+  - brand-motion
+  - timeline
+status: draft
+summary: "8s identity sequence for Meridian Audit: monogram stroke-draw into wordmark with ledger-ink palette and metallic light sweep."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

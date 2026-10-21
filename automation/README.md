@@ -121,7 +121,7 @@ Pre-commit scaffold skip: `SKIP_COMPLETE_CHECK=1 git commit -m "…"`
 | `stop` | touch STOP + SIGTERM worker/build/fill (`--force` → SIGKILL) |
 | `slots` | print idle/busy from gateway |
 | `ship` | one-shot pipeline + check |
-| `ai:new` / `ai:build` / `shots` / `pages` | single steps — cats: landing-pages, animations, concepts, games, webgl, editorial, interfaces, experiments |
+| `ai:new` / `ai:build` / `shots` / `pages` | single steps — cats: landing-pages, animations, motion-graphics, concepts, games, webgl, editorial, interfaces, experiments |
 | `ai:lanes` | list creative lanes (games/webgl have dedicated pools) |
 | `pages:deploy` | build `site/dist` + trigger GitHub Pages workflow |
 | `check` | ship-ready gate |
