@@ -1,0 +1,31 @@
+id: brine-crystal-halite-growth
+title: "Brine Crystal Halite Growth"
+category: interfaces
+tags:
+  - chemistry
+  - growth-sim
+  - canvas
+  - salinity
+  - geometric
+  - industrial
+  - tool-surface
+  - physics
+  - precision
+  - interactive
+  - minimal
+  - infrastructure
+status: polished
+summary: "A dark industrial tank where salinity sliders dictate crystal lattice growth. High salinity breeds chaotic, rapid fracturing; low salinity yields slow, perfect geometric cubes. Achieve target purity."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

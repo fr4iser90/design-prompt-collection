@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 240 | 240 | 205 | 35 |
+| 241 | 240 | 206 | 35 |
 
 ## Quick start
 
@@ -3179,7 +3179,7 @@ A precision timing game where you fire laser pulses into a vibrating crystal lat
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 735ms | 234s | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/laser-alignment-pulse-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 1.2s | 197s | 7 | [open](prompts/games/laser-alignment-pulse-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3714,6 +3714,20 @@ Direct manipulation of acoustic physics: drag foam panels onto a room diagram to
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 15s | 531s | 8 | [open](prompts/interfaces/acoustic-panel-attenuation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Brine Crystal Halite Growth
+
+A dark industrial tank where salinity sliders dictate crystal lattice growth. High salinity breeds chaotic, rapid fracturing; low salinity yields slow, perfect geometric cubes. Achieve target purity.
+
+**Status:** polished · `chemistry` `growth-sim` `canvas` `salinity` `geometric` `industrial` `tool-surface` `physics` `precision` `interactive` `minimal` `infrastructure` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/brine-crystal-halite-growth/prompt.md) · [extended](prompts/interfaces/brine-crystal-halite-growth/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T12:17:33.318Z",
+  "generated_at": "2026-10-21T12:27:06.742Z",
   "schema": "schema/entry.schema.json",
-  "count": 240,
+  "count": 241,
   "categories": [
     "landing-pages",
     "animations",
@@ -12173,10 +12173,10 @@
       "status": "polished",
       "summary": "A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal.",
       "path": "prompts/games/laser-alignment-pulse-lock",
-      "preview": null,
+      "preview": "prompts/games/laser-alignment-pulse-lock/preview.png",
       "prompt": "prompts/games/laser-alignment-pulse-lock/prompt.md",
       "extended": "prompts/games/laser-alignment-pulse-lock/prompt.full.md",
-      "demo": null,
+      "demo": "prompts/games/laser-alignment-pulse-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
       "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
@@ -12202,20 +12202,20 @@
           "stream": true,
           "temperature": 0.65,
           "context_tokens": 126000,
-          "duration_ms": 234113,
-          "gen_ms": 234113,
-          "ttft_ms": 735,
-          "queue_wait_ms": 172,
-          "wall_ms": 235020,
+          "duration_ms": 197416,
+          "gen_ms": 197416,
+          "ttft_ms": 1161,
+          "queue_wait_ms": 191,
+          "wall_ms": 198768,
           "prompt_tokens": null,
           "completion_tokens": null,
           "total_tokens": null,
           "demo": "prompts/games/laser-alignment-pulse-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
-          "preview": null,
-          "has_demo": false,
-          "has_preview": false,
-          "review_score": null,
-          "review_summary": null
+          "preview": "prompts/games/laser-alignment-pulse-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 7,
+          "review_summary": "Strong sci-fi start screen with correct title, HUD, and neon-on-black aesthetic, though the lattice is missing and the title font is generic."
         }
       ]
     },
@@ -14257,6 +14257,43 @@
           "review_summary": "Faithful, dense engineering workspace with correct palette, Anton/Lato type, and a calm tool surface that starts immediately."
         }
       ]
+    },
+    {
+      "id": "brine-crystal-halite-growth",
+      "title": "Brine Crystal Halite Growth",
+      "category": "interfaces",
+      "tags": [
+        "chemistry",
+        "growth-sim",
+        "canvas",
+        "salinity",
+        "geometric",
+        "industrial",
+        "tool-surface",
+        "physics",
+        "precision",
+        "interactive",
+        "minimal",
+        "infrastructure"
+      ],
+      "status": "polished",
+      "summary": "A dark industrial tank where salinity sliders dictate crystal lattice growth. High salinity breeds chaotic, rapid fracturing; low salinity yields slow, perfect geometric cubes. Achieve target purity.",
+      "path": "prompts/interfaces/brine-crystal-halite-growth",
+      "preview": null,
+      "prompt": "prompts/interfaces/brine-crystal-halite-growth/prompt.md",
+      "extended": "prompts/interfaces/brine-crystal-halite-growth/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "ferrous-oxide-bloom-filter",
