@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 241 | 240 | 206 | 35 |
+| 244 | 240 | 206 | 38 |
 
 ## Quick start
 
@@ -2203,6 +2203,20 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 ## Motion Graphics
 
+### Concept Kong Scroll
+
+Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s.
+
+**Status:** draft · `scroll-story` `hero-kinetic` `svg-motion` `studio` `process`
+
+[prompt](prompts/motion-graphics/concept-kong-scroll/prompt.md) · [extended](prompts/motion-graphics/concept-kong-scroll/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Harbor Night Lower Thirds
 
 6s broadcast lower-third pack for Harbor Night: nameplate enter/hold/exit with marine ink palette and safe-margin discipline.
@@ -2232,6 +2246,34 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/meridian-audit-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 9.4s | 291s | 2 | [open](prompts/motion-graphics/meridian-audit-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Signal Type Hero
+
+Full-bleed kinetic typography hero for Signal Atelier: Communication Design energy with masks, glyph axes, and a poster-strong hold at ~1.5s.
+
+**Status:** draft · `hero-kinetic` `kinetic-type` `masks` `studio` `full-bleed`
+
+[prompt](prompts/motion-graphics/signal-type-hero/prompt.md) · [extended](prompts/motion-graphics/signal-type-hero/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Smile Line Signature
+
+Signature path for Warmmark Studio: one line → abstract mark → smile curve + wordmark — no emoji; poster hold at ~1.5s.
+
+**Status:** draft · `smile-signature` `hero-kinetic` `path-animation` `brand-motion` `studio`
+
+[prompt](prompts/motion-graphics/smile-line-signature/prompt.md) · [extended](prompts/motion-graphics/smile-line-signature/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

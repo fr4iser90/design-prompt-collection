@@ -156,7 +156,7 @@ export const LANES = {
     "Water as plane: tide, glass, refraction. Quiet luxury, saline palette.",
   "signal-warning":
     "Utility / safety / infrastructure aesthetics. Stripes, stamps, mono labels — intentional tension.",
-  // motion-graphics
+  // motion-graphics — timeline packs
   "kinetic-identity":
     "Brand lockup as timeline: monogram → wordmark → tagline. Path morph, stroke draw, light sweep — not a UI knob study.",
   "explainer-beat":
@@ -167,6 +167,17 @@ export const LANES = {
     "One chart/metric becomes a story beat (count-up, bar grow, map draw). Numbers legible; no dashboard soup.",
   "title-sequence":
     "Opening titles: atmosphere → credit stack → brand land. Cinematic pacing, hard cuts or dissolves named.",
+  // motion-graphics — hero kinetic (studio / Awwwards-adjacent webmotion)
+  "hero-kinetic":
+    "Full-bleed kinetic typography hero: masks, glyph axes, scale breaks — Communication-Design energy. Poster-strong at ~1.5s. Not a landing page.",
+  "scroll-story":
+    "Scroll-progress storytelling: phases grow from prior elements (not six fade-in cards). Autoplay still reaches a poster frame for shots.",
+  "type-tunnel":
+    "Spatial typography passage: oversized words as architecture; cinematic camera feel via CSS 3D — one readable depth plane in the still.",
+  "paper-motion":
+    "Tactile paper-cut assembly: layered planes, soft shadows, analog print haptic — ends as a plakat hold with studio wordmark.",
+  "smile-signature":
+    "Signature path morph: one line → abstract mark → smile curve + studio wordmark. No emoji, no mascot — graphic identity motion.",
   // games
   "arcade-precision":
     "Tight one-screen arcade loop: readable risk, fair fail, juicy feedback. No endless runner clones.",
@@ -238,6 +249,11 @@ export const LANE_FOR = {
   "lower-third-pack": MG_CATS,
   "data-story-arc": [...MG_CATS, "editorial"],
   "title-sequence": MG_CATS,
+  "hero-kinetic": MG_CATS,
+  "scroll-story": MG_CATS,
+  "type-tunnel": MG_CATS,
+  "paper-motion": MG_CATS,
+  "smile-signature": MG_CATS,
   "kinetic-type": [...DESIGN_CATS],
   "editorial-print": [...DESIGN_CATS.filter((c) => c !== "interfaces"), "editorial"],
   "sports-precision": [...DESIGN_CATS, "games"],

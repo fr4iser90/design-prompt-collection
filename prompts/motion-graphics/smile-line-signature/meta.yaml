@@ -1,0 +1,21 @@
+id: smile-line-signature
+title: "Smile Line Signature"
+category: motion-graphics
+tags:
+  - smile-signature
+  - hero-kinetic
+  - path-animation
+  - brand-motion
+  - studio
+status: draft
+summary: "Signature path for Warmmark Studio: one line → abstract mark → smile curve + wordmark — no emoji; poster hold at ~1.5s."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -168,8 +168,10 @@ const FEW_SHOT = {
 BAD: feature-card SaaS; purple glow; another coffee/pasta/pottery/ledger clone; inset hero card.`,
   animations: `GOOD: one kinetic object/system; motion parameters named; interaction changes the motion language.
 BAD: "animated landing page"; Lottie wallpaper; marketing copy around a looping GIF.`,
-  "motion-graphics": `GOOD: timed sequence with named beats (0.0s–Ns), kinetic type / diagram / lower-third / title card; freeze-frame at t=0 and mid-beat still readable; single HTML timeline (rAF/CSS/Canvas).
-BAD: interactive UI knob study; landing-page hero with ambient loop; unexplained particle wallpaper; "AE vibe" without beat sheet.`,
+  "motion-graphics": `GOOD (pick ONE genre):
+A TIMELINE: named beats 0.0s–Ns (lockup / lower-third / explainer); mid-hold still readable.
+B HERO-KINETIC: full-bleed studio motion (masks, glyph axes, scroll phases, signature path) — Communication-Design energy; MUST name poster frame @ ~1.5s for shots; brand as hero type; single HTML (CSS/SVG/rAF).
+BAD: UI knob physics; SaaS landing with nav/CTA soup; feature cards; purple glow; "AE vibe" without beat/scene sheet; magnetic cursor toys (those = animations).`,
   concepts: `GOOD: named artifact (e.g. "ORBIT desk lamp UI that grows shadows as tasks overdue") + exact layout + type + 3 motions + HTML deliverable.
 BAD: "a concept exploring the future of productivity" with no artifact, no layout, no fails.`,
   games: `GOOD: "HOLDFAST — one-screen tug: hold to tension a cable; release to fling a weight into a moving socket. Fail = slack snap. Score = sockets cleared. Input: pointer down/up."
@@ -211,15 +213,25 @@ ${FEW_SHOT.animations}`,
 
   "motion-graphics": `CATEGORY = motion-graphics
 ${DESIGN_CANON}
-MOTION-GRAPHICS-SPECIFIC (timeline piece — NOT an interactive material study):
-- Deliver a TIMED SEQUENCE: named beats with clock times (e.g. 0.0–0.8s / 0.8–2.2s / …) totaling a loop duration (prefer 4–12s)
-- Genres: kinetic identity, title sequence, lower-thirds pack, explainer beats, data-story arc — pick ONE
-- Brand / show title / product name must appear as a hero-level type signal in at least one beat
-- Specify: frame aspect (16:9 default), loop vs once, cut/dissolve language, type hierarchy per beat
-- Still-frame readable: composition at t=0 AND at one mid beat must work as a poster (shots pipeline captures a still)
-- Interaction optional: Space/click = replay; scrub bar OK — but story must play without pointer
-- Deliverable: single HTML (+ CSS/Canvas/SVG/WebGL as needed); Remotion/AE names may appear only as TAGS, never as required runtime
-- Ban: landing-page hero chrome; UI knob/physics demos (those belong in animations); particle spam without beat sheet; purple-glow SaaS explainers
+MOTION-GRAPHICS — pick ONE genre (tag it: timeline OR hero-kinetic / scroll-story / type-tunnel / paper-motion / smile-signature):
+
+GENRE A — TIMELINE PACK (broadcast / identity loop):
+- Timed beats with clock times (prefer 4–12s loop)
+- lower-third / lockup / explainer / title-sequence / data-story
+- 16:9 stage OK; mid-hold must read as poster
+
+GENRE B — HERO KINETIC (studio webmotion — Communication Design energy):
+- Full-bleed kinetic typography / mask / scroll-story / signature / paper assembly — ONE focused prototype, NOT a portfolio site
+- Brand / studio wordmark = HERO-level type (large display), not nav chrome
+- MUST specify "Poster frame @ ~1.5s": exact on-screen state the shots pipeline will capture (1200×630)
+- Autoplay first 1–2s to that poster (or hold); Space/click = replay; scroll-progress OPTIONAL and must not be required for the poster
+- Art direction: editorial, bold, precise — masks, glyph axes, scale breaks, continuous scroll morphs (not six fade-in cards)
+- Invent a fictional studio brand — do NOT clone real agency sites or steal logos
+- Stack: single HTML + CSS/SVG/rAF (no external JS frameworks required)
+
+SHARED:
+- Still-frame readable for shots; reduced-motion → final hold / static title
+- Ban: landing nav+CTA soup; feature cards; UI knob demos; particle spam; purple-glow SaaS; Inter/Roboto/Arial
 ${FEW_SHOT["motion-graphics"]}`,
 
   concepts: `CATEGORY = concepts
@@ -336,7 +348,7 @@ const GAME_CLONE_RE =
 const ANIM_HINT_RE =
   /\b(motion|kinetic|easing|spring|timeline|scrub|parallax|loop|raf|requestAnimationFrame|gsap|keyframes)\b/i;
 const MG_HINT_RE =
-  /\b(timeline|beat|beats?|lower[- ]?third|title\s*card|kinetic|explainer|sequence|loop\s*duration|0\.\d\s*s|\d+\s*s\b|frame|16:9|credit|nameplate|count[- ]?up)\b/i;
+  /\b(timeline|beat|beats?|scene|scroll|mask|glyph|lower[- ]?third|title\s*card|kinetic|hero|explainer|sequence|poster|signature|loop\s*duration|0\.\d\s*s|\d+\s*s\b|frame|16:9|full[- ]?bleed|credit|nameplate|count[- ]?up)\b/i;
 const EXPERIMENT_HINT_RE =
   /\b(experiment|thesis|prototype|generative|research|hypothesis|unusual|speculative)\b/i;
 const LANDING_HINT_RE =
@@ -393,10 +405,14 @@ Concepts pitch EXTRA:
     category === "motion-graphics"
       ? `
 Motion-graphics pitch EXTRA required fields:
-"loop_duration": "e.g. 8s loop",
-"beats": ["0.0–0.8s: …", "0.8–2.4s: …", "…"],
-"aspect": "16:9 (default) or named"
-Brand / show title required. Do NOT pitch an interactive UI physics study.`
+"genre": "timeline" | "hero-kinetic",
+"poster_frame": "what is on screen at ~1.5s for the screenshot (required)",
+"loop_duration": "e.g. 8s loop OR open scroll",
+"beats": ["0.0–0.8s: …", …]  // required if genre=timeline (≥3)
+OR "scenes": ["scroll 0–0.2: …", …]  // required if genre=hero-kinetic (≥3)
+"aspect": "full-bleed hero" | "16:9" | named
+Include a tag: hero-kinetic|scroll-story|type-tunnel|paper-motion|smile-signature OR lower-third|explainer|…
+Brand / studio name required. Do NOT pitch UI knob physics or a full portfolio site.`
       : "";
   return `You are a ruthless senior web designer / creative director inventing DISTINCT concept pitches.
 
@@ -427,7 +443,7 @@ Rules:
 - Motions specific (not "subtle fade" / "smooth transitions")
 - If category is landing-pages: brand required; hero = one composition; no card-based hero
 - If category is games: playable loop required — unplayable pitches are failures
-- If category is motion-graphics: timed beat sheet required — interactive knob demos are failures
+- If category is motion-graphics: beat OR scene sheet + poster_frame required — knob demos / SaaS landings are failures
 - Do NOT write prompt_md yet`;
 }
 
@@ -472,13 +488,15 @@ function buildExpandSystem(category) {
           : category === "motion-graphics"
             ? `prompt_full_md with EXACT headings:
 ## Concept
-## Beat sheet
+## Beat sheet   (timeline genre)  OR  ## Scene sheet (hero-kinetic / scroll) — include ONE of these
+## Poster frame
 ## Palette
 ## Type
 ## Frame
 ## Motion
 ## Constraints
-## Acceptance criteria`
+## Acceptance criteria
+Poster frame section MUST describe the exact ~1.5s still (brand type visible).`
             : `prompt_full_md with EXACT headings:
 ## Concept
 ## Palette
@@ -778,13 +796,20 @@ function requireFullSections(full, id, category) {
       ["## Motion", /##\s*Motion\b/i],
     ],
     "motion-graphics": [
-      ["## Beat sheet", /##\s*Beat sheet\b/i],
+      ["## Poster frame", /##\s*Poster frame\b/i],
       ["## Frame", /##\s*Frame\b/i],
       ["## Motion", /##\s*Motion\b/i],
     ],
   };
   const needed = [...base, ...(byCat[category] || byCat.default)];
   const missing = needed.filter(([, re]) => !re.test(full)).map(([n]) => n);
+  if (category === "motion-graphics") {
+    const hasBeat = /##\s*Beat sheet\b/i.test(full);
+    const hasScene = /##\s*Scene sheet\b/i.test(full);
+    if (!hasBeat && !hasScene) {
+      missing.push("## Beat sheet OR ## Scene sheet");
+    }
+  }
   if (missing.length) {
     throw new Error(`prompt_full_md missing headings for ${id}: ${missing.join(", ")}`);
   }
@@ -977,13 +1002,20 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
     throw new Error(`animations entry lacks motion craft language: ${id}`);
   }
   if (category === "motion-graphics" && !MG_HINT_RE.test(blob)) {
-    throw new Error(`motion-graphics entry lacks timeline/beat language: ${id}`);
+    throw new Error(`motion-graphics entry lacks timeline/hero motion language: ${id}`);
   }
   if (
     category === "motion-graphics" &&
-    /\b(draggable|magnetic detent|knob|landing page|feature cards?|pricing)\b/i.test(blob)
+    !/##\s*Poster frame\b/i.test(prompt_full_md) &&
+    !/\bposter frame\b/i.test(blob)
   ) {
-    throw new Error(`motion-graphics entry looks like UI/landing, not a sequence: ${id}`);
+    throw new Error(`motion-graphics entry missing Poster frame (@~1.5s): ${id}`);
+  }
+  if (
+    category === "motion-graphics" &&
+    /\b(draggable|magnetic detent|knob|pricing|sign up|get started)\b/i.test(blob)
+  ) {
+    throw new Error(`motion-graphics entry looks like UI/SaaS, not motion prototype: ${id}`);
   }
   if (category === "landing-pages" && !LANDING_HINT_RE.test(blob)) {
     throw new Error(`landing-pages entry lacks brand/hero/cta language: ${id}`);
@@ -1054,14 +1086,35 @@ function sanitizePitch(raw, existingIds, category) {
     throw new Error(`Pitch missing brand: ${id}`);
   }
   if (category === "motion-graphics") {
+    const genre = String(raw.genre || "").toLowerCase().trim();
     const beats = Array.isArray(raw.beats)
       ? raw.beats.map((b) => String(b).trim()).filter(Boolean)
       : [];
+    const scenes = Array.isArray(raw.scenes)
+      ? raw.scenes.map((b) => String(b).trim()).filter(Boolean)
+      : [];
     const loop = String(raw.loop_duration || "").trim();
-    if (beats.length < 3) throw new Error(`Motion-graphics pitch needs ≥3 beats: ${id}`);
+    const poster = String(raw.poster_frame || "").trim();
+    if (poster.length < 12) {
+      throw new Error(`Motion-graphics pitch missing poster_frame: ${id}`);
+    }
     if (loop.length < 2) throw new Error(`Motion-graphics pitch missing loop_duration: ${id}`);
-    if (!MG_HINT_RE.test(`${hook} ${beats.join(" ")} ${loop} ${raw.niche || ""}`)) {
-      throw new Error(`Motion-graphics pitch lacks timeline language: ${id}`);
+    const isHero =
+      genre.includes("hero") ||
+      scenes.length >= 3 ||
+      /\b(hero-kinetic|scroll-story|type-tunnel|paper-motion|smile-signature)\b/i.test(
+        (raw.tags || []).join(" ")
+      );
+    if (isHero) {
+      if (scenes.length < 3 && beats.length < 3) {
+        throw new Error(`Motion-graphics hero pitch needs ≥3 scenes or beats: ${id}`);
+      }
+    } else if (beats.length < 3) {
+      throw new Error(`Motion-graphics timeline pitch needs ≥3 beats: ${id}`);
+    }
+    const blob = `${hook} ${beats.join(" ")} ${scenes.join(" ")} ${loop} ${poster} ${raw.niche || ""}`;
+    if (!MG_HINT_RE.test(blob)) {
+      throw new Error(`Motion-graphics pitch lacks motion language: ${id}`);
     }
   }
   if (category === "games") {
@@ -1363,6 +1416,7 @@ async function main() {
         `  npm run ai:new -- -c webgl --lane shader-sculpt -n 2\n` +
         `  npm run ai:new -- -c animations --lane kinetic-type -n 2\n` +
         `  npm run ai:new -- -c motion-graphics --lane kinetic-identity -n 2\n` +
+        `  npm run ai:new -- -c motion-graphics --lane hero-kinetic -n 3\n` +
         `  npm run ai:new -- --all -n 2 --mood "unexpected luxury"`
     );
   }

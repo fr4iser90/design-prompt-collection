@@ -1,0 +1,21 @@
+id: concept-kong-scroll
+title: "Concept Kong Scroll"
+category: motion-graphics
+tags:
+  - scroll-story
+  - hero-kinetic
+  - svg-motion
+  - studio
+  - process
+status: draft
+summary: "Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

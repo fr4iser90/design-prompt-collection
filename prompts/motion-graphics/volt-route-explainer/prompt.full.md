@@ -12,6 +12,9 @@ Infrastructure storytelling with utility calm: chalk diagrams on asphalt, one te
 | 7.4–9.2s | Hold | Brand + diagram quiet |
 | 9.2–10.0s | Black | Loop |
 
+## Poster frame
+At ~1.5s: **CONGESTED GRID** title + bottleneck nodes pulsing on asphalt — diagram readable in still.
+
 ## Palette
 - `#121417` asphalt
 - `#E6E2D6` chalk

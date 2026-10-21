@@ -12,6 +12,9 @@ Night-desk maritime news energy: fog, foam type, one amber signal. The lower-thi
 | 4.2–5.2s | Collapse exit |
 | 5.2–6.0s | Empty; loop |
 
+## Poster frame
+At ~1.5s: lower-third plate with **MAYA CHEN** + role line and amber pip — broadcast still, title-safe margins.
+
 ## Palette
 - `#071018` night
 - `#1A2A36` fog plate

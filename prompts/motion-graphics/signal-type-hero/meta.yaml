@@ -1,0 +1,21 @@
+id: signal-type-hero
+title: "Signal Type Hero"
+category: motion-graphics
+tags:
+  - hero-kinetic
+  - kinetic-type
+  - masks
+  - studio
+  - full-bleed
+status: draft
+summary: "Full-bleed kinetic typography hero for Signal Atelier: Communication Design energy with masks, glyph axes, and a poster-strong hold at ~1.5s."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T12:27:06.742Z",
+  "generated_at": "2026-10-21T12:33:49.319Z",
   "schema": "schema/entry.schema.json",
-  "count": 241,
+  "count": 244,
   "categories": [
     "landing-pages",
     "animations",
@@ -8423,6 +8423,36 @@
       ]
     },
     {
+      "id": "concept-kong-scroll",
+      "title": "Concept Kong Scroll",
+      "category": "motion-graphics",
+      "tags": [
+        "scroll-story",
+        "hero-kinetic",
+        "svg-motion",
+        "studio",
+        "process"
+      ],
+      "status": "draft",
+      "summary": "Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s.",
+      "path": "prompts/motion-graphics/concept-kong-scroll",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/concept-kong-scroll/prompt.md",
+      "extended": "prompts/motion-graphics/concept-kong-scroll/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "harbor-night-lower-thirds",
       "title": "Harbor Night Lower Thirds",
       "category": "motion-graphics",
@@ -8541,6 +8571,66 @@
           "review_summary": "Captured at t≈0.6s, the frame is almost entirely empty dark space with only a tiny dash visible, failing to present any brand identity or poster-worthy composition."
         }
       ]
+    },
+    {
+      "id": "signal-type-hero",
+      "title": "Signal Type Hero",
+      "category": "motion-graphics",
+      "tags": [
+        "hero-kinetic",
+        "kinetic-type",
+        "masks",
+        "studio",
+        "full-bleed"
+      ],
+      "status": "draft",
+      "summary": "Full-bleed kinetic typography hero for Signal Atelier: Communication Design energy with masks, glyph axes, and a poster-strong hold at ~1.5s.",
+      "path": "prompts/motion-graphics/signal-type-hero",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/signal-type-hero/prompt.md",
+      "extended": "prompts/motion-graphics/signal-type-hero/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "smile-line-signature",
+      "title": "Smile Line Signature",
+      "category": "motion-graphics",
+      "tags": [
+        "smile-signature",
+        "hero-kinetic",
+        "path-animation",
+        "brand-motion",
+        "studio"
+      ],
+      "status": "draft",
+      "summary": "Signature path for Warmmark Studio: one line → abstract mark → smile curve + wordmark — no emoji; poster hold at ~1.5s.",
+      "path": "prompts/motion-graphics/smile-line-signature",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/smile-line-signature/prompt.md",
+      "extended": "prompts/motion-graphics/smile-line-signature/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "volt-route-explainer",

@@ -62,14 +62,28 @@ function buildMessages(entry, model) {
   const prompt = fs.readFileSync(path.join(entry.dir, "prompt.md"), "utf8");
   const full = fs.readFileSync(path.join(entry.dir, "prompt.full.md"), "utf8");
 
+  const tags = (entry.tags || []).join(" ");
+  const heroMg =
+    entry.category === "motion-graphics" &&
+    /\b(hero-kinetic|scroll-story|type-tunnel|paper-motion|smile-signature)\b/i.test(tags);
   const mgNote =
     entry.category === "motion-graphics"
-      ? `
-MOTION-GRAPHICS BUILD RULES:
-- This is a TIMED SEQUENCE (title/identity/explainer/lower-third), not a landing page and not a draggable UI study
-- Autoplay the timeline on load; Space or click may restart; optional scrub — story must not require pointer
-- Honor the beat sheet clock times from the brief; prefer a seamless loop of the stated duration
-- Stage is a 16:9 (or brief-specified) frame; composition must read as a poster at t≈0 for screenshots
+      ? heroMg
+        ? `
+MOTION-GRAPHICS — HERO KINETIC BUILD RULES:
+- Full-bleed studio motion prototype (kinetic type / scroll-story / signature / paper) — NOT a portfolio site, NOT nav+CTA landing
+- Brand/studio wordmark = large hero type in the first strong frame
+- Autoplay so that by ~1.5s the "Poster frame" from the brief is on screen (shots capture 1200×630 then)
+- Space/click = replay; scroll-progress may deepen the piece but MUST NOT be required for the poster
+- CSS/SVG/rAF only (no external JS frameworks); Google Fonts OK
+- prefers-reduced-motion: jump to poster / final hold
+- Ban: feature cards, pricing, signup, purple glow`
+        : `
+MOTION-GRAPHICS — TIMELINE BUILD RULES:
+- Timed sequence (title/identity/explainer/lower-third), not a landing page and not a draggable UI study
+- Autoplay on load; Space or click may restart; optional scrub — story must not require pointer
+- Honor beat sheet clock times; prefer seamless loop of stated duration
+- Reach a poster-readable hold by ~1.5s (shots pipeline)
 - prefers-reduced-motion: jump to final hold / static title card`
       : "";
 

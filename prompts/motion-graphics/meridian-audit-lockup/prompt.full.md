@@ -12,6 +12,9 @@ A compliance brand that feels like a sealed ledger, not a SaaS dashboard. The se
 | 5.2–7.0s | Hold + dust |
 | 7.0–8.0s | Fade to black; seamless loop |
 
+## Poster frame
+At ~1.5s: monogram mid-morph or early **MERIDIAN** stems visible on dark field with gold rule — brand readable in 1200×630 crop.
+
 ## Palette
 - Background `#0B1210`
 - Panel / depth `#15201C`

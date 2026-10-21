@@ -90,6 +90,12 @@ Multi-day: `npm run worker -- --fill --fill-n 10 --fill-when-below 1 --max-paral
 
 Steer fill with `--mood`, `--lane`, `--seed`, `--avoid`. Details: `automation/README.md`.
 
+### Motion-graphics lanes (hero vs timeline)
+- Timeline packs: `kinetic-identity`, `lower-third-pack`, `explainer-beat`, `title-sequence`, `data-story-arc`
+- Hero kinetic (studio webmotion): `hero-kinetic`, `scroll-story`, `type-tunnel`, `paper-motion`, `smile-signature`
+- Briefs must include **Poster frame @ ~1.5s** (shots are 1200×630 stills). Prefer `FILL_LANE=hero-kinetic` when farming Communication-Design energy.
+
+
 ## Batch workflow for chat AIs
 
 1. Read `index.json` / `catalog.json` to avoid duplicate ids & niches
