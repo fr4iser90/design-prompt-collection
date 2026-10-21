@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaFlux — Reverse Osmosis Pressure Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A2A24; --grid:#1A4A44; --water:#00B4D8; --salt:#FFD166; --ink:#E0F2F1;
+    --stage-w:1200; --stage-h:630;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(120% 120% at 50% 40%, #0c312a 0%, #071d18 60%, #05140f 100%);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    color:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;overflow:hidden;
+  }
+  .stage-wrap{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;}
+  .stage{
+    position:relative;width:var(--stage-w);height:var(--stage-h);
+    background:var(--bg);
+    overflow:hidden;
+    transform-origin:center center;
+    box-shadow:0 40px 120px rgba(0,0,0,.55), 0 0 0 1px rgba(224,242,241,.06);
+    border-radius:4px;
+  }
+  /* atmosphere */
+  .bg-grid{
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size:48px 48px;
+    opacity:.10;
+    -webkit-mask-image:radial-gradient(120% 120% at 50% 45%, #000 55%, transparent 100%);
+            mask-image:radial-gradient(120% 120% at 50% 45%, #000 55%, transparent 100%);
+  }
+  .glow{position:absolute;inset:0;pointer-events:none;}
+  .glow-left{background:radial-gradient(40% 60% at 24% 45%, rgba(255,209,102,.10), transparent 70%);opacity:0;}
+  .glow-right{background:radial-gradient(40% 60% at 76% 45%, rgba(0,180,216,.12), transparent 70%);opacity:0;}
+  .scan{
+    position:absolute;top:0;bottom:0;width:2px;left:-4%;
+    background:linear-gradient(to bottom, transparent, rgba(224,242,241,.18), transparent);
+    animation:scan 8s linear infinite;
+  }
+  @keyframes scan{0%{left:-4%;opacity:0}5%{opacity:.5}95%{opacity:.5}100%{left:104%;opacity:0}}
+  .vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px 40px rgba(3,12,10,.7);}
+
+  svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* particles */
+  .p{position:absolute;top:0;left:0;width:0;height:0;will-change:transform;}
+  .water{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--water);
+    box-shadow:0 0 8px rgba(0,180,216,.55);
+  }
+  .salt{
+    width:17px;height:17px;
+    background:var(--salt);
+    clip-path:polygon(50% 0%, 93% 25%, 100% 62%, 70% 100%, 22% 92%, 0% 48%);
+    box-shadow:0 0 10px rgba(255,209,102,.45);
+  }
+  .spark{
+    position:absolute;width:14px;height:14px;border-radius:50%;
+    border:2px solid var(--salt);pointer-events:none;
+    animation:spark .5s ease-out forwards;
+  }
+  @keyframes spark{from{transform:translate(-50%,-50%) scale(.3);opacity:.9}to{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
+
+  /* text overlays */
+  .txt{position:absolute;will-change:opacity,transform;}
+  .title{
+    top:40px;left:50%;transform:translateX(-50%);
+    font-family:'Syne';font-weight:700;letter-spacing:.14em;
+    font-size:26px;color:var(--ink);text-align:center;
+    text-shadow:0 2px 24px rgba(0,0,0,.6);
+  }
+  .title .sub{
+    display:block;font-family:'IBM Plex Sans';font-weight:500;
+    font-size:11px;letter-spacing:.34em;color:rgba(224,242,241,.55);margin-top:8px;
+  }
+  .side-label{
+    font-family:'IBM Plex Sans';font-weight:600;font-size:13px;letter-spacing:.22em;
+    color:rgba(224,242,241,.62);
+  }
+  .side-label b{display:block;font-family:'Syne';font-weight:700;font-size:15px;letter-spacing:.12em;color:var(--ink);margin-bottom:4px;}
+  .feed-lab{top:150px;left:120px;}
+  .perm-lab{top:150px;right:120px;text-align:right;}
+  .mem-lab{
+    top:56px;left:600px;transform:translateX(-50%);
+    font-family:'IBM Plex Sans';font-weight:500;font-size:11px;letter-spacing:.3em;
+    color:rgba(224,242,241,.7);text-align:center;
+  }
+  .mem-lab b{display:block;font-family:'Syne';font-weight:700;font-size:13px;letter-spacing:.16em;color:var(--ink);}
+  .flow-lab{
+    font-family:'IBM Plex Sans';font-weight:600;font-size:14px;letter-spacing:.16em;
+    padding:8px 14px;border-radius:3px;background:rgba(10,42,36,.72);
+    border:1px solid rgba(224,242,241,.16);backdrop-filter:blur(2px);
+  }
+  .perm-flow{top:196px;right:150px;color:var(--water);border-color:rgba(0,180,216,.4);}
+  .brine-flow{bottom:150px;left:150px;color:var(--salt);border-color:rgba(255,209,102,.4);}
+  .flow-lab .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:9px;vertical-align:middle;}
+  .perm-flow .dot{background:var(--water);box-shadow:0 0 8px var(--water);}
+  .brine-flow .dot{background:var(--salt);box-shadow:0 0 8px var(--salt);}
+
+  /* lockup */
+  .lockup{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:14px;opacity:0;will-change:opacity;
+  }
+  .lockup .mark{
+    width:64px;height:64px;margin-bottom:6px;
+    animation:floaty 3.2s ease-in-out infinite;
+  }
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .logo{
+    font-family:'Syne';font-weight:800;font-size:58px;letter-spacing:.02em;color:#fff;
+    text-shadow:0 6px 40px rgba(0,180,216,.35);
+  }
+  .logo .flux{color:var(--water);}
+  .metric{
+    font-family:'Syne';font-weight:700;font-size:24px;letter-spacing:.12em;color:var(--salt);
+    display:flex;align-items:center;gap:16px;
+  }
+  .metric .line{width:60px;height:1px;background:linear-gradient(to right,transparent,rgba(255,209,102,.6));}
+  .metric .line.r{background:linear-gradient(to left,transparent,rgba(255,209,102,.6));}
+  .lockup .tag{font-family:'IBM Plex Sans';font-weight:500;font-size:12px;letter-spacing:.4em;color:rgba(224,242,241,.5);margin-top:6px;}
+
+  /* corner UI */
+  .brand{
+    position:absolute;top:22px;left:26px;z-index:6;
+    font-family:'Syne';font-weight:800;font-size:16px;letter-spacing:.04em;color:var(--ink);
+    display:flex;align-items:center;gap:9px;
+  }
+  .brand .mk{width:16px;height:16px;}
+  .sys{
+    position:absolute;top:24px;right:26px;z-index:6;
+    font-family:'IBM Plex Sans';font-weight:500;font-size:11px;letter-spacing:.24em;
+    color:rgba(224,242,241,.5);display:flex;align-items:center;gap:8px;
+  }
+  .sys .rec{width:8px;height:8px;border-radius:50%;background:var(--salt);animation:blink 1.6s steps(1) infinite;}
+  @keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.15}}
+
+  /* timeline */
+  .timeline{
+    position:absolute;left:60px;right:60px;bottom:26px;z-index:6;
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .tl-top{display:flex;justify-content:space-between;align-items:center;}
+  .tl-labels{display:flex;gap:26px;font-family:'IBM Plex Sans';font-weight:500;font-size:10px;letter-spacing:.22em;color:rgba(224,242,241,.4);}
+  .tl-labels span{transition:color .2s;}
+  .tl-labels span.on{color:var(--ink);}
+  .tl-time{font-family:'IBM Plex Sans';font-weight:500;font-size:11px;letter-spacing:.18em;color:rgba(224,242,241,.6);font-variant-numeric:tabular-nums;}
+  .tl-track{position:relative;height:3px;background:rgba(224,242,241,.12);border-radius:2px;cursor:pointer;}
+  .tl-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(to right,var(--water),var(--salt));border-radius:2px;}
+  .tl-head{position:absolute;top:50%;left:0;width:11px;height:11px;border-radius:50%;background:var(--ink);transform:translate(-50%,-50%);box-shadow:0 0 0 4px rgba(224,242,241,.14);}
+  .tl-ticks{position:absolute;inset:0;}
+  .tl-ticks i{position:absolute;top:-4px;width:1px;height:11px;background:rgba(224,242,241,.25);}
+
+  .hint{
+    position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:6;
+    font-family:'IBM Plex Sans';font-size:10px;letter-spacing:.24em;color:rgba(224,242,241,.32);
+  }
+  .static-badge{
+    position:absolute;top:24px;right:26px;z-index:7;display:none;
+    font-family:'IBM Plex Sans';font-weight:500;font-size:11px;letter-spacing:.2em;
+    color:var(--salt);border:1px solid rgba(255,209,102,.4);padding:5px 10px;border-radius:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scan,.rec,.mark{animation:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="bg-grid"></div>
+    <div class="glow"><div class="glow-left" id="glowL"></div><div class="glow-right" id="glowR"></div></div>
+    <div class="scan"></div>
+
+    <svg class="scene" viewBox="0 0 1200 630" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <radialGradient id="gaugeFace" cx="50%" cy="42%" r="62%">
+          <stop offset="0%" stop-color="#123a33"/>
+          <stop offset="100%" stop-color="#08201b"/>
+        </radialGradient>
+      </defs>
+
+      <!-- membrane -->
+      <g id="membrane">
+        <line x1="600" y1="150" x2="600" y2="478" stroke="#E0F2F1" stroke-width="2" stroke-dasharray="7 9" opacity=".85"/>
+        <line x1="600" y1="150" x2="600" y2="478" stroke="#00B4D8" stroke-width="6" opacity=".12"/>
+      </g>
+
+      <!-- brine divert arrow -->
+      <g id="brineArrow" opacity="0">
+        <path d="M600 470 L520 545" stroke="#FFD166" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="6 7"/>
+        <path d="M520 545 l14 -2 l-4 -13 z" fill="#FFD166"/>
+      </g>
+      <!-- permeate arrow -->
+      <g id="permArrow" opacity="0">
+        <path d="M640 314 L742 314" stroke="#00B4D8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="6 7"/>
+        <path d="M742 314 l-13 -6 l0 12 z" fill="#00B4D8"/>
+      </g>
+
+      <!-- gauge -->
+      <g id="gauge" transform="translate(150,470)">
+        <circle r="78" fill="url(#gaugeFace)" stroke="#E0F2F1" stroke-width="1.5" opacity=".92"/>
+        <circle r="78" fill="none" stroke="#1A4A44" stroke-width="6" opacity=".5"/>
+        <g id="ticks"></g>
+        <g id="numLabels"></g>
+        <!-- needle -->
+        <g id="needle">
+          <polygon points="0,-64 5,-6 -5,-6" fill="#FFD166"/>
+          <polygon points="0,64 4,4 -4,4" fill="#FFD166" opacity=".4"/>
+          <circle r="9" fill="#0A2A24" stroke="#FFD166" stroke-width="2"/>
+          <circle r="3" fill="#FFD166"/>
+        </g>
+        <text id="psiVal" y="34" text-anchor="middle" font-family="IBM Plex Sans" font-weight="600" font-size="17" fill="#E0F2F1">0</text>
+        <text y="52" text-anchor="middle" font-family="IBM Plex Sans" font-weight="500" font-size="10" letter-spacing="3" fill="rgba(224,242,241,.55)">PSI</text>
+      </g>
+    </svg>
+
+    <!-- particle layer -->
+    <div class="particles" id="particles"></div>
+
+    <!-- text overlays -->
+    <div class="txt title" id="title">FEED PRESSURE<span class="sub">SEMI-PERMEABLE SEPARATION · 16:9</span></div>
+    <div class="txt mem-lab" id="memLab"><b>RO MEMBRANE</b>SEMIPERMEABLE BARRIER</div>
+    <div class="txt side-label feed-lab" id="feedLab"><b>FEED SIDE</b>SALTWATER · MIXED IONS</div>
+    <div class="txt side-label perm-lab" id="permLab"><b>PERMEATE SIDE</b>FRESH WATER</div>
+    <div class="txt flow-lab perm-flow" id="permFlow"><span class="dot"></span>PERMEATE FLOW</div>
+    <div class="txt flow-lab brine-flow" id="brineFlow"><span class="dot"></span>BRINE DISPOSAL</div>
+
+    <!-- lockup -->
+    <div class="lockup" id="lockup">
+      <svg class="mark" viewBox="0 0 64 64"><path d="M32 4 C32 4 10 30 10 44 a22 22 0 0 0 44 0 C54 30 32 4 32 4 Z" fill="none" stroke="#00B4D8" stroke-width="3"/><path d="M20 44 a12 12 0 0 0 24 0" fill="none" stroke="#FFD166" stroke-width="3" stroke-linecap="round"/></svg>
+      <div class="logo">Aqua<span class="flux">Flux</span></div>
+      <div class="metric"><span class="line"></span>99.8% REJECTION<span class="line r"></span></div>
+      <div class="tag">DEEP-SEA DESALINATION SYSTEMS</div>
+    </div>
+
+    <!-- corner UI -->
+    <div class="brand"><svg class="mk" viewBox="0 0 64 64"><path d="M32 4 C32 4 10 30 10 44 a22 22 0 0 0 44 0 C54 30 32 4 32 4 Z" fill="none" stroke="#00B4D8" stroke-width="4"/></svg>AquaFlux</div>
+    <div class="sys"><span class="rec"></span>RO-EXP · TIMELINE</div>
+    <div class="static-badge" id="staticBadge">STATIC · POSTER FRAME @ 1.5s</div>
+
+    <!-- timeline -->
+    <div class="timeline">
+      <div class="tl-top">
+        <div class="tl-labels" id="tlLabels">
+          <span data-s="0">PROBLEM</span>
+          <span data-s="1.5">MECHANISM</span>
+          <span data-s="3">PAYOFF</span>
+          <span data-s="5">LOCKUP</span>
+        </div>
+        <div class="tl-time" id="tlTime">00.00 / 08.00</div>
+      </div>
+      <div class="tl-track" id="tlTrack">
+        <div class="tl-fill" id="tlFill"></div>
+        <div class="tl-ticks" id="tlTicks"></div>
+        <div class="tl-head" id="tlHead"></div>
+      </div>
+    </div>
+    <div class="hint">SPACE / CLICK TO RESTART · DRAG TO SCRUB</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const stage=document.getElementById('stage');
+  const particles=document.getElementById('particles');
+  const W=1200,H=630,DUR=8;
+  const MEM=600, TOP=150, BOT=478;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- helpers ---------- */
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const inv=(a,b,v)=>clamp((v-a)/(b-a),0,1);
+  const smooth=t=>t*t*(3-2*t);
+  const easeOut=t=>1-Math.pow(1-t,3);
+  const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const rand=(a,b)=>a+Math.random()*(b-a);
+
+  /* ---------- gauge ticks ---------- */
+  (function buildTicks(){
+    const ticks=document.getElementById('ticks');
+    const nums=document.getElementById('numLabels');
+    const NS='http://www.w3.org/2000/svg';
+    for(let p=0;p<=100;p+=10){
+      const ang=(-135+p/100*270)*Math.PI/180;
+      const r1=66,r2=(p%50===0)?54:60;
+      const ln=document.createElementNS(NS,'line');
+      ln.setAttribute('x1',Math.sin(ang)*r1);ln.setAttribute('y1',-Math.cos(ang)*r1);
+      ln.setAttribute('x2',Math.sin(ang)*r2);ln.setAttribute('y2',-Math.cos(ang)*r2);
+      ln.setAttribute('stroke',p>=80?'#FFD166':'#E0F2F1');
+      ln.setAttribute('stroke-width',p%50===0?2:1);
+      ln.setAttribute('opacity',p%50===0?.9:.45);
+      ticks.appendChild(ln);
+      if(p%20===0){
+        const t=document.createElementNS(NS,'text');
+        const rr=44;
+        t.setAttribute('x',Math.sin(ang)*rr);t.setAttribute('y',-Math.cos(ang)*rr+4);
+        t.setAttribute('text-anchor','middle');t.setAttribute('font-family','IBM Plex Sans');
+        t.setAttribute('font-size','11');t.setAttribute('fill','rgba(224,242,241,.6)');
+        t.textContent=p;nums.appendChild(t);
+      }
+    }
+  })();
+
+  /* ---------- particles ---------- */
+  const water=[], salts=[], sparks=[];
+  const elFor=(cls)=>{const d=document.createElement('div');d.className='p '+cls;particles.appendChild(d);return d;};
+
+  function spawnWater(fromFeed){
+    const el=elFor('water');
+    const x=fromFeed?rand(70,560):rand(650,1130);
+    const y=rand(TOP,BOT);
+    const w={x,y,baseX:x,baseY:y,vx:rand(-6,6),vy:rand(-6,6),phase:rand(0,6.28),
+      dir:rand(-1,1),el,alive:true,passed:false,brine:false};
+    water.push(w);return w;
+  }
+  function spawnSalt(){
+    const el=elFor('salt');
+    const x=rand(70,560),y=rand(TOP,BOT);
+    const s={x,y,baseX:x,baseY:y,vx:rand(-6,6),vy:rand(-6,6),phase:rand(0,6.28),
+      rot:rand(0,360),rotV:rand(-40,40),sq:1,el,alive:true,brine:false,cool:0};
+    salts.push(s);return s;
+  }
+  for(let i=0;i<50;i++)spawnWater(true);
+  for(let i=0;i<20;i++)spawnSalt();
+
+  function addSpark(x,y){
+    const d=document.createElement('div');d.className='spark';
+    d.style.left=x+'px';d.style.top=y+'px';particles.appendChild(d);
+    sparks.push({el:d,t:0});
+  }
+
+  /* ---------- state ---------- */
+  const state={t:0,pressure:0};
+  function pressureAt(t){
+    if(t<1.5)return 0;
+    if(t<2.6){const p=easeOut((t-1.5)/1.1);return 82*p;}
+    if(t<3.2){const p=(t-2.6)/0.6;return 82-2*smooth(p);}
+    if(t<5)return 80;
+    if(t<6.4){const p=(t-5)/1.4;return 80*(1-easeInOut(p));}
+    return 0;
+  }
+  function phase(t){return t<1.5?0:t<3?1:t<5?2:3;}
+
+  /* ---------- update ---------- */
+  function updateParticles(dt){
+    const t=state.t, pr=state.pressure;
+    const feedP=pr/80;
+    const activeFeed=t<5;
+    const activePerm=t>=2.2&&t<5.4;
+    const activeBrine=t>=2.6&&t<5.4;
+
+    // water
+    for(let i=0;i<water.length;i++){
+      const w=water[i];
+      if(!w.alive){w.el.style.display='none';continue;}
+      if(w.brine){
+        // diverted down-left
+        w.x+=(520-w.x)*0.03; w.y+=(560-w.y)*0.03;
+        w.x+=Math.sin(t*3+w.phase)*6*dt;
+        w.el.style.transform='translate3d('+(w.x-5)+'px,'+(w.y-5)+'px,0)';
+        if(w.x<560&&w.y<545){ w.x=rand(560,596); w.y=rand(BOT-30,BOT); }
+        continue;
+      }
+      if(w.passed){
+        // permeate side: drift right, recycle
+        w.x+=lerp(20,150,feedP)*dt;
+        w.y=w.baseY+Math.sin(t*1.4+w.phase)*10;
+        w.el.style.transform='translate3d('+(w.x-5)+'px,'+(w.y-5)+'px,0)';
+        if(w.x>1150){ w.x=rand(640,660); w.baseY=rand(TOP,BOT); }
+        continue;
+      }
+      // feed side
+      const speed=lerp(6,110,feedP);
+      w.x+=speed*dt + w.vx*0.15;
+      w.y+=w.vy*0.5 + Math.sin(t*1.6+w.phase)*8*dt;
+      w.vy+=rand(-2,2); w.vy=clamp(w.vy,-8,8);
+      // bounce off walls
+      if(w.x<72){w.x=72;w.vx=Math.abs(w.vx);}
+      if(w.x>588){w.x=588;w.vx=-Math.abs(w.vx);}
+      if(w.y<TOP){w.y=TOP;w.vy=Math.abs(w.vy);}
+      if(w.y>BOT){w.y=BOT;w.vy=-Math.abs(w.vy);}
+      // pass through membrane when pressure high & aligned with pore
+      if(w.x>=MEM-6&&w.x<=MEM+8&&activeFeed&&pr>35){
+        const pore=Math.sin(w.y*0.06+t*2.2);
+        if(pore>0.15&&Math.random()<0.5){
+          w.passed=true; w.x=MEM+14; w.baseY=w.y;
+        }
+      }
+      w.el.style.transform='translate3d('+(w.x-5)+'px,'+(w.y-5)+'px,0)';
+    }
+
+    // salts
+    for(let i=0;i<salts.length;i++){
+      const s=salts[i];
+      if(!s.alive){s.el.style.display='none';continue;}
+      if(s.brine){
+        s.x+=(500-s.x)*0.03; s.y+=(565-s.y)*0.03;
+        s.x+=Math.sin(t*3+s.phase)*6*dt; s.rot+=s.rotV*dt;
+        s.el.style.transform='translate3d('+(s.x-8.5)+'px,'+(s.y-8.5)+'px,0) rotate('+s.rot+'deg) scale('+s.sq+')';
+        if(s.x<540&&s.y<550){ s.x=rand(560,596); s.y=rand(BOT-30,BOT); }
+        continue;
+      }
+      const speed=lerp(6,120,feedP);
+      s.x+=speed*dt + s.vx*0.15;
+      s.y+=s.vy*0.5 + Math.sin(t*1.5+s.phase)*8*dt;
+      s.vy+=rand(-2,2); s.vy=clamp(s.vy,-8,8);
+      s.rot+=s.rotV*dt;
+      s.sq=lerp(s.sq,1,0.12);
+      if(s.cool>0)s.cool-=dt;
+      if(s.x<72){s.x=72;s.vx=Math.abs(s.vx);}
+      if(s.y<TOP){s.y=TOP;s.vy=Math.abs(s.vy);}
+      if(s.y>BOT){s.y=BOT;s.vy=-Math.abs(s.vy);}
+      // collide with membrane -> bounce (elastic, squash)
+      if(s.x>=MEM-9&&s.x<=MEM+4&&activeFeed){
+        if(s.cool<=0){
+          s.sq=0.55; s.vx=-Math.abs(s.vx)-rand(20,60); s.x=MEM-10;
+          s.cool=0.25;
+          if(Math.random()<0.55)addSpark(MEM-6,s.y);
+        }
+      }
+      s.el.style.transform='translate3d('+(s.x-8.5)+'px,'+(s.y-8.5)+'px,0) rotate('+s.rot+'deg) scale('+s.sq+')';
+    }
+
+    // sparks
+    for(let i=sparks.length-1;i>=0;i--){
+      sparks[i].t+=dt;
+      if(sparks[i].t>0.55){sparks[i].el.remove();sparks.splice(i,1);}
+    }
+  }
+
+  /* ---------- gauge ---------- */
+  const needle=document.getElementById('needle');
+  const psiVal=document.getElementById('psiVal');
+  function updateGauge(){
+    const p=state.pressure;
+    needle.setAttribute('transform','rotate('+(p/100*270)+')');
+    psiVal.textContent=Math.round(p);
+    psiVal.setAttribute('fill',p>70?'#FFD166':'#E0F2F1');
+  }
+
+  /* ---------- overlays ---------- */
+  const el={
+    title:document.getElementById('title'),
+    memLab:document.getElementById('memLab'),
+    feedLab:document.getElementById('feedLab'),
+    permLab:document.getElementById('permLab'),
+    permFlow:document.getElementById('permFlow'),
+    brineFlow:document.getElementById('brineFlow'),
+    lockup:document.getElementById('lockup'),
+    glowL:document.getElementById('glowL'),
+    glowR:document.getElementById('glowR'),
+    brineArrow:document.getElementById('brineArrow'),
+    permArrow:document.getElementById('permArrow'),
+    tlFill:document.getElementById('tlFill'),
+    tlHead:document.getElementById('tlHead'),
+    tlTime:document.getElementById('tlTime'),
+    labels:[...document.querySelectorAll('#tlLabels span')],
+    membrane:document.getElementById('membrane')
+  };
+
+  function setTxt(node,op,ty){node.style.opacity=op;if(ty!==undefined)node.style.transform=(node.classList.contains('title')?'translateX(-50%)':'')+' translateY('+ty+'px)';}
+
+  function updateOverlays(){
+    const t=state.t;
+    // title
+    setTxt(el.title,clamp(t/0.4,0,1)*clamp((5.4-t)/0.5,0,1), lerp(-14,0,clamp(t/0.5,0,1)));
+    // membrane label
+    setTxt(el.memLab,clamp(t/0.5,0,1)*clamp((5.4-t)/0.5,0,1), lerp(-10,0,clamp(t/0.5,0,1)));
+    // side labels
+    setTxt(el.feedLab,clamp(t/0.6,0,1)*clamp((5.2-t)/0.5,0,1));
+    setTxt(el.permLab,clamp(inv(1.6,2.6,t))*clamp((5.2-t)/0.5,0,1));
+    // flow labels slide-in
+    const pf=clamp(inv(3.0,3.6,t))*clamp((5.2-t)/0.5,0,1);
+    el.permFlow.style.opacity=pf; el.permFlow.style.transform='translateX('+lerp(40,0,pf)+'px)';
+    const bf=clamp(inv(3.0,3.6,t))*clamp((5.2-t)/0.5,0,1);
+    el.brineFlow.style.opacity=bf; el.brineFlow.style.transform='translateY('+lerp(30,0,bf)+'px)';
+    // arrows
+    el.permArrow.setAttribute('opacity',clamp(inv(2.6,3.2,t))*clamp((5.3-t)/0.5,0,1));
+    el.brineArrow.setAttribute('opacity',clamp(inv(3.0,3.6,t))*clamp((5.3-t)/0.5,0,1));
+    // glows
+    el.glowL.style.opacity=clamp(inv(1.4,2.2,t))*clamp((5.2-t)/0.5,0,1);
+    el.glowR.style.opacity=clamp(inv(2.4,3.2,t))*clamp((5.2-t)/0.5,0,1);
+    // membrane ripple via subtle horizontal shift of dashed group
+    const rip=Math.sin(t*6)*clamp(inv(2.2,3,t),0,1)*clamp((5.4-t)/0.6,0,1)*2;
+    el.membrane.setAttribute('transform','translate('+rip+',0)');
+    // lockup
+    const lk=clamp(inv(5.0,5.8,t))*clamp((7.7-t)/0.4,0,1);
+    el.lockup.style.opacity=lk;
+    el.lockup.style.transform='scale('+lerp(0.86,1,easeOut(clamp(inv(5.0,5.9,t),0,1)))+')';
+    // timeline
+    const f=t/DUR;
+    el.tlFill.style.width=(f*100)+'%';
+    el.tlHead.style.left=(f*100)+'%';
+    el.tlTime.textContent=t.toFixed(2).padStart(5,'0')+' / 08.00';
+    const ph=phase(t);
+    el.labels.forEach((s,i)=>s.classList.toggle('on',i===ph));
+  }
+
+  /* ---------- render ---------- */
+  function render(){
+    updateGauge();
+    updateOverlays();
+  }
+  function renderFrame(t){
+    state.t=t; state.pressure=pressureAt(t);
+    render();
+  }
+
+  /* ---------- loop ---------- */
+  let last=null, running=true;
+  function loop(ts){
+    if(!running)return;
+    if(last==null)last=ts;
+    let dt=(ts-last)/1000; last=ts;
+    if(dt>0.05)dt=0.05;
+    state.t+=dt;
+    if(state.t>=DUR){ state.t-=DUR; }
+    state.pressure=pressureAt(state.t);
+    updateParticles(dt);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- restart / scrub ---------- */
+  function reset(){
+    state.t=0; state.pressure=0;
+    for(const s of sparks){s.el.remove();} sparks.length=0;
+    for(const w of water){w.alive=true;w.passed=false;w.brine=false;w.x=w.baseX;w.y=w.baseY;w.vx=rand(-6,6);w.vy=rand(-6,6);w.el.style.display='';}
+    for(const s of salts){s.alive=true;s.brine=false;s.x=s.baseX;s.y=s.baseY;s.sq=1;s.cool=0;s.el.style.display='';}
+  }
+  function restart(){reset(); if(reduce){renderFrame(1.5);return;} if(!running){running=true;last=null;requestAnimationFrame(loop);} }
+
+  // timeline ticks
+  (function(){const tk=document.getElementById('tlTicks');[0,1.5,3,5].forEach(s=>{const i=document.createElement('i');i.style.left=(s/DUR*100)+'%';tk.appendChild(i);});})();
+
+  // scrub
+  const track=document.getElementById('tlTrack');
+  let scrubbing=false;
+  function scrubTo(clientX){
+    const r=track.getBoundingClientRect();
+    const f=clamp((clientX-r.left)/r.width,0,1);
+    state.t=f*DUR; state.pressure=pressureAt(state.t);
+    // place particles deterministically-ish for scrub: re-seed feed positions
+    for(const w of water){if(!w.passed&&!w.brine){w.x=clamp(w.x,72,588);}}
+    render();
+  }
+  track.addEventListener('pointerdown',e=>{scrubbing=true;running=false;track.setPointerCapture(e.pointerId);scrubTo(e.clientX);});
+  track.addEventListener('pointermove',e=>{if(scrubbing)scrubTo(e.clientX);});
+  track.addEventListener('pointerup',()=>{scrubbing=false;if(!reduce){running=true;last=null;requestAnimationFrame(loop);}});
+
+  stage.addEventListener('click',e=>{ if(e.target.closest('.timeline'))return; restart(); });
+  window.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();restart();} });
+
+  /* ---------- responsive scale ---------- */
+  function fit(){
+    const pad=reduce?0:0;
+    const s=Math.min(window.innerWidth/W, window.innerHeight/H)*0.98;
+    stage.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  /* ---------- boot ---------- */
+  if(reduce){
+    document.getElementById('staticBadge').style.display='block';
+    running=false;
+    renderFrame(1.5);
+  }else{
+    reset();
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>

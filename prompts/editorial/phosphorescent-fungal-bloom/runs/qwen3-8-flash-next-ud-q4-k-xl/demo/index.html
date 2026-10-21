@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phosphorescent Bloom — Mycelium Quarterly</title>
+<meta name="description" content="A study in attention. An interactive long-form essay from Mycelium Quarterly, where the glow of each paragraph is mapped to the time you spend reading it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#050805;
+    --void-2:#070b07;
+    --ink:#1A1A1A;
+    --glow:#39FF14;
+    --glow-soft:rgba(57,255,20,0.10);
+    --glow-line:rgba(57,255,20,0.14);
+    --ease:cubic-bezier(0.4,0.0,0.2,1);
+    --pad:clamp(1.15rem,4vw,2rem);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html{
+    background:var(--void);
+    color-scheme:dark;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  html::-webkit-scrollbar{width:0;height:0;display:none}
+
+  body{
+    background:var(--void);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    font-size:18px;
+    line-height:1.9;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+    min-height:100vh;
+  }
+
+  /* ---------- Ambient background layers ---------- */
+  .bg-fog{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(130% 90% at 50% -15%, rgba(57,255,20,0.06), transparent 55%),
+      radial-gradient(120% 120% at 50% 118%, rgba(57,255,20,0.05), transparent 60%);
+  }
+  .bg-vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(125% 100% at 50% 42%, transparent 45%, rgba(0,0,0,0.6) 100%);
+  }
+  .bg-grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.045;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .spores{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .spore{
+    position:absolute;bottom:-12px;border-radius:50%;
+    background:radial-gradient(circle, rgba(57,255,20,0.95), rgba(57,255,20,0) 70%);
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{transform:translate(0,0);opacity:0}
+    12%{opacity:var(--o)}
+    88%{opacity:var(--o)}
+    100%{transform:translate(var(--dx),-112vh);opacity:0}
+  }
+
+  /* ---------- Header ---------- */
+  .masthead{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    padding:.95rem clamp(1.15rem,4vw,2.4rem);
+    background:rgba(5,8,5,0.82);
+    -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--glow-line);
+  }
+  .brand{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:clamp(1.05rem,2.2vw,1.4rem);letter-spacing:-0.01em;
+    color:var(--glow);
+    text-shadow:0 0 14px rgba(57,255,20,0.35);
+    white-space:nowrap;
+  }
+  .brand .sp{font-style:italic;font-weight:400;opacity:.72}
+  .issue{
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+    color:rgba(57,255,20,0.6);text-align:right;line-height:1.5;
+  }
+  .issue .dot{opacity:.5}
+  .issue .live{color:var(--glow)}
+
+  .hc-toggle{
+    position:fixed;top:calc(.95rem + 2.4rem);right:clamp(1.15rem,4vw,2.4rem);z-index:110;
+    width:36px;height:36px;border-radius:50%;
+    border:1px solid var(--glow);background:transparent;cursor:pointer;
+    display:grid;place-items:center;color:var(--glow);
+    transition:background .35s var(--ease),box-shadow .35s var(--ease),color .35s var(--ease);
+  }
+  .hc-toggle:hover{background:rgba(57,255,20,0.12);box-shadow:0 0 18px rgba(57,255,20,0.28)}
+  .hc-toggle:focus-visible{outline:2px solid var(--glow);outline-offset:3px}
+  .hc-toggle svg{width:17px;height:17px}
+  .hc-toggle .icon-off{display:none}
+  body.contrast .hc-toggle .icon-on{display:none}
+  body.contrast .hc-toggle .icon-off{display:block}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;z-index:5;
+    max-width:920px;margin:0 auto;
+    padding:clamp(8rem,16vh,12rem) var(--pad) clamp(3rem,7vh,5rem);
+  }
+  .kicker{
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    font-size:.72rem;letter-spacing:.34em;text-transform:uppercase;
+    color:rgba(57,255,20,0.5);
+    display:flex;align-items:center;gap:.7rem;
+  }
+  .kicker::before{content:"";width:34px;height:1px;background:rgba(57,255,20,0.4)}
+  .title{
+    font-family:'Fraunces',serif;font-optical-sizing:auto;
+    font-weight:600;font-size:clamp(2.9rem,9vw,6.4rem);line-height:.98;
+    letter-spacing:-0.025em;margin:1.4rem 0 1.6rem;
+    color:var(--glow);opacity:.92;
+    text-shadow:0 0 22px rgba(57,255,20,0.30),0 0 60px rgba(57,255,20,0.12);
+    animation:titlePulse 7s ease-in-out infinite;
+  }
+  .title em{font-style:italic;font-weight:400}
+  @keyframes titlePulse{
+    0%,100%{text-shadow:0 0 16px rgba(57,255,20,0.22),0 0 46px rgba(57,255,20,0.08);opacity:.86}
+    50%{text-shadow:0 0 30px rgba(57,255,20,0.42),0 0 82px rgba(57,255,20,0.18);opacity:1}
+  }
+  .subhead{
+    font-family:'Fraunces',serif;font-weight:300;font-style:italic;
+    font-size:clamp(1.15rem,2.6vw,1.7rem);color:rgba(57,255,20,0.72);
+    text-shadow:0 0 16px rgba(57,255,20,0.22);max-width:24ch;
+  }
+  .deck{
+    margin-top:1.6rem;max-width:52ch;
+    color:rgba(57,255,20,0.5);font-size:1rem;line-height:1.7;
+  }
+  .hero-meta{
+    margin-top:2.4rem;display:flex;flex-wrap:wrap;gap:.6rem 1.4rem;
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(57,255,20,0.55);
+  }
+  .hero-meta span{display:inline-flex;align-items:center;gap:.55rem}
+  .hero-meta .sep{opacity:.35}
+
+  .legend{
+    margin-top:2.6rem;padding-top:1.5rem;border-top:1px solid var(--glow-line);
+    display:flex;flex-wrap:wrap;gap:1rem 1.6rem;align-items:center;
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    font-size:.72rem;letter-spacing:.06em;color:rgba(57,255,20,0.45);
+  }
+  .legend .grad{
+    width:120px;height:6px;border-radius:99px;
+    background:linear-gradient(90deg,rgba(57,255,20,0.04),rgba(57,255,20,0.95));
+    box-shadow:0 0 12px rgba(57,255,20,0.25);
+  }
+  .legend .hint{display:inline-flex;align-items:center;gap:.5rem}
+  .legend kbd{
+    font-family:inherit;border:1px solid var(--glow-line);border-radius:5px;
+    padding:.15rem .45rem;color:rgba(57,255,20,0.75);font-size:.68rem;
+  }
+
+  /* ---------- Article ---------- */
+  .article{
+    position:relative;z-index:5;
+    max-width:700px;margin:0 auto;
+    padding:clamp(1rem,4vh,3rem) var(--pad) 0;
+  }
+  .prose p{
+    font-size:1.075rem;line-height:1.9;
+    color:var(--ink);
+    margin:0 0 2.4rem;
+    cursor:pointer;
+    opacity:0;
+    will-change:opacity,text-shadow,color;
+    transition:color 1s var(--ease),text-shadow 1s var(--ease),opacity 1s var(--ease);
+  }
+  .prose p.revealed{opacity:1}
+
+  /* read-state luminance tiers */
+  .prose p[data-read-score="0"]{color:var(--ink);text-shadow:none}
+  .prose p[data-read-score="1"]{color:rgba(57,255,20,0.35);text-shadow:0 0 6px rgba(57,255,20,0.14)}
+  .prose p[data-read-score="2"]{color:rgba(57,255,20,0.6);text-shadow:0 0 10px rgba(57,255,20,0.28)}
+  .prose p[data-read-score="3"]{color:rgba(57,255,20,0.85);text-shadow:0 0 16px rgba(57,255,20,0.45),0 0 34px rgba(57,255,20,0.16)}
+  .prose p[data-read-score="4"]{color:rgba(57,255,20,1);text-shadow:0 0 22px rgba(57,255,20,0.7),0 0 46px rgba(57,255,20,0.32),0 0 84px rgba(57,255,20,0.14)}
+
+  /* dormant hover hint */
+  @media (hover:hover){
+    .prose p[data-read-score="0"]:hover{color:rgba(57,255,20,0.16);text-shadow:0 0 6px rgba(57,255,20,0.10)}
+  }
+
+  /* idle pulse for read passages */
+  .prose p.pulse{animation:breathe 4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.82}50%{opacity:1}}
+
+  /* pruning shiver */
+  .prose p.shiver{animation:shiver .5s var(--ease)}
+  @keyframes shiver{
+    0%{transform:translateX(0)}
+    22%{transform:translateX(3px)}
+    44%{transform:translateX(-2.5px)}
+    66%{transform:translateX(1.5px)}
+    100%{transform:translateX(0)}
+  }
+
+  .prose p:focus-visible{outline:1px solid rgba(57,255,20,0.5);outline-offset:6px;border-radius:2px}
+
+  /* pull quote */
+  .pull{
+    margin:3.6rem 0;padding-left:1.5rem;border-left:2px solid rgba(57,255,20,0.3);
+    font-family:'Fraunces',serif;font-style:italic;font-weight:400;
+    font-size:clamp(1.4rem,3.4vw,2.05rem);line-height:1.35;
+    color:var(--ink);opacity:0;cursor:pointer;
+    will-change:opacity,text-shadow,color;
+    transition:color 1s var(--ease),text-shadow 1s var(--ease),opacity 1s var(--ease);
+  }
+  .pull.revealed{opacity:1}
+  .pull[data-read-score="0"]{color:var(--ink);text-shadow:none}
+  .pull[data-read-score="1"]{color:rgba(57,255,20,0.4);text-shadow:0 0 10px rgba(57,255,20,0.2)}
+  .pull[data-read-score="2"]{color:rgba(57,255,20,0.7);text-shadow:0 0 18px rgba(57,255,20,0.36)}
+  .pull[data-read-score="3"]{color:rgba(57,255,20,0.9);text-shadow:0 0 26px rgba(57,255,20,0.55),0 0 52px rgba(57,255,20,0.22)}
+  .pull[data-read-score="4"]{color:rgba(57,255,20,1);text-shadow:0 0 34px rgba(57,255,20,0.8),0 0 70px rgba(57,255,20,0.4),0 0 120px rgba(57,255,20,0.18)}
+  .pull.pulse{animation:breathe 4s ease-in-out infinite}
+  .pull.shiver{animation:shiver .5s var(--ease)}
+  .pull:focus-visible{outline:1px solid rgba(57,255,20,0.5);outline-offset:6px;border-radius:2px}
+  .pull cite{display:block;margin-top:1rem;font-family:'IBM Plex Mono',ui-monospace,monospace;font-style:normal;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(57,255,20,0.4)}
+
+  /* section ornament */
+  .ornament{
+    text-align:center;color:rgba(57,255,20,0.35);letter-spacing:.6em;
+    font-size:.85rem;margin:3rem 0;text-shadow:0 0 12px rgba(57,255,20,0.3);
+  }
+
+  /* ---------- Footer ---------- */
+  .colophon{
+    position:relative;z-index:5;
+    max-width:700px;margin:0 auto;
+    padding:5rem var(--pad) 10rem;
+    border-top:1px solid var(--glow-line);
+  }
+  .colophon .imprint{
+    font-family:'Fraunces',serif;font-weight:500;font-size:1.5rem;
+    color:var(--glow);text-shadow:0 0 18px rgba(57,255,20,0.3);
+  }
+  .colophon .imprint .sp{font-style:italic;font-weight:400;opacity:.7}
+  .colophon p{color:rgba(57,255,20,0.45);font-size:.85rem;margin-top:.9rem;max-width:46ch;line-height:1.7}
+  .colophon .tags{
+    margin-top:1.6rem;display:flex;flex-wrap:wrap;gap:.5rem;
+    font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.68rem;
+    letter-spacing:.14em;text-transform:uppercase;
+  }
+  .colophon .tags span{border:1px solid var(--glow-line);border-radius:99px;padding:.3rem .7rem;color:rgba(57,255,20,0.5)}
+
+  /* ---------- High contrast mode ---------- */
+  body.contrast .prose p,
+  body.contrast .pull{
+    color:var(--glow)!important;
+    text-shadow:none!important;
+    opacity:1!important;
+    animation:none!important;
+  }
+  body.contrast .title{animation:none;text-shadow:none}
+  body.contrast .bg-grain,body.contrast .spores{display:none}
+  body.contrast .subhead{color:var(--glow)}
+
+  /* ---------- Mobile ---------- */
+  @media (max-width:767px){
+    body{font-size:16px}
+    .prose p,.pull{font-size:1rem;line-height:1.6}
+    .masthead{position:static;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid var(--glow-line)}
+    .hero{padding-top:clamp(3rem,10vh,5rem)}
+    .article{max-width:none}
+    .prose p,.pull{margin-bottom:2rem}
+    .prose p[data-read-score="3"]{text-shadow:0 0 8px rgba(57,255,20,0.45),0 0 18px rgba(57,255,20,0.14)}
+    .prose p[data-read-score="4"]{text-shadow:0 0 11px rgba(57,255,20,0.7),0 0 23px rgba(57,255,20,0.3),0 0 42px rgba(57,255,20,0.12)}
+    .pull[data-read-score="3"]{text-shadow:0 0 13px rgba(57,255,20,0.5),0 0 26px rgba(57,255,20,0.2)}
+    .pull[data-read-score="4"]{text-shadow:0 0 17px rgba(57,255,20,0.8),0 0 35px rgba(57,255,20,0.38),0 0 60px rgba(57,255,20,0.15)}
+    .hc-toggle{
+      top:auto;bottom:20px;right:20px;width:44px;height:44px;
+      background:var(--glow);color:#04140a;box-shadow:0 0 22px rgba(57,255,20,0.4);
+    }
+    .hc-toggle:hover{background:var(--glow)}
+    .colophon{padding-bottom:7rem}
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion:reduce){
+    .title,.prose p.pulse,.pull.pulse,.spore{animation:none!important}
+    .prose p,.pull{transition-duration:.4s}
+    .prose p.shiver{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="bg-fog"></div>
+  <div class="bg-vignette"></div>
+  <div class="spores" id="spores" aria-hidden="true"></div>
+  <div class="bg-grain"></div>
+
+  <header class="masthead">
+    <div class="brand">Mycelium<span class="sp"> Quarterly</span></div>
+    <div class="issue">Issue&nbsp;VII<span class="dot"> · </span>Winter MMXXV<span class="dot"> · </span><span class="live">◉ Live</span></div>
+  </header>
+
+  <button class="hc-toggle" id="hcToggle" aria-pressed="false" aria-label="Toggle high contrast mode" title="High contrast">
+    <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+    <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+  </button>
+
+  <main>
+    <section class="hero">
+      <p class="kicker">Field Notes · Attention Ecology</p>
+      <h1 class="title">Phosphorescent <em>Bloom</em></h1>
+      <p class="subhead">A Study in Attention</p>
+      <p class="deck">In certain forests after dark, the fallen wood exhales a cold green light. This essay behaves the same way — each passage glows only in proportion to the time you give it. Read slowly, and the page comes alive. Look away, and it dims.</p>
+      <div class="hero-meta">
+        <span>By W. O. Lumen</span>
+        <span class="sep">/</span>
+        <span>14 min read</span>
+        <span class="sep">/</span>
+        <span>Bioluminescence &amp; Focus</span>
+      </div>
+      <div class="legend">
+        <span class="grad" aria-hidden="true"></span>
+        <span>dormant → illuminated</span>
+        <span class="hint"><kbd>Click</kbd> a passage to prune its glow</span>
+      </div>
+    </section>
+
+    <article class="article">
+      <div class="prose">
+        <p>Beneath the floor of every old-growth forest runs a second, quieter world. Fungal threads thinner than a human hair — the mycelium — weave through the dark in a lattice so dense that a single teaspoon of soil may hold miles of it. They are not plants and not animals. They are a third kingdom, and for most of the year they are invisible, content to do their slow work in the black.</p>
+
+        <p>What draws us to them, though, is not the network itself but the light. On humid nights, certain species ignite. <em>Mycena chlorophos</em> burns a soft green from its gills; <em>Armillaria mellea</em> makes the forest floor shimmer like a submerged city seen from above. The glow is a chemical accident, the waste product of a reaction between luciferin and oxygen — and yet it is the one part of the fungus that ever reaches our eyes.</p>
+
+        <p>Attention behaves much the same way. We move through a text the way a root moves through soil: mostly unseen, mostly in the dark, until the moment a sentence catches and begins to emit. The light is not in the words. It is in the duration of looking. Hold your gaze long enough on a line and it warms; look away and it cools, returning to the black from which it came.</p>
+
+        <blockquote class="pull">
+          We do not read the forest. We are read by it — our eyes the slow photons, the mycelium the patient dark that decides what will glow.
+          <cite>— Field margin, Issue VII</cite>
+        </blockquote>
+
+        <p>Scientists still argue about why the fungi bother to shine. The leading theory is pragmatic: a visible body is a visitable body. The glow calls beetles and springtails, who carry spores from fruiting body to fruiting body, trading light for transport. Bioluminescence, in this reading, is not decoration but advertisement — a signal flung into the dark precisely because the dark is where the audience is.</p>
+
+        <div class="ornament" aria-hidden="true">✦ ✦ ✦</div>
+
+        <p>There is a discipline hiding inside this. To make the forest glow, the fungus must first survive the months of invisibility, when nothing is rewarded and nothing is seen. The bloom is not the work; the bloom is the evidence of the work. Most of the network will never light up, and most of the work will never be visible to anyone who walks past.</p>
+
+        <p>Perhaps attention is the same economy. We are taught to chase the moment of illumination — the finished draft, the published line, the paragraph that glows. But the glow is downstream of a long, unlit accumulation. It arrives only because we stayed. It fades the instant we leave. The forest does not remember our gaze, and neither does the page; it simply returns, patiently, to the dark, waiting for the next slow pair of eyes.</p>
+      </div>
+    </article>
+  </main>
+
+  <footer class="colophon">
+    <p class="imprint">Mycelium<span class="sp"> Quarterly</span></p>
+    <p>© MMXXV Mycelium Quarterly. An independent imprint on attention, ecology, and the slow arts. Set in Fraunces &amp; IBM Plex. This document was grown, not printed.</p>
+    <div class="tags">
+      <span>fungi</span><span>glow</span><span>read-time</span><span>attention</span><span>dark</span><span>organic</span>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var units = Array.prototype.slice.call(document.querySelectorAll('.prose p, .pull'));
+  units.forEach(function(u){ u.setAttribute('data-read-score','0'); u.setAttribute('tabindex','0'); });
+
+  var scores = units.map(function(){ return 0; });
+  var inView = units.map(function(){ return false; });
+  var revealed = units.map(function(){ return false; });
+  var lastTier = units.map(function(){ return -1; });
+
+  function tierOf(s){
+    if(s >= 100) return 4;
+    if(s >= 50)  return 3;
+    if(s >= 10)  return 2;
+    if(s >= 1)   return 1;
+    return 0;
+  }
+  function applyState(i){
+    var u = units[i];
+    var t = tierOf(scores[i]);
+    if(t !== lastTier[i]){
+      u.setAttribute('data-read-score', t);
+      lastTier[i] = t;
+    }
+    var shouldPulse = (t >= 3) && !reduce;
+    if(shouldPulse !== u.classList.contains('pulse')){
+      u.classList.toggle('pulse', shouldPulse);
+    }
+  }
+
+  /* ---- Intersection Observer ---- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      var i = units.indexOf(e.target);
+      if(i < 0) return;
+      if(e.isIntersecting){
+        inView[i] = true;
+        if(!revealed[i]){ revealed[i] = true; e.target.classList.add('revealed'); }
+      } else {
+        inView[i] = false;
+      }
+    });
+  }, { threshold:[0, 0.35, 0.65], rootMargin:'-12% 0px -12% 0px' });
+  units.forEach(function(u){ io.observe(u); });
+
+  /* ---- Accumulation loop ---- */
+  var paused = false;
+  var last = performance.now();
+  function tick(now){
+    var dt = (now - last) / 1000;
+    last = now;
+    if(paused){ requestAnimationFrame(tick); return; }
+    if(dt > 0.25) dt = 0.25;
+    var rate = 100 / 11; // reach full bloom in ~11s of focused reading
+    for(var i = 0; i < units.length; i++){
+      if(inView[i] && !paused){
+        scores[i] = Math.min(150, scores[i] + dt * rate);
+        applyState(i);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /* ---- Tab visibility ---- */
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ paused = true; }
+    else { paused = false; last = performance.now(); }
+  });
+
+  /* ---- Scroll velocity: throttle accumulation during fast scroll ---- */
+  var lastScrollY = window.pageYOffset, velocityPauseUntil = 0, ticking = false;
+  function onScroll(){
+    var y = window.pageYOffset;
+    var v = Math.abs(y - lastScrollY);
+    lastScrollY = y;
+    if(v > 55){ velocityPauseUntil = performance.now() + 200; }
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if(!ticking){ ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive:true });
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden){ last = performance.now(); }
+  });
+
+  /* ---- Pruning interaction ---- */
+  function prune(i){
+    scores[i] = 0;
+    lastTier[i] = -1;
+    applyState(i);
+    var u = units[i];
+    u.classList.remove('pulse');
+    if(!reduce){
+      u.classList.remove('shiver');
+      void u.offsetWidth;
+      u.classList.add('shiver');
+      setTimeout(function(){ u.classList.remove('shiver'); }, 520);
+    }
+  }
+  units.forEach(function(u, i){
+    u.addEventListener('click', function(){ prune(i); });
+    u.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); prune(i); }
+    });
+  });
+
+  /* ---- High contrast toggle ---- */
+  var hc = document.getElementById('hcToggle');
+  hc.addEventListener('click', function(){
+    var on = document.body.classList.toggle('contrast');
+    hc.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+
+  /* ---- Ambient spores ---- */
+  (function(){
+    if(reduce) return;
+    var host = document.getElementById('spores');
+    var n = window.innerWidth < 768 ? 14 : 26;
+    for(var i = 0; i < n; i++){
+      var s = document.createElement('span');
+      s.className = 'spore';
+      var size = (Math.random() * 2.4 + 1).toFixed(2);
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.left = (Math.random() * 100).toFixed(2) + '%';
+      var dur = (Math.random() * 16 + 16).toFixed(1);
+      s.style.animationDuration = dur + 's';
+      s.style.animationDelay = (-Math.random() * dur).toFixed(1) + 's';
+      s.style.setProperty('--dx', (Math.random() * 60 - 30).toFixed(0) + 'px');
+      s.style.setProperty('--o', (Math.random() * 0.3 + 0.12).toFixed(2));
+      host.appendChild(s);
+    }
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LumenCore — Light Guiding Principles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000; --ink:#FFFFFF; --cyan:#00E5FF; --violet:#7C4DFF; --red:#FF0055;
+    --coreH:120; --pad:clamp(16px,3.6vw,44px);
+    --mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --disp:'Syne','Arial Black',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--mono);overflow:hidden;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);}
+  .frame{position:relative;width:min(100vw,calc(100vh*16/9));aspect-ratio:16/9;overflow:hidden;background:var(--bg);}
+
+  svg#scene{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* ---------- HTML overlay ---------- */
+  .overlay{position:absolute;inset:0;pointer-events:none;}
+  .corner{position:absolute;width:16px;height:16px;border:1.5px solid rgba(255,255,255,.28);}
+  .corner.tl{top:16px;left:16px;border-right:0;border-bottom:0;}
+  .corner.tr{top:16px;right:16px;border-left:0;border-bottom:0;}
+  .corner.bl{bottom:16px;left:16px;border-right:0;border-top:0;}
+  .corner.br{bottom:16px;right:16px;border-left:0;border-top:0;}
+
+  .brand{position:absolute;left:var(--pad);top:var(--pad);}
+  .brand .wordmark{font-family:var(--disp);font-weight:800;font-size:clamp(15px,1.7vw,22px);
+    letter-spacing:.16em;color:#fff;display:flex;align-items:center;gap:.5em;}
+  .brand .wordmark .dot{width:8px;height:8px;background:var(--cyan);border-radius:50%;
+    box-shadow:0 0 12px var(--cyan);}
+  .brand .sub{font-family:var(--mono);font-size:clamp(8px,.9vw,10px);letter-spacing:.28em;
+    color:rgba(255,255,255,.45);margin-top:6px;}
+
+  .titleblock{position:absolute;left:var(--pad);top:clamp(74px,11vh,120px);}
+  .titleblock .eyebrow{font-family:var(--mono);font-size:clamp(8px,.95vw,11px);letter-spacing:.34em;
+    color:var(--cyan);margin-bottom:12px;}
+  .titleblock h1{font-family:var(--disp);font-weight:800;color:#fff;line-height:.94;
+    font-size:clamp(28px,5.3vw,66px);letter-spacing:-.01em;text-transform:uppercase;}
+  .titleblock h1 .l2{color:var(--cyan);}
+  .titleblock .subtitle{font-family:var(--mono);font-size:clamp(10px,1.25vw,14px);color:#fff;
+    margin-top:16px;letter-spacing:.02em;}
+  .titleblock .subtitle b{color:var(--cyan);font-weight:700;}
+
+  .signal{position:absolute;right:var(--pad);bottom:var(--pad);text-align:right;}
+  .signal .lbl{font-family:var(--mono);font-size:clamp(8px,.9vw,11px);letter-spacing:.24em;
+    color:rgba(255,255,255,.5);margin-bottom:6px;}
+  .signal .val{font-family:var(--disp);font-weight:800;font-size:clamp(30px,4.6vw,60px);
+    line-height:1;color:var(--cyan);letter-spacing:-.02em;}
+  .signal .bar{width:clamp(120px,16vw,220px);height:3px;background:rgba(255,255,255,.12);
+    margin-top:12px;margin-left:auto;}
+  .signal .bar>i{display:block;height:100%;width:100%;background:var(--cyan);
+    box-shadow:0 0 10px var(--cyan);}
+  .signal.leak .val{color:var(--red);}
+  .signal.leak .bar>i{background:var(--red);box-shadow:0 0 10px var(--red);}
+
+  .hint{position:absolute;left:50%;bottom:calc(var(--pad) - 2px);transform:translateX(-50%);
+    font-family:var(--mono);font-size:clamp(8px,.85vw,11px);letter-spacing:.2em;
+    color:rgba(255,255,255,.38);text-transform:uppercase;white-space:nowrap;}
+
+  /* ---------- SVG text ---------- */
+  .svgtext{font-family:var(--mono);letter-spacing:.18em;fill:#fff;}
+  .svgtext.small{font-size:10px;}
+  .svgtext.cyan{fill:var(--cyan);}
+  #gLabels,#gCritical,#gBeam,#gBeamGlow,#gBeamHead,#gLeak,#gImpact,#gNormal,#gCoreFill{
+    opacity:0;transition:opacity .3s ease;}
+  .gLabels.on,#gLabels.on,#gCritical.on{opacity:1;}
+
+  .fiber{cursor:ns-resize;touch-action:none;}
+
+  @media (prefers-reduced-motion: reduce){
+    #gLabels,#gCritical,#gBeam,#gBeamGlow,#gBeamHead{opacity:1 !important;}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="frame" id="frame">
+    <svg id="scene" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="glowCyan" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b"/>
+          <feColorMatrix in="b" type="matrix"
+            values="0 0 0 0 0.0   0 0 0 0 0.9   0 0 0 0 1.0   0 0 0 1 0"/>
+        </filter>
+        <filter id="glowViolet" x="-120%" y="-120%" width="340%" height="340%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="b"/>
+          <feColorMatrix in="b" type="matrix"
+            values="0 0 0 0 0.486   0 0 0 0 0.302   0 0 0 0 1.0   0 0 0 1 0"/>
+        </filter>
+        <filter id="glowRed" x="-120%" y="-120%" width="340%" height="340%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/>
+          <feColorMatrix in="b" type="matrix"
+            values="0 0 0 0 1.0   0 0 0 0 0.0   0 0 0 0 0.333   0 0 0 1 0"/>
+        </filter>
+      </defs>
+
+      <rect x="0" y="0" width="1280" height="720" fill="#000000"/>
+
+      <!-- ambient technical grid -->
+      <g id="grid" stroke="#FFFFFF" stroke-width="1" opacity="0.05">
+        <line x1="0" y1="180" x2="1280" y2="180"/>
+        <line x1="0" y1="540" x2="1280" y2="540"/>
+      </g>
+
+      <!-- CORE fill -->
+      <g id="gCoreFill"><polygon id="coreFill" points="" fill="#00E5FF" fill-opacity="0.10"/></g>
+
+      <!-- FIBER boundaries (unspool via stroke-dashoffset) -->
+      <g id="gFiber">
+        <line id="topLine" x1="128" y1="300" x2="128" y2="300" stroke="#FFFFFF" stroke-width="2"/>
+        <line id="botLine" x1="128" y1="420" x2="128" y2="420" stroke="#FFFFFF" stroke-width="2"/>
+      </g>
+
+      <!-- NORMAL + critical-angle marker at first bounce -->
+      <g id="gNormal">
+        <line id="normalLine" x1="0" y1="0" x2="0" y2="0" stroke="#FFFFFF" stroke-width="1"
+              stroke-dasharray="5 5" opacity="0.6"/>
+        <path id="criticalArc" d="" fill="none" stroke="#7C4DFF" stroke-width="1.5"
+              stroke-dasharray="4 4" opacity="0.9"/>
+        <text id="criticalLabel" class="svgtext small" x="0" y="0" fill="#7C4DFF">θc 42°</text>
+      </g>
+
+      <!-- BEAM (glow + core) -->
+      <g id="gBeamGlow"><polyline id="beamGlow" points="" fill="none" stroke="#7C4DFF"
+        stroke-width="6" stroke-linejoin="round" stroke-linecap="round" filter="url(#glowViolet)"/></g>
+      <g id="gBeam"><polyline id="beam" points="" fill="none" stroke="#00E5FF"
+        stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></g>
+
+      <!-- impact pulses -->
+      <g id="gImpact"></g>
+
+      <!-- leaking light -->
+      <g id="gLeak"></g>
+
+      <!-- traveling head -->
+      <g id="gBeamHead">
+        <circle id="headGlow" r="10" fill="#7C4DFF" filter="url(#glowViolet)"/>
+        <circle id="headDot" r="3.2" fill="#FFFFFF"/>
+      </g>
+
+      <!-- labels -->
+      <g id="gLabels">
+        <text id="coreLabel" class="svgtext" x="0" y="0">CORE</text>
+        <text id="cladTop" class="svgtext small" x="0" y="0">CLADDING</text>
+        <text id="cladBot" class="svgtext small" x="0" y="0">CLADDING</text>
+      </g>
+
+      <!-- drag handle -->
+      <g id="handle" class="fiber">
+        <circle id="handleRing" r="12" fill="none" stroke="#00E5FF" stroke-width="2" opacity="0.9"/>
+        <circle id="handleDot" r="3" fill="#00E5FF"/>
+      </g>
+
+      <!-- transparent drag capture strip on right -->
+      <rect id="dragZone" x="1080" y="0" width="200" height="720" fill="transparent" class="fiber"/>
+    </svg>
+
+    <div class="overlay">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+
+      <div class="brand">
+        <div class="wordmark"><span class="dot"></span>LUMENCORE</div>
+        <div class="sub">PHOTONIC TRANSPORT · OPTICS LAB</div>
+      </div>
+
+      <div class="titleblock">
+        <div class="eyebrow">FIG.01 — FIBER OPTIC TRANSMISSION</div>
+        <h1>LIGHT GUIDING<br><span class="l2">PRINCIPLES</span></h1>
+        <div class="subtitle"><b>Total Internal Reflection</b> · confinement at θ &gt; θc</div>
+      </div>
+
+      <div class="signal" id="signal">
+        <div class="lbl">SIGNAL STRENGTH</div>
+        <div class="val" id="sigVal">100%</div>
+        <div class="bar"><i id="sigBar"></i></div>
+      </div>
+
+      <div class="hint">↕ Drag the right node to bend the fiber — sharp bends leak light</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const NS="http://www.w3.org/2000/svg";
+  const $=id=>document.getElementById(id);
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const easeOut=t=>1-Math.pow(1-t,3);
+  const easeIn =t=>t*t*t;
+  const smooth=(a,b,x)=>{let t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
+
+  const frame=$("frame");
+  const topLine=$("topLine"), botLine=$("botLine"), coreFill=$("coreFill");
+  const beam=$("beam"), beamGlow=$("beamGlow"), gBeam=$("gBeam"), gBeamGlow=$("gBeamGlow"), gBeamHead=$("gBeamHead");
+  const headGlow=$("headGlow"), headDot=$("headDot"), gImpact=$("gImpact");
+  const gCoreFill=$("gCoreFill"), gLabels=$("gLabels"), gNormal=$("gNormal"), gCritical=$("gCritical");
+  const coreLabel=$("coreLabel"), cladTop=$("cladTop"), cladBot=$("cladBot");
+  const normalLine=$("normalLine"), criticalArc=$("criticalArc"), criticalLabel=$("criticalLabel");
+  const gLeak=$("gLeak"), handle=$("handle"), handleRing=$("handleRing"), handleDot=$("handleDot"), dragZone=$("dragZone");
+  const sigVal=$("sigVal"), sigBar=$("sigBar"), signalEl=$("signal");
+
+  const X0=128, X1=1152, CY=360, H=120, TOP0=CY-H/2, BOT0=CY+H/2;
+  const SPAN=X1-X0, SEG=150, MAXBEND=115, LEAK_TH=0.52;
+  const BEAM_DUR=3.0, BEAM_START=0.9;
+
+  const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // geometry state
+  let bend=0, bendTarget=0, dragging=false, dragStartY=0, dragStartBend=0;
+  let fiberLen=0, beamProg=0, loopT=0, lastTs=0;
+  let leaks=[], impacts=[], impactNodes=[];
+
+  const fiberY=(x)=>{
+    const p=clamp((x-X0)/SPAN,0,1);
+    return CY + bend*Math.pow(p,2);
+  };
+
+  function computeBeam(){
+    let y=CY, up=true, x=X0, pts=[[X0,y]];
+    while(x<X1){
+      const dist = up ? (y-(TOP0+1)) : (BOT0-1-y);
+      let nx = x + dist;
+      if(nx>=X1){ pts.push([X1, lerp(y, up?TOP0:BOT0, (X1-x)/dist)]); break; }
+      pts.push([nx, up?TOP0:BOT0]);
+      x=nx; up=!up;
+    }
+    return pts;
+  }
+
+  function rebuildImpacts(){
+    const pts=computeBeam();
+    impactNodes=pts.slice(1,-1).map(p=>{
+      let c=gImpact.querySelector('[data-x="'+p[0]+'"]');
+      if(!c){
+        c=document.createElementNS(NS,"circle");
+        c.setAttribute("data-x",p[0]); c.setAttribute("r","0");
+        c.setAttribute("fill","none"); c.setAttribute("stroke","#00E5FF");
+        c.setAttribute("stroke-width","2");
+        gImpact.appendChild(c);
+      }
+      return {x:p[0],y:p[1],el:c};
+    });
+  }
+
+  function setPoints(el,pts){
+    el.setAttribute("points", pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" "));
+  }
+
+  function updateFiber(){
+    topLine.setAttribute("y2", TOP0+fiberY(X1)-CY);
+    botLine.setAttribute("y2", BOT0+fiberY(X1)-CY);
+    topLine.setAttribute("x2", X0+fiberLen);
+    botLine.setAttribute("x2", X0+fiberLen);
+    // core fill polygon
+    const steps=48; let poly="";
+    for(let i=0;i<=steps;i++){const x=X0+SPAN*i/steps; poly+=x.toFixed(1)+","+(TOP0+fiberY(x)-CY).toFixed(1)+" ";}
+    for(let i=steps;i>=0;i--){const x=X0+SPAN*i/steps; poly+=x.toFixed(1)+","+(BOT0+fiberY(x)-CY).toFixed(1)+" ";}
+    coreFill.setAttribute("points",poly.trim());
+    // handle
+    const hy=CY+bend;
+    handleRing.setAttribute("cx",X1); handleRing.setAttribute("cy",hy);
+    handleDot.setAttribute("cx",X1); handleDot.setAttribute("cy",hy);
+  }
+
+  function updateLabels(){
+    coreLabel.setAttribute("x",X0+28); coreLabel.setAttribute("y",CY+bend*0.12+4);
+    cladTop.setAttribute("x",X0+28); cladTop.setAttribute("y",TOP0+fiberY(X0+28)-CY-10);
+    cladBot.setAttribute("x",X0+28); cladBot.setAttribute("y",BOT0+fiberY(X0+28)-CY+20);
+    // normal + critical at first bounce
+    const b=impactNodes[0];
+    if(b){
+      normalLine.setAttribute("x1",b.x); normalLine.setAttribute("y1",b.y-52);
+      normalLine.setAttribute("x2",b.x); normalLine.setAttribute("y2",b.y+40);
+      const r=46;
+      criticalArc.setAttribute("d",`M ${b.x} ${b.y-r} A ${r} ${r} 0 0 1 ${b.x+r*0.707} ${b.y-r*0.707}`);
+      criticalLabel.setAttribute("x",b.x+8); criticalLabel.setAttribute("y",b.y-r-6);
+    }
+  }
+
+  function drawBeam(){
+    const pts=computeBeam();
+    let total=0; const segL=[];
+    for(let i=1;i<pts.length;i++){const L=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);segL.push(L);total+=L;}
+    const drawn=beamProg*total;
+    const out=[[pts[0][0],pts[0][1]]]; let acc=0;
+    for(let i=1;i<pts.length;i++){
+      const L=segL[i-1];
+      if(acc+L<=drawn){out.push(pts[i]);acc+=L;}
+      else{const t=(drawn-acc)/L;out.push([lerp(pts[i-1][0],pts[i][0],t),lerp(pts[i-1][1],pts[i][1],t)]);break;}
+    }
+    setPoints(beam,out); setPoints(beamGlow,out);
+    const h=out[out.length-1];
+    headGlow.setAttribute("cx",h[0]); headGlow.setAttribute("cy",h[1]);
+    headDot.setAttribute("cx",h[0]); headDot.setAttribute("cy",h[1]);
+    // impacts
+    for(const im of impactNodes){
+      const d=Math.hypot(im.x-pts[0][0], im.y-pts[0][1]);
+      const k=clamp((drawn-d)/26,0,1);
+      im.el.setAttribute("cx",im.x); im.el.setAttribute("cy",im.y);
+      im.el.setAttribute("r",(k*22).toFixed(1));
+      im.el.setAttribute("opacity",(1-k).toFixed(2));
+    }
+  }
+
+  function spawnLeak(x,y,side){
+    if(leaks.length>90) return;
+    const dir = side>0 ? 1 : -1;
+    leaks.push({x,y, vx:(Math.random()*1.4-0.2), vy:dir*(1.2+Math.random()*1.6), life:1,
+      el:(()=>{const c=document.createElementNS(NS,"circle");c.setAttribute("r",(1.5+Math.random()*2).toFixed(1));
+      c.setAttribute("fill","#7C4DFF");gLeak.appendChild(c);return c;})()});
+  }
+
+  function updateLeaks(dt){
+    for(let i=leaks.length-1;i>=0;i--){
+      const p=leaks[i]; p.x+=p.vx*dt*60; p.y+=p.vy*dt*60; p.vy+=0.02*dt*60; p.life-=dt*0.7;
+      if(p.life<=0){p.el.remove();leaks.splice(i,1);continue;}
+      p.el.setAttribute("cx",p.x.toFixed(1)); p.el.setAttribute("cy",p.y.toFixed(1));
+      p.el.setAttribute("opacity",(p.life*0.85).toFixed(2));
+    }
+  }
+
+  function updateSignal(){
+    const leak=Math.abs(bend)/MAXBEND;
+    let strength;
+    if(leak>LEAK_TH){ const over=(leak-LEAK_TH)/(1-LEAK_TH); strength=Math.round(100-(over*85+15)); }
+    else strength=100;
+    strength=clamp(strength,0,100);
+    sigVal.textContent=strength+"%";
+    sigBar.style.width=strength+"%";
+    if(strength<100){signalEl.classList.add("leak");} else {signalEl.classList.remove("leak");}
+  }
+
+  function render(){
+    updateFiber(); drawBeam(); updateLabels(); updateSignal();
+  }
+
+  function tick(ts){
+    if(!lastTs) lastTs=ts;
+    let dt=(ts-lastTs)/1000; lastTs=ts; dt=Math.min(dt,0.05);
+    loopT=(loopT+dt)%6;
+
+    // unspool
+    fiberLen = (reduced?SPAN: SPAN*easeOut(clamp(loopT/0.6,0,1))) * (reduced?1:1);
+    if(!reduced && loopT>=4.5){
+      // slight retract near end
+      const rt=clamp((loopT-4.5)/1.5,0,1);
+      fiberLen = SPAN - SPAN*0.06*easeIn(rt);
+    }
+
+    // beam progress
+    if(reduced){ beamProg=1; }
+    else if(loopT<BEAM_START) beamProg=0;
+    else if(loopT<BEAM_START+BEAM_DUR) beamProg=clamp((loopT-BEAM_START)/BEAM_DUR,0,1);
+    else beamProg=1;
+
+    // beam visibility
+    let beamVis=1;
+    if(!reduced && loopT>=4.5){ beamVis=1-smooth(4.9,6.0,loopT); }
+    const showBeam = beamProg>0.001 && beamVis>0.01;
+    gBeam.style.opacity=beamVis; gBeamGlow.style.opacity=beamVis; gBeamHead.style.opacity=showBeam?beamVis:0;
+
+    // labels / critical visibility (mechanism onward)
+    const labelsOn = reduced ? true : (loopT>=1.0 && loopT<4.9);
+    gLabels.classList.toggle("on",labelsOn);
+    gCritical.classList.toggle("on",labelsOn && !reduced ? (loopT>=1.2) : labelsOn);
+
+    // spring physics for bend
+    bend += (bendTarget-bend)*Math.min(1,dt*10);
+    if(!dragging){ bendTarget += (0-bendTarget)*Math.min(1,dt*6); }
+
+    // leak emission
+    if(Math.abs(bend)/MAXBEND>LEAK_TH && showBeam){
+      const side = bend>0?1:-1;
+      const n=Math.min(3,Math.floor(dt*60*0.5)+1);
+      for(let i=0;i<n;i++){
+        const lx=X0+SPAN*(0.55+Math.random()*0.4);
+        spawnLeak(lx, fiberY(lx)+ (side>0? -2:2), side);
+      }
+    }
+    updateLeaks(dt);
+
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- interaction ----------
+  function toSvg(e){
+    const r=frame.getBoundingClientRect();
+    return {x:(e.clientX-r.left)/r.width*1280, y:(e.clientY-r.top)/r.height*720};
+  }
+  function startDrag(e){
+    dragging=true; dragStartY=toSvg(e).y; dragStartBend=bend;
+    document.body.style.cursor="ns-resize";
+  }
+  function moveDrag(e){
+    if(!dragging) return;
+    const y=toSvg(e).y;
+    bendTarget=clamp(dragStartBend+(y-dragStartY), -MAXBEND, MAXBEND);
+  }
+  function endDrag(){ dragging=false; document.body.style.cursor=""; }
+
+  [dragZone,handle].forEach(el=>{
+    el.addEventListener("pointerdown",e=>{e.preventDefault();startDrag(e);el.setPointerCapture(e.pointerId);});
+  });
+  window.addEventListener("pointermove",moveDrag);
+  window.addEventListener("pointerup",endDrag);
+  window.addEventListener("pointercancel",endDrag);
+
+  // ---------- init ----------
+  rebuildImpacts();
+  if(reduced){
+    fiberLen=SPAN; bend=0;
+    gBeam.style.opacity=1; gBeamGlow.style.opacity=1; gBeamHead.style.opacity=1;
+    gLabels.classList.add("on"); gCritical.classList.add("on");
+    render();
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

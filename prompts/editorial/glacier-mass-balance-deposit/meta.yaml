@@ -1,0 +1,28 @@
+id: glacier-mass-balance-deposit
+title: "Mass Balance Ledger"
+category: editorial
+tags:
+  - glaciology
+  - sediment
+  - layered
+  - carve
+  - climate
+  - vertical-scroll
+  - canvas2d
+  - data-story
+  - editorial
+status: polished
+summary: "A vertical scroll narrative where annual glacier mass balance data manifests as physical sediment layers. Positive growth builds blue strata; negative melt carves red erosion into the bedrock, revealing sub-glacial…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

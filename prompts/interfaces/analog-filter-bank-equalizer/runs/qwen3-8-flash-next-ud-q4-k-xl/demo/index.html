@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SonicShape — Analog Filter Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121212;
+    --panel:#181818;
+    --hairline:#333333;
+    --ink:#FFFFFF;
+    --amber:#D4AF37;
+    --red:#FF3333;
+    --dial:#444444;
+    --dim:#767676;
+    --chrome-h:50px;
+    --rail-h:120px;
+    --mono-label:'Space Mono', ui-monospace, monospace;
+    --mono-data:'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono-data);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app{ height:100vh; height:100dvh; display:flex; flex-direction:column; }
+
+  /* ---------- CHROME ---------- */
+  .chrome{
+    height:var(--chrome-h);
+    flex:0 0 var(--chrome-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 18px;
+    background:var(--panel);
+    border-bottom:1px solid var(--hairline);
+    z-index:5;
+  }
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand .mark{
+    font-family:var(--mono-label); font-weight:700;
+    font-size:15px; letter-spacing:.2em; text-transform:uppercase;
+    color:var(--ink);
+  }
+  .brand .mark .a{ color:var(--amber); }
+  .brand .sub{
+    font-family:var(--mono-data); font-size:10px; letter-spacing:.18em;
+    color:var(--dim); text-transform:uppercase;
+  }
+  .chrome-right{ display:flex; align-items:center; gap:22px; }
+  .status{
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--mono-data); font-size:10px; letter-spacing:.16em;
+    color:var(--dim); text-transform:uppercase;
+  }
+  .status .led{
+    width:7px; height:7px; background:var(--amber);
+    box-shadow:0 0 6px rgba(212,175,55,.8);
+    animation:blink 2.4s steps(1) infinite;
+  }
+  @keyframes blink{ 0%,70%{opacity:1} 71%,100%{opacity:.25} }
+
+  .bypass{
+    display:flex; align-items:center; gap:9px;
+    background:none; border:1px solid var(--hairline); border-radius:0;
+    color:var(--dim); cursor:pointer;
+    padding:7px 12px;
+    font-family:var(--mono-data); font-size:10px; letter-spacing:.16em;
+    text-transform:uppercase; transition:color .18s, border-color .18s;
+  }
+  .bypass .ind{ width:8px; height:8px; background:var(--dial); transition:background .18s, box-shadow .18s; }
+  .bypass:hover{ color:var(--ink); border-color:#4a4a4a; }
+  .bypass.active{ color:var(--amber); border-color:rgba(212,175,55,.5); }
+  .bypass.active .ind{ background:var(--amber); box-shadow:0 0 7px rgba(212,175,55,.85); }
+
+  /* ---------- OSCILLOSCOPE ---------- */
+  .scope{
+    position:relative; flex:1 1 auto; min-height:0;
+    background:var(--panel);
+    border-bottom:1px solid var(--hairline);
+  }
+  #scope{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .noise{
+    position:absolute; inset:0; pointer-events:none;
+    opacity:.05; mix-blend-mode:screen;
+    background-repeat:repeat;
+    background-size:160px 160px;
+    animation:noiseShift .45s steps(4) infinite;
+  }
+  @keyframes noiseShift{
+    0%{ transform:translate(0,0) }
+    25%{ transform:translate(-6px,4px) }
+    50%{ transform:translate(4px,-5px) }
+    75%{ transform:translate(-3px,-3px) }
+    100%{ transform:translate(5px,3px) }
+  }
+  .scan{
+    position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+    opacity:.5;
+  }
+  .scope-tag{
+    position:absolute; top:12px; left:16px;
+    font-family:var(--mono-data); font-size:10px; letter-spacing:.16em;
+    color:var(--dim); text-transform:uppercase; pointer-events:none;
+  }
+  .scope-tag .live{ color:var(--amber); }
+
+  /* ---------- RAIL ---------- */
+  .rail{
+    position:relative; flex:0 0 var(--rail-h);
+    background:var(--bg);
+    display:flex; flex-direction:column; justify-content:center;
+    overflow-x:auto; overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin; scrollbar-color:#2c2c2c transparent;
+  }
+  .rail::-webkit-scrollbar{ height:6px; }
+  .rail::-webkit-scrollbar-thumb{ background:#2c2c2c; }
+  .rail-inner{
+    position:relative; flex:0 0 auto;
+    height:100%; display:flex; align-items:center; justify-content:center;
+    min-width:100%; padding:0 40px;
+  }
+  .rail-track{
+    position:absolute; left:40px; right:40px; top:50%; height:1px;
+    background:var(--hairline); transform:translateY(-.5px);
+  }
+  .dial{
+    position:relative; flex:0 0 auto;
+    width:40px; height:40px; border-radius:50%;
+    margin:0 42px;
+    cursor:grab;
+    background:
+      radial-gradient(circle at 34% 28%, #5c5c5c 0%, #3d3d3d 46%, #262626 100%);
+    border:1px solid #262626;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), inset 0 -2px 3px rgba(0,0,0,.55);
+    transition:box-shadow .28s ease, transform .12s ease;
+    outline:none;
+    touch-action:none;
+  }
+  .dial::before{
+    content:''; position:absolute; inset:5px; border-radius:50%;
+    background:
+      repeating-conic-gradient(from 0deg, rgba(255,255,255,.05) 0deg 2deg, transparent 2deg 11deg);
+    -webkit-mask:radial-gradient(circle, transparent 60%, #000 61%);
+            mask:radial-gradient(circle, transparent 60%, #000 61%);
+  }
+  .dial .indicator{
+    position:absolute; left:50%; top:50%; width:2px; height:14px;
+    background:var(--ink); transform-origin:50% 100%;
+    transform:translate(-50%,-100%) rotate(0deg);
+    transition:background .2s;
+  }
+  .dial .indicator::after{
+    content:''; position:absolute; top:-1px; left:50%; width:4px; height:4px;
+    transform:translateX(-50%); background:var(--ink); border-radius:50%;
+  }
+  .dial .center{
+    position:absolute; left:50%; top:50%; width:9px; height:9px;
+    transform:translate(-50%,-50%); border-radius:50%;
+    background:#2a2a2a; border:1px solid #1c1c1c;
+  }
+  .dial:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -2px 3px rgba(0,0,0,.55), 0 0 0 1px #4a4a4a; }
+  .dial:focus-visible{ box-shadow:0 0 0 1px var(--amber), inset 0 1px 0 rgba(255,255,255,.1); }
+
+  .dial.active{
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15), inset 0 -2px 3px rgba(0,0,0,.5), 0 0 16px 2px rgba(212,175,55,.55);
+  }
+  .dial.active .indicator, .dial.active .indicator::after{ background:var(--amber); }
+  .dial.active::before{ opacity:.6; }
+  .dial.pulse{ animation:pulseGlow .3s ease; }
+  @keyframes pulseGlow{
+    0%{ box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 0 8px 1px rgba(212,175,55,.4); }
+    50%{ box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 0 26px 6px rgba(212,175,55,.95); }
+    100%{ box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 0 16px 2px rgba(212,175,55,.55); }
+  }
+  .dial.error{
+    background:radial-gradient(circle at 34% 28%, #6a2a2a 0%, #3a1414 55%, #200808 100%);
+    border-color:#5a1414;
+    animation:errFlash .5s steps(2) infinite;
+  }
+  .dial.error .indicator, .dial.error .indicator::after{ background:var(--red); }
+  @keyframes errFlash{ 0%,100%{ box-shadow:0 0 14px 2px rgba(255,51,51,.55); } 50%{ box-shadow:0 0 4px 0 rgba(255,51,51,.2); } }
+
+  .dial-label{
+    position:absolute; left:50%; top:calc(100% + 12px); transform:translateX(-50%);
+    text-align:center; white-space:nowrap; pointer-events:none;
+  }
+  .dial-label .band{ font-family:var(--mono-label); font-size:9px; letter-spacing:.18em; color:var(--dim); text-transform:uppercase; }
+  .dial-label .freq{ font-family:var(--mono-data); font-size:11px; font-weight:700; color:var(--ink); margin-top:3px; letter-spacing:.02em; }
+  .dial-label .db{ font-family:var(--mono-data); font-size:9px; color:var(--dim); margin-top:2px; }
+  .dial.active .dial-label .freq{ color:var(--amber); }
+  .dial.active .dial-label .db{ color:var(--amber); }
+  .dial.error .dial-label .freq, .dial.error .dial-label .db{ color:var(--red); }
+
+  @media (max-width:768px){
+    :root{ --chrome-h:40px; --rail-h:120px; }
+    .brand .sub{ display:none; }
+    .status{ display:none; }
+    .chrome{ padding:0 12px; }
+    .rail-inner{ justify-content:flex-start; padding:0 28px; }
+    .dial{ margin:0 30px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .noise{ animation:none; }
+    .status .led{ animation:none; }
+    .dial.pulse{ animation:none; }
+    .dial.error{ animation:none; box-shadow:0 0 14px 2px rgba(255,51,51,.6); }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="chrome">
+      <div class="brand">
+        <span class="mark">Sonic<span class="a">Shape</span></span>
+        <span class="sub">Analog Filter Bank · 5-Band</span>
+      </div>
+      <div class="chrome-right">
+        <div class="status"><span class="led"></span><span id="statusTxt">Signal Locked</span></div>
+        <button class="bypass" id="bypassBtn" aria-pressed="false">
+          <span class="ind"></span><span class="txt">Bypass</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="scope">
+      <canvas id="scope"></canvas>
+      <div class="noise" id="noise"></div>
+      <div class="scan"></div>
+      <div class="scope-tag">Freq Response · <span class="live">Live</span></div>
+    </section>
+
+    <section class="rail" id="rail" aria-label="Resonance Rail">
+      <div class="rail-inner" id="railInner">
+        <div class="rail-track"></div>
+        <!-- dials injected by JS -->
+      </div>
+    </section>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ---------------- constants ---------------- */
+  const FMIN = 20, FMAX = 20000;
+  const LOG_MIN = Math.log10(FMIN), LOG_RANGE = Math.log10(FMAX) - LOG_MIN;
+  const DB_RANGE = 12;
+  const SAFE_DB = 14;
+  const SNAP_TOL = 5;
+
+  const BANDS = [
+    { label:'Sub',   hz:60,    db:0 },
+    { label:'Low',   hz:250,   db:0 },
+    { label:'Mid',   hz:1000,  db:0 },
+    { label:'High',  hz:4000,  db:0 },
+    { label:'Air',   hz:12000, db:0 },
+  ];
+  const SNAPS = [20,30,50,60,100,120,250,500,1000,2000,4000,8000,10000,12000,16000,20000];
+
+  const COL = {
+    grid:'#333333', ink:'#FFFFFF', amber:'#D4AF37', red:'#FF3333', dim:'#555555'
+  };
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------------- state ---------------- */
+  const state = {
+    sweep:0, sweepDone:reduceMotion,
+    bypass:false,
+    dragging:null,
+    activeIdx:null,
+    snaps:[],           // {x, t}
+    ripples:[],         // {x, t, dir, amp}
+    flashes:[],         // {x, t}
+    noiseT:0,
+    lastTime:performance.now(),
+  };
+  BANDS.forEach((b,i)=>{
+    b.idx=i; b.active=false; b.error=false; b.glow=0;
+    b.fraction = Math.log10(b.hz/FMIN)/LOG_RANGE;
+    b.x = 0; b.db = b.db;
+  });
+
+  /* ---------------- dom ---------------- */
+  const canvas = document.getElementById('scope');
+  const ctx = canvas.getContext('2d');
+  const rail = document.getElementById('rail');
+  const railInner = document.getElementById('railInner');
+  const bypassBtn = document.getElementById('bypassBtn');
+  const statusTxt = document.getElementById('statusTxt');
+
+  /* ---------------- noise texture ---------------- */
+  (function makeNoise(){
+    const c = document.createElement('canvas'); c.width=c.height=160;
+    const x = c.getContext('2d');
+    const img = x.createImageData(160,160);
+    for(let i=0;i<img.data.length;i+=4){
+      const v = Math.random()*255|0;
+      img.data[i]=img.data[i+1]=img.data[i+2]=v;
+      img.data[i+3]=255;
+    }
+    x.putImageData(img,0,0);
+    document.getElementById('noise').style.backgroundImage = `url(${c.toDataURL()})`;
+  })();
+
+  /* ---------------- helpers ---------------- */
+  const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+  const easeOut = t => 1 - Math.pow(1-t,3);
+  function fmtHz(hz){
+    if(hz>=1000){ const k=hz/1000; return (k>=10?Math.round(k):k.toFixed(1))+'k'; }
+    return Math.round(hz)+'';
+  }
+  function fmtDb(db){ return (db>=0?'+':'')+db.toFixed(1); }
+
+  /* ---------------- sizing ---------------- */
+  let dpr=1, cw=0, ch=0;
+  const scopeRect = () => canvas.getBoundingClientRect();
+
+  function resize(){
+    const r = canvas.getBoundingClientRect();
+    cw = r.width; ch = r.height;
+    dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = Math.round(cw*dpr);
+    canvas.height = Math.round(ch*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    layoutDials();
+  }
+
+  function layoutDials(){
+    const innerRect = railInner.getBoundingClientRect();
+    BANDS.forEach(b=>{
+      const r = b.el.getBoundingClientRect();
+      const cx = (r.left + r.width/2) - innerRect.left;
+      b.x = cx;
+      b.el.style.setProperty('--cx', cx+'px');
+    });
+  }
+
+  /* ---------------- curve model ---------------- */
+  function responseAt(freq){
+    if(state.bypass) return 0;
+    let sum = 0;
+    for(const b of BANDS){
+      if(b.active){
+        const d = Math.log10(freq/b.hz);
+        sum += b.db * Math.exp(-(d*d)/(2*0.16));
+      }
+    }
+    return sum;
+  }
+
+  function rippleAt(x){
+    let r = 0;
+    const now = performance.now();
+    for(const rp of state.ripples){
+      const age = (now-rp.t)/200;
+      if(age>=1) continue;
+      const dx = x - rp.x;
+      const env = Math.exp(-(dx*dx)/(2*60*60));
+      const wave = Math.sin((dx/40) - age*8);
+      r += wave * env * (1-age) * rp.amp;
+    }
+    return r;
+  }
+
+  function noiseAt(x, t){
+    return Math.sin(x*0.05 + t*0.006)*0.5 + Math.sin(x*0.13 - t*0.011)*0.4 + Math.sin(x*0.31 + t*0.02)*0.25;
+  }
+
+  /* ---------------- grid ---------------- */
+  function drawGrid(){
+    ctx.save();
+    ctx.strokeStyle = COL.grid;
+    ctx.lineWidth = 1;
+
+    // vertical freq lines
+    const freqs = [20,50,100,200,500,1000,2000,5000,10000,20000];
+    ctx.font = '10px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    for(const f of freqs){
+      const x = Math.round((Math.log10(f/FMIN)/LOG_RANGE)*cw) + 0.5;
+      const major = (f===20||f===100||f===1000||f===10000||f===20000);
+      ctx.globalAlpha = major?0.9:0.45;
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,ch); ctx.stroke();
+      if(major){
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = COL.dim;
+        ctx.fillText(fmtHz(f), clamp(x,14,cw-14), ch-8);
+      }
+    }
+
+    // horizontal db lines
+    const zeroY = ch/2;
+    ctx.globalAlpha = 1;
+    for(let db=-DB_RANGE; db<=DB_RANGE; db+=6){
+      const y = Math.round(zeroY - (db/DB_RANGE)*(ch/2)) + 0.5;
+      ctx.globalAlpha = db===0?0.9:0.4;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(cw,y); ctx.stroke();
+      if(db!==0){
+        ctx.globalAlpha = 0.6; ctx.fillStyle = COL.dim;
+        ctx.textAlign = 'left';
+        ctx.fillText((db>0?'+':'')+db+'dB', 8, y-4);
+      }
+    }
+    // zero label
+    ctx.globalAlpha = 0.6; ctx.fillStyle = COL.dim;
+    ctx.textAlign = 'left';
+    ctx.fillText('0dB', 8, zeroY-4);
+    ctx.restore();
+  }
+
+  /* ---------------- curve ---------------- */
+  function drawCurve(now){
+    const samples = Math.max(60, Math.floor(cw/3));
+    const pts = [];
+    for(let i=0;i<=samples;i++){
+      const x = (i/samples)*cw;
+      const freq = FMIN * Math.pow(10, (x/cw)*LOG_RANGE);
+      let db = responseAt(freq);
+      let y = ch/2 - (db/DB_RANGE)*(ch/2);
+      if(!state.sweepDone) y += rippleAt(x);
+      if(!reduceMotion) y += noiseAt(x, now) * 0.9;
+      pts.push([x,y]);
+    }
+
+    // sweep reveal
+    let endX = cw;
+    if(!state.sweepDone){ endX = state.sweep*cw; }
+
+    ctx.save();
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    let started = false;
+    for(let i=0;i<pts.length;i++){
+      const [x,y] = pts[i];
+      if(x > endX) break;
+      if(!started){ ctx.moveTo(x,y); started=true; }
+      else ctx.lineTo(x,y);
+    }
+    // glow pass
+    ctx.strokeStyle = COL.ink;
+    ctx.lineWidth = 1.4;
+    ctx.shadowColor = COL.ink;
+    ctx.shadowBlur = reduceMotion?0:8;
+    ctx.stroke();
+    // crisp pass
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------------- active markers ---------------- */
+  function drawMarkers(){
+    for(const b of BANDS){
+      if(!b.active) continue;
+      const x = b.x;
+      ctx.save();
+      ctx.strokeStyle = b.error ? COL.red : COL.amber;
+      ctx.globalAlpha = 0.18;
+      ctx.setLineDash([2,4]);
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,ch); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* ---------------- snaps & flashes ---------------- */
+  function drawSnaps(now){
+    for(let i=state.snaps.length-1;i>=0;i--){
+      const s = state.snaps[i];
+      const age = (now-s.t)/200;
+      if(age>=1){ state.snaps.splice(i,1); continue; }
+      ctx.save();
+      ctx.strokeStyle = COL.ink;
+      ctx.globalAlpha = (1-age)*0.9;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(s.x,0); ctx.lineTo(s.x,ch); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* ---------------- dial glow decay ---------------- */
+  function updateDials(dt){
+    for(const b of BANDS){
+      const target = b.active ? 1 : 0;
+      b.glow += (target - b.glow) * Math.min(1, dt/220);
+      const el = b.el;
+      if(b.error){
+        el.classList.add('error'); el.classList.remove('active');
+      } else if(b.glow>0.02){
+        el.classList.remove('error');
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active'); el.classList.remove('error');
+      }
+    }
+  }
+
+  /* ---------------- main loop ---------------- */
+  function frame(now){
+    const dt = Math.min(50, now - state.lastTime);
+    state.lastTime = now;
+
+    if(!state.sweepDone){
+      state.sweep = Math.min(1, state.sweep + dt/1500);
+      if(state.sweep>=1){ state.sweepDone = true; }
+    }
+
+    ctx.clearRect(0,0,cw,ch);
+    drawGrid();
+    drawMarkers();
+    drawSnaps(now);
+    drawCurve(now);
+    updateDials(dt);
+
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------------- dial creation ---------------- */
+  function buildDials(){
+    BANDS.forEach(b=>{
+      const el = document.createElement('div');
+      el.className = 'dial';
+      el.setAttribute('role','slider');
+      el.setAttribute('tabindex','0');
+      el.setAttribute('aria-label', b.label+' band center frequency');
+      el.innerHTML =
+        '<div class="indicator"></div>'+
+        '<div class="center"></div>'+
+        '<div class="dial-label">'+
+          '<div class="band">'+b.label+'</div>'+
+          '<div class="freq">'+fmtHz(b.hz)+'</div>'+
+          '<div class="db">'+fmtDb(b.db)+' dB</div>'+
+        '</div>';
+      railInner.appendChild(el);
+      b.el = el;
+      b.indicator = el.querySelector('.indicator');
+      b.freqEl = el.querySelector('.freq');
+      b.dbEl = el.querySelector('.db');
+
+      attachDial(b);
+    });
+  }
+
+  function updateDialReadout(b){
+    b.freqEl.textContent = fmtHz(b.hz);
+    b.dbEl.textContent = fmtDb(b.db)+' dB';
+    b.el.setAttribute('aria-valuenow', Math.round(b.hz));
+    b.el.setAttribute('aria-valuetext', b.label+' band '+fmtHz(b.hz)+' hertz, '+fmtDb(b.db)+' decibels');
+    b.el.setAttribute('aria-valuemin','20');
+    b.el.setAttribute('aria-valuemax','20000');
+  }
+
+  function applyRotation(b){
+    const rot = clamp(b.db, -DB_RANGE, DB_RANGE) * 7; // deg
+    b.indicator.style.transform = `translate(-50%,-100%) rotate(${rot}deg)`;
+  }
+
+  function setActive(b, on){
+    if(b.active===on) return;
+    b.active = on;
+    if(on){
+      b.el.classList.add('active');
+      state.activeIdx = b.idx;
+    } else {
+      b.el.classList.remove('active');
+      if(state.activeIdx===b.idx) state.activeIdx = null;
+    }
+    updateStatus();
+  }
+
+  function checkError(b){
+    const err = b.active && Math.abs(b.db) > SAFE_DB;
+    if(err!==b.error){
+      b.error = err;
+      updateStatus();
+    }
+  }
+
+  function updateStatus(){
+    const err = BANDS.some(b=>b.error);
+    if(err){ statusTxt.textContent = 'Threshold Over'; statusTxt.style.color = COL.red; }
+    else if(state.bypass){ statusTxt.textContent = 'Bypassed'; statusTxt.style.color = COL.amber; }
+    else if(state.activeIdx!==null){ statusTxt.textContent = 'Shaping ' + BANDS[state.activeIdx].label; statusTxt.style.color = COL.amber; }
+    else { statusTxt.textContent = 'Signal Locked'; statusTxt.style.color = ''; }
+  }
+
+  function triggerPulse(b){
+    b.el.classList.remove('pulse');
+    void b.el.offsetWidth;
+    b.el.classList.add('pulse');
+    setTimeout(()=>b.el.classList.remove('pulse'), 320);
+  }
+
+  function trySnap(b, rawX, innerRect){
+    for(const s of SNAPS){
+      const sx = (Math.log10(s/FMIN)/LOG_RANGE)*cw;
+      if(Math.abs(rawX - sx) < SNAP_TOL){
+        const snappedX = sx + innerRect.left;
+        b.el.style.left = snappedX + 'px';
+        b.el.style.position = 'absolute';
+        b.x = sx;
+        b.hz = s;
+        updateDialReadout(b);
+        if(!b._snappedTo){
+          state.snaps.push({x:sx, t:performance.now()});
+          triggerPulse(b);
+          b._snappedTo = true;
+        }
+        return true;
+      }
+    }
+    b._snappedTo = false;
+    return false;
+  }
+
+  function attachDial(b){
+    let startY = 0, startDb = 0, dragging = false;
+
+    const onDown = (e)=>{
+      if(state.bypass) return;
+      dragging = true;
+      state.dragging = b;
+      startY = e.clientY;
+      startDb = b.db;
+      b.el.style.cursor = 'grabbing';
+      setActive(b, true);
+      try{ b.el.setPointerCapture(e.pointerId); }catch(_){}
+      e.preventDefault();
+    };
+
+    const onMove = (e)=>{
+      if(!dragging) return;
+      const innerRect = railInner.getBoundingClientRect();
+
+      // vertical -> gain
+      const dy = startY - e.clientY;
+      let db = clamp(startDb + dy*0.14, -DB_RANGE, DB_RANGE);
+      b.db = db;
+      applyRotation(b);
+      updateDialReadout(b);
+      checkError(b);
+
+      // ripple while dragging
+      const rp = state.ripples[state.ripples.length-1];
+      if(!rp || (performance.now()-rp.t) > 60){
+        state.ripples.push({ x:b.x, t:performance.now(), amp:1 });
+        if(state.ripples.length>6) state.ripples.shift();
+      }
+
+      // horizontal -> frequency (relative to track, using dial's own position)
+      const elRect = b.el.getBoundingClientRect();
+      const rawCx = (e.clientX - innerRect.left);
+      const clamped = clamp(rawCx, 0, cw);
+      if(!trySnap(b, clamped, innerRect)){
+        b._snappedTo = false;
+        b.el.style.position = 'absolute';
+        b.el.style.left = (clamped + innerRect.left) + 'px';
+        b.x = clamped;
+        b.hz = FMIN * Math.pow(10, (clamped/cw)*LOG_RANGE);
+        updateDialReadout(b);
+      }
+    };
+
+    const onUp = (e)=>{
+      if(!dragging) return;
+      dragging = false;
+      state.dragging = null;
+      b.el.style.cursor = 'grab';
+      setActive(b, false);
+      try{ b.el.releasePointerCapture(e.pointerId); }catch(_){}
+    };
+
+    b.el.addEventListener('pointerdown', onDown);
+    b.el.addEventListener('pointermove', onMove);
+    b.el.addEventListener('pointerup', onUp);
+    b.el.addEventListener('pointercancel', onUp);
+
+    // keyboard
+    b.el.addEventListener('keydown', (e)=>{
+      if(state.bypass) return;
+      let handled = true;
+      if(e.key==='ArrowRight'){ b.hz = clamp(b.hz*1.06, FMIN, FMAX); }
+      else if(e.key==='ArrowLeft'){ b.hz = clamp(b.hz/1.06, FMIN, FMAX); }
+      else if(e.key==='ArrowUp'){ b.db = clamp(b.db+1, -DB_RANGE, DB_RANGE); applyRotation(b); }
+      else if(e.key==='ArrowDown'){ b.db = clamp(b.db-1, -DB_RANGE, DB_RANGE); applyRotation(b); }
+      else if(e.key==='Enter'||e.key===' '){ setActive(b, !b.active); handled=true; e.preventDefault(); return; }
+      else { handled = false; }
+      if(handled){
+        e.preventDefault();
+        setActive(b, true);
+        const innerRect = railInner.getBoundingClientRect();
+        const fx = (Math.log10(b.hz/FMIN)/LOG_RANGE)*cw;
+        b.x = fx;
+        b.el.style.position = 'absolute';
+        b.el.style.left = (fx + innerRect.left) + 'px';
+        updateDialReadout(b);
+        checkError(b);
+      }
+    });
+  }
+
+  /* ---------------- bypass ---------------- */
+  bypassBtn.addEventListener('click', ()=>{
+    state.bypass = !state.bypass;
+    bypassBtn.classList.toggle('active', state.bypass);
+    bypassBtn.setAttribute('aria-pressed', String(state.bypass));
+    if(state.bypass){
+      BANDS.forEach(b=> setActive(b,false));
+    }
+    updateStatus();
+  });
+
+  /* ---------------- init ---------------- */
+  buildDials();
+  BANDS.forEach(b=>{ applyRotation(b); updateDialReadout(b); });
+
+  const ro = new ResizeObserver(()=> resize());
+  ro.observe(canvas);
+  ro.observe(rail);
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', ()=> setTimeout(resize,120));
+
+  // initial layout after fonts/layout settle
+  requestAnimationFrame(()=>{ resize(); });
+  document.fonts && document.fonts.ready.then(()=> resize());
+
+  updateStatus();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

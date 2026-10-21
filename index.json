@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T15:54:46.761Z",
+  "generated_at": "2026-10-21T17:21:35.795Z",
   "schema": "schema/entry.schema.json",
-  "count": 250,
+  "count": 255,
   "categories": [
     "landing-pages",
     "animations",
@@ -8436,11 +8436,11 @@
       "status": "polished",
       "summary": "8-second looping motion graphic for GreenStack illustrating flue gas scrubbing efficiency using hard industrial geometry, responsive layout, and precise CSS/SVG animations.",
       "path": "prompts/motion-graphics/carbon-capture-scrubber-efficiency",
-      "preview": null,
+      "preview": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/preview.png",
       "prompt": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.md",
       "extended": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -8450,7 +8450,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 291495,
+          "gen_ms": 291495,
+          "ttft_ms": 7840,
+          "queue_wait_ms": 223,
+          "wall_ms": 299558,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 2,
+          "review_summary": "The screenshot captures a moment where the canvas is almost entirely empty, failing to show the scrubber tower or smoke required for the 1.5s mark."
+        }
+      ]
     },
     {
       "id": "concept-kong-scroll",
@@ -8527,11 +8557,11 @@
       "status": "polished",
       "summary": "6s loop: Light enters LumenCore fiber, bounces via total internal reflection, exits clean. Interactive bend shows attenuation. High-contrast neon on black.",
       "path": "prompts/motion-graphics/fiber-optic-total-internal-reflection",
-      "preview": null,
+      "preview": "prompts/motion-graphics/fiber-optic-total-internal-reflection/preview.png",
       "prompt": "prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.md",
       "extended": "prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/fiber-optic-total-internal-reflection/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -8541,7 +8571,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 232184,
+          "gen_ms": 232184,
+          "ttft_ms": 5551,
+          "queue_wait_ms": 165,
+          "wall_ms": 237900,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/fiber-optic-total-internal-reflection/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/fiber-optic-total-internal-reflection/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 4,
+          "review_summary": "Typography and brand presence are strong, but the core visual (fiber optic diagram) is completely missing from the poster frame."
+        }
+      ]
     },
     {
       "id": "harbor-night-lower-thirds",
@@ -8677,11 +8737,11 @@
       "status": "polished",
       "summary": "8s motion graphics for AquaFlux visualizing RO pressure mechanics. Dark teal industrial aesthetic, Syne/IBM Plex typography. Particles bounce off membrane; gauge sweeps to 80 PSI. Seamless loop.",
       "path": "prompts/motion-graphics/osmotic-desalination-pressure",
-      "preview": null,
+      "preview": "prompts/motion-graphics/osmotic-desalination-pressure/preview.png",
       "prompt": "prompts/motion-graphics/osmotic-desalination-pressure/prompt.md",
       "extended": "prompts/motion-graphics/osmotic-desalination-pressure/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -8691,7 +8751,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 330419,
+          "gen_ms": 330419,
+          "ttft_ms": 5359,
+          "queue_wait_ms": 455,
+          "wall_ms": 336233,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "Essentially an empty dark teal frame with a single faint dot — no membrane, gauge, molecules, title, or brand visible."
+        }
+      ]
     },
     {
       "id": "phase-change-latent-heat",
@@ -8707,9 +8797,70 @@
       "status": "polished",
       "summary": "An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A solid block melts layer-by-layer under a heat spike, holding temperature flat (latent plateau) before solidifying to release energy.…",
       "path": "prompts/motion-graphics/phase-change-latent-heat",
-      "preview": null,
+      "preview": "prompts/motion-graphics/phase-change-latent-heat/preview.png",
       "prompt": "prompts/motion-graphics/phase-change-latent-heat/prompt.md",
       "extended": "prompts/motion-graphics/phase-change-latent-heat/prompt.full.md",
+      "demo": "prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 197443,
+          "gen_ms": 197443,
+          "ttft_ms": 4732,
+          "queue_wait_ms": 408,
+          "wall_ms": 202583,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 6,
+          "review_summary": "Clean, on-brief scientific-minimalism frame at ~1.5s with correct palette, grid block, and temperature chart, but the brand name is absent and the amber heat bar isn't yet visible."
+        }
+      ]
+    },
+    {
+      "id": "seismic-event-marker",
+      "title": "Seismic Event Marker",
+      "category": "motion-graphics",
+      "tags": [
+        "timeline",
+        "seismic",
+        "monitoring",
+        "earthquake",
+        "early-warning",
+        "data-viz"
+      ],
+      "status": "polished",
+      "summary": "An 8s broadcast loop visualizing earthquake early warning: flat monitoring line, sharp P-wave spike, rolling S-wave arrival, and a pin-drop epicenter marker with magnitude readout.",
+      "path": "prompts/motion-graphics/seismic-event-marker",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/seismic-event-marker/prompt.md",
+      "extended": "prompts/motion-graphics/seismic-event-marker/prompt.full.md",
       "demo": null,
       "default_run": null,
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
@@ -12584,6 +12735,37 @@
       ]
     },
     {
+      "id": "pole-vault-kinetic-transfer",
+      "title": "Vault Clearance",
+      "category": "games",
+      "tags": [
+        "canvas2d",
+        "physics",
+        "trajectory",
+        "athletics",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Hold to load the pole's elastic potential, release at peak flex to launch. Rotate mid-air to clear the bar. Miss the timing, snap the pole or knock the bar.",
+      "path": "prompts/games/pole-vault-kinetic-transfer",
+      "preview": null,
+      "prompt": "prompts/games/pole-vault-kinetic-transfer/prompt.md",
+      "extended": "prompts/games/pole-vault-kinetic-transfer/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "satellite-orbit-sync-link",
       "title": "Satellite Orbit Sync",
       "category": "games",
@@ -13885,6 +14067,40 @@
       ]
     },
     {
+      "id": "glacier-mass-balance-deposit",
+      "title": "Mass Balance Ledger",
+      "category": "editorial",
+      "tags": [
+        "glaciology",
+        "sediment",
+        "layered",
+        "carve",
+        "climate",
+        "vertical-scroll",
+        "canvas2d",
+        "data-story",
+        "editorial"
+      ],
+      "status": "polished",
+      "summary": "A vertical scroll narrative where annual glacier mass balance data manifests as physical sediment layers. Positive growth builds blue strata; negative melt carves red erosion into the bedrock, revealing sub-glacial…",
+      "path": "prompts/editorial/glacier-mass-balance-deposit",
+      "preview": null,
+      "prompt": "prompts/editorial/glacier-mass-balance-deposit/prompt.md",
+      "extended": "prompts/editorial/glacier-mass-balance-deposit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "hammered-lead-type",
       "title": "Foundry & Flaw",
       "category": "editorial",
@@ -14068,6 +14284,37 @@
       ]
     },
     {
+      "id": "orbital-decay-ribbon",
+      "title": "The Decay Ribbon",
+      "category": "editorial",
+      "tags": [
+        "orbital",
+        "ribbon",
+        "svg-path",
+        "telemetry",
+        "burn-off",
+        "vertical-narrative"
+      ],
+      "status": "polished",
+      "summary": "A vertical editorial scroll where a single SVG ribbon unspools downward, its altitude and waviness mapped to satellite telemetry, culminating in a dramatic atmospheric burn-off.",
+      "path": "prompts/editorial/orbital-decay-ribbon",
+      "preview": null,
+      "prompt": "prompts/editorial/orbital-decay-ribbon/prompt.md",
+      "extended": "prompts/editorial/orbital-decay-ribbon/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "oxidized-iron-marginalia",
       "title": "The Iron Oxide Archive",
       "category": "editorial",
@@ -14145,11 +14392,11 @@
       "status": "polished",
       "summary": "A dark-mode essay where paragraph luminance correlates with read-time, creating a biological attention heat-map for 'Mycelium Quarterly'.",
       "path": "prompts/editorial/phosphorescent-fungal-bloom",
-      "preview": null,
+      "preview": "prompts/editorial/phosphorescent-fungal-bloom/preview.png",
       "prompt": "prompts/editorial/phosphorescent-fungal-bloom/prompt.md",
       "extended": "prompts/editorial/phosphorescent-fungal-bloom/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/editorial/phosphorescent-fungal-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -14159,7 +14406,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 266738,
+          "gen_ms": 266738,
+          "ttft_ms": 5994,
+          "queue_wait_ms": 168,
+          "wall_ms": 272900,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/phosphorescent-fungal-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/phosphorescent-fungal-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong atmospheric execution with correct typography and palette, though the title font appears to be a generic sans-serif rather than the specified Fraunces serif."
+        }
+      ]
     },
     {
       "id": "pressure-vessel-gauge-sweep",
@@ -14609,11 +14886,11 @@
       "status": "polished",
       "summary": "High-precision analog equalizer UI with 5 draggable dials, real-time Canvas2D curve rendering, and industrial studio aesthetics.",
       "path": "prompts/interfaces/analog-filter-bank-equalizer",
-      "preview": null,
+      "preview": "prompts/interfaces/analog-filter-bank-equalizer/preview.png",
       "prompt": "prompts/interfaces/analog-filter-bank-equalizer/prompt.md",
       "extended": "prompts/interfaces/analog-filter-bank-equalizer/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/analog-filter-bank-equalizer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -14623,7 +14900,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 238293,
+          "gen_ms": 238293,
+          "ttft_ms": 5815,
+          "queue_wait_ms": 210,
+          "wall_ms": 244319,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/analog-filter-bank-equalizer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/analog-filter-bank-equalizer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 9,
+          "review_summary": "Excellent execution of the 'high-end studio hardware' aesthetic, with precise typography, correct layout structure, and a convincing analog noise texture."
+        }
+      ]
     },
     {
       "id": "brine-crystal-halite-growth",
@@ -14815,6 +15122,38 @@
           "review_summary": "Faithful palette and layout with a tactile cloth stage, but typography reads as generic monospace rather than the specified Kaisei Decol/Kosugi Maru, and the cloth is a flat outlined square with no visible simulation."
         }
       ]
+    },
+    {
+      "id": "gasket-compression-logic",
+      "title": "Gasket Compression Logic",
+      "category": "interfaces",
+      "tags": [
+        "mechanical",
+        "assembly",
+        "drag-drop",
+        "validation",
+        "industrial",
+        "tolerance",
+        "utility"
+      ],
+      "status": "polished",
+      "summary": "Build a single-file mechanical seal configurator with drag-and-drop gasket stacking, real-time compression physics, and tolerance validation.",
+      "path": "prompts/interfaces/gasket-compression-logic",
+      "preview": null,
+      "prompt": "prompts/interfaces/gasket-compression-logic/prompt.md",
+      "extended": "prompts/interfaces/gasket-compression-logic/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "hazmat-cargo-manifest-verify",

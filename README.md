@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 250 | 244 | 212 | 38 |
+| 255 | 250 | 217 | 38 |
 
 ## Quick start
 
@@ -2211,9 +2211,11 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 [prompt](prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.md) · [extended](prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/carbon-capture-scrubber-efficiency/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 7.8s | 291s | 2 | [open](prompts/motion-graphics/carbon-capture-scrubber-efficiency/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2241,9 +2243,11 @@ Scroll-story for Northmark Studio: six phases from point to brand system — con
 
 [prompt](prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.md) · [extended](prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/fiber-optic-total-internal-reflection/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.6s | 232s | 4 | [open](prompts/motion-graphics/fiber-optic-total-internal-reflection/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2287,9 +2291,11 @@ _No model runs yet — `npm run ai:build` then `npm run shots`._
 
 [prompt](prompts/motion-graphics/osmotic-desalination-pressure/prompt.md) · [extended](prompts/motion-graphics/osmotic-desalination-pressure/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.4s | 330s | 1 | [open](prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2300,6 +2306,22 @@ An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A s
 **Status:** polished · `timeline` `explainer` `thermodynamics` `geometry` `minimal` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/motion-graphics/phase-change-latent-heat/prompt.md) · [extended](prompts/motion-graphics/phase-change-latent-heat/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 4.7s | 197s | 6 | [open](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Seismic Event Marker
+
+An 8s broadcast loop visualizing earthquake early warning: flat monitoring line, sharp P-wave spike, rolling S-wave arrival, and a pin-drop epicenter marker with magnitude readout.
+
+**Status:** polished · `timeline` `seismic` `monitoring` `earthquake` `early-warning` `data-viz` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/seismic-event-marker/prompt.md) · [extended](prompts/motion-graphics/seismic-event-marker/prompt.full.md)
 
 _No shot preview yet._
 
@@ -3303,6 +3325,20 @@ Adjust pendulum length to match resonant frequency of glass targets. Release to 
 
 ---
 
+### Vault Clearance
+
+Hold to load the pole's elastic potential, release at peak flex to launch. Rotate mid-air to clear the bar. Miss the timing, snap the pole or knock the bar.
+
+**Status:** polished · `canvas2d` `physics` `trajectory` `athletics` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/pole-vault-kinetic-transfer/prompt.md) · [extended](prompts/games/pole-vault-kinetic-transfer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Satellite Orbit Sync
 
 A rhythm-timing game where players drop data packets from orbiting satellites into a pulsing receiver window. Requires precise anticipation of orbital position and window phase to transfer 100GB of data before 5…
@@ -3643,6 +3679,20 @@ An editorial interface for 'Lift & Limit' where scroll depth simulates physical 
 
 ---
 
+### Mass Balance Ledger
+
+A vertical scroll narrative where annual glacier mass balance data manifests as physical sediment layers. Positive growth builds blue strata; negative melt carves red erosion into the bedrock, revealing sub-glacial…
+
+**Status:** polished · `glaciology` `sediment` `layered` `carve` `climate` `vertical-scroll` `canvas2d` `data-story` `editorial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/glacier-mass-balance-deposit/prompt.md) · [extended](prompts/editorial/glacier-mass-balance-deposit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Foundry & Flaw
 
 Editorial design for Matrix Quarterly simulating lead type casting. Features Bodoni Moda headlines, IBM Plex Mono body, and a 12-column grid with beveled 'furniture' lines. Includes drop animations, re-casting…
@@ -3691,6 +3741,20 @@ A recipe journal where the layout behaves like a folded linen napkin. Scrolling 
 
 ---
 
+### The Decay Ribbon
+
+A vertical editorial scroll where a single SVG ribbon unspools downward, its altitude and waviness mapped to satellite telemetry, culminating in a dramatic atmospheric burn-off.
+
+**Status:** polished · `orbital` `ribbon` `svg-path` `telemetry` `burn-off` `vertical-narrative` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/orbital-decay-ribbon/prompt.md) · [extended](prompts/editorial/orbital-decay-ribbon/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### The Iron Oxide Archive
 
 A digital folio where black stamped text oxidizes into rust flakes as you scroll, revealing archival layers beneath. Hovering polishes text back to reveal hidden history.
@@ -3715,9 +3779,11 @@ A dark-mode essay where paragraph luminance correlates with read-time, creating 
 
 [prompt](prompts/editorial/phosphorescent-fungal-bloom/prompt.md) · [extended](prompts/editorial/phosphorescent-fungal-bloom/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/phosphorescent-fungal-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.0s | 267s | 8 | [open](prompts/editorial/phosphorescent-fungal-bloom/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3843,9 +3909,11 @@ High-precision analog equalizer UI with 5 draggable dials, real-time Canvas2D cu
 
 [prompt](prompts/interfaces/analog-filter-bank-equalizer/prompt.md) · [extended](prompts/interfaces/analog-filter-bank-equalizer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/analog-filter-bank-equalizer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.8s | 238s | 9 | [open](prompts/interfaces/analog-filter-bank-equalizer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3894,6 +3962,20 @@ A gift registry interface where privacy is determined by knot complexity. Users 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/furoshiki-wrapping-protocol/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.7s | 712s | 6 | [open](prompts/interfaces/furoshiki-wrapping-protocol/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Gasket Compression Logic
+
+Build a single-file mechanical seal configurator with drag-and-drop gasket stacking, real-time compression physics, and tolerance validation.
+
+**Status:** polished · `mechanical` `assembly` `drag-drop` `validation` `industrial` `tolerance` `utility` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/gasket-compression-logic/prompt.md) · [extended](prompts/interfaces/gasket-compression-logic/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
