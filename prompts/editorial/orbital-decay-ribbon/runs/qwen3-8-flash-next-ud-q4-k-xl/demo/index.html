@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Decay Ribbon — Perigee Press</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#03045e;
+    --cyan:#00b4d8;
+    --red:#ff006e;
+    --white:#ffffff;
+    --gray:#a0a0a0;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:"Work Sans", system-ui, sans-serif;
+    font-weight:400;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Starfield ---------- */
+  #stars{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  /* ---------- Fixed Ribbon ---------- */
+  #ribbonWrap{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+  }
+  #ribbonSvg{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  .ribbon-path{
+    fill:none;
+    stroke:var(--cyan);
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .ribbon-halo{
+    fill:none;
+    stroke:var(--cyan);
+    stroke-width:11;
+    stroke-linecap:round;
+    opacity:.12;
+  }
+  .ribbon-dot{
+    fill:var(--cyan);
+  }
+
+  /* ---------- Fixed HUD ---------- */
+  #hud{
+    position:fixed;
+    top:22px;
+    right:26px;
+    z-index:20;
+    text-align:right;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gray);
+    pointer-events:none;
+  }
+  #hud .row{ display:block; margin-bottom:3px; }
+  #hud .val{ color:var(--cyan); }
+  #hud .lbl{ opacity:.7; }
+  #hud .status{
+    margin-top:6px;
+    font-family:"Syne", sans-serif;
+    font-weight:700;
+    letter-spacing:.18em;
+    color:var(--cyan);
+  }
+  #hud.critical .val{ color:var(--red); }
+  #hud.critical .status{ color:var(--red); }
+  #countdown{
+    display:none;
+    margin-top:4px;
+    font-family:"Syne", sans-serif;
+    font-weight:800;
+    font-size:22px;
+    letter-spacing:.02em;
+    color:var(--red);
+  }
+  #hud.critical #countdown{ display:block; }
+
+  /* ---------- Scroll progress rail ---------- */
+  #rail{
+    position:fixed;
+    left:22px;
+    top:50%;
+    transform:translateY(-50%);
+    z-index:20;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    pointer-events:none;
+  }
+  #rail .tick{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.12em;
+    color:var(--gray);
+    opacity:.35;
+    transition:opacity .4s, color .4s;
+    white-space:nowrap;
+  }
+  #rail .tick.active{ opacity:1; color:var(--cyan); }
+  #rail .tick.done{ opacity:.55; }
+
+  /* ---------- Content ---------- */
+  main{
+    position:relative;
+    z-index:5;
+  }
+
+  .panel{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:12vh 6vw;
+  }
+  .panel:nth-child(odd){ justify-content:flex-start; }
+  .panel:nth-child(even){ justify-content:flex-end; }
+
+  .block{
+    max-width:440px;
+    opacity:0;
+    transform:translateY(34px);
+    transition:opacity .9s cubic-bezier(.16,.8,.3,1), transform .9s cubic-bezier(.16,.8,.3,1);
+  }
+  .panel.in .block{ opacity:1; transform:none; }
+
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    margin-bottom:18px;
+  }
+  .eyebrow .num{ color:var(--gray); margin-right:10px; }
+
+  h1, h2, .pull{
+    font-family:"Syne", sans-serif;
+    font-weight:800;
+    line-height:1.02;
+    letter-spacing:-.01em;
+  }
+
+  h1{
+    font-size:clamp(2.6rem, 8.5vw, 5.4rem);
+    margin:6px 0 26px;
+  }
+  h1 .accent{ color:var(--cyan); }
+
+  h2{
+    font-size:clamp(1.9rem, 4.6vw, 3rem);
+    margin-bottom:20px;
+  }
+
+  p{
+    font-size:clamp(1rem, 1.4vw, 1.12rem);
+    color:#dfe4f2;
+    margin-bottom:18px;
+  }
+  p.lead{
+    font-size:clamp(1.1rem, 1.9vw, 1.35rem);
+    color:#eef2ff;
+    font-weight:500;
+  }
+
+  .meta{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.1em;
+    color:var(--gray);
+    margin-top:22px;
+    border-top:1px solid rgba(255,255,255,.12);
+    padding-top:16px;
+    max-width:340px;
+  }
+
+  /* Masthead */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-bottom:34px;
+  }
+  .brand{
+    font-family:"Syne", sans-serif;
+    font-weight:800;
+    font-size:clamp(1.4rem, 3vw, 2rem);
+    letter-spacing:.02em;
+    line-height:1;
+  }
+  .brand .dot{ color:var(--cyan); }
+  .issue{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--gray);
+  }
+
+  /* Pull quote */
+  .pull{
+    font-size:clamp(1.7rem, 4.4vw, 2.9rem);
+    line-height:1.08;
+    color:var(--white);
+    max-width:640px;
+  }
+  .pull .mark{ color:var(--red); }
+  .pull.small{ font-size:clamp(1.4rem, 3.2vw, 2.1rem); }
+
+  /* Finale */
+  #finale .block{ text-align:center; max-width:760px; margin:0 auto; }
+  #finale .status-word{
+    font-family:"Syne", sans-serif;
+    font-weight:800;
+    font-size:clamp(2.4rem, 8vw, 5rem);
+    color:var(--red);
+    letter-spacing:.04em;
+    margin-bottom:14px;
+  }
+  #finale .final-count{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:30px;
+  }
+  .restart{
+    display:inline-block;
+    margin-top:12px;
+    font-family:"Syne", sans-serif;
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--cyan);
+    text-decoration:none;
+    border:1px solid rgba(0,180,216,.4);
+    padding:12px 26px;
+    transition:background .3s, color .3s;
+  }
+  .restart:hover{ background:var(--cyan); color:var(--bg); }
+
+  .scroll-hint{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-top:40px;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .scroll-hint .arrow{ color:var(--cyan); animation:bob 1.8s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:820px){
+    #rail{ display:none; }
+    .panel{
+      padding:14vh 7vw;
+      justify-content:flex-start !important;
+      align-items:flex-start;
+    }
+    .block{ max-width:100%; }
+    /* keep text clear of the central ribbon by giving it a soft readable pad */
+    .block{
+      background:linear-gradient(90deg, rgba(3,4,94,.92) 0%, rgba(3,4,94,.7) 60%, rgba(3,4,94,0) 100%);
+      padding:18px 18px 18px 0;
+      border-radius:6px;
+    }
+    #finale .block{
+      background:radial-gradient(ellipse at center, rgba(3,4,94,.92) 0%, rgba(3,4,94,.55) 55%, rgba(3,4,94,0) 100%);
+      padding:24px;
+    }
+    #hud{ top:14px; right:16px; font-size:10px; }
+    #countdown{ font-size:18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .block{ transition:none; opacity:1; transform:none; }
+    .scroll-hint .arrow{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+
+  <div id="ribbonWrap">
+    <svg id="ribbonSvg" preserveAspectRatio="none" aria-hidden="true">
+      <path id="halo" class="ribbon-halo" d=""></path>
+      <path id="ribbon" class="ribbon-path" d=""></path>
+      <circle id="head" class="ribbon-dot" r="4" cx="0" cy="0"></circle>
+    </svg>
+  </div>
+
+  <div id="hud">
+    <span class="row"><span class="lbl">ALT</span> <span class="val" id="alt">400.0</span> KM</span>
+    <span class="row"><span class="lbl">VEL</span> <span class="val" id="vel">7.66</span> KM/S</span>
+    <span class="row"><span class="lbl">ECC</span> <span class="val" id="ecc">0.004</span></span>
+    <span class="status" id="status">NOMINAL</span>
+    <div id="countdown">T-00:30</div>
+  </div>
+
+  <div id="rail" aria-hidden="true"></div>
+
+  <main>
+
+    <!-- 00 Masthead -->
+    <section class="panel" data-chapter="00">
+      <div class="block">
+        <div class="masthead">
+          <div class="brand">Perigee<span class="dot">.</span> Press</div>
+          <div class="issue">Field Report · Vol. 07 · Descent</div>
+        </div>
+        <div class="eyebrow"><span class="num">00</span> The final orbit of KESTREL-9</div>
+        <h1>The Decay <span class="accent">Ribbon</span></h1>
+        <p class="lead">A satellite's death is not a number on a spreadsheet. It is a physical event — a slow, luminous unraveling traced against the black. Scroll, and watch the ribbon fall.</p>
+        <div class="meta">KESTREL-9 · NORAD 51142 · Launched 2016 · Mass 1,240 kg · Design life 8 yrs</div>
+        <div class="scroll-hint">Begin descent <span class="arrow">↓</span></div>
+      </div>
+    </section>
+
+    <!-- 01 -->
+    <section class="panel" data-chapter="01">
+      <div class="block">
+        <div class="eyebrow"><span class="num">01</span> Stable orbit</div>
+        <h2>For eight years, the line held.</h2>
+        <p>At four hundred kilometres, KESTREL-9 moved at a steady seven-point-six-six kilometres per second — fast enough that the Earth's gravity only ever curved its fall into a circle. The telemetry ribbon was calm: a thin cyan thread, drifting with the gentle sine of a healthy orbit.</p>
+        <p>Nothing about the descent had begun. The ribbon simply existed, patient, in the cold.</p>
+      </div>
+    </section>
+
+    <!-- Pull quote -->
+    <section class="panel" data-chapter="02">
+      <div class="block">
+        <p class="pull">Orbital decay is not a failure. <span class="mark">It is a countdown</span> that started the day the rocket stopped firing.</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section class="panel" data-chapter="03">
+      <div class="block">
+        <div class="eyebrow"><span class="num">03</span> Drag</div>
+        <h2>Then the air remembered.</h2>
+        <p>Even at four hundred kilometres, the atmosphere is not empty. A handful of stray molecules grazed the hull every orbit, stealing a whisper of velocity. Each graze lowered the perigee by metres. The ribbon's altitude began to drop, and with it, its calm.</p>
+        <p>The eccentricity climbed. What was a smooth thread started to wobble — the first sign that the orbit was no longer a circle but a slowing, sagging ellipse.</p>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section class="panel" data-chapter="04">
+      <div class="block">
+        <div class="eyebrow"><span class="num">04</span> Instability</div>
+        <h2>The ribbon began to shake.</h2>
+        <p>Below three hundred kilometres the drag compounds. Every pass through the densest part of the orbit bleeds more speed, deepens the dip, thickens the wobble. The telemetry no longer reads as a line so much as a tremor — the satellite fighting to hold its shape against a sky that is closing in.</p>
+      </div>
+    </section>
+
+    <!-- 05 -->
+    <section class="panel" data-chapter="05">
+      <div class="block">
+        <div class="eyebrow"><span class="num">05</span> Reentry interface</div>
+        <h2>At one hundred and twenty kilometres, physics turns hostile.</h2>
+        <p>This is the reentry interface — the boundary where the thin vacuum of space becomes a wall of gas. The satellite is no longer falling through emptiness. It is plowing through matter at seven kilometres a second, compressing the air in front of it until that air turns to plasma.</p>
+        <p>The ribbon's colour is about to change.</p>
+      </div>
+    </section>
+
+    <!-- Pull quote -->
+    <section class="panel" data-chapter="06">
+      <div class="block">
+        <p class="pull small">Atmospheric friction is the only thing that ever truly stops a satellite. <span class="mark">And it does not stop gently.</span></p>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section class="panel" data-chapter="07">
+      <div class="block">
+        <div class="eyebrow"><span class="num">07</span> Ablation</div>
+        <h2>The ribbon catches fire.</h2>
+        <p>Below the interface the cyan thread ignites. Plasma sheathes the hull; the stroke burns to magenta. Sparks peel away from the line as components vaporise — solar arrays first, then the bus, then the instruments that spent eight years watching the world. The visible length of the ribbon shortens as it is consumed, segment by segment.</p>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section class="panel" data-chapter="08">
+      <div class="block">
+        <div class="eyebrow"><span class="num">08</span> Terminal phase</div>
+        <h2>Thirty seconds. Then nothing.</h2>
+        <p>The countdown is not dramatic in the way films promise. There is no explosion, only a brightening and a fading. The ribbon narrows to a point, the sparks thin to a scatter, and the telemetry flatlines. Where a machine had been, there is only a faint trail of ionised air, cooling in the dark.</p>
+      </div>
+    </section>
+
+    <!-- Finale -->
+    <section class="panel" id="finale" data-chapter="09">
+      <div class="block">
+        <div class="status-word" id="finalWord">SIGNAL LOST</div>
+        <div class="final-count" id="finalCount">T-00:00 · ORBIT TERMINATED</div>
+        <p>KESTREL-9 has completed its final descent. The ribbon is gone. Somewhere in the upper atmosphere, a few grams of metal are still glowing, and falling, and forgetting they were ever anything else.</p>
+        <a class="restart" href="#" id="restart">↺ Re-run the descent</a>
+      </div>
+    </section>
+
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var svg   = document.getElementById("ribbonSvg");
+  var path  = document.getElementById("ribbon");
+  var halo  = document.getElementById("halo");
+  var head  = document.getElementById("head");
+
+  var altEl = document.getElementById("alt");
+  var velEl = document.getElementById("vel");
+  var eccEl = document.getElementById("ecc");
+  var statusEl = document.getElementById("status");
+  var hud = document.getElementById("hud");
+  var countdownEl = document.getElementById("countdown");
+
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+  var cx = W / 2;
+
+  var BURN = 0.7;          // scroll fraction where burn-off begins
+  var TOTAL_COUNT = 30;    // seconds
+
+  var cyan = [0,180,216];
+  var red  = [255,0,110];
+
+  var started = false;     // entrance dot pulse done
+  var lastScroll = 0;
+  var scrollY = 0;
+  var targetScroll = 0;
+  var introTime = 0;       // ms since load, for entrance
+
+  /* ---------- helpers ---------- */
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function lerpColor(c1,c2,t){
+    return "rgb(" +
+      Math.round(lerp(c1[0],c2[0],t)) + "," +
+      Math.round(lerp(c1[1],c2[1],t)) + "," +
+      Math.round(lerp(c1[2],c2[2],t)) + ")";
+  }
+  function fmt(n){ return n.toFixed(1); }
+  function pad(n){ return (n<10?"0":"")+n; }
+
+  /* ---------- ribbon geometry ---------- */
+  function buildPath(progress, t){
+    // progress: 0..1 overall descent
+    // returns { d, headX, headY, headVisible, visibleFrac }
+    var topY = 0;
+    var bottomY = H;
+    var bottomYFull = H;
+
+    // Burn-off shortens the visible length
+    var burn = 0;
+    if(progress > BURN){
+      burn = (progress - BURN) / (1 - BURN); // 0..1
+    }
+    var visibleFrac = 1 - burn;               // fraction of full length shown
+    var drawBottom = topY + (bottomYFull - topY) * visibleFrac;
+
+    // altitude drop: the head sits lower as we scroll (relative to center)
+    var headY = lerp(H * 0.14, H * 0.92, progress);
+    if(!started){
+      // entrance: dot near top, line barely trailing
+      headY = H * 0.10;
+    }
+
+    // waviness / eccentricity grows with descent
+    var baseAmp = lerp(4, 46, progress);
+    var freq = lerp(0.006, 0.016, progress);
+    // ambient sway
+    var sway = reduced ? 0 : Math.sin(t * 0.0012) * 5;
+
+    var segments = 26;
+    var pts = [];
+    var i, x, y, phase;
+
+    var lineEnd = started ? drawBottom : Math.max(topY, headY);
+
+    for(i = 0; i <= segments; i++){
+      var f = i / segments;
+      y = topY + (lineEnd - topY) * f;
+      if(y > drawBottom) y = drawBottom;
+
+      // amplitude ramps up toward the head (lower part more erratic)
+      var localAmp = baseAmp * (0.25 + 0.75 * f);
+      phase = y * freq + t * 0.0015;
+      x = cx + Math.sin(phase) * localAmp + sway * (0.3 + 0.7 * f);
+
+      pts.push([x, y]);
+    }
+
+    // head position = last point
+    var headX = pts[pts.length-1][0];
+    var headY2 = pts[pts.length-1][1];
+
+    // smooth path via quadratic midpoints
+    var d = "M " + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1);
+    for(i = 1; i < pts.length - 1; i++){
+      var mx = (pts[i][0] + pts[i+1][0]) / 2;
+      var my = (pts[i][1] + pts[i+1][1]) / 2;
+      d += " Q " + pts[i][0].toFixed(1) + " " + pts[i][1].toFixed(1) +
+           " " + mx.toFixed(1) + " " + my.toFixed(1);
+    }
+    var last = pts[pts.length-1];
+    d += " L " + last[0].toFixed(1) + " " + last[1].toFixed(1);
+
+    return { d:d, headX:headX, headY:headY2, visibleFrac:visibleFrac, burn:burn };
+  }
+
+  /* ---------- particles ---------- */
+  var particles = [];
+  function emitSparks(x, y, count){
+    for(var i=0;i<count;i++){
+      particles.push({
+        x:x, y:y,
+        vx:(Math.random()-0.5)*2.4,
+        vy:(Math.random()-0.5)*2.4 - 0.6,
+        life:1,
+        decay:0.02 + Math.random()*0.03,
+        r:1 + Math.random()*1.8
+      });
+    }
+  }
+  function drawParticles(ctx){
+    for(var i=particles.length-1;i>=0;i--){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.life -= p.decay;
+      if(p.life <= 0){ particles.splice(i,1); continue; }
+      ctx.globalAlpha = clamp(p.life,0,1);
+      // hot white core to magenta
+      var c = lerpColor([255,255,255], red, 1-p.life);
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- HUD ---------- */
+  function updateHUD(progress){
+    var alt = lerp(400, 0, progress);
+    var vel = lerp(7.66, 4.2, progress);
+    var ecc = lerp(0.004, 0.42, progress);
+
+    altEl.textContent = alt.toFixed(1);
+    velEl.textContent = vel.toFixed(2);
+    eccEl.textContent = ecc.toFixed(3);
+
+    if(progress < 0.35){
+      statusEl.textContent = "NOMINAL";
+      hud.classList.remove("critical");
+    } else if(progress < BURN){
+      statusEl.textContent = "DECAYING";
+      hud.classList.remove("critical");
+    } else {
+      statusEl.textContent = "BURN-OFF";
+      hud.classList.add("critical");
+      var remaining = TOTAL_COUNT * (1 - (progress - BURN)/(1 - BURN));
+      if(remaining < 0) remaining = 0;
+      var m = Math.floor(remaining/60);
+      var s = Math.floor(remaining%60);
+      countdownEl.textContent = "T-" + pad(m) + ":" + pad(s);
+    }
+
+    // finale text
+    var fw = document.getElementById("finalWord");
+    var fc = document.getElementById("finalCount");
+    if(progress >= 0.985){
+      fw.textContent = "SIGNAL LOST";
+      fc.textContent = "T-00:00 · ORBIT TERMINATED";
+    } else if(progress >= BURN){
+      fw.textContent = "BURN-OFF";
+      fc.textContent = "T-... · DESCENT ACTIVE";
+    } else {
+      fw.textContent = "DESCENDING";
+      fc.textContent = "T-... · DESCENT ACTIVE";
+    }
+  }
+
+  /* ---------- rail ---------- */
+  var railEl = document.getElementById("rail");
+  var chapterEls = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var railTicks = [];
+  chapterEls.forEach(function(el){
+    var num = el.getAttribute("data-chapter");
+    var t = document.createElement("div");
+    t.className = "tick";
+    t.textContent = num;
+    railEl.appendChild(t);
+    railTicks.push(t);
+  });
+  function updateRail(progress){
+    var idx = Math.round(progress * (chapterEls.length - 1));
+    for(var i=0;i<railTicks.length;i++){
+      railTicks[i].classList.toggle("active", i === idx);
+      railTicks[i].classList.toggle("done", i < idx);
+    }
+  }
+
+  /* ---------- stars ---------- */
+  var starsCanvas = document.getElementById("stars");
+  var sctx = starsCanvas.getContext("2d");
+  var stars = [];
+  function initStars(){
+    stars = [];
+    var count = Math.floor((W*H)/9000);
+    for(var i=0;i<count;i++){
+      stars.push({
+        x:Math.random()*W,
+        y:Math.random()*H,
+        r:Math.random()*1.3 + 0.2,
+        base:Math.random()*0.5 + 0.2,
+        tw:Math.random()*Math.PI*2,
+        tws:0.5 + Math.random()*1.5
+      });
+    }
+  }
+  function drawStars(t){
+    sctx.clearRect(0,0,W,H);
+    for(var i=0;i<stars.length;i++){
+      var s = stars[i];
+      var a = reduced ? s.base : s.base + Math.sin(t*0.001*s.tws + s.tw)*0.25;
+      sctx.globalAlpha = clamp(a,0.05,1);
+      sctx.fillStyle = "#ffffff";
+      sctx.beginPath();
+      sctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      sctx.fill();
+    }
+    sctx.globalAlpha = 1;
+  }
+
+  /* ---------- main loop ---------- */
+  var pctx = null; // reuse for particles on same canvas? use separate overlay
+  // particles drawn on stars canvas overlay (same fixed layer) -> use a second canvas
+  var pCanvas = document.createElement("canvas");
+  pCanvas.id = "sparkCanvas";
+  pCanvas.style.cssText = "position:fixed;inset:0;z-index:2;pointer-events:none;";
+  document.body.appendChild(pCanvas);
+  pctx = pCanvas.getContext("2d");
+
+  function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
+    cx = W/2;
+    svg.setAttribute("viewBox","0 0 " + W + " " + H);
+    starsCanvas.width = W; starsCanvas.height = H;
+    pCanvas.width = W; pCanvas.height = H;
+    initStars();
+  }
+
+  function onScroll(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    targetScroll = max > 0 ? (window.scrollY / max) : 0;
+    lastScroll = window.scrollY;
+  }
+
+  function tick(now){
+    // smooth scroll interpolation
+    scrollY += (targetScroll - scrollY) * (reduced ? 1 : 0.12);
+    var progress = clamp(scrollY, 0, 1);
+
+    // entrance timing
+    introTime = now;
+    if(!started){
+      // pulse handled via CSS-less: we start line after 900ms
+      if(!tick._t0) tick._t0 = now;
+      if(now - tick._t0 > 900){ started = true; }
+    }
+
+    // draw ribbon
+    var g = buildPath(progress, now);
+    path.setAttribute("d", g.d);
+    halo.setAttribute("d", g.d);
+
+    // head dot
+    head.setAttribute("cx", g.headX);
+    head.setAttribute("cy", g.headY);
+    var headScale = 1;
+    if(!started){
+      // pulse once: 0..900ms scale 1 -> 1.25 -> 1
+      var pt = clamp((now - (tick._t0||0)) / 900, 0, 1);
+      headScale = 1 + Math.sin(pt*Math.PI) * 0.35;
+    }
+    head.setAttribute("r", (4 * headScale).toFixed(2));
+
+    // colour transition cyan -> red at BURN
+    var colT = 0;
+    if(progress > BURN){ colT = clamp((progress - BURN)/0.08, 0, 1); }
+    var stroke = lerpColor(cyan, red, colT);
+    path.style.stroke = stroke;
+    halo.style.stroke = stroke;
+    head.style.fill = stroke;
+    halo.style.opacity = (0.12 + colT*0.28).toFixed(3);
+
+    // particles during burn
+    pctx.clearRect(0,0,W,H);
+    if(progress > BURN && !reduced){
+      var emitCount = 1 + Math.floor(colT * 3);
+      emitSparks(g.headX, g.headY, emitCount);
+      // also emit along lower portion
+      if(Math.random() < 0.5){
+        var fy = g.headY - Math.random()* (H*0.15);
+        emitSparks(g.headX + (Math.random()-0.5)*20, fy, 1);
+      }
+    }
+    drawParticles(pctx);
+
+    updateHUD(progress);
+    updateRail(progress);
+    drawStars(now);
+
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add("in"); }
+    });
+  }, { threshold: 0.25 });
+  chapterEls.forEach(function(el){ io.observe(el); });
+
+  /* ---------- restart ---------- */
+  document.getElementById("restart").addEventListener("click", function(ev){
+    ev.preventDefault();
+    particles.length = 0;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+  });
+
+  window.addEventListener("scroll", onScroll, { passive:true });
+  window.addEventListener("resize", resize);
+
+  resize();
+  onScroll();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

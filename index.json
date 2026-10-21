@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T17:21:35.795Z",
+  "generated_at": "2026-10-21T18:18:18.444Z",
   "schema": "schema/entry.schema.json",
-  "count": 255,
+  "count": 257,
   "categories": [
     "landing-pages",
     "animations",
@@ -8858,11 +8858,11 @@
       "status": "polished",
       "summary": "An 8s broadcast loop visualizing earthquake early warning: flat monitoring line, sharp P-wave spike, rolling S-wave arrival, and a pin-drop epicenter marker with magnitude readout.",
       "path": "prompts/motion-graphics/seismic-event-marker",
-      "preview": null,
+      "preview": "prompts/motion-graphics/seismic-event-marker/preview.png",
       "prompt": "prompts/motion-graphics/seismic-event-marker/prompt.md",
       "extended": "prompts/motion-graphics/seismic-event-marker/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/seismic-event-marker/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -8872,7 +8872,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 213202,
+          "gen_ms": 213202,
+          "ttft_ms": 3540,
+          "queue_wait_ms": 178,
+          "wall_ms": 216920,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/seismic-event-marker/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/seismic-event-marker/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 7,
+          "review_summary": "Strong industrial aesthetic with correct typography and layout, but the seismograph trace is completely flat (missing the P-wave spike visible at this timestamp) and the top-left text labels overlap."
+        }
+      ]
     },
     {
       "id": "signal-type-hero",
@@ -12183,6 +12213,38 @@
       ]
     },
     {
+      "id": "balance-scale-gold",
+      "title": "Balance Scale Gold",
+      "category": "games",
+      "tags": [
+        "physics",
+        "balance",
+        "stacking",
+        "precision",
+        "canvas2d",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Build 'Balance Scale Gold', a physics-based browser game where players stack gold weights on a brass scale. Achieve rotational equilibrium by managing torque and tilt to reach target mass without exceeding 30 degrees.",
+      "path": "prompts/games/balance-scale-gold",
+      "preview": null,
+      "prompt": "prompts/games/balance-scale-gold/prompt.md",
+      "extended": "prompts/games/balance-scale-gold/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "bioluminescent-firefly-pulse",
       "title": "Bioluminescent Firefly Pulse",
       "category": "games",
@@ -12749,11 +12811,11 @@
       "status": "polished",
       "summary": "Hold to load the pole's elastic potential, release at peak flex to launch. Rotate mid-air to clear the bar. Miss the timing, snap the pole or knock the bar.",
       "path": "prompts/games/pole-vault-kinetic-transfer",
-      "preview": null,
+      "preview": "prompts/games/pole-vault-kinetic-transfer/preview.png",
       "prompt": "prompts/games/pole-vault-kinetic-transfer/prompt.md",
       "extended": "prompts/games/pole-vault-kinetic-transfer/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/games/pole-vault-kinetic-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -12763,7 +12825,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 415061,
+          "gen_ms": 415061,
+          "ttft_ms": 6192,
+          "queue_wait_ms": 213,
+          "wall_ms": 421466,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/games/pole-vault-kinetic-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/games/pole-vault-kinetic-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 6,
+          "review_summary": "Strong visual identity and layout, but the hero title is clipped and the canvas is cut off, indicating a layout/responsive bug."
+        }
+      ]
     },
     {
       "id": "satellite-orbit-sync-link",
@@ -14084,11 +14176,11 @@
       "status": "polished",
       "summary": "A vertical scroll narrative where annual glacier mass balance data manifests as physical sediment layers. Positive growth builds blue strata; negative melt carves red erosion into the bedrock, revealing sub-glacial…",
       "path": "prompts/editorial/glacier-mass-balance-deposit",
-      "preview": null,
+      "preview": "prompts/editorial/glacier-mass-balance-deposit/preview.png",
       "prompt": "prompts/editorial/glacier-mass-balance-deposit/prompt.md",
       "extended": "prompts/editorial/glacier-mass-balance-deposit/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/editorial/glacier-mass-balance-deposit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -14098,7 +14190,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 336219,
+          "gen_ms": 336219,
+          "ttft_ms": 8235,
+          "queue_wait_ms": 15403,
+          "wall_ms": 359857,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/glacier-mass-balance-deposit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/glacier-mass-balance-deposit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 6,
+          "review_summary": "A clean, atmospheric hero that nails the copy and palette but fails the typography brief by using a monospace font for the main title instead of the specified serif."
+        }
+      ]
     },
     {
       "id": "hammered-lead-type",
@@ -14298,11 +14420,11 @@
       "status": "polished",
       "summary": "A vertical editorial scroll where a single SVG ribbon unspools downward, its altitude and waviness mapped to satellite telemetry, culminating in a dramatic atmospheric burn-off.",
       "path": "prompts/editorial/orbital-decay-ribbon",
-      "preview": null,
+      "preview": "prompts/editorial/orbital-decay-ribbon/preview.png",
       "prompt": "prompts/editorial/orbital-decay-ribbon/prompt.md",
       "extended": "prompts/editorial/orbital-decay-ribbon/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/editorial/orbital-decay-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -14312,7 +14434,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 280351,
+          "gen_ms": 280351,
+          "ttft_ms": 5271,
+          "queue_wait_ms": 192,
+          "wall_ms": 285814,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/editorial/orbital-decay-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/editorial/orbital-decay-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong editorial hero with correct palette, Syne display type, prominent brand, and a clean single composition anchored by the ribbon."
+        }
+      ]
     },
     {
       "id": "oxidized-iron-marginalia",
@@ -15139,11 +15291,11 @@
       "status": "polished",
       "summary": "Build a single-file mechanical seal configurator with drag-and-drop gasket stacking, real-time compression physics, and tolerance validation.",
       "path": "prompts/interfaces/gasket-compression-logic",
-      "preview": null,
+      "preview": "prompts/interfaces/gasket-compression-logic/preview.png",
       "prompt": "prompts/interfaces/gasket-compression-logic/prompt.md",
       "extended": "prompts/interfaces/gasket-compression-logic/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/gasket-compression-logic/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -15153,7 +15305,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 245487,
+          "gen_ms": 245487,
+          "ttft_ms": 5706,
+          "queue_wait_ms": 173,
+          "wall_ms": 251367,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/gasket-compression-logic/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/gasket-compression-logic/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "A highly faithful implementation of the 'soft-machine' aesthetic with excellent typography, layout, and attention to industrial detail."
+        }
+      ]
     },
     {
       "id": "hazmat-cargo-manifest-verify",
@@ -15589,6 +15771,40 @@
           "review_summary": "The interface is broken, displaying only a header and a large empty void where the core 'Shoji screen' grid should be."
         }
       ]
+    },
+    {
+      "id": "sous-vide-thermal-equilibrium",
+      "title": "Thermal Equilibrium Simulator",
+      "category": "interfaces",
+      "tags": [
+        "thermodynamics",
+        "simulation",
+        "canvas",
+        "culinary",
+        "precision",
+        "graph",
+        "physics",
+        "minimal",
+        "tool"
+      ],
+      "status": "polished",
+      "summary": "CoreTemp: A single-file HTML/CSS/JS dashboard simulating 1D heat diffusion for sous-vide cooking. Features real-time Canvas visualization, elastic UI feedback on pasteurization threshold crossing, and precise thermal…",
+      "path": "prompts/interfaces/sous-vide-thermal-equilibrium",
+      "preview": null,
+      "prompt": "prompts/interfaces/sous-vide-thermal-equilibrium/prompt.md",
+      "extended": "prompts/interfaces/sous-vide-thermal-equilibrium/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "wabi-sabi-weather-station",

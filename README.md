@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 255 | 250 | 217 | 38 |
+| 257 | 255 | 219 | 38 |
 
 ## Quick start
 
@@ -2323,9 +2323,11 @@ An 8s broadcast loop visualizing earthquake early warning: flat monitoring line,
 
 [prompt](prompts/motion-graphics/seismic-event-marker/prompt.md) · [extended](prompts/motion-graphics/seismic-event-marker/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/seismic-event-marker/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.5s | 213s | 7 | [open](prompts/motion-graphics/seismic-event-marker/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3181,6 +3183,20 @@ A navigation grid where links are represented by taut steel wires that vibrate a
 
 ## Games
 
+### Balance Scale Gold
+
+Build 'Balance Scale Gold', a physics-based browser game where players stack gold weights on a brass scale. Achieve rotational equilibrium by managing torque and tilt to reach target mass without exceeding 30 degrees.
+
+**Status:** polished · `physics` `balance` `stacking` `precision` `canvas2d` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/balance-scale-gold/prompt.md) · [extended](prompts/games/balance-scale-gold/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Bioluminescent Firefly Pulse
 
 A rhythm game where players sync clicks with an emergent swarm pulse. Join the bioluminescent rhythm, avoid desyncs, and master the chaotic beat in a single-file HTML experience.
@@ -3333,9 +3349,11 @@ Hold to load the pole's elastic potential, release at peak flex to launch. Rotat
 
 [prompt](prompts/games/pole-vault-kinetic-transfer/prompt.md) · [extended](prompts/games/pole-vault-kinetic-transfer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/pole-vault-kinetic-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.2s | 415s | 6 | [open](prompts/games/pole-vault-kinetic-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3687,9 +3705,11 @@ A vertical scroll narrative where annual glacier mass balance data manifests as 
 
 [prompt](prompts/editorial/glacier-mass-balance-deposit/prompt.md) · [extended](prompts/editorial/glacier-mass-balance-deposit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/glacier-mass-balance-deposit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 8.2s | 336s | 6 | [open](prompts/editorial/glacier-mass-balance-deposit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3749,9 +3769,11 @@ A vertical editorial scroll where a single SVG ribbon unspools downward, its alt
 
 [prompt](prompts/editorial/orbital-decay-ribbon/prompt.md) · [extended](prompts/editorial/orbital-decay-ribbon/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/orbital-decay-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.3s | 280s | 8 | [open](prompts/editorial/orbital-decay-ribbon/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3973,9 +3995,11 @@ Build a single-file mechanical seal configurator with drag-and-drop gasket stack
 
 [prompt](prompts/interfaces/gasket-compression-logic/prompt.md) · [extended](prompts/interfaces/gasket-compression-logic/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/gasket-compression-logic/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.7s | 245s | 8 | [open](prompts/interfaces/gasket-compression-logic/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4088,6 +4112,20 @@ A team collaboration interface where presence is communicated through the opacit
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/shoji-screen-privacy/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.9s | 342s | 2 | [open](prompts/interfaces/shoji-screen-privacy/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Thermal Equilibrium Simulator
+
+CoreTemp: A single-file HTML/CSS/JS dashboard simulating 1D heat diffusion for sous-vide cooking. Features real-time Canvas visualization, elastic UI feedback on pasteurization threshold crossing, and precise thermal…
+
+**Status:** polished · `thermodynamics` `simulation` `canvas` `culinary` `precision` `graph` `physics` `minimal` `tool` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/sous-vide-thermal-equilibrium/prompt.md) · [extended](prompts/interfaces/sous-vide-thermal-equilibrium/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

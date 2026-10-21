@@ -1,0 +1,26 @@
+id: balance-scale-gold
+title: "Balance Scale Gold"
+category: games
+tags:
+  - physics
+  - balance
+  - stacking
+  - precision
+  - canvas2d
+  - state-stack
+  - game
+status: polished
+summary: "Build 'Balance Scale Gold', a physics-based browser game where players stack gold weights on a brass scale. Achieve rotational equilibrium by managing torque and tilt to reach target mass without exceeding 30 degrees."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
