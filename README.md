@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 257 | 255 | 219 | 38 |
+| 265 | 257 | 227 | 38 |
 
 ## Quick start
 
@@ -2251,6 +2251,20 @@ Scroll-story for Northmark Studio: six phases from point to brand system — con
 
 ---
 
+### Rasterize the Word
+
+An 8s kinetic identity loop for 'Dot & Grain' studio. CMYK halftone dots drift, snap to a grid, form letters 'D' and 'O' via blend modes, then explode. Seamless, no gradients, responsive.
+
+**Status:** polished · `timeline` `screen-print` `halftone` `pop-art` `identity` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/halftone-rasterize/prompt.md) · [extended](prompts/motion-graphics/halftone-rasterize/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Harbor Night Lower Thirds
 
 6s broadcast lower-third pack for Harbor Night: nameplate enter/hold/exit with marine ink palette and safe-margin discipline.
@@ -2264,6 +2278,34 @@ Scroll-story for Northmark Studio: six phases from point to brand system — con
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/harbor-night-lower-thirds/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.3s | 378s | 6 | [open](prompts/motion-graphics/harbor-night-lower-thirds/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Wet Ink Spread
+
+Create a single-file HTML5/CSS/JS motion graphics piece titled 'Wet Ink Spread' for 'Absorb Press'. Full-bleed viewport, #F0F0F0 background. Centered 'INK' in Baskerville #000000. 8s loop simulating capillary action…
+
+**Status:** polished · `explainer` `texture` `physics` `print` `organic` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/ink-spread-capillary/prompt.md) · [extended](prompts/motion-graphics/ink-spread-capillary/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Mono Drop Sequence
+
+Heavy serif glyphs crash onto a paper plate, shaking the canvas and bleeding red ink into the grain. A visceral 6s loop simulating the physical weight of letterpress printing.
+
+**Status:** polished · `timeline` `letterpress` `identity` `print` `kinetic-type` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/letterpress-mono-drop/prompt.md) · [extended](prompts/motion-graphics/letterpress-mono-drop/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -2296,6 +2338,20 @@ Scroll-story for Northmark Studio: six phases from point to brand system — con
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.4s | 330s | 1 | [open](prompts/motion-graphics/osmotic-desalination-pressure/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### The Tear Line
+
+Create a 6-second looping motion graphic titled 'The Tear Line' for 'Rip & Read'. High-contrast editorial style, stark white paper background (#F4F4F4) with grain texture. No digital gradients or soft shadows; use…
+
+**Status:** polished · `paper-motion` `destruction` `reveal` `drama` `print` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/paper-tear-reveal/prompt.md) · [extended](prompts/motion-graphics/paper-tear-reveal/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3191,9 +3247,11 @@ Build 'Balance Scale Gold', a physics-based browser game where players stack gol
 
 [prompt](prompts/games/balance-scale-gold/prompt.md) · [extended](prompts/games/balance-scale-gold/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/balance-scale-gold/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 4.1s | 356s | 8 | [open](prompts/games/balance-scale-gold/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3519,6 +3577,20 @@ Real-time recursive heightmap shader carving river deltas. Slider controls visco
 
 ---
 
+### Hand-Blown Glass Expansion
+
+A refractive glass bubble floats in void. Drag to stretch it like hot taffy—walls thin, caustics shift, light bends. Pure material study, no UI chrome.
+
+**Status:** polished · `webgl` `three-js` `refraction` `glass-shader` `viscosity` `deformation` `caustics` `hand-craft` `single-file-html` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/hand-blown-glass-bubble-expansion/prompt.md) · [extended](prompts/webgl/hand-blown-glass-bubble-expansion/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Laser Interference Pattern
 
 A full-screen WebGL simulation of two coherent light sources creating shifting moiré patterns and standing waves via accurate wave superposition math in a fragment shader.
@@ -3580,6 +3652,20 @@ High-gloss liquid chrome sphere morphing from smooth to spiked via mouse-control
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/liquid-metal-morphing-vertex/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 3.1s | 197s | 1 | [open](prompts/webgl/liquid-metal-morphing-vertex/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Molten Bronze Solidification
+
+A raw WebGL shader simulation of molten bronze cooling into solid metal. The hero is the phase-change material itself, reacting to user-controlled cooling rates. Interaction: Parameter scrub (cooling speed).
+
+**Status:** polished · `webgl` `three-js` `pbr` `metallurgy` `phase-change` `thermal-simulation` `shader-craft` `cooling-curve` `single-file` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/melted-bronze-cool-down/prompt.md) · [extended](prompts/webgl/melted-bronze-cool-down/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3758,6 +3844,20 @@ A recipe journal where the layout behaves like a folded linen napkin. Scrolling 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 4.9s | 448s | 2 | [open](prompts/editorial/linen-fold-accordion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### The Containment Protocol
+
+A safety report where scrolling compresses a copper canister seal; radiation particles drift and text density shifts as integrity drops.
+
+**Status:** polished · `nuclear` `containment` `seal` `warning` `industrial` `long-form` `tension` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/nuclear-waste-canister-seal/prompt.md) · [extended](prompts/editorial/nuclear-waste-canister-seal/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -4122,6 +4222,22 @@ CoreTemp: A single-file HTML/CSS/JS dashboard simulating 1D heat diffusion for s
 **Status:** polished · `thermodynamics` `simulation` `canvas` `culinary` `precision` `graph` `physics` `minimal` `tool` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
 
 [prompt](prompts/interfaces/sous-vide-thermal-equilibrium/prompt.md) · [extended](prompts/interfaces/sous-vide-thermal-equilibrium/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/sous-vide-thermal-equilibrium/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 7.6s | 224s | 6 | [open](prompts/interfaces/sous-vide-thermal-equilibrium/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Substation Relay Lockout Protocol
+
+IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate action via hold-to-arm/release-to-trip mechanics. Strict industrial aesthetic with hazard colors, DIN/IBM Plex fonts, and physical simulation.
+
+**Status:** polished · `safety` `utility` `hazard-stripes` `stencil` `industrial` `state-machine` `toggle-interaction` `high-contrast` `infrastructure` `warning` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/substation-relay-lockout/prompt.md) · [extended](prompts/interfaces/substation-relay-lockout/prompt.full.md)
 
 _No shot preview yet._
 

@@ -1,0 +1,28 @@
+id: melted-bronze-cool-down
+title: "Molten Bronze Solidification"
+category: webgl
+tags:
+  - webgl
+  - three-js
+  - pbr
+  - metallurgy
+  - phase-change
+  - thermal-simulation
+  - shader-craft
+  - cooling-curve
+  - single-file
+status: polished
+summary: "A raw WebGL shader simulation of molten bronze cooling into solid metal. The hero is the phase-change material itself, reacting to user-controlled cooling rates. Interaction: Parameter scrub (cooling speed)."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

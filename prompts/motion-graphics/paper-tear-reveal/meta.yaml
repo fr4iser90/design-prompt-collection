@@ -1,0 +1,24 @@
+id: paper-tear-reveal
+title: "The Tear Line"
+category: motion-graphics
+tags:
+  - paper-motion
+  - destruction
+  - reveal
+  - drama
+  - print
+status: polished
+summary: "Create a 6-second looping motion graphic titled 'The Tear Line' for 'Rip & Read'. High-contrast editorial style, stark white paper background (#F4F4F4) with grain texture. No digital gradients or soft shadows; use…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

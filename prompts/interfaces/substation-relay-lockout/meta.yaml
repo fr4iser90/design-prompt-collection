@@ -1,0 +1,29 @@
+id: substation-relay-lockout
+title: "Substation Relay Lockout Protocol"
+category: interfaces
+tags:
+  - safety
+  - utility
+  - hazard-stripes
+  - stencil
+  - industrial
+  - state-machine
+  - toggle-interaction
+  - high-contrast
+  - infrastructure
+  - warning
+status: polished
+summary: "IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate action via hold-to-arm/release-to-trip mechanics. Strict industrial aesthetic with hazard colors, DIN/IBM Plex fonts, and physical simulation."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

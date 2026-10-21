@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoreTemp — Thermal Equilibrium Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1A1A;
+    --ink:#FFFFFF;
+    --accent:#00FF9D;
+    --muted:#4A4A4A;
+    --error:#FF4444;
+    --mono:'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans:'Space Grotesk', system-ui, sans-serif;
+    --hairline:1px solid var(--muted);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    height:60px;
+    flex:0 0 60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    border-bottom:var(--hairline);
+  }
+  .brand{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:24px;
+    letter-spacing:-0.5px;
+    display:flex;
+    align-items:center;
+    gap:2px;
+  }
+  .brand .mark{color:var(--accent);}
+  .brand .sub{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:10px;
+    letter-spacing:2px;
+    color:var(--muted);
+    margin-left:10px;
+    padding-left:10px;
+    border-left:var(--hairline);
+    align-self:center;
+  }
+  .status{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .status .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--muted);
+    transition:background .25s, box-shadow .25s;
+  }
+  .status.sim .dot{background:var(--muted);animation:blink 1.6s ease-in-out infinite;}
+  .status.safe{color:var(--accent);}
+  .status.safe .dot{background:var(--accent);box-shadow:0 0 10px rgba(0,255,157,.7);}
+  .status.error{color:var(--error);}
+  .status.error .dot{background:var(--error);}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- MAIN GRID ---------- */
+  main{
+    flex:1 1 auto;
+    display:grid;
+    grid-template-columns:3fr 2fr;
+    gap:20px;
+    padding:20px;
+    min-height:0;
+  }
+
+  /* ---------- CANVAS PANEL ---------- */
+  .viz{
+    position:relative;
+    width:100%;
+    height:calc(100vh - 140px);
+    min-height:360px;
+    border:var(--hairline);
+    background:var(--bg);
+    overflow:hidden;
+  }
+  #canvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:block;
+    opacity:0;
+    filter:hue-rotate(180deg);
+    animation:entrance 1.5s ease-out forwards;
+  }
+  @keyframes entrance{
+    from{opacity:0;filter:hue-rotate(180deg);}
+    to{opacity:1;filter:hue-rotate(0deg);}
+  }
+  .viz .axis-title{
+    position:absolute;
+    top:12px;left:14px;
+    font-size:10px;
+    letter-spacing:2px;
+    color:var(--muted);
+    text-transform:uppercase;
+    z-index:2;
+    pointer-events:none;
+  }
+  .viz .axis-title b{color:var(--ink);font-weight:500;}
+
+  /* ---------- RIGHT COLUMN ---------- */
+  .side{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    min-width:0;
+  }
+
+  .panel{
+    border:var(--hairline);
+    background:var(--bg);
+    padding:18px;
+  }
+  .panel h2{
+    font-family:var(--sans);
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .panel h2 .idx{color:var(--accent);font-family:var(--mono);}
+
+  /* ---------- CONTROLS ---------- */
+  .control{margin-bottom:22px;}
+  .control:last-child{margin-bottom:0;}
+  .control .row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:12px;
+  }
+  .control label{
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .control .val{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:18px;
+    color:var(--ink);
+  }
+  .control .val .unit{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px;}
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;
+    width:100%;height:4px;
+    background:var(--muted);
+    outline:none;
+    cursor:pointer;
+    border-radius:0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:16px;height:16px;
+    background:var(--accent);
+    border:none;border-radius:50%;
+    cursor:grab;
+    transition:transform .1s;
+  }
+  input[type=range]::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.2);}
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;background:var(--accent);
+    border:none;border-radius:50%;cursor:grab;
+  }
+  input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:6px;}
+  .scale{
+    display:flex;justify-content:space-between;
+    font-size:9px;color:var(--muted);margin-top:8px;letter-spacing:1px;
+  }
+
+  /* ---------- DATA PANEL ---------- */
+  .data{
+    display:flex;flex-direction:column;gap:0;
+    border-top:var(--hairline);padding-top:15px;
+  }
+  .data .drow{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 0;
+    border-bottom:var(--hairline);
+  }
+  .data .drow:last-child{border-bottom:none;padding-bottom:0;}
+  .data .dl{
+    font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);
+  }
+  .data .dv{
+    font-family:var(--mono);font-weight:700;font-size:20px;color:var(--ink);
+    transition:color .25s;
+  }
+  .data .dv .unit{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px;}
+  .data .dv.safe{color:var(--accent);}
+
+  /* ---------- RESTART ---------- */
+  .restart{
+    width:100%;
+    background:transparent;
+    color:var(--muted);
+    border:var(--hairline);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    padding:12px;
+    cursor:pointer;
+    transition:color .2s,border-color .2s;
+  }
+  .restart:hover{color:var(--accent);border-color:var(--accent);}
+
+  /* ---------- ERROR ---------- */
+  .error-msg{
+    display:none;
+    color:var(--error);
+    font-size:10px;
+    letter-spacing:1px;
+    margin-top:10px;
+    text-transform:uppercase;
+  }
+  body.has-error .error-msg{display:block;}
+  body.has-error .viz{border-color:var(--error);}
+  body.has-error input[type=range]::-webkit-slider-thumb{background:var(--error);}
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    height:40px;flex:0 0 40px;
+    display:flex;align-items:center;justify-content:center;
+    border-top:var(--hairline);
+    color:var(--muted);
+    font-size:12px;
+    letter-spacing:1px;
+    text-align:center;
+    padding:0 20px;
+  }
+  footer .sep{margin:0 12px;color:#333;}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:768px){
+    main{grid-template-columns:1fr;gap:16px;padding:14px;}
+    .viz{height:auto;aspect-ratio:1/1;max-height:400px;min-height:0;}
+    .brand{font-size:20px;}
+    .brand .sub{display:none;}
+    .data .dv{font-size:16px;}
+    .control .val{font-size:16px;}
+    footer{font-size:10px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    #canvas{animation:none;opacity:1;filter:none;}
+    .status .dot{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="mark">Core</span>Temp<span class="sub">THERMAL&nbsp;EQUILIBRIUM</span></div>
+  <div class="status sim" id="status"><span class="dot"></span><span id="status-text">Simulating</span></div>
+</header>
+
+<main>
+  <!-- LEFT: CANVAS -->
+  <section class="viz">
+    <div class="axis-title"><b>Protein Cross-Section</b> · 1D Heat Diffusion</div>
+    <canvas id="canvas"></canvas>
+  </section>
+
+  <!-- RIGHT: CONTROLS + DATA -->
+  <aside class="side">
+    <div class="panel">
+      <h2>Parameters <span class="idx">01</span></h2>
+
+      <div class="control">
+        <div class="row">
+          <label for="temp">Bath Temperature</label>
+          <div class="val"><span id="temp-val">55</span><span class="unit">°C</span></div>
+        </div>
+        <input type="range" id="temp" min="50" max="90" step="1" value="55"
+               aria-label="Bath temperature in degrees Celsius" aria-valuenow="55">
+        <div class="scale"><span>50°C</span><span>70°C</span><span>90°C</span></div>
+      </div>
+
+      <div class="control">
+        <div class="row">
+          <label for="thick">Protein Thickness</label>
+          <div class="val"><span id="thick-val">5.0</span><span class="unit">cm</span></div>
+        </div>
+        <input type="range" id="thick" min="1" max="10" step="0.1" value="5"
+               aria-label="Protein thickness in centimeters" aria-valuenow="5">
+        <div class="scale"><span>1cm</span><span>5cm</span><span>10cm</span></div>
+      </div>
+
+      <div class="error-msg" id="error-msg">⚠ Input out of bounds — simulation paused</div>
+    </div>
+
+    <div class="panel">
+      <h2>Readout <span class="idx">02</span></h2>
+      <div class="data">
+        <div class="drow">
+          <span class="dl">Core Temperature</span>
+          <span class="dv" id="core-val">20.0<span class="unit">°C</span></span>
+        </div>
+        <div class="drow">
+          <span class="dl">Time to Pasteurization</span>
+          <span class="dv" id="ttp-val">--:--</span>
+        </div>
+        <div class="drow">
+          <span class="dl">Total Cook Time</span>
+          <span class="dv" id="total-val">00:00</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="restart" id="restart">↻ Reset Simulation</button>
+  </aside>
+</main>
+
+<footer>
+  <span>CoreTemp</span><span class="sep">/</span>
+  <span>1D Heat Equation · Explicit Finite Difference</span><span class="sep">/</span>
+  <span>Pasteurization Threshold 55°C</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- CONSTANTS ---------- */
+  const N = 100;                 // grid cells
+  const ALPHA = 1.4e-7;          // thermal diffusivity m^2/s (meat)
+  const DT = 0.01;               // simulation time step (s)
+  const TIME_SCALE = 250;        // sim-seconds per real-second
+  const THRESHOLD = 55;          // pasteurization threshold °C
+  const ROOM = 20;               // initial protein temp °C
+  const CORE_IDX = Math.floor(N/2);
+
+  // Color stops
+  const C_COLD   = [26,26,26];    // #1A1A1A
+  const C_WARM   = [74,74,74];    // #4A4A4A
+  const C_SAFE   = [0,255,157];   // #00FF9D
+  const C_BLUE   = [0,51,102];    // #003366 entrance tint
+
+  /* ---------- STATE ---------- */
+  let bathTemp = 55;
+  let thicknessCm = 5;
+  let L = thicknessCm/100;       // meters
+  let dx = L/(N-1);
+  let T = new Float64Array(N).fill(ROOM);
+
+  let simTime = 0;
+  let coreTemp = ROOM;
+  let pasteurized = false;
+  let paused = false;
+
+  // entrance tint lerp 0(blue)->1(standard)
+  let tint = 0;
+  let t0 = performance.now();
+
+  // elastic safe-line spring
+  let safeY = 0, safeV = 0, targetSafeY = 0;
+  let flash = 0;                 // 200ms flash timer (ms remaining)
+
+  /* ---------- DOM ---------- */
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const tempInput = document.getElementById('temp');
+  const thickInput = document.getElementById('thick');
+  const tempVal = document.getElementById('temp-val');
+  const thickVal = document.getElementById('thick-val');
+  const coreVal = document.getElementById('core-val');
+  const ttpVal = document.getElementById('ttp-val');
+  const totalVal = document.getElementById('total-val');
+  const statusEl = document.getElementById('status');
+  const statusText = document.getElementById('status-text');
+  const restartBtn = document.getElementById('restart');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- HELPERS ---------- */
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function lerpColor(c1,c2,t){
+    return [
+      Math.round(lerp(c1[0],c2[0],t)),
+      Math.round(lerp(c1[1],c2[1],t)),
+      Math.round(lerp(c1[2],c2[2],t))
+    ];
+  }
+  function fmtTime(sec){
+    if(!isFinite(sec) || sec<0) return '--:--';
+    const m = Math.floor(sec/60);
+    const s = Math.floor(sec%60);
+    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+
+  // Temperature -> base color (strict map)
+  function tempColor(t){
+    let c;
+    if(t < 40){
+      c = C_COLD;
+    } else if(t < THRESHOLD){
+      const f = (t-40)/(THRESHOLD-40);
+      c = lerpColor(C_COLD, C_WARM, f);
+    } else {
+      // above threshold: blend warm->safe by how far above
+      const f = Math.min(1,(t-THRESHOLD)/10);
+      c = lerpColor(C_WARM, C_SAFE, f);
+    }
+    // entrance tint: lerp toward cold blue
+    if(tint < 1){
+      c = lerpColor(C_BLUE, c, tint);
+    }
+    return 'rgb('+c[0]+','+c[1]+','+c[2]+')';
+  }
+
+  // map a temperature to a Y position on canvas (0C bottom, 90C top)
+  function tempToY(temp, plot){
+    const f = (temp-ROOM)/(90-ROOM);
+    return plot.y + plot.h - f*plot.h;
+  }
+
+  /* ---------- PHYSICS ---------- */
+  function recomputeGeom(){
+    L = thicknessCm/100;
+    dx = L/(N-1);
+  }
+
+  function step(){
+    const coeff = ALPHA*DT/(dx*dx);
+    const next = new Float64Array(N);
+    for(let i=1;i<N-1;i++){
+      next[i] = T[i] + coeff*(T[i-1] - 2*T[i] + T[i+1]);
+    }
+    next[0] = bathTemp;
+    next[N-1] = bathTemp;
+    T = next;
+    coreTemp = T[CORE_IDX];
+    simTime += DT;
+  }
+
+  function resetSim(){
+    T.fill(ROOM);
+    simTime = 0;
+    coreTemp = ROOM;
+    pasteurized = false;
+  }
+
+  /* ---------- CANVAS SIZE ---------- */
+  let dpr = 1;
+  function resize(){
+    dpr = window.devicePixelRatio || 1;
+    const r = canvas.getBoundingClientRect();
+    canvas.width = Math.round(r.width*dpr);
+    canvas.height = Math.round(r.height*dpr);
+  }
+  window.addEventListener('resize', resize);
+
+  /* ---------- RENDER ---------- */
+  function render(now){
+    const w = canvas.width/dpr, h = canvas.height/dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+
+    // plot region
+    const padL = 56, padR = 24, padT = 44, padB = 40;
+    const plot = { x:padL, y:padT, w:w-padL-padR, h:h-padT-padB };
+
+    // ---- heat map bars ----
+    const barW = plot.w/N;
+    for(let i=0;i<N;i++){
+      ctx.fillStyle = tempColor(T[i]);
+      ctx.fillRect(plot.x + i*barW, plot.y, barW+1, plot.h);
+    }
+
+    // ---- grid lines (hairline) ----
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    for(let g=1;g<5;g++){
+      const gy = plot.y + plot.h*g/5;
+      ctx.beginPath(); ctx.moveTo(plot.x,gy); ctx.lineTo(plot.x+plot.w,gy); ctx.stroke();
+    }
+
+    // ---- Y axis labels (temp) ----
+    ctx.fillStyle = '#4A4A4A';
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for(let t=20;t<=90;t+=10){
+      const y = tempToY(t, plot);
+      ctx.fillText(t+'°', plot.x-8, y);
+    }
+
+    // ---- X axis label (thickness) ----
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = '#4A4A4A';
+    ctx.fillText('0 cm', plot.x, plot.y+plot.h+8);
+    ctx.fillText(thicknessCm.toFixed(1)+' cm', plot.x+plot.w, plot.y+plot.h+8);
+
+    // ---- pasteurization threshold line (elastic safe-zone boundary) ----
+    // spring interpolation toward target (which sits at threshold Y)
+    targetSafeY = tempToY(THRESHOLD, plot);
+    if(!reduceMotion){
+      const force = (targetSafeY - safeY)*0.1;
+      safeV = (safeV + force)*0.8;
+      safeY += safeV;
+    } else {
+      safeY = targetSafeY;
+    }
+
+    // flash handling
+    let lineAlpha = 0.9;
+    let lineColor = 'rgba(255,255,255,0.35)';
+    if(flash > 0){
+      lineColor = 'rgba(0,255,157,'+(0.4 + 0.5*(flash/200))+')';
+      lineAlpha = 1;
+    }
+    ctx.strokeStyle = lineColor;
+    ctx.globalAlpha = lineAlpha;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    ctx.moveTo(plot.x, safeY);
+    ctx.lineTo(plot.x+plot.w, safeY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    // threshold label
+    ctx.fillStyle = flash>0 ? '#00FF9D' : '#4A4A4A';
+    ctx.font = '9px "JetBrains Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('PASTEURIZATION '+THRESHOLD+'°C', plot.x+4, safeY-4);
+
+    // ---- core marker vertical line + pulsing circle ----
+    const coreX = plot.x + plot.w/2;
+    const coreY = tempToY(coreTemp, plot);
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(coreX, plot.y);
+    ctx.lineTo(coreX, plot.y+plot.h);
+    ctx.stroke();
+
+    // pulse
+    let radius;
+    if(reduceMotion){
+      radius = 5;
+    } else {
+      const pulseFreq = 1/(thicknessCm*0.5); // Hz
+      const tsec = now/1000;
+      radius = 4 + 2*Math.sin(tsec*pulseFreq*Math.PI*2);
+    }
+    const safe = pasteurized;
+    ctx.fillStyle = safe ? '#00FF9D' : '#FFFFFF';
+    if(safe && !reduceMotion){
+      ctx.shadowColor = 'rgba(0,255,157,0.8)';
+      ctx.shadowBlur = 12;
+    }
+    ctx.beginPath();
+    ctx.arc(coreX, coreY, radius, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // core label
+    ctx.fillStyle = safe ? '#00FF9D' : '#FFFFFF';
+    ctx.font = '700 11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(coreTemp.toFixed(1)+'°C', coreX, coreY - radius - 6);
+
+    // ---- frame border ----
+    ctx.strokeStyle = '#4A4A4A';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(plot.x+0.5, plot.y+0.5, plot.w-1, plot.h-1);
+  }
+
+  /* ---------- DATA PANEL ---------- */
+  function updateData(){
+    coreVal.innerHTML = coreTemp.toFixed(1)+'<span class="unit">°C</span>';
+    if(pasteurized){
+      coreVal.classList.add('safe');
+      ttpVal.innerHTML = '00:00';
+      ttpVal.classList.add('safe');
+    } else {
+      coreVal.classList.remove('safe');
+      ttpVal.classList.remove('safe');
+      // estimate time to pasteurization from current rate of change
+      const rate = (coreTemp - prevCoreTemp)/DT; // °C per sim-second
+      if(rate > 0.000001){
+        const remaining = (THRESHOLD - coreTemp)/rate;
+        ttpVal.textContent = fmtTime(remaining);
+      } else {
+        ttpVal.textContent = '--:--';
+      }
+    }
+    totalVal.textContent = fmtTime(simTime);
+  }
+
+  /* ---------- STATUS ---------- */
+  function updateStatus(){
+    if(paused){
+      statusEl.className = 'status error';
+      statusText.textContent = 'Error';
+    } else if(pasteurized){
+      statusEl.className = 'status safe';
+      statusText.textContent = 'Safe';
+    } else {
+      statusEl.className = 'status sim';
+      statusText.textContent = 'Simulating';
+    }
+  }
+
+  /* ---------- INPUT ---------- */
+  function validate(){
+    const t = parseFloat(tempInput.value);
+    const th = parseFloat(thickInput.value);
+    const bad = (isNaN(t)||t<50||t>90||isNaN(th)||th<1||th>10);
+    paused = bad;
+    document.body.classList.toggle('has-error', bad);
+    return !bad;
+  }
+
+  tempInput.addEventListener('input', function(){
+    if(validate()){
+      bathTemp = parseFloat(tempInput.value);
+      tempVal.textContent = bathTemp.toFixed(0);
+      tempInput.setAttribute('aria-valuenow', bathTemp);
+    }
+    updateStatus();
+  });
+  thickInput.addEventListener('input', function(){
+    if(validate()){
+      thicknessCm = parseFloat(thickInput.value);
+      recomputeGeom();
+      thickVal.textContent = thicknessCm.toFixed(1);
+      thickInput.setAttribute('aria-valuenow', thicknessCm);
+    }
+    updateStatus();
+  });
+
+  restartBtn.addEventListener('click', function(){
+    resetSim();
+    tint = 0;
+    t0 = performance.now();
+    if(!reduceMotion){
+      canvas.style.animation = 'none';
+      void canvas.offsetWidth;
+      canvas.style.animation = 'entrance 1.5s ease-out forwards';
+    }
+    updateStatus();
+  });
+
+  /* ---------- MAIN LOOP ---------- */
+  let prevCoreTemp = ROOM;
+  let lastReal = performance.now();
+
+  function loop(now){
+    // entrance tint lerp over 2s
+    if(tint < 1){
+      tint = Math.min(1, (now - t0)/2000);
+    }
+
+    if(!paused){
+      // accumulate real time -> sim steps
+      const realDt = Math.min(0.05, (now - lastReal)/1000);
+      let simAdd = realDt * TIME_SCALE;
+      let steps = Math.min(4000, Math.floor(simAdd/DT));
+      prevCoreTemp = coreTemp;
+      for(let s=0;s<steps;s++){
+        step();
+        if(!pasteurized && coreTemp >= THRESHOLD){
+          pasteurized = true;
+          flash = 200; // trigger flash + snap
+        }
+      }
+      if(flash > 0) flash = Math.max(0, flash - realDt*1000);
+    }
+    lastReal = now;
+
+    render(now);
+    updateData();
+    updateStatus();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- INIT ---------- */
+  validate();
+  recomputeGeom();
+  resize();
+  updateStatus();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

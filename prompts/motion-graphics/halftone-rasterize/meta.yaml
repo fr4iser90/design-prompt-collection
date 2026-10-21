@@ -1,0 +1,24 @@
+id: halftone-rasterize
+title: "Rasterize the Word"
+category: motion-graphics
+tags:
+  - timeline
+  - screen-print
+  - halftone
+  - pop-art
+  - identity
+status: polished
+summary: "An 8s kinetic identity loop for 'Dot & Grain' studio. CMYK halftone dots drift, snap to a grid, form letters 'D' and 'O' via blend modes, then explode. Seamless, no gradients, responsive."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
