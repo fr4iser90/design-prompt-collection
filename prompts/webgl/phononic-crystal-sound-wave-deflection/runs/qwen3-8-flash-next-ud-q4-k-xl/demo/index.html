@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Phononic Crystal Deflection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1A1D;
+    --ink:#F2F2F2;
+    --accent:#00A8E8;
+    --muted:rgba(242,242,242,.5);
+    --line:rgba(242,242,242,.14);
+    --panel:rgba(26,26,29,.72);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--bg);overflow:hidden;color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;}
+  canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab;}
+  canvas#gl:active{cursor:grabbing;}
+
+  /* ---- Brand signal (top-left, first viewport) ---- */
+  .brand{position:fixed;top:clamp(18px,3vw,34px);left:clamp(18px,3vw,34px);z-index:10;pointer-events:none;
+    max-width:min(46vw,560px);}
+  .kicker{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);
+    display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 12px var(--accent);animation:pulse 2.6s ease-in-out infinite;}
+  .brand h1{font-weight:600;font-size:clamp(26px,4.4vw,46px);line-height:1.02;letter-spacing:-.02em;}
+  .brand h1 .em{color:var(--accent);}
+  .brand p{margin-top:12px;font-size:clamp(12px,1.4vw,14px);color:var(--muted);max-width:40ch;line-height:1.5;}
+
+  /* ---- Corner registration marks ---- */
+  .mark{position:fixed;z-index:9;pointer-events:none;width:16px;height:16px;opacity:.5;}
+  .mark.tl{top:14px;left:14px;border-left:1px solid var(--line);border-top:1px solid var(--line);}
+  .mark.tr{top:14px;right:14px;border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  .mark.bl{bottom:14px;left:14px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .mark.br{bottom:14px;right:14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);}
+
+  /* ---- Floating control panel (bottom-right) ---- */
+  .panel{position:fixed;right:clamp(14px,2.4vw,26px);bottom:clamp(14px,2.4vw,26px);z-index:10;
+    width:min(330px,calc(100vw - 28px));padding:18px 18px 16px;
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    box-shadow:0 20px 60px rgba(0,0,0,.5);animation:rise .8s cubic-bezier(.2,.7,.2,1) both;}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .panel-head .title{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);}
+  .readout{font-family:'Fira Code',monospace;font-size:15px;font-weight:500;color:var(--accent);
+    font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+  .slider-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px;}
+  .slider-row label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+  .slider-row .val{font-family:'Fira Code',monospace;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .slider-row .val small{color:var(--muted);font-size:11px;margin-left:2px;}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--accent) var(--p,40%),rgba(242,242,242,.16) var(--p,40%),rgba(242,242,242,.16) 100%);
+    outline:none;cursor:pointer;margin:2px 0 4px;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--accent);box-shadow:0 0 14px rgba(0,168,232,.6);transition:transform .15s ease;}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.18);}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--accent);box-shadow:0 0 14px rgba(0,168,232,.6);cursor:pointer;}
+  input[type=range]::-moz-range-track{height:4px;border-radius:4px;background:rgba(242,242,242,.16);}
+  input[type=range]::-moz-range-progress{height:4px;border-radius:4px;background:var(--accent);}
+
+  .stats{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .stat{flex:1;}
+  .stat .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .stat .num{font-family:'Fira Code',monospace;font-size:17px;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .num .u{font-size:11px;color:var(--muted);margin-left:1px;}
+  .stat .num.accent{color:var(--accent);}
+  .hint{margin-top:14px;font-size:10.5px;color:var(--muted);letter-spacing:.02em;line-height:1.4;}
+  .hint b{color:var(--ink);font-weight:500;}
+
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.7);}}
+  @keyframes rise{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  @media (max-width:560px){
+    .brand p{display:none;}
+    .panel{left:14px;right:14px;width:auto;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .kicker .dot{animation:none;}
+    .panel{animation:none;}
+  }
+</style>
+</head>
+<body>
+  <canvas id="gl" aria-label="Phononic crystal wave deflection simulation"></canvas>
+
+  <div class="mark tl"></div><div class="mark tr"></div>
+  <div class="mark bl"></div><div class="mark br"></div>
+
+  <div class="brand">
+    <div class="kicker"><span class="dot"></span>Acoustic Metamaterials · Bragg Scattering</div>
+    <h1>Phononic Crystal<br><span class="em">Deflection</span></h1>
+    <p>A plane acoustic wave meets a periodic lattice of voids. Tune the source frequency to watch the deflection angle bend — the signature of Bragg scattering.</p>
+  </div>
+
+  <div class="panel" role="group" aria-label="Simulation controls">
+    <div class="panel-head">
+      <span class="title">Source</span>
+      <span class="readout" id="mode">STEADY-STATE</span>
+    </div>
+    <div class="slider-row">
+      <label for="freq">Frequency</label>
+      <span class="val"><span id="freqVal">40.0</span><small>kHz</small></span>
+    </div>
+    <input type="range" id="freq" min="12" max="80" step="0.5" value="40" aria-label="Source frequency in kilohertz">
+    <div class="stats">
+      <div class="stat">
+        <div class="lbl">Deflection θ</div>
+        <div class="num accent"><span id="angle">0.0</span><span class="u">°</span></div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Wavelength λ</div>
+        <div class="num"><span id="lambda">10.6</span><span class="u">mm</span></div>
+      </div>
+      <div class="stat">
+        <div class="lbl">Render</div>
+        <div class="num"><span id="fps">60</span><span class="u">fps</span></div>
+      </div>
+    </div>
+    <div class="hint"><b>Drag the slider</b> to change wavelength · <b>drag the canvas</b> to tilt the lattice</div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl', {antialias:false, alpha:false, depth:false, powerPreference:'high-performance'});
+  if(!gl){ document.body.innerHTML = '<div style="color:#F2F2F2;padding:40px;font-family:sans-serif">WebGL is not supported in this browser.</div>'; return; }
+
+  /* ---------- Shaders ---------- */
+  const vsSrc = `
+    attribute vec2 aPos;
+    void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }
+  `;
+
+  const fsSrc = `
+    precision mediump float;
+    uniform vec2  uRes;
+    uniform float uTime;
+    uniform float uFreq;      // 0..1 (normalized source frequency)
+    uniform vec2  uMouse;     // 0..1
+    uniform float uZoom;      // camera scale
+    uniform float uTilt;      // camera tilt
+    uniform float uIntro;     // 0..1 entrance ramp
+
+    const vec3 BG     = vec3(0.102, 0.102, 0.114);   // #1A1A1D
+    const vec3 ACCENT = vec3(0.000, 0.659, 0.910);   // #00A8E8
+    const vec3 INK    = vec3(0.949, 0.949, 0.949);   // #F2F2F2
+
+    // Periodic lattice of circular voids -> solid mask (1 = solid matrix, 0 = void).
+    float latticeMask(vec2 p){
+      vec2 f = fract(p) - 0.5;
+      float r = length(f);
+      float rad = 0.30;
+      return smoothstep(rad, rad - 0.02, r);
+    }
+
+    void main(){
+      // Screen-space aspect-corrected coords, camera scale + Z-axis tilt.
+      vec2 uv = (gl_FragCoord.xy - 0.5 * uRes) / uRes.y;
+      float tilt = uTilt * 0.16;
+      mat2 rot = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt));
+      vec2 p = rot * uv / uZoom;
+
+      // Wavelength shrinks as frequency rises -> more Bragg orders, sharper angles.
+      float wl = mix(0.62, 0.13, uFreq);
+      float k  = 6.2831853 / wl;
+
+      // Lattice sits as a slab on the right half of the field.
+      float slab = smoothstep(-0.12, -0.02, p.x);
+      float m    = latticeMask(p * 6.0) * slab;
+
+      // Incident plane wave travelling left -> right.
+      float phase = p.x * k - uTime * 2.2;
+      float incident = sin(phase);
+
+      // Bragg scattering: coherent re-radiation at the lattice, plus a
+      // transverse interference lobe whose angle widens with frequency.
+      float angle = mix(0.10, 1.05, uFreq);
+      vec2  dir2  = vec2(cos(angle), sin(angle));
+      float scat  = sin(dot(p, dir2) * k - uTime * 2.2);
+
+      // Wave is transmitted through voids, blocked & scattered by solid matrix.
+      float field = incident * (1.0 - m) + scat * m * 0.85;
+      field *= uIntro;
+
+      // Colormap: charcoal (low) -> electric blue (high) -> white highlights.
+      float a = abs(field);
+      vec3 col = mix(BG, ACCENT, smoothstep(0.02, 1.0, a));
+      col += INK * smoothstep(0.82, 1.0, a) * 0.9;
+
+      // Lattice structure: crisp void outlines + faint solid shading.
+      vec2 fr = fract(p * 6.0) - 0.5;
+      float ring = smoothstep(0.022, 0.0, abs(length(fr) - 0.30));
+      col = mix(col, INK, ring * slab * 0.5);
+      col = mix(col, INK * 0.16, m * slab * 0.30);
+
+      // Source emitter on the left edge.
+      float sy = abs(p.y);
+      float em = smoothstep(0.055, 0.0, sy) * smoothstep(-0.95, -0.88, p.x);
+      col = mix(col, ACCENT, em * 0.55);
+
+      // Subtle vignette for depth.
+      float vig = 1.0 - 0.55 * dot(uv, uv);
+      col *= clamp(vig, 0.42, 1.0);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vsSrc));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fsSrc));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+  gl.useProgram(prog);
+
+  // Full-screen quad.
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'aPos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const U = {
+    res: gl.getUniformLocation(prog, 'uRes'),
+    time: gl.getUniformLocation(prog, 'uTime'),
+    freq: gl.getUniformLocation(prog, 'uFreq'),
+    mouse: gl.getUniformLocation(prog, 'uMouse'),
+    zoom: gl.getUniformLocation(prog, 'uZoom'),
+    tilt: gl.getUniformLocation(prog, 'uTilt'),
+    intro: gl.getUniformLocation(prog, 'uIntro')
+  };
+
+  /* ---------- Sizing ---------- */
+  let W = 0, H = 0, DPR = 1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 1.75); // cap for 60fps on mid-range
+    W = Math.floor(canvas.clientWidth * DPR);
+    H = Math.floor(canvas.clientHeight * DPR);
+    canvas.width = W; canvas.height = H;
+    gl.viewport(0, 0, W, H);
+  }
+  window.addEventListener('resize', resize);
+
+  /* ---------- State ---------- */
+  let freq = 40;                 // kHz
+  let mx = 0.5, my = 0.5;        // normalized mouse
+  let tmx = 0.5, tmy = 0.5;      // target mouse (eased)
+  let dragging = false, lastX = 0;
+  let zoom = 1, zoomT = 1;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const slider = document.getElementById('freq');
+  const freqVal = document.getElementById('freqVal');
+  const angleEl = document.getElementById('angle');
+  const lambdaEl = document.getElementById('lambda');
+  const fpsEl = document.getElementById('fps');
+  const modeEl = document.getElementById('mode');
+
+  function updateReadouts(){
+    const f01 = (freq - 12) / 68;
+    slider.style.setProperty('--p', (f01 * 100) + '%');
+    freqVal.textContent = freq.toFixed(1);
+    // Physics-flavoured readouts: λ = c/f, θ = Bragg angle for fixed lattice spacing.
+    const c = 343;
+    const lambdaMM = (c / (freq * 1000)) * 1000;
+    lambdaEl.textContent = lambdaMM.toFixed(1);
+    const spacing = 0.012; // lattice constant (m)
+    let s = lambdaMM / 1000 / (2 * spacing);
+    s = Math.min(Math.max(s, -1), 1);
+    const theta = Math.asin(s) * 180 / Math.PI;
+    angleEl.textContent = theta.toFixed(1);
+    modeEl.textContent = f01 > 0.62 ? 'BRAGG · HIGHER ORDER' : (f01 > 0.3 ? 'BRAGG · 1ST ORDER' : 'TRANSMISSION');
+  }
+  slider.addEventListener('input', e => { freq = parseFloat(e.target.value); updateReadouts(); });
+
+  /* ---------- Pointer: drag = Z-axis tilt (2.5D inspect) ---------- */
+  canvas.addEventListener('pointerdown', e => { dragging = true; lastX = e.clientX; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerup',   e => { dragging = false; });
+  canvas.addEventListener('pointermove', e => {
+    tmx = e.clientX / window.innerWidth;
+    tmy = e.clientY / window.innerHeight;
+    if(dragging){ zoomT += (e.clientX - lastX) * 0.0016; lastX = e.clientX; zoomT = Math.min(Math.max(zoomT, 0.72), 1.6); }
+  });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); zoomT += e.deltaY * -0.0012; zoomT = Math.min(Math.max(zoomT, 0.72), 1.6); }, {passive:false});
+
+  /* ---------- Render loop ---------- */
+  let t0 = performance.now(), last = t0, intro = 0, frames = 0, fpsAcc = 0;
+  function frame(now){
+    const dt = Math.min((now - last) / 1000, 0.05); last = now;
+    const elapsed = (now - t0) / 1000;
+    intro = Math.min(intro + dt * 0.7, 1);
+    const introE = intro * intro * (3 - 2 * intro);
+
+    // Ease camera / mouse.
+    mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+    zoom += (zoomT - zoom) * 0.1;
+
+    const time = reduce ? 0 : elapsed;
+
+    gl.uniform2f(U.res, W, H);
+    gl.uniform1f(U.time, time);
+    gl.uniform1f(U.freq, (freq - 12) / 68);
+    gl.uniform2f(U.mouse, mx, 1.0 - my);
+    gl.uniform1f(U.zoom, zoom);
+    gl.uniform1f(U.tilt, (mx - 0.5) + Math.sin(elapsed * 0.25) * (reduce ? 0 : 0.04));
+    gl.uniform1f(U.intro, introE);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // FPS meter.
+    frames++; fpsAcc += dt;
+    if(fpsAcc >= 0.5){ fpsEl.textContent = Math.round(frames / fpsAcc); frames = 0; fpsAcc = 0; }
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  updateReadouts();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

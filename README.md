@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 240 | 232 | 205 | 35 |
+| 240 | 240 | 205 | 35 |
 
 ## Quick start
 
@@ -2211,9 +2211,11 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 [prompt](prompts/motion-graphics/harbor-night-lower-thirds/prompt.md) · [extended](prompts/motion-graphics/harbor-night-lower-thirds/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/harbor-night-lower-thirds/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.3s | 378s | 6 | [open](prompts/motion-graphics/harbor-night-lower-thirds/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2225,9 +2227,11 @@ _No model runs yet — `npm run ai:build` then `npm run shots`._
 
 [prompt](prompts/motion-graphics/meridian-audit-lockup/prompt.md) · [extended](prompts/motion-graphics/meridian-audit-lockup/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/meridian-audit-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 9.4s | 291s | 2 | [open](prompts/motion-graphics/meridian-audit-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2239,9 +2243,11 @@ _No model runs yet — `npm run ai:build` then `npm run shots`._
 
 [prompt](prompts/motion-graphics/volt-route-explainer/prompt.md) · [extended](prompts/motion-graphics/volt-route-explainer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/volt-route-explainer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.7s | 411s | 4 | [open](prompts/motion-graphics/volt-route-explainer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3153,9 +3159,11 @@ Hold space to build hydraulic pressure against a spinning flywheel. Release at p
 
 [prompt](prompts/games/hydraulic-clutch-torque-sync/prompt.md) · [extended](prompts/games/hydraulic-clutch-torque-sync/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/hydraulic-clutch-torque-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 7.4s | 333s | 8 | [open](prompts/games/hydraulic-clutch-torque-sync/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3167,9 +3175,11 @@ A precision timing game where you fire laser pulses into a vibrating crystal lat
 
 [prompt](prompts/games/laser-alignment-pulse-lock/prompt.md) · [extended](prompts/games/laser-alignment-pulse-lock/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 2.4s | 440s | — | — |
 
 ---
 
@@ -3261,9 +3271,11 @@ High-precision rhythm game: trim spinning turbine blades with a laser at exact a
 
 [prompt](prompts/games/turbine-blade-cutoff/prompt.md) · [extended](prompts/games/turbine-blade-cutoff/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/turbine-blade-cutoff/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.0s | 364s | 8 | [open](prompts/games/turbine-blade-cutoff/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3293,9 +3305,11 @@ Interactive WebGL bismuth dendrite growth simulation with iridescent shaders and
 
 [prompt](prompts/webgl/bismuth-crystal-dendrite-growth/prompt.md) · [extended](prompts/webgl/bismuth-crystal-dendrite-growth/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/bismuth-crystal-dendrite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.8s | 302s | 4 | [open](prompts/webgl/bismuth-crystal-dendrite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3435,9 +3449,11 @@ Raw WebGL simulation of acoustic wave deflection through a phononic crystal latt
 
 [prompt](prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.md) · [extended](prompts/webgl/phononic-crystal-sound-wave-deflection/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/phononic-crystal-sound-wave-deflection/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.4s | 204s | 7 | [open](prompts/webgl/phononic-crystal-sound-wave-deflection/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

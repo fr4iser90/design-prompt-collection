@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volt Route — Explainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --asphalt:#121417;
+    --chalk:#E6E2D6;
+    --hazard:#F0B429;
+    --signal:#5EC4B4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--asphalt);
+    color:var(--chalk);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    display:grid;
+    place-items:center;
+    min-height:100svh;
+    overflow:hidden;
+  }
+  .stage{
+    position:relative;
+    width:min(94vw, calc(94vh * 16 / 9));
+    aspect-ratio:16/9;
+    background:var(--asphalt);
+    overflow:hidden;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    cursor:pointer;
+    box-shadow:0 40px 120px -40px rgba(0,0,0,.8), 0 0 0 1px rgba(230,226,214,.05);
+  }
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* ---- corner identity ---- */
+  .brandmark{
+    position:absolute;top:2.6%;left:3%;z-index:5;
+    display:flex;align-items:center;gap:.6vw;
+    font-family:"IBM Plex Mono",monospace;font-weight:500;
+    font-size:clamp(9px,1.15vw,15px);letter-spacing:.28em;
+    color:rgba(230,226,214,.5);text-transform:uppercase;
+  }
+  .brandmark b{color:var(--signal);font-weight:600;}
+  .brandmark .dot{width:.7vw;height:.7vw;min-width:5px;min-height:5px;border-radius:50%;
+    background:var(--signal);box-shadow:0 0 10px var(--signal);animation:blink 2.4s steps(1) infinite;}
+  @keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.25}}
+
+  .beatlabel{
+    position:absolute;top:2.6%;right:3%;z-index:5;
+    font-size:clamp(8px,.95vw,12px);letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(230,226,214,.42);text-align:right;
+  }
+
+  /* ---- timeline scrubber ---- */
+  .timeline{
+    position:absolute;left:0;right:0;bottom:0;height:3px;z-index:6;
+    background:rgba(230,226,214,.10);
+  }
+  .timeline .fill{height:100%;width:0%;background:var(--signal);box-shadow:0 0 12px var(--signal);}
+
+  /* ---- replay hint ---- */
+  .hint{
+    position:absolute;left:50%;bottom:3.4%;transform:translateX(-50%);z-index:6;
+    font-size:clamp(8px,.9vw,11px);letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(230,226,214,.34);white-space:nowrap;transition:opacity .5s;
+  }
+  .hint kbd{
+    font-family:inherit;border:1px solid rgba(230,226,214,.28);border-radius:3px;
+    padding:.15em .5em;margin:0 .25em;color:rgba(230,226,214,.7);
+  }
+  .hint.gone{opacity:0;}
+
+  /* ---- reduced motion ---- */
+  .rm-badge{
+    display:none;position:absolute;top:2.6%;left:3%;z-index:5;
+    font-size:clamp(8px,.9vw,11px);letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(230,226,214,.5);
+  }
+  body.reduced .hint{display:none;}
+  body.reduced .brandmark{display:none;}
+  body.reduced .rm-badge{display:block;}
+</style>
+</head>
+<body>
+  <main class="stage" id="stage" role="img" aria-label="Volt Route explainer: a congested grid, an alternate route, and 18 percent more headroom.">
+    <canvas id="c"></canvas>
+    <div class="brandmark"><span class="dot"></span><b>VOLT</b>&nbsp;ROUTE</div>
+    <div class="rm-badge">Reduced motion — payoff</div>
+    <div class="beatlabel" id="beatlabel">01 · PROBLEM</div>
+    <div class="hint" id="hint"><kbd>Space</kbd> replay &nbsp;·&nbsp; click timeline to scrub</div>
+    <div class="timeline" id="timeline"><div class="fill" id="fill"></div></div>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  const COL = { asphalt:'#121417', chalk:'#E6E2D6', hazard:'#F0B429', signal:'#5EC4B4' };
+  const DUR = 10.0;
+  const B = { problemEnd:2.2, mechEnd:4.8, payoffEnd:7.4, holdEnd:9.2 };
+
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stage');
+  const fillEl = document.getElementById('fill');
+  const hintEl = document.getElementById('hint');
+  const beatEl = document.getElementById('beatlabel');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W=0,H=0,S=1, dpr=1;
+  let time = 0, last = 0, raf = null;
+  let scrubbing = false;
+
+  /* ---------- helpers ---------- */
+  const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const smoothstep=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+  const easeOutCubic=t=>1-Math.pow(1-t,3);
+  const easeInCubic=t=>t*t*t;
+  const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2);};
+  const easeOutExpo=t=>t>=1?1:1-Math.pow(2,-10*t);
+  const easeOutQuart=t=>1-Math.pow(1-t,4);
+  const rgba=(hex,a)=>{const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;};
+
+  function setFont(weight,size,fam){
+    ctx.font=`${weight} ${Math.round(size)}px ${fam}`;
+  }
+  function text(str,x,y,o){
+    o=o||{};
+    const fam=o.mono?'"IBM Plex Mono",monospace':'"Space Grotesk",sans-serif';
+    setFont(o.weight||500,o.size,fam);
+    ctx.fillStyle=o.color||COL.chalk;
+    ctx.textAlign=o.align||'left';
+    ctx.textBaseline=o.baseline||'alphabetic';
+    ctx.globalAlpha=o.alpha==null?1:o.alpha;
+    if(o.glow){ctx.shadowColor=o.glowColor||o.color||COL.chalk;ctx.shadowBlur=o.glow;}
+    ctx.fillText(str,x,y);
+    if(o.glow)ctx.shadowBlur=0;
+    ctx.globalAlpha=1;
+  }
+  function rr(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function glowDot(x,y,r,color,glow){
+    if(glow>0){const g=ctx.createRadialGradient(x,y,0,x,y,r*3.2);g.addColorStop(0,rgba(color,.5));g.addColorStop(1,rgba(color,0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*3.2,0,7);ctx.fill();}
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  }
+
+  /* ---------- geometry ---------- */
+  let nodes=[], bottleneck=null, detourPts=[], detourLen=0, detourCum=[], detourTang=[];
+  let gridA=[], gridB=[];
+  let N={}; // named points
+
+  function buildGeometry(){
+    N = {
+      A:{x:0.10,y:0.72}, B:{x:0.90,y:0.72},
+      BN:{x:0.44,y:0.72},
+      D1:{x:0.36,y:0.52}, D2:{x:0.62,y:0.44}, D3:{x:0.80,y:0.56},
+      N1:{x:0.20,y:0.42}, N2:{x:0.68,y:0.30}, N3:{x:0.86,y:0.40},
+      N4:{x:0.26,y:0.24}, N5:{x:0.50,y:0.16}, N6:{x:0.74,y:0.16}
+    };
+    bottleneck = {x:N.BN.x,y:N.BN.y};
+
+    // detour polyline (A -> ... -> B) with rounded corners
+    const raw = [N.A,N.D1,N.D2,N.D3,N.B];
+    const R=0.02;
+    detourPts=[{x:raw[0].x,y:raw[0].y}];
+    for(let i=1;i<raw.length-1;i++){
+      const p0=raw[i-1],p1=raw[i],p2=raw[i+1];
+      const v1={x:p0.x-p1.x,y:p0.y-p1.y}, v2={x:p2.x-p1.x,y:p2.y-p1.y};
+      const l1=Math.hypot(v1.x,v1.y)||1, l2=Math.hypot(v2.x,v2.y)||1;
+      const a={x:p1.x+v1.x/l1*Math.min(R,l1/2),y:p1.y+v1.y/l1*Math.min(R,l1/2)};
+      const b={x:p1.x+v2.x/l2*Math.min(R,l2/2),y:p1.y+v2.y/l2*Math.min(R,l2/2)};
+      detourPts.push(a);
+      const steps=10;
+      for(let s=1;s<steps;s++){const t=s/steps;const q=1-t;
+        detourPts.push({x:q*q*a.x+2*q*t*p1.x+t*t*b.x, y:q*q*a.y+2*q*t*p1.y+t*t*b.y});}
+      detourPts.push(b);
+    }
+    detourPts.push({x:raw[raw.length-1].x,y:raw[raw.length-1].y});
+
+    detourCum=[0];
+    for(let i=1;i<detourPts.length;i++){detourCum[i]=detourCum[i-1]+Math.hypot(detourPts[i].x-detourPts[i-1].x,detourPts[i].y-detourPts[i-1].y);}
+    detourLen=detourCum[detourPts.length-1];
+    detourTang=detourPts.map((p,i)=>{const a=detourPts[Math.max(0,i-1)],b=detourPts[Math.min(detourPts.length-1,i+1)];const dx=b.x-a.x,dy=b.y-a.y;const l=Math.hypot(dx,dy)||1;return {x:dx/l,y:dy/l};});
+
+    gridA = [N.A,N.BN,N.B];
+    gridB = [N.N1,N.N2,N.N3];
+
+    nodes = [
+      {x:N.A.x,y:N.A.y,r:.016,role:'end'},
+      {x:N.BN.x,y:N.BN.y,r:.018,role:'bottleneck'},
+      {x:N.B.x,y:N.B.y,r:.016,role:'end'},
+      {x:N.D1.x,y:N.D1.y,r:.012,role:'way'},
+      {x:N.D2.x,y:N.D2.y,r:.012,role:'way'},
+      {x:N.D3.x,y:N.D3.y,r:.012,role:'way'},
+      {x:N.N1.x,y:N.N1.y,r:.010,role:'node'},
+      {x:N.N2.x,y:N.N2.y,r:.010,role:'node'},
+      {x:N.N3.x,y:N.N3.y,r:.010,role:'node'},
+      {x:N.N4.x,y:N.N4.y,r:.009,role:'node'},
+      {x:N.N5.x,y:N.N5.y,r:.009,role:'node'},
+      {x:N.N6.x,y:N.N6.y,r:.009,role:'node'}
+    ];
+  }
+
+  function detourPointAtDist(d){
+    if(d<=0)return {p:detourPts[0],i:0};
+    if(d>=detourLen)return {p:detourPts[detourPts.length-1],i:detourPts.length-1};
+    for(let i=1;i<detourPts.length;i++){
+      if(detourCum[i]>=d){
+        const seg=detourCum[i]-detourCum[i-1];
+        const t=(d-detourCum[i-1])/seg;
+        return {p:{x:lerp(detourPts[i-1].x,detourPts[i].x,t),y:lerp(detourPts[i-1].y,detourPts[i].y,t)},i};
+      }
+    }
+    return {p:detourPts[detourPts.length-1],i:detourPts.length-1};
+  }
+
+  /* ---------- layers ---------- */
+  function drawBackground(t){
+    ctx.fillStyle=COL.asphalt;ctx.fillRect(0,0,W,H);
+    // vignette
+    const vg=ctx.createRadialGradient(W*.5,H*.42,H*.1,W*.5,H*.5,H*1.05);
+    vg.addColorStop(0,'rgba(30,34,40,0.35)');vg.addColorStop(1,'rgba(0,0,0,0.55)');
+    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+    // faint blueprint grid
+    ctx.strokeStyle=rgba(COL.chalk,0.045);ctx.lineWidth=1;
+    const step=H*0.085;
+    ctx.beginPath();
+    for(let x=step;x<W;x+=step){ctx.moveTo(x,0);ctx.lineTo(x,H);}
+    for(let y=step;y<H;y+=step){ctx.moveTo(0,y);ctx.lineTo(W,y);}
+    ctx.stroke();
+    // shimmer sweep (ambient, hold)
+    const shimmer = smoothstep(B.payoffEnd,B.payoffEnd+0.4,t)*(1-smoothstep(B.holdEnd,B.holdEnd+0.15,t));
+    if(shimmer>0){
+      const period=2.0; const ph=(t%period)/period;
+      const cx=W*(ph*1.6-0.3);
+      const g=ctx.createLinearGradient(cx-W*0.28,0,cx+W*0.28,H);
+      g.addColorStop(0,'rgba(94,196,180,0)');
+      g.addColorStop(.5,rgba(COL.signal,0.05*shimmer));
+      g.addColorStop(1,'rgba(94,196,180,0)');
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  function drawEdges(t){
+    const mechP=smoothstep(B.problemEnd,B.problemEnd+0.25,t);
+    // faint base grid edges (drawn during problem/mech)
+    const baseA = 1-smoothstep(B.mechEnd,B.mechEnd+0.4,t);
+    const baseB = 1-smoothstep(B.payoffEnd,B.payoffEnd+0.4,t);
+    const baseCol = rgba(COL.chalk,0.16);
+
+    function seg(p,q,col,alpha,lw){
+      if(alpha<=0)return;
+      ctx.strokeStyle=col;ctx.globalAlpha=alpha;ctx.lineWidth=lw*S;
+      ctx.beginPath();ctx.moveTo(p.x*W,p.y*H);ctx.lineTo(q.x*W,q.y*H);ctx.stroke();ctx.globalAlpha=1;
+    }
+    // A-BN-B backbone
+    seg(N.A,N.BN,baseCol,0.9*baseA,1.4);
+    seg(N.BN,N.B,baseCol,0.9*baseA,1.4);
+    // upper grid
+    const up=[ [N.N1,N.N2],[N.N2,N.N3],[N.N4,N.N5],[N.N5,N.N6],[N.N1,N.N4],[N.N3,N.N6],[N.N2,N.N5] ];
+    up.forEach(e=>seg(e[0],e[1],baseCol,0.7*baseB,1.2));
+    // connectors
+    const con=[ [N.N1,N.A],[N.N3,N.B],[N.N2,N.N1],[N.N2,N.N3],[N.N4,N.N2],[N.N6,N.N3] ];
+    con.forEach(e=>seg(e[0],e[1],baseCol,0.55*baseB,1.0));
+
+    // congested backbone (hazard) during problem, fading in mech
+    const congA = smoothstep(0.15,0.55,t)*(1-smoothstep(B.problemEnd+0.1,B.problemEnd+0.55,t));
+    if(congA>0){
+      // flowing hazard dashes A->BN->B
+      ctx.save();
+      ctx.strokeStyle=rgba(COL.hazard,congA);
+      ctx.lineWidth=2.2*S;ctx.setLineDash([0.02*W,0.014*W]);
+      ctx.lineDashOffset=-(t*0.16*W);
+      ctx.beginPath();ctx.moveTo(N.A.x*W,N.A.y*H);ctx.lineTo(N.BN.x*W,N.BN.y*H);ctx.lineTo(N.B.x*W,N.B.y*H);ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawDetour(t){
+    const drawP=clamp((t-B.problemEnd)/(B.mechEnd-B.problemEnd),0,1);
+    const e=easeInOutQuad(drawP);
+    const alpha = smoothstep(B.problemEnd,B.problemEnd+0.2,t)*(1-smoothstep(B.holdEnd,B.holdEnd+0.15,t));
+    if(alpha<=0||drawP<=0)return;
+
+    const target=detourLen*e;
+    // soft under-glow
+    ctx.save();
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.strokeStyle=rgba(COL.signal,0.16*alpha);ctx.lineWidth=9*S;
+    ctx.beginPath();
+    for(let i=0;i<detourPts.length;i++){
+      if(detourCum[i]>target){const pt=detourPointAtDist(target).p;ctx.lineTo(pt.x*W,pt.y*H);break;}
+      const px=detourPts[i].x*W,py=detourPts[i].y*H;
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    // crisp line
+    ctx.strokeStyle=rgba(COL.signal,0.95*alpha);ctx.lineWidth=3*S;
+    ctx.beginPath();
+    for(let i=0;i<detourPts.length;i++){
+      if(detourCum[i]>target){const pt=detourPointAtDist(target).p;ctx.lineTo(pt.x*W,pt.y*H);break;}
+      const px=detourPts[i].x*W,py=detourPts[i].y*H;
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // moving energy pulse along the drawn portion
+    const pulseD = ((t-B.problemEnd)*detourLen/1.6)%Math.max(target,0.001);
+    if(drawP>0.05){
+      const pp=detourPointAtDist(pulseD).p;
+      glowDot(pp.x*W,pp.y*H,0.008*S,COL.chalk,0.014*S);
+    }
+    // leading head
+    if(drawP<1){
+      const head=detourPointAtDist(target).p;
+      glowDot(head.x*W,head.y*H,0.011*S,COL.chalk,0.02*S);
+    }
+    ctx.restore();
+  }
+
+  function drawNodes(t){
+    const nodeFade = 1-smoothstep(B.payoffEnd+0.15,B.payoffEnd+0.5,t);
+    const baseAlpha = clamp(nodeFade,0,1);
+    if(baseAlpha<=0)return;
+    nodes.forEach((nd,idx)=>{
+      const x=nd.x*W,y=nd.y*H;
+      let a=baseAlpha, col=COL.chalk, r=nd.r*S;
+      if(nd.role==='bottleneck'){
+        const pulse=0.5+0.5*Math.sin(t*Math.PI*2*1.6);
+        const flash = smoothstep(0.3,0.7,t)*(1-smoothstep(B.problemEnd+0.05,B.problemEnd+0.5,t));
+        col = COL.hazard;
+        a = baseAlpha*(0.75+0.25*pulse);
+        r = nd.r*S*(1+0.22*pulse*flash);
+        // pulsing rings
+        if(flash>0){
+          for(let k=0;k<2;k++){
+            const rp=((t*1.2+k*0.5)%1);
+            ctx.strokeStyle=rgba(COL.hazard,(1-rp)*0.5*flash*baseAlpha);
+            ctx.lineWidth=1.5*S;
+            ctx.beginPath();ctx.arc(x,y,r+rp*0.05*S,0,7);ctx.stroke();
+          }
+        }
+      }
+      glowDot(x,y,r,col, nd.role==='end'?0.012*S:0);
+    });
+  }
+
+  function drawBottleneckLabel(t){
+    const a = smoothstep(0.5,0.95,t)*(1-smoothstep(B.problemEnd+0.1,B.problemEnd+0.5,t));
+    if(a<=0)return;
+    const x=bottleneck.x*W, y=bottleneck.y*H - 0.05*H;
+    ctx.strokeStyle=rgba(COL.hazard,a);ctx.lineWidth=1.5*S;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-0.02*H);ctx.stroke();
+    text('BOTTLENECK',x,y-0.028*H,{mono:true,size:0.021*H,color:COL.hazard,align:'center',alpha:a,weight:600,letter:.18});
+  }
+
+  // letterSpacing via manual draw (canvas doesn't support widely)
+  function spacedText(str,x,y,o){
+    o=o||{};
+    const fam=o.mono?'"IBM Plex Mono",monospace':'"Space Grotesk",sans-serif';
+    setFont(o.weight||500,o.size,fam);
+    ctx.fillStyle=o.color||COL.chalk;
+    ctx.globalAlpha=o.alpha==null?1:o.alpha;
+    const ls=(o.letter||0)*o.size;
+    const chars=[...str];
+    const widths=chars.map(c=>ctx.measureText(c).width);
+    const total=widths.reduce((s,w)=>s+w,0)+ls*(chars.length-1);
+    let cx = o.align==='center' ? x-total/2 : o.align==='right' ? x-total : x;
+    if(o.glow){ctx.shadowColor=o.glowColor||o.color||COL.chalk;ctx.shadowBlur=o.glow;}
+    chars.forEach((c,i)=>{ctx.fillText(c,cx,y);cx+=widths[i]+ls;});
+    if(o.glow)ctx.shadowBlur=0;
+    ctx.globalAlpha=1;
+  }
+
+  function drawTitle(t){
+    const a=smoothstep(0.05,0.35,t)*(1-smoothstep(B.problemEnd-0.05,B.problemEnd+0.25,t));
+    if(a<=0)return;
+    const y=0.17*H;
+    // slam
+    const slam=1-easeOutCubic(clamp(t/0.4,0,1));
+    const dy=slam*0.02*H;
+    spacedText('CONGESTED GRID',0.5*W,y+dy,{size:0.085*H,weight:700,color:COL.chalk,align:'center',alpha:a,letter:.06,glow:slam*18,glowColor:rgba(COL.chalk,.6)});
+    spacedText('SINGLE-PATH ROUTING · ONE FAILURE POINT',0.5*W,y+0.055*H,{mono:true,size:0.02*H,color:rgba(COL.chalk,.55),align:'center',alpha:a,letter:.2});
+    // hazard rule under title
+    ctx.strokeStyle=rgba(COL.hazard,a*0.8);ctx.lineWidth=2*S;
+    const rw=0.12*W;ctx.beginPath();ctx.moveTo(0.5*W-rw/2,y+0.085*H);ctx.lineTo(0.5*W+rw/2,y+0.085*H);ctx.stroke();
+  }
+
+  function drawRerouteLabel(t){
+    const a=smoothstep(3.0,3.4,t)*(1-smoothstep(B.mechEnd-0.1,B.mechEnd+0.25,t));
+    if(a<=0)return;
+    const x=0.49*W, y=0.30*H;
+    spacedText('REROUTE',x,y,{size:0.032*H,weight:600,color:COL.signal,align:'center',alpha:a,letter:.16,glow:a*14,glowColor:rgba(COL.signal,.5)});
+    spacedText('ALTERNATE PATH',x,y+0.03*H,{mono:true,size:0.015*H,color:rgba(COL.signal,.7),align:'center',alpha:a,letter:.2});
+    // small arrow near D2
+    const ax=N.D2.x*W+0.03*W, ay=N.D2.y*H-0.02*H;
+    ctx.strokeStyle=rgba(COL.signal,a);ctx.lineWidth=2*S;
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+0.02*W,ay-0.012*H);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax+0.02*W,ay-0.012*H);ctx.lineTo(ax+0.014*W,ay-0.014*H);ctx.moveTo(ax+0.02*W,ay-0.012*H);ctx.lineTo(ax+0.018*W,ay-0.006*H);ctx.stroke();
+  }
+
+  function drawPayoff(t){
+    const a=smoothstep(B.mechEnd+0.1,B.mechEnd+0.45,t)*(1-smoothstep(B.holdEnd,B.holdEnd+0.15,t));
+    if(a<=0)return;
+    const cx=0.5*W;
+    // brand hero — Volt Route
+    const brandT=clamp((t-B.mechEnd)/0.6,0,1);
+    const brandScale=lerp(0.9,1,easeOutBack(brandT));
+    const brandY=0.30*H;
+    ctx.save();
+    ctx.translate(cx,brandY);ctx.scale(brandScale,brandScale);
+    text('Volt Route',0,0,{size:0.10*H,weight:700,color:COL.chalk,align:'center',alpha:a,glow:a*22,glowColor:rgba(COL.signal,.35)});
+    ctx.restore();
+    spacedText('GRID ROUTING, RE-RUTED',cx,brandY+0.055*H,{mono:true,size:0.017*H,color:rgba(COL.signal,.8),align:'center',alpha:a,letter:.28});
+
+    // count-up +18% headroom
+    const ct=clamp((t-B.mechEnd)/1.3,0,1);
+    const val=Math.round(18*easeOutExpo(ct));
+    const numY=0.47*H;
+    text('+'+val+'%',cx,numY,{mono:true,size:0.052*H,weight:600,color:COL.signal,align:'center',alpha:a,glow:a*16,glowColor:rgba(COL.signal,.5)});
+    spacedText('HEADROOM',cx,numY+0.038*H,{mono:true,size:0.016*H,color:rgba(COL.chalk,.7),align:'center',alpha:a,letter:.3});
+
+    // capacity bar
+    const barW=0.42*W, barH=0.028*H, bx=cx-barW/2, by=0.56*H;
+    const grow=easeOutQuart(clamp((t-B.mechEnd)/1.2,0,1));
+    rr(bx,by,barW,barH,barH/2);ctx.fillStyle=rgba(COL.chalk,0.12*a);ctx.fill();
+    ctx.save();
+    ctx.beginPath();rr(bx,by,barW*grow,barH,barH/2);ctx.clip();
+    const g=ctx.createLinearGradient(bx,0,bx+barW,0);
+    g.addColorStop(0,rgba(COL.signal,0.9*a));g.addColorStop(1,rgba(COL.hazard,0.9*a));
+    ctx.fillStyle=g;ctx.fillRect(bx,by,barW,barH);
+    // moving shine
+    const sh=(t*0.4)%1;ctx.fillStyle=rgba(COL.chalk,0.25*a);ctx.fillRect(bx+sh*barW-barW*0.1,by,barW*0.1,barH);
+    ctx.restore();
+    // tick +18% marker
+    ctx.strokeStyle=rgba(COL.chalk,0.5*a);ctx.lineWidth=1.5*S;
+    ctx.beginPath();ctx.moveTo(bx+barW*grow,by-0.006*H);ctx.lineTo(bx+barW*grow,by+barH+0.006*H);ctx.stroke();
+  }
+
+  function drawHold(t){
+    const a=smoothstep(B.payoffEnd,B.payoffEnd+0.3,t)*(1-smoothstep(B.holdEnd,B.holdEnd+0.12,t));
+    if(a<=0)return;
+    const cx=0.5*W;
+    // brand hero persistent
+    const brandT=clamp((t-B.mechEnd)/0.6,0,1);
+    const brandScale=lerp(0.9,1,easeOutBack(brandT));
+    ctx.save();
+    ctx.translate(cx,0.28*H);ctx.scale(brandScale,brandScale);
+    text('Volt Route',0,0,{size:0.105*H,weight:700,color:COL.chalk,align:'center',alpha:a,glow:a*20,glowColor:rgba(COL.signal,.3)});
+    ctx.restore();
+    spacedText('GRID ROUTING, RE-RUTED',cx,0.28*H+0.055*H,{mono:true,size:0.017*H,color:rgba(COL.signal,.85),align:'center',alpha:a,letter:.28});
+
+    // clean diagram: A -> detour -> B
+    ctx.save();
+    ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.strokeStyle=rgba(COL.signal,0.9*a);ctx.lineWidth=3*S;
+    ctx.beginPath();
+    detourPts.forEach((p,i)=>{const px=p.x*W,py=p.y*H;i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);});
+    ctx.stroke();
+    // endpoints + way nodes
+    [N.A,N.D1,N.D2,N.D3,N.B].forEach((p,i)=>{glowDot(p.x*W,p.y*H,(i===0||i===4?0.015:0.010)*S, i===0||i===4?COL.chalk:COL.signal, 0.012*S);});
+    ctx.restore();
+    spacedText('A',N.A.x*W,N.A.y*H+0.04*H,{mono:true,size:0.018*H,color:rgba(COL.chalk,.7),align:'center',alpha:a,letter:.1});
+    spacedText('B',N.B.x*W,N.B.y*H+0.04*H,{mono:true,size:0.018*H,color:rgba(COL.chalk,.7),align:'center',alpha:a,letter:.1});
+
+    // metric
+    text('+18%',cx,0.56*H,{mono:true,size:0.05*H,weight:600,color:COL.signal,align:'center',alpha:a,glow:a*14,glowColor:rgba(COL.signal,.5)});
+    spacedText('HEADROOM',cx,0.56*H+0.036*H,{mono:true,size:0.015*H,color:rgba(COL.chalk,.7),align:'center',alpha:a,letter:.3});
+
+    // hazard thin rule accent
+    const rw=0.10*W;
+    ctx.strokeStyle=rgba(COL.hazard,a*0.9);ctx.lineWidth=2*S;
+    ctx.beginPath();ctx.moveTo(cx-rw/2,0.66*H);ctx.lineTo(cx+rw/2,0.66*H);ctx.stroke();
+    // hazard stripe micro-pattern (thin)
+    ctx.save();
+    ctx.globalAlpha=a*0.5;
+    ctx.strokeStyle=COL.hazard;ctx.lineWidth=2*S;
+    for(let i=0;i<6;i++){const x0=cx-rw/2+i*(rw/6);ctx.beginPath();ctx.moveTo(x0,0.672*H);ctx.lineTo(x0+0.01*W,0.682*H);ctx.stroke();}
+    ctx.restore();
+
+    // caption
+    spacedText('ONE TOOL · EVERY ROUTE',cx,0.78*H,{mono:true,size:0.014*H,color:rgba(COL.chalk,.5),align:'center',alpha:a,letter:.24});
+  }
+
+  function drawBlackout(t){
+    const a=smoothstep(B.holdEnd,B.holdEnd+0.12,t);
+    if(a>0){ctx.fillStyle=rgba(COL.asphalt,a);ctx.fillRect(0,0,W,H);}
+  }
+
+  /* ---------- render ---------- */
+  function render(t){
+    ctx.clearRect(0,0,W,H);
+    drawBackground(t);
+    drawEdges(t);
+    drawDetour(t);
+    drawNodes(t);
+    drawBottleneckLabel(t);
+    drawTitle(t);
+    drawRerouteLabel(t);
+    drawPayoff(t);
+    drawHold(t);
+    drawBlackout(t);
+    // beat label + fill
+    updateHUD(t);
+  }
+
+  function updateHUD(t){
+    fillEl.style.width=(t/DUR*100).toFixed(2)+'%';
+    let label='01 · PROBLEM';
+    if(t>=B.problemEnd&&t<B.mechEnd)label='02 · MECHANISM';
+    else if(t>=B.mechEnd&&t<B.payoffEnd)label='03 · PAYOFF';
+    else if(t>=B.payoffEnd&&t<B.holdEnd)label='04 · HOLD';
+    else if(t>=B.holdEnd)label='— · LOOP';
+    if(beatEl.textContent!==label)beatEl.textContent=label;
+  }
+
+  /* ---------- loop ---------- */
+  function frame(now){
+    if(!last)last=now;
+    const dt=Math.min(0.05,(now-last)/1000);
+    last=now;
+    if(!scrubbing && !reduced){
+      time+=dt;
+      if(time>=DUR)time-=DUR;
+    }
+    render(time);
+    raf=requestAnimationFrame(frame);
+  }
+
+  /* ---------- sizing ---------- */
+  function resize(){
+    const rect=stage.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=rect.width;H=rect.height;S=H/100;
+    canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    buildGeometry();
+    render(time);
+  }
+  window.addEventListener('resize',resize);
+
+  /* ---------- controls ---------- */
+  function restart(){time=0;last=0;hintEl.classList.add('gone');}
+  window.addEventListener('keydown',e=>{
+    if(e.code==='Space'){e.preventDefault();restart();}
+  });
+  stage.addEventListener('click',()=>{ if(!scrubbing)restart(); });
+
+  function scrubTo(clientX){
+    const rect=stage.getBoundingClientRect();
+    const x=clamp((clientX-rect.left)/rect.width,0,1);
+    time=x*DUR;
+    render(time);
+  }
+  const tl=document.getElementById('timeline');
+  function startScrub(e){scrubbing=true;const cx=e.touches?e.touches[0].clientX:e.clientX;scrubTo(cx);}
+  function moveScrub(e){if(!scrubbing)return;const cx=e.touches?e.touches[0].clientX:e.clientX;scrubTo(cx);e.preventDefault();}
+  function endScrub(){scrubbing=false;last=0;}
+  tl.addEventListener('pointerdown',e=>{e.stopPropagation();startScrub(e);});
+  window.addEventListener('pointermove',moveScrub);
+  window.addEventListener('pointerup',endScrub);
+
+  /* ---------- boot ---------- */
+  resize();
+  if(reduced){
+    document.body.classList.add('reduced');
+    time=6.6; // freeze at poster payoff
+    render(time);
+    // keep a gentle static hold; no rAF motion
+    // still allow scrub
+    raf=requestAnimationFrame(function loop(now){ if(scrubbing){render(time);} requestAnimationFrame(loop); });
+  } else {
+    raf=requestAnimationFrame(frame);
+    setTimeout(()=>hintEl.classList.add('gone'),4200);
+  }
+
+  // ensure fonts render after load
+  if(document.fonts && document.fonts.ready){document.fonts.ready.then(()=>{buildGeometry();render(time);});}
+})();
+</script>
+</body>
+</html>

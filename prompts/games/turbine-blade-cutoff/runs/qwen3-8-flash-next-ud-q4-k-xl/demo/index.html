@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Turbine Blade Cutoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A;
+    --white:#FFFFFF;
+    --red:#FF0000;
+    --orange:#FFA500;
+    --steel:#4A4A4A;
+    --dim:#7d7d7d;
+    --font-head:'Oswald', sans-serif;
+    --font-body:'Lato', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);}
+  body{
+    font-family:var(--font-body);
+    color:var(--white);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action:manipulation;
+  }
+  #stage{position:fixed;inset:0;background:var(--bg);overflow:hidden;}
+  canvas{position:absolute;inset:0;display:block;width:100%;height:100%;}
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:absolute;top:0;left:0;right:0;z-index:10;
+    display:flex;flex-direction:column;align-items:center;
+    padding:clamp(10px,2.4vh,24px) 16px 0;
+    pointer-events:none;
+  }
+  .hud-top{
+    display:flex;align-items:baseline;gap:clamp(10px,2vw,26px);
+    width:100%;max-width:1120px;justify-content:center;flex-wrap:wrap;
+  }
+  .brand{
+    font-family:var(--font-head);font-weight:700;
+    font-size:clamp(15px,2.4vw,24px);
+    letter-spacing:.24em;color:var(--white);
+    text-transform:uppercase;line-height:1;
+    white-space:nowrap;
+  }
+  .brand .dot{color:var(--orange);}
+  .spacer{flex:1 1 40px;}
+  .status{
+    font-family:var(--font-head);font-weight:600;
+    font-size:clamp(11px,1.5vw,14px);letter-spacing:.2em;
+    text-transform:uppercase;display:flex;align-items:center;gap:8px;
+    color:var(--dim);white-space:nowrap;
+  }
+  .status .led{
+    width:9px;height:9px;border-radius:50%;background:var(--orange);
+    box-shadow:0 0 10px var(--orange);animation:blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .status.warn{color:var(--red);}
+  .status.warn .led{background:var(--red);box-shadow:0 0 12px var(--red);}
+  .status.ok{color:#5ee08a;}
+  .status.ok .led{background:#5ee08a;box-shadow:0 0 12px #5ee08a;}
+
+  .score-wrap{margin-top:clamp(6px,1.4vh,16px);text-align:center;}
+  .score-label{
+    font-family:var(--font-head);font-weight:500;
+    font-size:clamp(11px,1.6vw,15px);letter-spacing:.34em;
+    text-transform:uppercase;color:var(--dim);
+  }
+  .score-num{
+    font-family:var(--font-head);font-weight:700;
+    font-size:clamp(46px,9vw,92px);line-height:.9;letter-spacing:.02em;
+    color:var(--white);margin-top:2px;
+    text-shadow:0 0 26px rgba(255,165,0,.18);
+  }
+  .score-num .tgt{color:var(--steel);font-size:.44em;font-weight:500;letter-spacing:.06em;}
+  .score-num.bump{animation:bump .22s ease;}
+  @keyframes bump{0%{transform:scale(1);}42%{transform:scale(1.16);color:var(--orange);}100%{transform:scale(1);}}
+
+  .tacho{margin-top:clamp(4px,1vh,10px);display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .tacho-row{
+    display:flex;align-items:baseline;gap:6px;
+    font-family:var(--font-head);font-weight:600;
+    font-size:clamp(13px,1.9vw,18px);letter-spacing:.12em;color:var(--orange);
+  }
+  .tacho-row .rpm{font-size:1.4em;}
+  .tacho-row .unit{font-size:.62em;color:var(--dim);letter-spacing:.22em;}
+  .tacho-bar{
+    width:min(46vw,240px);height:5px;background:#1c1c1c;
+    border:1px solid #2a2a2a;position:relative;overflow:hidden;
+  }
+  .tacho-fill{
+    position:absolute;top:0;left:0;height:100%;width:0%;
+    background:linear-gradient(90deg,#FFA500,#FF3B00);
+    box-shadow:0 0 10px rgba(255,120,0,.6);
+    transition:width .25s ease;
+  }
+
+  /* ---------- FOOTER ---------- */
+  #foot{
+    position:absolute;bottom:0;left:0;right:0;z-index:10;
+    display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:clamp(10px,2vh,20px) 16px;
+    font-family:var(--font-body);font-weight:300;
+    font-size:clamp(11px,1.5vw,13px);letter-spacing:.14em;
+    color:var(--dim);text-transform:uppercase;pointer-events:none;
+  }
+  #foot .key{
+    display:inline-block;padding:3px 9px;margin:0 2px;
+    border:1px solid #333;border-radius:4px;color:#cfcfcf;
+    font-family:var(--font-head);font-weight:500;letter-spacing:.12em;
+    background:#131313;
+  }
+  #foot .sep{color:#2c2c2c;}
+  @media (max-width:560px){ #foot .desk{display:none;} }
+
+  /* ---------- OVERLAYS ---------- */
+  .overlay{
+    position:absolute;inset:0;z-index:20;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:24px;
+    background:radial-gradient(ellipse at center, rgba(10,10,10,.55) 0%, rgba(10,10,10,.9) 72%);
+    backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);
+    transition:opacity .45s ease, visibility .45s ease;
+  }
+  .overlay.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+  .ov-kicker{
+    font-family:var(--font-head);font-weight:500;
+    font-size:clamp(11px,1.7vw,15px);letter-spacing:.42em;text-transform:uppercase;
+    color:var(--orange);margin-bottom:clamp(10px,2vh,20px);
+    display:flex;align-items:center;gap:12px;
+  }
+  .ov-kicker::before,.ov-kicker::after{content:"";width:clamp(22px,5vw,52px);height:1px;background:linear-gradient(90deg,transparent,var(--orange));}
+  .ov-kicker::after{background:linear-gradient(90deg,var(--orange),transparent);}
+  .ov-title{
+    font-family:var(--font-head);font-weight:700;text-transform:uppercase;
+    font-size:clamp(40px,10.5vw,124px);line-height:.92;letter-spacing:.01em;
+    color:var(--white);max-width:14ch;
+    text-shadow:0 0 40px rgba(255,165,0,.14);
+  }
+  .ov-title .accent{color:var(--orange);}
+  .ov-sub{
+    font-family:var(--font-body);font-weight:300;
+    font-size:clamp(13px,1.9vw,17px);line-height:1.55;letter-spacing:.03em;
+    color:#bdbdbd;max-width:52ch;margin-top:clamp(14px,2.4vh,22px);
+  }
+  .ov-sub b{color:var(--white);font-weight:700;}
+  .ov-btn{
+    margin-top:clamp(22px,4vh,34px);
+    font-family:var(--font-head);font-weight:600;text-transform:uppercase;
+    font-size:clamp(14px,2.1vw,19px);letter-spacing:.2em;
+    color:#0A0A0A;background:var(--orange);border:none;cursor:pointer;
+    padding:14px 34px;border-radius:3px;pointer-events:auto;
+    box-shadow:0 0 0 1px rgba(255,165,0,.4),0 8px 30px rgba(255,120,0,.28);
+    transition:transform .15s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .ov-btn:hover{transform:translateY(-2px);box-shadow:0 0 0 1px var(--orange),0 12px 40px rgba(255,120,0,.45);background:#ffb733;}
+  .ov-btn:active{transform:translateY(0);}
+  .ov-hint{
+    margin-top:clamp(14px,2.4vh,22px);font-family:var(--font-body);font-weight:300;
+    font-size:clamp(11px,1.5vw,13px);letter-spacing:.18em;text-transform:uppercase;color:#6f6f6f;
+  }
+  .ov-hint .key{display:inline-block;padding:2px 8px;border:1px solid #333;border-radius:4px;color:#cfcfcf;font-family:var(--font-head);font-weight:500;background:#131313;}
+
+  /* end states */
+  #ov-win .ov-title{color:#5ee08a;text-shadow:0 0 44px rgba(94,224,138,.28);}
+  #ov-win .ov-kicker{color:#5ee08a;}
+  #ov-win .ov-kicker::before{background:linear-gradient(90deg,transparent,#5ee08a);}
+  #ov-win .ov-kicker::after{background:linear-gradient(90deg,#5ee08a,transparent);}
+  #ov-win .ov-btn{background:#5ee08a;box-shadow:0 0 0 1px rgba(94,224,138,.4),0 8px 30px rgba(60,200,110,.28);}
+  #ov-win .ov-btn:hover{background:#79ec9e;}
+  #ov-lose .ov-title{color:var(--red);text-shadow:0 0 44px rgba(255,0,0,.32);}
+  #ov-lose .ov-kicker{color:var(--red);}
+  #ov-lose .ov-kicker::before{background:linear-gradient(90deg,transparent,var(--red));}
+  #ov-lose .ov-kicker::after{background:linear-gradient(90deg,var(--red),transparent);}
+  #ov-lose .ov-btn{background:var(--red);color:#fff;box-shadow:0 0 0 1px rgba(255,0,0,.4),0 8px 30px rgba(255,0,0,.3);}
+  #ov-lose .ov-btn:hover{background:#ff2a2a;}
+  .ov-stat{
+    margin-top:clamp(16px,2.6vh,24px);font-family:var(--font-head);font-weight:500;
+    font-size:clamp(15px,2.4vw,22px);letter-spacing:.16em;text-transform:uppercase;color:#cfcfcf;
+  }
+  .ov-stat .n{color:var(--orange);font-weight:700;}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="brand">TURBINE <span class="dot">·</span> BLADE CUTOFF</div>
+      <div class="spacer"></div>
+      <div class="status" id="status"><span class="led"></span><span id="statusText">STANDBY</span></div>
+    </div>
+    <div class="score-wrap">
+      <div class="score-label">Blades Trimmed</div>
+      <div class="score-num" id="scoreNum"><span id="scoreVal">0</span><span class="tgt"> / 10</span></div>
+    </div>
+    <div class="tacho">
+      <div class="tacho-row"><span class="rpm" id="rpmVal">0</span><span class="unit">RPM</span></div>
+      <div class="tacho-bar"><div class="tacho-fill" id="tachoFill"></div></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div id="foot">
+    <span class="desk">FIRE&nbsp;<span class="key">SPACE</span></span>
+    <span class="desk sep">·</span>
+    <span>TAP&nbsp;SCREEN&nbsp;TO&nbsp;FIRE</span>
+    <span class="sep">·</span>
+    <span>RESTART&nbsp;<span class="key">R</span></span>
+  </div>
+
+  <!-- START -->
+  <div class="overlay" id="ov-start">
+    <div class="ov-kicker">Aviation Maintenance · Unit 07</div>
+    <h1 class="ov-title">Turbine Blade <span class="accent">Cutoff</span></h1>
+    <p class="ov-sub">Spin the rotor up. Fire the laser the instant a blade tip crosses the <b>red cutoff guide</b>. Ten blades to spec — one wild shot and the engine tears itself apart.</p>
+    <button class="ov-btn" id="btnStart">Spin Up</button>
+    <div class="ov-hint"><span class="key">SPACE</span> / Tap to fire &nbsp;·&nbsp; <span class="key">R</span> to restart</div>
+  </div>
+
+  <!-- WIN -->
+  <div class="overlay hidden" id="ov-win">
+    <div class="ov-kicker">Rotor Balanced</div>
+    <h1 class="ov-title">Maintenance <span class="accent">Complete</span></h1>
+    <p class="ov-sub">All ten blades trimmed to tolerance. The turbine spins true.</p>
+    <div class="ov-stat">Peak RPM <span class="n" id="winRpm">0</span></div>
+    <button class="ov-btn" id="btnWin">Run Again</button>
+    <div class="ov-hint">Press <span class="key">R</span> to restart</div>
+  </div>
+
+  <!-- LOSE -->
+  <div class="overlay hidden" id="ov-lose">
+    <div class="ov-kicker">Rotor Unbalanced</div>
+    <h1 class="ov-title">Engine <span class="accent">Crash</span></h1>
+    <p class="ov-sub">The laser bit into empty air. Centrifugal force tore the rotor off-center.</p>
+    <div class="ov-stat">Blades Trimmed <span class="n" id="loseScore">0</span> / 10</div>
+    <button class="ov-btn" id="btnLose">Retry</button>
+    <div class="ov-hint">Press <span class="key">R</span> to restart</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ---------- Config ----------
+  var COL = {bg:'#0A0A0A', white:'#FFFFFF', red:'#FF0000', orange:'#FFA500', steel:'#4A4A4A'};
+  var NUM_BLADES = 12;
+  var TARGET = 10;
+  var BASE_RPM = 44;
+  var RPM_PER = 7.5;
+  var MAX_RPM = 175;
+  var ALIGN_TOL = 0.045;       // radians — tight skill window
+  var BLADE_W_RATIO = 0.028;   // blade width / rotorR
+  var LASER_MS = 100;
+  var TRIM_MS = 200;
+  var UNBAL_MS = 1100;
+  var MAX_PARTICLES = 320;
+
+  // ---------- Canvas ----------
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var W=0,H=0,DPR=1,cx=0,cy=0,rotorR=0,guideX=0,bladeW=0;
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.floor(W*DPR);
+    canvas.height = Math.floor(H*DPR);
+    canvas.style.width = W+'px';
+    canvas.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    cx = W*0.5; cy = H*0.5;
+    var minDim = Math.min(W,H);
+    rotorR = Math.max(90, Math.min(minDim*0.30, W*0.20));
+    guideX = cx + rotorR + Math.max(26, W*0.018);
+    bladeW = Math.max(4, rotorR*BLADE_W_RATIO);
+  }
+
+  // ---------- Helpers ----------
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function easeOut(t){return 1-Math.pow(1-t,3);}
+  function angDiff(a,b){var d=a-b; while(d>Math.PI)d-=6.283185307179586; while(d<-Math.PI)d+=6.283185307179586; return d;}
+
+  // ---------- State ----------
+  var state='START';
+  var angle=0, rpm=BASE_RPM, trimmed=0, peakRpm=BASE_RPM;
+  var blades=[], particles=[], confetti=[];
+  var laserTime=0, shake=0, redFlash=0, wobbleStart=0, wobbleX=0, wobbleY=0;
+  var startAt=0, winAt=0, loseAt=0, lastTs=0, now=0;
+
+  function initBlades(){
+    blades=[];
+    for(var i=0;i<NUM_BLADES;i++){
+      blades.push({
+        baseAngle:(i/NUM_BLADES)*6.283185307179586,
+        currentLen:rotorR, targetLen:rotorR,
+        trimStart:-1, trimmed:false
+      });
+    }
+  }
+
+  // ---------- Particles ----------
+  function spawnSparks(x,y,dirx,diry){
+    var n=11+((Math.random()*5)|0);
+    for(var i=0;i<n;i++){
+      var ang=-Math.PI/2+(Math.random()-0.5)*Math.PI*1.7;
+      var sp=1.2+Math.random()*4.2;
+      var vx=Math.cos(ang)*sp+dirx*1.5;
+      var vy=Math.sin(ang)*sp+diry*1.5-0.5;
+      particles.push({x:x,y:y,vx:vx,vy:vy,life:0,max:0.45+Math.random()*0.45,size:1+Math.random()*2.4,col:Math.random()<0.55?COL.orange:COL.white});
+    }
+    if(particles.length>MAX_PARTICLES) particles.splice(0,particles.length-MAX_PARTICLES);
+  }
+  function spawnConfetti(){
+    for(var i=0;i<120;i++){
+      confetti.push({
+        x:cx+(Math.random()-0.5)*W*0.9,
+        y:cy-rotorR*0.4-Math.random()*H*0.3,
+        vx:(Math.random()-0.5)*3,
+        vy:1+Math.random()*3,
+        rot:Math.random()*6.28, vr:(Math.random()-0.5)*0.3,
+        size:3+Math.random()*5,
+        col:Math.random()<0.5?COL.orange:(Math.random()<0.5?COL.white:'#5ee08a'),
+        life:0,max:1.6+Math.random()*1.2
+      });
+    }
+  }
+
+  // ---------- Input ----------
+  function fire(){
+    if(state==='START'){ startGame(); return; }
+    if(state==='WIN'||state==='LOSE'){ startGame(); return; }
+    if(state!=='PLAYING') return;
+    laserTime = LASER_MS;
+    var best=null, bestDiff=999;
+    for(var i=0;i<blades.length;i++){
+      var b=blades[i];
+      if(b.trimmed) continue;
+      var d=angDiff(b.baseAngle+angle, 0);
+      if(Math.abs(d)<Math.abs(bestDiff)){bestDiff=d;best=b;}
+    }
+    if(best && Math.abs(bestDiff)<ALIGN_TOL){
+      success(best);
+    } else {
+      fail();
+    }
+  }
+
+  function success(b){
+    b.trimmed=true;
+    b.targetLen=rotorR*0.58;
+    b.trimStart=now;
+    trimmed++;
+    rpm=Math.min(MAX_RPM, rpm+RPM_PER);
+    peakRpm=Math.max(peakRpm,rpm);
+    var tx=cx+Math.cos(b.baseAngle+angle)*b.currentLen;
+    var ty=cy+Math.sin(b.baseAngle+angle)*b.currentLen;
+    spawnSparks(tx,ty,0.6,0);
+    updateHUD();
+    if(trimmed>=TARGET){
+      state='WIN'; winAt=now;
+      showOverlay('win');
+    }
+  }
+
+  function fail(){
+    state='LOSE'; loseAt=now;
+    shake=26; redFlash=1; wobbleStart=now;
+    showOverlay('lose');
+    document.getElementById('loseScore').textContent=trimmed;
+  }
+
+  function startGame(){
+    state='PLAYING';
+    angle=0; rpm=BASE_RPM; trimmed=0; peakRpm=BASE_RPM;
+    particles=[]; confetti=[];
+    laserTime=0; shake=0; redFlash=0; wobbleX=0; wobbleY=0;
+    initBlades();
+    hideAllOverlays();
+    updateHUD();
+  }
+
+  function restart(){
+    if(state==='PLAYING') return;
+    startGame();
+  }
+
+  // ---------- HUD ----------
+  var elScore=document.getElementById('scoreVal');
+  var elScoreNum=document.getElementById('scoreNum');
+  var elRpm=document.getElementById('rpmVal');
+  var elFill=document.getElementById('tachoFill');
+  var elStatus=document.getElementById('status');
+  var elStatusText=document.getElementById('statusText');
+
+  function updateHUD(){
+    elScore.textContent=trimmed;
+    elScoreNum.classList.remove('bump'); void elScoreNum.offsetWidth; elScoreNum.classList.add('bump');
+  }
+  function setStatus(){
+    elStatus.className='status';
+    if(state==='START'){elStatusText.textContent='STANDBY';}
+    else if(state==='PLAYING'){elStatusText.textContent='CUTTING';}
+    else if(state==='WIN'){elStatus.classList.add('ok');elStatusText.textContent='BALANCED';}
+    else if(state==='LOSE'){elStatus.classList.add('warn');elStatusText.textContent='UNBALANCED';}
+  }
+
+  // ---------- Overlays ----------
+  var ovStart=document.getElementById('ov-start');
+  var ovWin=document.getElementById('ov-win');
+  var ovLose=document.getElementById('ov-lose');
+  function hideAllOverlays(){ovStart.classList.add('hidden');ovWin.classList.add('hidden');ovLose.classList.add('hidden');}
+  function showOverlay(which){
+    hideAllOverlays();
+    if(which==='win'){document.getElementById('winRpm').textContent=Math.round(peakRpm);ovWin.classList.remove('hidden');}
+    if(which==='lose'){ovLose.classList.remove('hidden');}
+    if(which==='start'){ovStart.classList.remove('hidden');}
+  }
+
+  document.getElementById('btnStart').addEventListener('click',function(e){e.stopPropagation();startGame();});
+  document.getElementById('btnWin').addEventListener('click',function(e){e.stopPropagation();startGame();});
+  document.getElementById('btnLose').addEventListener('click',function(e){e.stopPropagation();startGame();});
+
+  window.addEventListener('keydown',function(e){
+    if(e.code==='Space'){e.preventDefault();fire();}
+    else if(e.key==='r'||e.key==='R'){restart();}
+  });
+  canvas.addEventListener('pointerdown',function(e){e.preventDefault();fire();});
+  window.addEventListener('resize',resize);
+
+  // ---------- Update ----------
+  function update(dt){
+    if(state==='START'){
+      var t=(now-startAt)/1000;
+      var target=BASE_RPM*1.25;
+      rpm=BASE_RPM+Math.min(1,t/2.6)*(target-BASE_RPM);
+    } else if(state==='PLAYING'){
+      // rpm held
+    } else if(state==='WIN'){
+      rpm=Math.max(0,rpm-90*dt);
+    } else if(state==='LOSE'){
+      rpm=Math.max(0,rpm-150*dt);
+    }
+
+    var omega=(rpm/60)*6.283185307179586;
+    angle+=omega*dt;
+    if(angle>6.283185307179586) angle-=6.283185307179586;
+
+    // blade trim lerp
+    for(var i=0;i<blades.length;i++){
+      var b=blades[i];
+      if(b.trimStart>=0){
+        var p=(now-b.trimStart)/TRIM_MS;
+        if(p>=1){b.currentLen=b.targetLen;}
+        else{b.currentLen=lerp(rotorR,b.targetLen,easeOut(p));}
+      }
+    }
+
+    // particles
+    for(var j=particles.length-1;j>=0;j--){
+      var p=particles[j];
+      p.life+=dt;
+      p.vy+=9*dt;
+      p.vx*=0.96; p.vy*=0.96;
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.life>=p.max) particles.splice(j,1);
+    }
+    // confetti
+    for(var k=confetti.length-1;k>=0;k--){
+      var c=confetti[k];
+      c.life+=dt; c.vy+=6*dt; c.x+=c.vx; c.y+=c.vy; c.rot+=c.vr;
+      if(c.life>=c.max||c.y>H+40) confetti.splice(k,1);
+    }
+
+    // timers
+    if(laserTime>0) laserTime=Math.max(0,laserTime-dt*1000);
+    if(shake>0) shake=Math.max(0,shake-dt*40);
+    if(redFlash>0) redFlash=Math.max(0,redFlash-dt*1.1);
+
+    // wobble on lose
+    if(state==='LOSE'){
+      var el=(now-wobbleStart)/1000;
+      if(el<1.15){
+        var amp=Math.min(1,el/0.45)*rotorR*0.24;
+        wobbleX=Math.sin(el*46)*amp;
+        wobbleY=Math.cos(el*39)*amp*0.85;
+      } else { wobbleX=0; wobbleY=0; }
+    } else { wobbleX=0; wobbleY=0; }
+
+    // win confetti once
+    if(state==='WIN' && confetti.length===0 && (now-winAt)<60) spawnConfetti();
+
+    // live hud
+    elRpm.textContent=Math.round(rpm);
+    elFill.style.width=clamp(rpm/MAX_RPM*100,0,100)+'%';
+    setStatus();
+  }
+
+  // ---------- Render ----------
+  function render(){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+
+    // shake
+    var sx=0,sy=0;
+    if(shake>0){sx=(Math.random()*2-1)*shake;sy=(Math.random()*2-1)*shake;}
+    var vib=0;
+    if(state==='PLAYING'&&rpm>120) vib=(rpm-120)/60;
+    if(vib>0){sx+=(Math.random()*2-1)*vib*1.4;sy+=(Math.random()*2-1)*vib*1.4;}
+    ctx.save();
+    ctx.translate(sx,sy);
+
+    drawBackground();
+
+    // rotor center with wobble
+    var rx=cx+wobbleX, ry=cy+wobbleY;
+
+    drawGuide();
+    drawRotor(rx,ry);
+    drawLaser();
+
+    // particles
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      var a=1-p.life/p.max;
+      ctx.globalAlpha=a;
+      ctx.fillStyle=p.col;
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size*a+0.3,0,6.283185307179586);
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+
+    // confetti
+    for(var k=0;k<confetti.length;k++){
+      var c=confetti[k];
+      var ca=1-c.life/c.max;
+      ctx.globalAlpha=clamp(ca,0,1);
+      ctx.save();
+      ctx.translate(c.x,c.y); ctx.rotate(c.rot);
+      ctx.fillStyle=c.col;
+      ctx.fillRect(-c.size/2,-c.size/4,c.size,c.size/2);
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+
+    ctx.restore();
+
+    // red flash overlay
+    if(redFlash>0){
+      ctx.globalAlpha=redFlash*0.4;
+      ctx.fillStyle=COL.red;
+      ctx.fillRect(0,0,W,H);
+      ctx.globalAlpha=1;
+    }
+  }
+
+  function drawBackground(){
+    // ambient radial glow
+    var g=ctx.createRadialGradient(cx,cy,rotorR*0.2,cx,cy,Math.max(W,H)*0.7);
+    g.addColorStop(0,'rgba(255,120,20,0.05)');
+    g.addColorStop(0.5,'rgba(255,120,20,0.012)');
+    g.addColorStop(1,'rgba(10,10,10,0)');
+    ctx.fillStyle=g;
+    ctx.fillRect(0,0,W,H);
+
+    // faint blueprint rings
+    ctx.strokeStyle='rgba(255,255,255,0.035)';
+    ctx.lineWidth=1;
+    for(var r=rotorR*0.5;r<Math.max(W,H)*0.9;r+=rotorR*0.55){
+      ctx.beginPath();
+      ctx.arc(cx,cy,r,0,6.283185307179586);
+      ctx.stroke();
+    }
+  }
+
+  function drawGuide(){
+    // glow band
+    var grad=ctx.createLinearGradient(guideX-14,0,guideX+14,0);
+    grad.addColorStop(0,'rgba(255,0,0,0)');
+    grad.addColorStop(0.5,'rgba(255,0,0,0.16)');
+    grad.addColorStop(1,'rgba(255,0,0,0)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(guideX-14,0,28,H);
+
+    // main line
+    ctx.strokeStyle=COL.red;
+    ctx.lineWidth=2;
+    ctx.shadowColor=COL.red;
+    ctx.shadowBlur=12;
+    ctx.beginPath();
+    ctx.moveTo(guideX,0);
+    ctx.lineTo(guideX,H);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // alignment marker triangle
+    ctx.fillStyle=COL.red;
+    ctx.beginPath();
+    ctx.moveTo(guideX-9,cy);
+    ctx.lineTo(guideX-22,cy-9);
+    ctx.lineTo(guideX-22,cy+9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(guideX+9,cy);
+    ctx.lineTo(guideX+22,cy-9);
+    ctx.lineTo(guideX+22,cy+9);
+    ctx.closePath();
+    ctx.fill();
+
+    // label
+    ctx.fillStyle='rgba(255,0,0,0.85)';
+    ctx.font='600 '+Math.max(10,Math.min(13,W*0.012))+'px Oswald, sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('CUTOFF GUIDE', guideX, Math.max(20, cy-rotorR-14));
+    ctx.textAlign='left';
+  }
+
+  function drawRotor(rx,ry){
+    var omega=(rpm/60)*6.283185307179586;
+    var blurAmt=clamp((rpm-55)/120,0,1);
+
+    // motion-blur ghost trails
+    if(blurAmt>0.02 && state!=='LOSE'){
+      var steps=clamp(Math.round(3+blurAmt*4),3,7);
+      for(var s=steps;s>=1;s--){
+        var a=angle-omega*(s*0.016);
+        drawBladeSet(rx,ry,a,blurAmt*0.16*(1-s/steps)+0.02);
+      }
+    }
+
+    // main blades
+    drawBladeSet(rx,ry,angle,1);
+
+    // hub
+    var hg=ctx.createRadialGradient(rx-rotorR*0.06,ry-rotorR*0.06,rotorR*0.05,rx,ry,rotorR*0.2);
+    hg.addColorStop(0,'#3a3a3a');
+    hg.addColorStop(0.6,'#1a1a1a');
+    hg.addColorStop(1,'#0d0d0d');
+    ctx.fillStyle=hg;
+    ctx.beginPath();
+    ctx.arc(rx,ry,rotorR*0.2,0,6.283185307179586);
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.12)';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.arc(rx,ry,rotorR*0.2,0,6.283185307179586);
+    ctx.stroke();
+
+    // hub bolts
+    for(var i=0;i<8;i++){
+      var ba=angle*0.5+(i/8)*6.283185307179586;
+      ctx.fillStyle='rgba(255,255,255,0.18)';
+      ctx.beginPath();
+      ctx.arc(rx+Math.cos(ba)*rotorR*0.13,ry+Math.sin(ba)*rotorR*0.13,2.2,0,6.283185307179586);
+      ctx.fill();
+    }
+    // center dot
+    ctx.fillStyle=COL.orange;
+    ctx.shadowColor=COL.orange; ctx.shadowBlur=8;
+    ctx.beginPath();
+    ctx.arc(rx,ry,3.2,0,6.283185307179586);
+    ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  function drawBladeSet(rx,ry,a,alpha){
+    ctx.save();
+    ctx.translate(rx,ry);
+    ctx.rotate(a);
+    ctx.globalAlpha=alpha;
+    for(var i=0;i<blades.length;i++){
+      var b=blades[i];
+      var len=b.currentLen;
+      ctx.fillStyle=COL.white;
+      // blade: rectangle from hub to tip, centered on +x axis
+      ctx.fillRect(rotorR*0.16, -bladeW/2, len-rotorR*0.16, bladeW);
+      // tip highlight
+      ctx.fillStyle=COL.orange;
+      ctx.fillRect(len-bladeW*0.9, -bladeW/2, bladeW*0.9, bladeW);
+    }
+    ctx.globalAlpha=1;
+    ctx.restore();
+  }
+
+  function drawLaser(){
+    if(laserTime<=0) return;
+    var a=laserTime/LASER_MS;
+    ctx.save();
+    ctx.globalAlpha=a;
+    // horizontal beam across right quadrant
+    var grad=ctx.createLinearGradient(guideX,0,W,0);
+    grad.addColorStop(0,'rgba(255,165,0,0.9)');
+    grad.addColorStop(0.4,'rgba(255,165,0,0.5)');
+    grad.addColorStop(1,'rgba(255,165,0,0)');
+    ctx.fillStyle=grad;
+    ctx.fillRect(guideX,cy-2.5,W-guideX,5);
+    // core
+    ctx.shadowColor=COL.orange; ctx.shadowBlur=20;
+    ctx.fillStyle='#FFD27F';
+    ctx.fillRect(guideX,cy-1,W-guideX,2);
+    // emitter flash at guide
+    ctx.beginPath();
+    ctx.arc(guideX,cy,6*a+2,0,6.283185307179586);
+    ctx.fillStyle='rgba(255,255,255,'+(a)+')';
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.restore();
+  }
+
+  // ---------- Loop ----------
+  function loop(ts){
+    if(!lastTs) lastTs=ts;
+    var dt=(ts-lastTs)/1000;
+    lastTs=ts;
+    if(dt>0.05) dt=0.05;
+    now=ts;
+    update(dt);
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Init ----------
+  resize();
+  initBlades();
+  startAt=performance.now();
+  showOverlay('start');
+  updateHUD();
+  setStatus();
+  requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>

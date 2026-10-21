@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harbor Night — Lower Thirds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#071018;
+    --fog:#1A2A36;
+    --foam:#D7E6EF;
+    --amber:#E0A45A;
+    --amber-soft:#EFC98F;
+    --ff-display:'Fraunces', Georgia, serif;
+    --ff-ui:'IBM Plex Sans', system-ui, sans-serif;
+    --frame-w: min(1200px, 96vw);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    background:
+      radial-gradient(120% 120% at 50% 0%, #0b1a24 0%, #050b11 60%, #02060a 100%);
+    color:var(--foam);
+    font-family:var(--ff-ui);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(10px,2.4vh,22px);
+    padding:clamp(10px,3vh,32px);
+    min-height:100%;
+  }
+
+  /* ---------- STAGE (16:9) ---------- */
+  .stage{
+    position:relative;
+    width:var(--frame-w);
+    aspect-ratio:16/9;
+    max-height:82vh;
+    background:var(--night);
+    overflow:hidden;
+    border-radius:6px;
+    box-shadow:
+      0 40px 90px -30px rgba(0,0,0,.85),
+      0 0 0 1px rgba(215,230,239,.06);
+    cursor:pointer;
+    isolation:isolate;
+  }
+
+  /* ---------- ATMOSPHERE ---------- */
+  .bg{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+
+  .horizon{
+    position:absolute; left:0; right:0; top:58%;
+    height:1px;
+    background:linear-gradient(90deg, transparent, rgba(215,230,239,.14) 20%, rgba(224,164,90,.22) 50%, rgba(215,230,239,.12) 80%, transparent);
+    filter:blur(.4px);
+  }
+  .glow{
+    position:absolute; left:50%; top:58%;
+    width:70%; height:60%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(60% 40% at 50% 50%, rgba(224,164,90,.10), transparent 70%);
+    filter:blur(14px);
+  }
+
+  .fog{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, rgba(215,230,239,.10), rgba(26,42,54,.04) 45%, transparent 72%);
+    filter:blur(26px);
+    will-change:transform;
+  }
+  .fog.f1{ width:60%; height:55%; left:-10%; top:20%; animation:drift1 22s ease-in-out infinite; }
+  .fog.f2{ width:52%; height:48%; right:-12%; top:34%; animation:drift2 28s ease-in-out infinite; }
+  .fog.f3{ width:44%; height:40%; left:30%; top:8%; opacity:.7; animation:drift1 34s ease-in-out infinite reverse; }
+
+  @keyframes drift1{
+    0%,100%{ transform:translate(0,0) scale(1); }
+    50%{ transform:translate(6%, -4%) scale(1.08); }
+  }
+  @keyframes drift2{
+    0%,100%{ transform:translate(0,0) scale(1.05); }
+    50%{ transform:translate(-7%, 5%) scale(1); }
+  }
+
+  /* lighthouse beam sweep */
+  .beam{
+    position:absolute; top:-30%; left:14%;
+    width:16%; height:150%;
+    transform-origin:top center;
+    background:linear-gradient(180deg, rgba(224,164,90,.16), rgba(224,164,90,0) 70%);
+    filter:blur(10px);
+    animation:sweep 11s ease-in-out infinite;
+    mix-blend-mode:screen;
+  }
+  @keyframes sweep{
+    0%,100%{ transform:rotate(-14deg); opacity:.25; }
+    50%{ transform:rotate(10deg); opacity:.55; }
+  }
+
+  /* grain */
+  .grain{
+    position:absolute; inset:-40%;
+    opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(4) infinite;
+  }
+  @keyframes grain{
+    0%{ transform:translate(0,0); } 25%{ transform:translate(-3%,2%); }
+    50%{ transform:translate(2%,-3%); } 75%{ transform:translate(-2%,-2%); }
+    100%{ transform:translate(3%,3%); }
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background:radial-gradient(120% 100% at 50% 45%, transparent 55%, rgba(2,6,10,.7) 100%);
+  }
+
+  /* ---------- SHOW BUG ---------- */
+  .bug{
+    position:absolute; z-index:5;
+    top:9%; right:5%;
+    display:flex; align-items:center; gap:.6em;
+    opacity:0;
+    will-change:opacity,transform;
+  }
+  .bug svg{ width:clamp(16px,2.2vw,26px); height:auto; display:block; }
+  .bug .word{
+    font-family:var(--ff-ui);
+    font-weight:500;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    font-size:clamp(9px,1.35vw,14px);
+    color:var(--foam);
+    line-height:1;
+  }
+  .bug .word b{ color:var(--amber); font-weight:600; }
+
+  /* ---------- LOWER THIRD ---------- */
+  .lt{
+    position:absolute; z-index:4;
+    left:8%; right:8%;
+    bottom:12%;
+    height:22%;
+    display:flex; align-items:flex-end;
+    will-change:transform;
+  }
+
+  .plate{
+    position:relative;
+    height:100%;
+    width:64%;
+    max-width:760px;
+    background:linear-gradient(100deg, rgba(26,42,54,.96), rgba(18,30,40,.82));
+    border:1px solid rgba(215,230,239,.08);
+    border-left:none;
+    box-shadow:0 20px 40px -18px rgba(0,0,0,.7);
+    display:flex; align-items:center;
+    padding:0 clamp(16px,3.2vw,40px);
+    overflow:hidden;
+    will-change:transform,opacity;
+  }
+  /* inner top hairline */
+  .plate::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:1px;
+    background:linear-gradient(90deg, rgba(224,164,90,.5), transparent 60%);
+  }
+
+  .name-wrap{ overflow:hidden; padding:6px 0; }
+  .name{
+    font-family:var(--ff-display);
+    font-weight:600;
+    font-optical-sizing:auto;
+    font-size:clamp(26px,4.6vw,58px);
+    line-height:1;
+    color:var(--foam);
+    white-space:nowrap;
+    letter-spacing:.04em;
+    transform:translateX(-115%);
+    will-change:transform,letter-spacing,opacity;
+    text-shadow:0 2px 18px rgba(0,0,0,.4);
+  }
+
+  .role-wrap{ overflow:hidden; margin-top:.55em; }
+  .role{
+    font-family:var(--ff-ui);
+    font-weight:400;
+    font-size:clamp(9px,1.35vw,14px);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:rgba(215,230,239,.72);
+    white-space:nowrap;
+    opacity:0;
+    transform:translateY(60%);
+    will-change:transform,opacity;
+  }
+  .role .sep{ color:var(--amber); margin:0 .55em; }
+
+  /* amber pip + live */
+  .live{
+    position:absolute;
+    left:clamp(16px,3.2vw,40px);
+    top:clamp(8px,1.4vw,16px);
+    display:flex; align-items:center; gap:.5em;
+    opacity:0;
+    will-change:opacity;
+  }
+  .pip{
+    width:.62em; height:.62em; border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 0 0 rgba(224,164,90,.55);
+    display:block;
+  }
+  .live .tag{
+    font-family:var(--ff-ui); font-weight:600;
+    font-size:clamp(7px,.95vw,10px);
+    letter-spacing:.32em; color:var(--amber);
+  }
+
+  /* amber bar */
+  .bar{
+    position:absolute; z-index:4;
+    left:8%; bottom:12%;
+    height:clamp(3px,.55vw,5px);
+    width:64%; max-width:760px;
+    background:linear-gradient(90deg, var(--amber), var(--amber-soft));
+    transform-origin:left center;
+    transform:scaleX(0);
+    box-shadow:0 0 14px rgba(224,164,90,.4);
+    will-change:transform;
+  }
+  .bar::after{
+    content:""; position:absolute; right:0; top:50%;
+    width:clamp(9px,1.3vw,14px); height:clamp(9px,1.3vw,14px);
+    transform:translate(40%,-50%) rotate(45deg);
+    background:var(--amber);
+    box-shadow:0 0 12px rgba(224,164,90,.6);
+  }
+
+  /* ---------- HUD / CONTROLS ---------- */
+  .hud{
+    width:var(--frame-w);
+    max-height:82vh;
+    display:flex; align-items:center; gap:clamp(10px,2vw,20px);
+    color:rgba(215,230,239,.55);
+    font-family:var(--ff-ui);
+    font-size:clamp(10px,1.2vw,12px);
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    flex-wrap:wrap;
+  }
+  .hud .brand{ color:var(--foam); font-weight:600; letter-spacing:.3em; }
+  .hud .brand b{ color:var(--amber); }
+  .hud .spacer{ flex:1; }
+  .hud .hint{ display:flex; align-items:center; gap:.55em; }
+  .hud .key{
+    border:1px solid rgba(215,230,239,.22);
+    border-radius:4px; padding:.15em .5em;
+    font-size:.85em; color:var(--foam);
+  }
+  .hud .beat{ color:var(--amber); min-width:11ch; }
+
+  .scrub{
+    width:var(--frame-w);
+    height:3px;
+    background:rgba(215,230,239,.12);
+    border-radius:2px;
+    position:relative;
+    cursor:pointer;
+  }
+  .scrub .fill{
+    position:absolute; inset:0 auto 0 0;
+    width:0%;
+    background:linear-gradient(90deg, var(--amber), var(--amber-soft));
+    border-radius:2px;
+  }
+  .scrub .knob{
+    position:absolute; top:50%; left:0%;
+    width:11px; height:11px; border-radius:50%;
+    background:var(--amber);
+    transform:translate(-50%,-50%);
+    box-shadow:0 0 10px rgba(224,164,90,.6);
+  }
+
+  @media (max-width:640px){
+    .hud{ font-size:9px; letter-spacing:.08em; }
+    .hud .hint{ display:none; }
+    .bug .word{ letter-spacing:.22em; }
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .fog,.beam,.grain{ animation:none !important; }
+    .bug,.lt,.plate,.name,.role,.live,.bar{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage" id="stage" role="img" aria-label="Harbor Night broadcast lower third nameplate for Maya Chen, Harbor Pilot, Night Desk">
+    <!-- atmosphere -->
+    <div class="bg">
+      <div class="glow"></div>
+      <div class="beam"></div>
+      <div class="fog f1"></div>
+      <div class="fog f2"></div>
+      <div class="fog f3"></div>
+      <div class="horizon"></div>
+      <div class="grain"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <!-- show bug -->
+    <div class="bug" id="bug">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2 L12 6" stroke="#E0A45A" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M8 6 L16 6 L15 10 L9 10 Z" fill="#E0A45A"/>
+        <path d="M9 10 L15 10 L14 20 L10 20 Z" fill="rgba(215,230,239,.85)"/>
+        <path d="M7 20 L17 20" stroke="#D7E6EF" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="12" cy="8" r="1.1" fill="#071018"/>
+      </svg>
+      <span class="word">HARBOR <b>NIGHT</b></span>
+    </div>
+
+    <!-- amber bar -->
+    <div class="bar" id="bar"></div>
+
+    <!-- lower third -->
+    <div class="lt" id="lt">
+      <div class="plate" id="plate">
+        <div class="live" id="live">
+          <span class="pip" id="pip"></span>
+          <span class="tag">LIVE</span>
+        </div>
+        <div>
+          <div class="name-wrap"><div class="name" id="name">MAYA CHEN</div></div>
+          <div class="role-wrap"><div class="role" id="role">Harbor Pilot<span class="sep">·</span>Night Desk</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud">
+    <span class="brand">HARBOR <b>NIGHT</b></span>
+    <span class="beat" id="beat">HOLD</span>
+    <span class="spacer"></span>
+    <span class="hint"><span class="key">SPACE</span> / CLICK — replay</span>
+  </div>
+  <div class="scrub" id="scrub" aria-label="timeline scrub">
+    <div class="fill" id="fill"></div>
+    <div class="knob" id="knob"></div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const DUR = 6.0; // seconds, seamless loop
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const el = {
+    bug: document.getElementById('bug'),
+    bar: document.getElementById('bar'),
+    lt:  document.getElementById('lt'),
+    plate: document.getElementById('plate'),
+    name: document.getElementById('name'),
+    role: document.getElementById('role'),
+    live: document.getElementById('live'),
+    pip:  document.getElementById('pip'),
+    fill: document.getElementById('fill'),
+    knob: document.getElementById('knob'),
+    beat: document.getElementById('beat'),
+    scrub: document.getElementById('scrub'),
+    stage: document.getElementById('stage')
+  };
+
+  // ---- easing ----
+  const clamp = (v,a,b)=>v<a?a:v>b?b:v;
+  const easeOutCubic = t=>1-Math.pow(1-t,3);
+  const easeInCubic  = t=>t*t*t;
+  const easeInOut    = t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  const seg = (t,a,b)=>clamp((t-a)/(b-a),0,1);
+
+  // ---- beat sheet ----
+  const B = {
+    plateUp:[0,0.7],
+    barWipe:[0,0.7],
+    name:[0.7,1.6],
+    role:[1.0,1.7],
+    live:[1.1,1.7],
+    bug:[0.4,1.1],
+    exit:[4.2,5.2],
+    empty:[5.2,6.0]
+  };
+
+  function pulse(t){
+    // ambient amber pip pulse, active during hold window
+    if(t < B.live[1] || t >= B.exit[0]) return 0;
+    const p = (t % 1.1) / 1.1;
+    // soft ping that decays
+    return Math.max(0, 1 - p) * (1 - p);
+  }
+
+  function render(t){
+    // ---- show bug ----
+    const bugP = easeOutCubic(seg(t,B.bug[0],B.bug[1]));
+    const bugOut = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    const bugVis = bugP * (1-bugOut);
+    el.bug.style.opacity = bugVis.toFixed(3);
+    el.bug.style.transform = `translateY(${(1-bugP)*8}px)`;
+
+    // ---- amber bar ----
+    const barIn = easeOutCubic(seg(t,B.barWipe[0],B.barWipe[1]));
+    const barOut = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    el.bar.style.transform = `scaleX(${(barIn*(1-barOut)).toFixed(3)})`;
+
+    // ---- plate / lt rise + exit ----
+    const rise = easeOutCubic(seg(t,B.plateUp[0],B.plateUp[1]));
+    const drop = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    const ltY = (1-rise)*24 + drop*30;
+    el.lt.style.transform = `translateY(${ltY.toFixed(2)}px)`;
+    el.plate.style.opacity = (rise*(1-drop)).toFixed(3);
+
+    // ---- name snap + tracking settle ----
+    const nIn = easeOutCubic(seg(t,B.name[0],B.name[1]));
+    const nOut = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    const nVis = nIn*(1-nOut);
+    const track = (1-nIn)*0.16; // settle from wide to 0.04em
+    el.name.style.transform = `translateX(${(-115 + 115*nIn - 18*nOut).toFixed(2)}%)`;
+    el.name.style.letterSpacing = (0.04 + track).toFixed(3)+'em';
+    el.name.style.opacity = nVis.toFixed(3);
+
+    // ---- role fade ----
+    const rIn = easeOutCubic(seg(t,B.role[0],B.role[1]));
+    const rOut = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    el.role.style.opacity = (rIn*(1-rOut)).toFixed(3);
+    el.role.style.transform = `translateY(${((1-rIn)*60 + rOut*40).toFixed(2)}%)`;
+
+    // ---- live pip ----
+    const lIn = easeOutCubic(seg(t,B.live[0],B.live[1]));
+    const lOut = easeInCubic(seg(t,B.exit[0],B.exit[1]));
+    el.live.style.opacity = (lIn*(1-lOut)).toFixed(3);
+    const p = pulse(t);
+    const scale = 1 + p*0.45;
+    const spread = (6 + p*14);
+    el.pip.style.transform = `scale(${scale.toFixed(3)})`;
+    el.pip.style.boxShadow = `0 0 0 ${(p*spread).toFixed(1)}px rgba(224,164,90,${(0.4*(1-p)).toFixed(3)}), 0 0 10px rgba(224,164,90,.5)`;
+
+    // ---- progress HUD ----
+    const pct = (t/DUR)*100;
+    el.fill.style.width = pct.toFixed(2)+'%';
+    el.knob.style.left = pct.toFixed(2)+'%';
+
+    // beat label
+    let label = 'HOLD';
+    if(t < B.plateUp[1]) label='ENTRANCE';
+    else if(t < B.name[1]) label='IDENTIFY';
+    else if(t < B.exit[0]) label='HOLD';
+    else if(t < B.exit[1]) label='EXIT';
+    else label='RESET';
+    if(el.beat.textContent !== label) el.beat.textContent = label;
+  }
+
+  // ---- loop engine ----
+  let start = performance.now();
+  let scrubbing = false;
+  let offset = 0; // manual offset when scrubbing
+
+  function frame(now){
+    if(!scrubbing){
+      let t = ((now - start)/1000) % DUR;
+      if(t < 0) t += DUR;
+      render(t);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function restart(){
+    start = performance.now();
+    scrubbing = false;
+  }
+
+  // ---- interaction ----
+  el.stage.addEventListener('click', restart);
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'){ e.preventDefault(); restart(); }
+  });
+
+  function scrubTo(clientX){
+    const r = el.scrub.getBoundingClientRect();
+    let frac = clamp((clientX - r.left)/r.width, 0, 1);
+    scrubbing = true;
+    const t = frac*DUR;
+    render(t);
+    // keep start aligned so release continues from here
+    start = performance.now() - t*1000;
+  }
+  let dragging=false;
+  el.scrub.addEventListener('pointerdown', e=>{ dragging=true; el.scrub.setPointerCapture(e.pointerId); scrubTo(e.clientX); });
+  el.scrub.addEventListener('pointermove', e=>{ if(dragging) scrubTo(e.clientX); });
+  el.scrub.addEventListener('pointerup', e=>{ dragging=false; scrubbing=false; });
+  el.scrub.addEventListener('pointercancel', ()=>{ dragging=false; scrubbing=false; });
+
+  // ---- boot ----
+  if(reduce){
+    // static final nameplate hold
+    render(2.5);
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

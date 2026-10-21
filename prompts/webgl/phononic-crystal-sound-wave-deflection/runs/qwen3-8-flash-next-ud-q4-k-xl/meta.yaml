@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-10-21"
+updated: "2026-10-21"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+context_tokens: 126000
+duration_ms: 203902
+gen_ms: 203902
+ttft_ms: 6364
+queue_wait_ms: 171
+wall_ms: 210438
+review_score: 7
+review_summary: "Strong atmospheric execution with correct lattice and color palette, but the wave field is a static beam rather than a visible interference pattern, and the required control panel is missing."
+reviewed_at: "2026-10-21T12:13:27.801Z"
+review_issues:
+  - "Missing control panel (frequency slider) in bottom-right"
+  - "Wave field lacks visible interference/deflection patterns (looks like a static beam)"
+  - "Typography uses generic sans-serif instead of specified IBM Plex Sans/Fira Code"

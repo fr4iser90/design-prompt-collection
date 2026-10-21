@@ -9,10 +9,13 @@ tags:
   - timeline
 status: draft
 summary: "10s four-beat explainer for Volt Route: grid problem → path solve → capacity payoff with hazard-stripe diagram motion."
-preview: null
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
-demo: null
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
+source_model: null
+source_provider: null
 created: "2026-10-21"
 updated: "2026-10-21"
 model_hints:

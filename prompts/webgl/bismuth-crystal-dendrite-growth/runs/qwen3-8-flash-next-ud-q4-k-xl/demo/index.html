@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Bismuth Dendrite Growth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F0F12;
+    --ink:#E0E0E0;
+    --accent:#FF6B35;
+    --mono:'Space Mono', ui-monospace, monospace;
+    --serif:'Cormorant Garamond', Georgia, serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;width:100%;overflow:hidden;background:var(--bg);}
+  body{font-family:var(--mono);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  canvas#scene{position:fixed;inset:0;display:block;z-index:0;touch-action:none;cursor:grab;}
+  canvas#scene:active{cursor:grabbing;}
+
+  .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 80% 70% at 50% 42%, rgba(15,15,18,0) 42%, rgba(6,6,9,0.72) 100%);}
+
+  .grain{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  .ui{position:fixed;inset:0;z-index:3;pointer-events:none;}
+
+  .title-block{position:absolute;top:clamp(16px,3.2vw,40px);left:clamp(16px,3.2vw,44px);max-width:min(48vw,540px);}
+  .eyebrow{font-family:var(--mono);font-size:clamp(8px,0.78vw,11px);letter-spacing:0.34em;text-transform:uppercase;
+    color:rgba(224,224,224,0.55);margin-bottom:16px;display:flex;align-items:center;gap:11px;}
+  .eyebrow::before{content:"";width:28px;height:1px;background:var(--accent);opacity:0.85;}
+  h1{font-family:var(--serif);font-weight:300;font-size:clamp(42px,6.6vw,104px);line-height:0.94;
+    letter-spacing:-0.012em;color:var(--ink);text-shadow:0 2px 34px rgba(0,0,0,0.55);}
+  h1 .accent{font-style:italic;font-weight:500;color:var(--accent);}
+  .sub{font-family:var(--mono);font-size:clamp(9px,0.92vw,12px);line-height:1.75;letter-spacing:0.03em;
+    color:rgba(224,224,224,0.5);margin-top:20px;max-width:34ch;}
+
+  .readout{position:absolute;top:clamp(16px,3.2vw,40px);right:clamp(16px,3.2vw,44px);text-align:right;}
+  .readout .rlabel{font-family:var(--mono);font-size:9px;letter-spacing:0.28em;text-transform:uppercase;
+    color:rgba(224,224,224,0.42);margin-bottom:6px;}
+  .readout .rval{font-family:var(--mono);font-weight:700;font-size:clamp(15px,1.55vw,22px);
+    color:var(--ink);letter-spacing:0.02em;}
+  .readout .rval .u{color:var(--accent);}
+  .readout .divider{width:100%;height:1px;background:rgba(224,224,224,0.12);margin:14px 0;}
+  .readout .rmicro{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;color:rgba(224,224,224,0.36);line-height:1.9;}
+  .readout .rmicro span{color:rgba(224,224,224,0.6);}
+
+  .controls{position:absolute;bottom:clamp(20px,3.4vw,46px);left:50%;transform:translateX(-50%);
+    width:min(520px,88vw);pointer-events:auto;}
+  .ctl-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;}
+  .ctl-label{font-family:var(--mono);font-size:11px;letter-spacing:0.28em;text-transform:uppercase;color:var(--ink);}
+  .ctl-value{font-family:var(--mono);font-size:clamp(16px,1.7vw,22px);font-weight:700;color:var(--accent);
+    display:flex;align-items:baseline;gap:8px;}
+  .ctl-value .pct{font-size:0.6em;color:rgba(224,224,224,0.5);letter-spacing:0.08em;}
+  .ctl-scale{display:flex;justify-content:space-between;margin-top:10px;
+    font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(224,224,224,0.4);}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;display:block;}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:2px;
+    background:linear-gradient(90deg,var(--accent) var(--fill,50%),rgba(224,224,224,0.16) var(--fill,50%));}
+  input[type=range]::-moz-range-track{height:2px;border-radius:2px;background:rgba(224,224,224,0.16);}
+  input[type=range]::-moz-range-progress{height:2px;border-radius:2px;background:var(--accent);}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;margin-top:-8px;
+    width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);
+    box-shadow:0 0 0 4px rgba(255,107,53,0.14),0 0 18px rgba(255,107,53,0.5);transition:box-shadow .2s,transform .1s;}
+  input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 6px rgba(255,107,53,0.2),0 0 26px rgba(255,107,53,0.7);}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.14);}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--bg);
+    border:2px solid var(--accent);box-shadow:0 0 0 4px rgba(255,107,53,0.14),0 0 18px rgba(255,107,53,0.5);}
+  input[type=range]:focus{outline:none;}
+
+  .hint{position:absolute;bottom:clamp(20px,3.4vw,46px);left:clamp(16px,3.2vw,44px);
+    font-family:var(--mono);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;
+    color:rgba(224,224,224,0.32);line-height:1.9;}
+
+  #fallback{position:fixed;inset:0;z-index:20;display:none;place-items:center;background:var(--bg);
+    text-align:center;padding:40px;font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:rgba(224,224,224,0.6);}
+
+  @media (max-width:640px){
+    .title-block{max-width:74vw;}
+    .sub{display:none;}
+    .readout .rmicro{display:none;}
+    .hint{display:none;}
+    .controls{width:90vw;bottom:24px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;}
+  }
+</style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="ui">
+    <div class="title-block">
+      <div class="eyebrow">Crystallographic Study · No. 083</div>
+      <h1>Bismuth<br><span class="accent">Dendrite</span> Growth</h1>
+      <p class="sub">Real-time simulation of thin-film oxide iridescence on recursive crystalline branches. Drag to orbit the melt.</p>
+    </div>
+
+    <div class="readout">
+      <div class="rlabel">Cooling Regime</div>
+      <div class="rval" id="regime">Quasi-static</div>
+      <div class="divider"></div>
+      <div class="rmicro">
+        <div>Δt&nbsp; <span id="dt">—</span></div>
+        <div>branches&nbsp; <span id="branches">—</span></div>
+        <div>thickness&nbsp; <span id="thick">—</span></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-head">
+        <div class="ctl-label">Cooling Rate</div>
+        <div class="ctl-value"><span id="coolVal">50</span><span class="pct">%</span></div>
+      </div>
+      <input type="range" id="cool" min="0" max="100" value="50" aria-label="Cooling Rate" />
+      <div class="ctl-scale"><span>◂ Slow · Quasi-static</span><span>Rapid Quench ▸</span></div>
+    </div>
+
+    <div class="hint">Drag — Orbit · Scroll / Pinch — Zoom</div>
+  </div>
+
+  <div id="fallback">WebGL is required to render this crystallographic simulation.</div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+  const canvas = document.getElementById('scene');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+  } catch (e) {
+    document.getElementById('fallback').style.display = 'grid';
+    throw e;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x0F0F12, 1);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0F0F12);
+
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 200);
+  camera.position.set(0, 2.6, 10.5);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.rotateSpeed = 0.55;
+  controls.zoomSpeed = 0.8;
+  controls.minDistance = 4.5;
+  controls.maxDistance = 26;
+  controls.autoRotate = !prefersReduced;
+  controls.autoRotateSpeed = 0.35;
+  controls.target.set(0, 0, 0);
+
+  // ---- Lighting (used for shading math inside the custom shader) ----
+  const lightDir = new THREE.Vector3(0.6, 0.85, 0.45).normalize();
+  const pointLightPos = new THREE.Vector3(-3.5, 2.2, 4.2);
+  const pointLightColor = new THREE.Color(0xFF6B35);
+  const ambientColor = new THREE.Color(0x1a1c26);
+  const specularColor = new THREE.Color(0xE0E0E0);
+
+  // ---- Shared uniforms ----
+  const uniforms = {
+    uTime:        { value: 0 },
+    uGrowth:      { value: 0 },
+    uCooling:     { value: 0.5 },
+    uNoiseFreq:   { value: 2.2 },
+    uNoiseAmp:    { value: 0.05 },
+    uIridStrength:{ value: 1.0 },
+    uLightDir:    { value: lightDir },
+    uPointLightPos:{ value: pointLightPos },
+    uPointLightColor:{ value: pointLightColor },
+    uAmbient:     { value: ambientColor },
+    uSpecColor:   { value: specularColor }
+  };
+
+  // ---- Iridescent shader material ----
+  const vertexShader = /* glsl */`
+    attribute vec3 aAxis;
+    attribute float aStart;
+    attribute float aLen;
+    attribute float aPhase;
+
+    uniform float uTime;
+    uniform float uGrowth;
+    uniform float uNoiseFreq;
+    uniform float uNoiseAmp;
+
+    varying vec3 vNormal;
+    varying vec3 vViewDir;
+    varying vec3 vWorldPos;
+    varying float vLenNorm;
+    varying float vPhase;
+
+    float hash(vec3 p){
+      p = fract(p * 0.3183099 + 0.1);
+      p *= 17.0;
+      return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    }
+    float vnoise(vec3 x){
+      vec3 i = floor(x); vec3 f = fract(x);
+      f = f*f*(3.0-2.0*f);
+      return mix(mix(mix(hash(i+vec3(0,0,0)),hash(i+vec3(1,0,0)),f.x),
+                     mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
+                 mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),
+                     mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);
+    }
+
+    void main(){
+      float len = max(aLen, 0.0001);
+      float t = clamp(position.z, 0.0, 1.0);
+      vLenNorm = t;
+
+      float grow = clamp((uGrowth - aStart) / (1.0 - aStart + 0.0001), 0.0, 1.0);
+      grow = grow * grow * (3.0 - 2.0 * grow);
+
+      vec3 pos = position;
+      pos.z *= grow;
+
+      float wob = (vnoise(vec3(position.xy * uNoiseFreq + aPhase, uTime * 0.05)) - 0.5);
+      float tip = pow(t, 1.5);
+      pos += aAxis * wob * uNoiseAmp * tip;
+
+      vec3 dir = normalize(aAxis);
+      vec3 ref = abs(dir.y) < 0.9 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0);
+      vec3 u = normalize(cross(ref, dir));
+      vec3 v = cross(dir, u);
+      mat3 basis = mat3(u, v, dir);
+
+      vec3 local = basis * pos;
+      vec3 world = instanceMatrix * vec4(local, 1.0);
+      vWorldPos = world.xyz;
+
+      vec3 nLocal = normalize(basis * normal);
+      vNormal = normalize(mat3(instanceMatrix) * nLocal);
+
+      vec4 mv = modelViewMatrix * world;
+      vViewDir = normalize(-mv.xyz);
+      gl_Position = projectionMatrix * mv;
+    }
+  `;
+
+  const fragmentShader = /* glsl */`
+    precision highp float;
+    uniform float uTime;
+    uniform float uIridStrength;
+    uniform vec3 uLightDir;
+    uniform vec3 uPointLightPos;
+    uniform vec3 uPointLightColor;
+    uniform vec3 uAmbient;
+    uniform vec3 uSpecColor;
+
+    varying vec3 vNormal;
+    varying vec3 vViewDir;
+    varying vec3 vWorldPos;
+    varying float vLenNorm;
+    varying float vPhase;
+
+    vec3 hue2rgb(float h){
+      vec3 r = clamp(abs(mod(h*6.0 + vec3(0.0,4.0,2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+      return r*r*(3.0 - 2.0*r);
+    }
+
+    void main(){
+      vec3 N = normalize(vNormal);
+      vec3 V = normalize(vViewDir);
+      vec3 L = normalize(uLightDir);
+
+      float ndv = clamp(dot(N, V), 0.0, 1.0);
+      float fres = pow(1.0 - ndv, 1.8);
+
+      float film = 0.55 + 0.45 * sin(vPhase * 6.2831 + vLenNorm * 3.0 + uTime * 0.05);
+      float ox = 0.5 + 0.5 * sin(vPhase * 12.566 + vLenNorm * 9.0 - uTime * 0.03);
+      float hue = fract(film * 0.35 + ox * 0.25 + fres * 0.55);
+
+      vec3 irid = hue2rgb(hue);
+      irid = mix(irid, vec3(1.0, 0.42, 0.21), fres * 0.45);
+
+      float diff = clamp(dot(N, L), 0.0, 1.0);
+      float wrap = clamp(dot(N, L) * 0.5 + 0.5, 0.0, 1.0);
+      float ndl = diff;
+
+      vec3 H = normalize(L + V);
+      float spec = pow(max(dot(N, H), 0.0), 42.0);
+
+      vec3 P = uPointLightPos - vWorldPos;
+      float pd = length(P);
+      vec3 PL = P / max(pd, 0.0001);
+      float pAtten = 1.0 / (1.0 + 0.06 * pd * pd);
+      float pDiff = clamp(dot(N, PL), 0.0, 1.0);
+      vec3 PH = normalize(PL + V);
+      float pSpec = pow(max(dot(N, PH), 0.0), 48.0);
+
+      vec3 base = vec3(0.05, 0.055, 0.075);
+      vec3 col = base + uAmbient * 0.4;
+
+      vec3 iridLit = irid * (0.32 + 0.9 * ndl + 0.55 * wrap);
+      col += iridLit * (0.6 + 0.6 * fres) * uIridStrength;
+
+      col += uSpecColor * spec * 0.55;
+      col += uPointLightColor * pDiff * pAtten * 0.35;
+      col += uPointLightColor * pSpec * pAtten * 1.4;
+
+      col = col / (col + vec3(1.0));
+      col = pow(col, vec3(0.9));
+      col = mix(col, irid, fres * 0.18);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  const material = new THREE.ShaderMaterial({
+    uniforms, vertexShader, fragmentShader
+  });
+
+  // ---- Geometry: tapered box branch ----
+  const branchGeo = new THREE.BoxGeometry(1, 1, 1, 1, 1, 6);
+  {
+    const pos = branchGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++){
+      const t = (pos.getZ(i) + 0.5);
+      const taper = Math.pow(1.0 - t, 0.85);
+      pos.setX(i, pos.getX(i) * taper);
+      pos.setY(i, pos.getY(i) * taper);
+    }
+    branchGeo.computeVertexNormals();
+  }
+
+  // ---- Branch data buffers ----
+  const MAX = 4200;
+  const aAxis  = new Float32Array(MAX * 3);
+  const aStart = new Float32Array(MAX);
+  const aLen   = new Float32Array(MAX);
+  const aPhase = new Float32Array(MAX);
+  branchGeo.setAttribute('aAxis',  new THREE.InstancedBufferAttribute(aAxis, 3));
+  branchGeo.setAttribute('aStart', new THREE.InstancedBufferAttribute(aStart, 1));
+  branchGeo.setAttribute('aLen',   new THREE.InstancedBufferAttribute(aLen, 1));
+  branchGeo.setAttribute('aPhase', new THREE.InstancedBufferAttribute(aPhase, 1));
+
+  const mesh = new THREE.InstancedMesh(branchGeo, material, MAX);
+  mesh.frustumCulled = false;
+  mesh.count = 0;
+  scene.add(mesh);
+
+  const _m = new THREE.Matrix4();
+  const _q = new THREE.Quaternion();
+  const _p = new THREE.Vector3();
+  const _s = new THREE.Vector3();
+  const _up = new THREE.Vector3(0, 0, 1);
+  const _axis = new THREE.Vector3();
+  const _dir = new THREE.Vector3();
+
+  function orient(q, dir){
+    _axis.crossVectors(_up, dir);
+    if (_axis.lengthSq() < 1e-6) _axis.set(1, 0, 0);
+    _axis.normalize();
+    q.setFromAxisAngle(_axis, Math.acos(THREE.MathUtils.clamp(_up.dot(dir), -1, 1)));
+  }
+
+  function buildDendrite(c){
+    const depth = 2 + Math.round(c * 3);
+    const perNode = 2 + Math.round(c * 4);
+    const baseLen = 2.4 - 1.5 * c;
+    const baseRad = 0.14 - 0.095 * c;
+    const spread = 0.65 + 0.5 * c;
+
+    let idx = 0;
+    const stack = [];
+    const rootDir = new THREE.Vector3(0, 1, 0);
+
+    stack.push({
+      start: new THREE.Vector3(0,0,0), dir: rootDir.clone(),
+      len: baseLen, rad: baseRad, depth: 0, parent: -1
+    });
+
+    const parentList = [];
+    const startList = [];
+
+    while (stack.length && idx < MAX){
+      const b = stack.pop();
+      const len = b.len;
+      const rad = b.rad;
+      const dir = b.dir.clone().normalize();
+
+      _m.makeBasis(new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3());
+      orient(_q, dir);
+      _m.makeRotationFromQuaternion(_q);
+      _s.set(rad, rad, len);
+      _m.scale(_s);
+      _m.setPosition(b.start);
+      mesh.setMatrixAt(idx, _m);
+
+      aAxis[idx*3]   = dir.x;
+      aAxis[idx*3+1] = dir.y;
+      aAxis[idx*3+2] = dir.z;
+      aStart[idx] = b.depth * 0.16;
+      aLen[idx]   = len;
+      aPhase[idx] = Math.random() * 6.2831;
+
+      parentList.push(b.parent);
+      startList.push(b.start.clone());
+
+      const end = b.start.clone().addScaledVector(dir, len);
+
+      if (b.depth < depth){
+        const childLen = len * (0.62 + 0.06 * Math.random());
+        const childRad = rad * (0.62 + 0.08 * Math.random());
+        const count = b.depth === 0 ? Math.min(perNode + 2, MAX - idx) : perNode;
+        const golden = 2.399963229728653;
+        for (let k = 0; k < count && idx < MAX; k++){
+          const ang = k * golden + b.depth * 0.6;
+          const tilt = spread * (0.55 + 0.45 * Math.random());
+          _dir.set(Math.sin(tilt) * Math.cos(ang), Math.cos(tilt), Math.sin(tilt) * Math.sin(ang)).normalize();
+          const nd = new THREE.Vector3();
+          nd.copy(dir).applyQuaternion(_q.setFromUnitVectors(new THREE.Vector3(0,1,0), dir));
+          nd.add(_dir.multiplyScalar(Math.tan(tilt)));
+          nd.normalize();
+          stack.push({ start: end.clone(), dir: nd, len: childLen, rad: childRad, depth: b.depth + 1, parent: idx });
+        }
+      }
+      idx++;
+    }
+
+    // prune orphaned branches (parents removed by cap)
+    let valid = true;
+    const keep = new Uint8Array(idx).fill(1);
+    while (valid){
+      valid = false;
+      for (let i = 0; i < idx; i++){
+        if (keep[i] && parentList[i] >= 0 && !keep[parentList[i]]){ keep[i] = 0; valid = true; }
+      }
+    }
+
+    let count = 0;
+    for (let i = 0; i < idx; i++){
+      if (!keep[i]) continue;
+      const src = i;
+      if (count !== src){
+        mesh.getMatrixAt(src, _m);
+        mesh.setMatrixAt(count, _m);
+        aAxis[count*3] = aAxis[src*3];
+        aAxis[count*3+1] = aAxis[src*3+1];
+        aAxis[count*3+2] = aAxis[src*3+2];
+        aStart[count] = aStart[src];
+        aLen[count] = aLen[src];
+        aPhase[count] = aPhase[src];
+      }
+      count++;
+    }
+    mesh.count = count;
+    mesh.instanceMatrix.needsUpdate = true;
+    branchGeo.attributes.aAxis.needsUpdate = true;
+    branchGeo.attributes.aStart.needsUpdate = true;
+    branchGeo.attributes.aLen.needsUpdate = true;
+    branchGeo.attributes.aPhase.needsUpdate = true;
+    return count;
+  }
+
+  // ---- Cooling rate -> parameters ----
+  const cool = document.getElementById('cool');
+  const coolVal = document.getElementById('coolVal');
+  const regimeEl = document.getElementById('regime');
+  const dtEl = document.getElementById('dt');
+  const branchesEl = document.getElementById('branches');
+  const thickEl = document.getElementById('thick');
+
+  let targetCooling = 0.5;
+  let curCooling = 0.5;
+  let lastRebuild = 0;
+  let lastRebuildCooling = -1;
+
+  function fmtRegime(c){
+    if (c < 0.2) return 'Quasi-static';
+    if (c < 0.45) return 'Moderate';
+    if (c < 0.72) return 'Rapid';
+    return 'Quench';
+  }
+  function updateFill(){
+    cool.style.setProperty('--fill', (targetCooling * 100) + '%');
+  }
+  function updateReadout(c){
+    coolVal.textContent = Math.round(c * 100);
+    regimeEl.textContent = fmtRegime(c);
+    const depth = 2 + Math.round(c * 3);
+    const perNode = 2 + Math.round(c * 4);
+    const total = 1 + (depth === 0 ? 0 : (perNode + 2) * (Math.pow(perNode, depth) - 1) / (perNode - 1));
+    const thick = (0.14 - 0.095 * c).toFixed(3);
+    const dt = (0.02 + (1 - c) * 0.9).toFixed(2);
+    branchesEl.textContent = Math.min(total, MAX).toLocaleString();
+    thickEl.textContent = thick;
+  }
+
+  cool.addEventListener('input', () => {
+    targetCooling = cool.value / 100;
+    updateFill();
+    updateReadout(targetCooling);
+  });
+
+  // ---- Entrance growth ----
+  let growthStart = performance.now();
+  const GROW_DUR = prefersReduced ? 0 : 2200;
+  let entranceDone = prefersReduced;
+  if (prefersReduced) uniforms.uGrowth.value = 1.0;
+
+  updateFill();
+  updateReadout(0.5);
+
+  // ---- Resize ----
+  function onResize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  }
+  window.addEventListener('resize', onResize);
+
+  // ---- Loop ----
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const dt = clock.getDelta();
+    const now = performance.now();
+
+    // smooth cooling interpolation
+    curCooling += (targetCooling - curCooling) * Math.min(1, dt * 4);
+    uniforms.uCooling.value = curCooling;
+
+    // noise responds to cooling
+    uniforms.uNoiseFreq.value = 1.6 + curCooling * 3.2;
+    uniforms.uNoiseAmp.value  = 0.03 + curCooling * 0.05;
+    uniforms.uIridStrength.value = 0.9 + curCooling * 0.25;
+
+    // growth / entrance
+    if (!entranceDone){
+      const p = Math.min(1, (now - growthStart) / GROW_DUR);
+      uniforms.uGrowth.value = 1 - Math.pow(1 - p, 3);
+      if (p >= 1) entranceDone = true;
+    }
+
+    // rebuild structure when cooling settles (throttled, no popping)
+    if (entranceDone && Math.abs(curCooling - lastRebuildCooling) > 0.02 && now - lastRebuild > 200){
+      buildDendrite(curCooling);
+      lastRebuild = now;
+      lastRebuildCooling = curCooling;
+    }
+
+    uniforms.uTime.value = now * 0.001;
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+  </script>
+</body>
+</html>

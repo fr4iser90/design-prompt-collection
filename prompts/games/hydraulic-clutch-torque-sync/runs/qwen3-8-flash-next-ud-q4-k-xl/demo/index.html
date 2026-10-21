@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hydraulic Clutch Torque Sync</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B111A; --grid:#1A2530; --cyan:#00FFCC; --orange:#FF5500;
+    --red:#FF0000; --white:#FFFFFF; --dim:#5A6B7A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;width:100%;overflow:hidden;background:var(--bg)}
+  body{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--white);
+    -webkit-user-select:none;user-select:none;
+    touch-action:none;
+  }
+  #stage{position:fixed;inset:0;overflow:hidden}
+  #game{position:absolute;inset:0;display:block;width:100%;height:100%}
+
+  /* atmospheric overlays */
+  #vignette{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 80% 70% at 50% 45%, transparent 40%, rgba(0,0,0,.55) 100%);
+    z-index:5}
+  #scan{position:absolute;inset:0;pointer-events:none;z-index:6;opacity:.35;
+    background:repeating-linear-gradient(to bottom, rgba(0,255,204,.03) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay}
+  #flash{position:absolute;inset:0;pointer-events:none;z-index:7;opacity:0;transition:opacity .06s linear}
+
+  /* HUD */
+  #hud{position:absolute;inset:0;z-index:10;pointer-events:none;
+    display:flex;flex-direction:column;justify-content:space-between}
+  .bar{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 22px;background:linear-gradient(rgba(11,17,26,.92),rgba(11,17,26,.35));
+    border-bottom:1px solid var(--grid)}
+  .bar.bottom{border-bottom:none;border-top:1px solid var(--grid);
+    background:linear-gradient(rgba(11,17,26,.35),rgba(11,17,26,.92))}
+  .brand{display:flex;flex-direction:column;gap:2px}
+  .brand .mark{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;line-height:.9}
+  .brand .sub{font-size:9px;letter-spacing:3px;color:var(--dim)}
+  .brand .mark b{color:var(--cyan);font-weight:400}
+  .rpm{display:flex;align-items:baseline;gap:8px}
+  .rpm .num{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,72px);line-height:.8;
+    letter-spacing:1px;text-shadow:0 0 18px rgba(0,255,204,.35)}
+  .rpm .lbl{font-size:11px;letter-spacing:3px;color:var(--dim)}
+  .gear{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+  .gear .g{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);line-height:.8}
+  .gear .g i{color:var(--cyan);font-style:normal}
+  .gear .lbl{font-size:9px;letter-spacing:3px;color:var(--dim)}
+
+  .status{display:flex;align-items:center;gap:14px}
+  .light{width:14px;height:14px;border-radius:50%;background:#1c2836;
+    box-shadow:inset 0 0 4px #000;transition:all .08s}
+  .light.on{background:var(--orange);box-shadow:0 0 14px var(--orange),0 0 3px #fff}
+  .status .txt{font-size:11px;letter-spacing:2px;color:var(--dim)}
+  .status .txt b{color:var(--white);font-weight:600}
+  .hint{font-size:10px;letter-spacing:2px;color:var(--dim);text-align:right;line-height:1.6}
+  .hint kbd{color:var(--cyan);border:1px solid var(--grid);padding:1px 5px;border-radius:3px;
+    background:rgba(0,255,204,.06)}
+
+  /* overlays */
+  .screen{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;gap:22px;padding:30px;
+    background:radial-gradient(ellipse at center, rgba(11,17,26,.55), rgba(6,10,16,.94));
+    backdrop-filter:blur(2px);transition:opacity .35s ease}
+  .screen.hidden{opacity:0;pointer-events:none}
+  .title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,120px);line-height:.86;
+    letter-spacing:2px;text-transform:uppercase}
+  .title .l2{color:var(--cyan)}
+  .title .l3{color:var(--orange)}
+  .kicker{font-size:12px;letter-spacing:6px;color:var(--dim)}
+  .rules{max-width:520px;font-size:13px;line-height:2;color:#9fb0bf;letter-spacing:.5px}
+  .rules b{color:var(--cyan)}
+  .rules .warn{color:var(--orange)}
+  .cta{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
+    border:1px solid var(--cyan);color:var(--cyan);padding:12px 30px;border-radius:2px;
+    background:rgba(0,255,204,.05);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(0,255,204,0)}50%{box-shadow:0 0 22px rgba(0,255,204,.5)}}
+  .result{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,9vw,96px);letter-spacing:3px;line-height:.9}
+  .result.fail{color:var(--red);text-shadow:0 0 30px rgba(255,0,0,.5)}
+  .result.win{color:var(--cyan);text-shadow:0 0 30px rgba(0,255,204,.5)}
+  .stats{display:flex;gap:34px;flex-wrap:wrap;justify-content:center}
+  .stat{display:flex;flex-direction:column;gap:4px}
+  .stat .v{font-family:'Bebas Neue',sans-serif;font-size:44px;line-height:.8}
+  .stat .k{font-size:10px;letter-spacing:3px;color:var(--dim)}
+  .stat.win .v{color:var(--cyan)} .stat.fail .v{color:var(--orange)}
+  @media (max-width:560px){ .hint{display:none} .brand .sub{display:none} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="game"></canvas>
+  <div id="vignette"></div>
+  <div id="scan"></div>
+  <div id="flash"></div>
+
+  <div id="hud">
+    <div class="bar top">
+      <div class="brand">
+        <div class="mark">HYDRAULIC <b>CLUTCH</b></div>
+        <div class="sub">TORQUE SYNC · TRANSMISSION UNIT</div>
+      </div>
+      <div class="rpm"><span class="num" id="rpmNum">0000</span><span class="lbl">RPM</span></div>
+      <div class="gear"><div class="g">GEAR <i id="gearNum">1</i></div><div class="lbl">TARGET 5000 RPM</div></div>
+    </div>
+    <div class="bar bottom">
+      <div class="status">
+        <div class="light" id="light"></div>
+        <div class="txt">CLUTCH <b id="clutchState">RELEASED</b></div>
+      </div>
+      <div class="hint">
+        <kbd>SPACE</kbd> hold to engage · release at PEAK + GATE<br>
+        <kbd>R</kbd> restart
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="startScreen">
+    <div class="kicker">HEAVY INDUSTRIAL TRANSMISSION</div>
+    <div class="title">HYDRAULIC<br><span class="l2">CLUTCH</span><br><span class="l3">TORQUE SYNC</span></div>
+    <div class="rules">
+      Hold <b>SPACE</b> to engage the clutch — pressure builds.<br>
+      Release when the wave hits <span class="warn">PEAK</span> <b>AND</b> the marker is inside the <b>SHIFT GATE</b>.<br>
+      Miss the window and the teeth <span class="warn">SHEAR</span>. Reach <b>5000 RPM</b> to win.
+    </div>
+    <div class="cta">PRESS SPACE TO ENGAGE</div>
+  </div>
+
+  <div class="screen hidden" id="endScreen">
+    <div class="result" id="endTitle">CLUTCH SHEARED</div>
+    <div class="stats">
+      <div class="stat"><div class="v" id="endRpm">0</div><div class="k">FINAL RPM</div></div>
+      <div class="stat win"><div class="v" id="endPerfect">0</div><div class="k">PERFECT SHIFTS</div></div>
+      <div class="stat"><div class="v" id="endGear">1</div><div class="k">GEARS CLEARED</div></div>
+    </div>
+    <div class="cta">PRESS R TO RESTART</div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   HYDRAULIC CLUTCH TORQUE SYNC  — single-file Canvas2D game
+   ============================================================ */
+
+// ---------- DOM ----------
+const canvas   = document.getElementById('game');
+const ctx      = canvas.getContext('2d');
+const stage    = document.getElementById('stage');
+const flashEl  = document.getElementById('flash');
+const startScreen = document.getElementById('startScreen');
+const endScreen   = document.getElementById('endScreen');
+const endTitle = document.getElementById('endTitle');
+const endRpm   = document.getElementById('endRpm');
+const endPerfect = document.getElementById('endPerfect');
+const endGear  = document.getElementById('endGear');
+const rpmNum   = document.getElementById('rpmNum');
+const gearNum  = document.getElementById('gearNum');
+const light    = document.getElementById('light');
+const clutchState = document.getElementById('clutchState');
+
+// ---------- constants ----------
+const COL = { bg:'#0B111A', grid:'#1A2530', cyan:'#00FFCC', orange:'#FF5500', red:'#FF0000', white:'#FFFFFF' };
+const BASE_RPM = 1000, WIN_RPM = 5000;
+const WAVE_FREQ = 1.0;            // Hz (pressure oscillation)
+const ENGAGE_RATE = 0.55;         // pressure/sec while held
+const RELEASE_RATE = 1.1;         // pressure/sec while released
+const PEAK_WINDOW = 0.20;         // |cos| for "Good"
+const PERFECT_WINDOW = 0.90;      // |cos| for "Perfect"
+const GATE_ARC = 0.34;            // radians half-width of gate
+const GATE_SPIN = 0.35;           // rad/s gate precession
+const GATE_SPIN_MAX = 1.1;
+const GATE_RADIUS = 0.86;         // fraction of flywheel radius
+const TAU = Math.PI*2;
+
+// ---------- state ----------
+let W=0,H=0,DPR=1, cx=0,cy=0, R=0, waveX=0;
+let state='start';                 // start | playing | fail | win
+let flyAngle=0, gateAngle=0, wavePhase=0;
+let pressure=0, engaging=false;
+let rpm=BASE_RPM, gear=1, perfectCount=0;
+let particles=[], smoke=[];
+let shake=0, shakeT=0;
+let shearTime=0, winTime=0;
+let gateSpin=0.35;
+let last=performance.now(), elapsed=0;
+let trail=[];                      // motion-blur trail of marker
+let hum=null;                      // audio nodes
+
+// ---------- helpers ----------
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const rand=(a,b)=>a+Math.random()*(b-a);
+function hexRGB(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
+const CY=hexRGB(COL.cyan), OR=hexRGB(COL.orange);
+function mix(a,b,t){t=clamp(t,0,1);return `rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`;}
+
+// ---------- audio (Web Audio synth) ----------
+let AC=null, master=null, humOsc=null, humGain=null, engOsc=null, engGain=null;
+function initAudio(){
+  if(AC) return;
+  try{
+    AC=new (window.AudioContext||window.webkitAudioContext)();
+    master=AC.createGain(); master.gain.value=0.6; master.connect(AC.destination);
+    // idle hum
+    humOsc=AC.createOscillator(); humOsc.type='sine'; humOsc.frequency.value=48;
+    humGain=AC.createGain(); humGain.gain.value=0.0;
+    humOsc.connect(humGain).connect(master); humOsc.start();
+    // engagement pressure tone
+    engOsc=AC.createOscillator(); engOsc.type='sawtooth'; engOsc.frequency.value=110;
+    engGain=AC.createGain(); engGain.gain.value=0.0;
+    engOsc.connect(engGain).connect(master); engOsc.start();
+  }catch(e){ AC=null; }
+}
+function beep(freq,dur,type,vol){
+  if(!AC) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(vol||0.25,AC.currentTime+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+dur);
+  o.connect(g).connect(master); o.start(); o.stop(AC.currentTime+dur+0.02);
+}
+function clunk(){ // gear-mesh thud
+  if(!AC) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type='square'; o.frequency.setValueAtTime(180,AC.currentTime);
+  o.frequency.exponentialRampToValueAtTime(50,AC.currentTime+0.12);
+  g.gain.setValueAtTime(0.35,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.16);
+  o.connect(g).connect(master); o.start(); o.stop(AC.currentTime+0.2);
+  beep(880,0.05,'sine',0.12); // ping
+}
+function shearNoise(){
+  if(!AC) return;
+  const dur=0.5, buf=AC.createBuffer(1,AC.sampleRate*dur,AC.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*(1-i/d.length); }
+  const src=AC.createBufferSource(); src.buffer=buf;
+  const bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=1.2;
+  const g=AC.createGain(); g.gain.value=0.5;
+  src.connect(bp).connect(g).connect(master); src.start();
+  // descending grind
+  const o=AC.createOscillator(), og=AC.createGain();
+  o.type='sawtooth'; o.frequency.setValueAtTime(220,AC.currentTime);
+  o.frequency.exponentialRampToValueAtTime(40,AC.currentTime+0.5);
+  og.gain.setValueAtTime(0.3,AC.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.5);
+  o.connect(og).connect(master); o.start(); o.stop(AC.currentTime+0.55);
+}
+function winTone(){
+  if(!AC) return;
+  [523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.25,'sine',0.2),i*90));
+}
+
+// ---------- resize ----------
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  W=stage.clientWidth; H=stage.clientHeight;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  cx=W*0.58; cy=H*0.5;
+  R=Math.min(W*0.22, H*0.34);
+  waveX=Math.max(48, W*0.11);
+}
+window.addEventListener('resize',resize);
+
+// ---------- game control ----------
+function reset(){
+  state='start'; flyAngle=0; gateAngle=0; wavePhase=0; pressure=0; engaging=false;
+  rpm=BASE_RPM; gear=1; perfectCount=0; particles=[]; smoke=[]; trail=[];
+  shake=0; shearTime=0; winTime=0; gateSpin=0.35;
+  startScreen.classList.remove('hidden'); endScreen.classList.add('hidden');
+  flashEl.style.opacity=0;
+}
+function begin(){
+  if(state!=='start') return;
+  initAudio(); if(AC&&AC.state==='suspended') AC.resume();
+  state='playing'; startScreen.classList.add('hidden');
+}
+function endRun(win){
+  state=win?'win':'fail'; engaging=false;
+  if(win){ winTime=0; winTone(); }
+  else{ shearTime=0; shearNoise(); spawnSparks(COL.red,46,true); flash('#FF0000',0.5); }
+  endTitle.textContent = win?'TRANSMISSION OPTIMAL':'CLUTCH SHEARED';
+  endTitle.className='result '+(win?'win':'fail');
+  endRpm.textContent=Math.round(rpm);
+  endPerfect.textContent=perfectCount;
+  endGear.textContent=gear;
+  setTimeout(()=>endScreen.classList.remove('hidden'), win?600:450);
+}
+function flash(color,a){ flashEl.style.background=color; flashEl.style.opacity=a; setTimeout(()=>flashEl.style.opacity=0,70); }
+
+// ---------- particles ----------
+function spawnSparks(color,count,chaotic){
+  for(let i=0;i<count;i++){
+    const a=rand(0,TAU), sp=rand(chaotic?120:60, chaotic?420:260);
+    particles.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      life:1,decay:rand(0.9,1.8),size:rand(1.5,3.5),color});
+  }
+}
+function spawnSmoke(){
+  smoke.push({x:cx+rand(-R*0.3,R*0.3),y:cy+rand(-R*0.3,R*0.3),
+    vx:rand(-8,8),vy:rand(-30,-12),life:1,size:rand(6,16)});
+}
+
+// ---------- input ----------
+function pressSpace(){
+  if(state==='start'){ begin(); engaging=true; return; }
+  if(state==='playing'){ engaging=true; }
+}
+function releaseSpace(){
+  if(state==='playing' && engaging){ engaging=false; attemptShift(); }
+}
+window.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) pressSpace(); }
+  if(e.key==='r'||e.key==='R'){ reset(); }
+});
+window.addEventListener('keyup',e=>{ if(e.code==='Space'){ e.preventDefault(); releaseSpace(); } });
+// touch: hold anywhere
+stage.addEventListener('touchstart',e=>{e.preventDefault();pressSpace();},{passive:false});
+stage.addEventListener('touchend',e=>{e.preventDefault();releaseSpace();},{passive:false});
+stage.addEventListener('mousedown',e=>{ if(e.target===canvas||e.target===stage){pressSpace();} });
+window.addEventListener('mouseup',()=>releaseSpace());
+
+// ---------- shift logic ----------
+function attemptShift(){
+  const peak = Math.abs(Math.cos(wavePhase));         // 1 at peak, 0 at zero-cross
+  const diff = Math.abs(((flyAngle-gateAngle+Math.PI)%TAU+TAU)%TAU - Math.PI); // angular dist 0..PI
+  const inGate = diff < GATE_ARC;
+  const inPeak = peak > PEAK_WINDOW;
+  if(inGate && inPeak){
+    const perfect = peak>PERFECT_WINDOW && diff<GATE_ARC*0.5;
+    if(perfect) perfectCount++;
+    // success
+    const jump = perfect?1000:600;
+    rpm=Math.min(WIN_RPM, rpm+jump); gear++;
+    gateSpin=Math.min(GATE_SPIN_MAX, gateSpin+0.14);
+    shake = perfect?9:6; shakeT=0.12;
+    clunk();
+    spawnSparks(COL.cyan, perfect?40:22, false);
+    flash(COL.cyan, perfect?0.32:0.18);
+    if(rpm>=WIN_RPM) endRun(true);
+  }else{
+    endRun(false);
+  }
+}
+
+// ---------- update ----------
+function update(dt){
+  elapsed+=dt;
+  // flywheel speed
+  if(state==='playing'||state==='start'){
+    const target=BASE_RPM + (state==='playing'?(rpm-BASE_RPM):0);
+    rpm = lerp(rpm, target, 1-Math.pow(0.001,dt)); // ease toward target
+  }
+  const omega = rpm/60*TAU; // rad/s
+
+  if(state==='fail'){
+    shearTime+=dt;
+    const decay=Math.max(0,1-shearTime*1.4);
+    flyAngle += omega*decay*decay*dt;
+    updateParticles(dt);
+    return;
+  }
+  if(state==='win'){ winTime+=dt; }
+
+  // pressure
+  if(state==='playing'){
+    if(engaging){ pressure=clamp(pressure+ENGAGE_RATE*dt,0,1);
+      if(Math.random()<dt*20) spawnSmoke();
+    } else {
+      pressure=clamp(pressure-RELEASE_RATE*dt,0,1);
+    }
+  }
+
+  flyAngle += omega*dt;
+  gateAngle += gateSpin*dt;
+  const freq = WAVE_FREQ + pressure*0.35;
+  wavePhase += TAU*freq*dt;
+
+  // trail
+  const mx=cx+Math.cos(flyAngle)*R, my=cy+Math.sin(flyAngle)*R;
+  trail.push({x:mx,y:my});
+  const maxTrail=clamp(Math.floor(rpm/120),3,26);
+  while(trail.length>maxTrail) trail.shift();
+
+  updateParticles(dt);
+
+  // audio update
+  if(AC){
+    if(humGain) humGain.gain.setTargetAtTime(state==='playing'?0.05:0.02, AC.currentTime, 0.1);
+    if(humOsc) humOsc.frequency.setTargetAtTime(44+rpm*0.006, AC.currentTime, 0.1);
+    if(engGain) engGain.gain.setTargetAtTime(engaging?0.06:0.0, AC.currentTime, 0.05);
+    if(engOsc) engOsc.frequency.setTargetAtTime(110+pressure*520, AC.currentTime, 0.05);
+  }
+  // shake decay
+  if(shakeT>0){ shakeT-=dt; if(shakeT<=0) shake=0; }
+}
+function updateParticles(dt){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=520*dt; p.vx*=0.98;
+    p.life-=p.decay*dt;
+    if(p.life<=0) particles.splice(i,1);
+  }
+  for(let i=smoke.length-1;i>=0;i--){
+    const s=smoke[i]; s.x+=s.vx*dt; s.y+=s.vy*dt; s.vy*=0.96; s.size+=18*dt; s.life-=0.7*dt;
+    if(s.life<=0) smoke.splice(i,1);
+  }
+}
+
+// ---------- render ----------
+function drawGrid(){
+  const step=44;
+  const pulse = 0.5 + pressure*0.5;
+  ctx.strokeStyle=COL.grid;
+  ctx.globalAlpha=0.5;
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=(elapsed*4%step); x<W; x+=step){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+  for(let y=0; y<H; y+=step){ ctx.moveTo(0,y); ctx.lineTo(W,y); }
+  ctx.stroke();
+  // pulsing accent lines near pressure
+  ctx.globalAlpha=0.12*pulse;
+  ctx.strokeStyle=mix(CY,OR,pressure);
+  ctx.beginPath();
+  for(let x=(elapsed*4%step); x<W; x+=step*3){ ctx.moveTo(x,0); ctx.lineTo(x,H); }
+  ctx.stroke();
+  ctx.globalAlpha=1;
+}
+
+function drawFlywheel(){
+  // motion-blur trail
+  for(let i=0;i<trail.length;i++){
+    const t=trail[i], a=(i/trail.length)*0.35;
+    ctx.globalAlpha=a; ctx.fillStyle=COL.cyan;
+    ctx.beginPath(); ctx.arc(t.x,t.y,3,0,TAU); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // body
+  const g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.1,cx,cy,R);
+  g.addColorStop(0,'#26323f'); g.addColorStop(0.7,'#151f2a'); g.addColorStop(1,'#0d141c');
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,TAU); ctx.fill();
+  // metallic rim highlight
+  ctx.lineWidth=6; ctx.strokeStyle='#2c3a49';
+  ctx.beginPath(); ctx.arc(cx,cy,R-3,0,TAU); ctx.stroke();
+  ctx.lineWidth=2; ctx.strokeStyle='rgba(255,255,255,.12)';
+  ctx.beginPath(); ctx.arc(cx,cy,R-9,-0.6,0.9); ctx.stroke();
+
+  // spokes
+  ctx.strokeStyle='rgba(120,140,160,.25)'; ctx.lineWidth=3;
+  for(let i=0;i<8;i++){
+    const a=flyAngle+i*TAU/8;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(a)*R*0.82, cy+Math.sin(a)*R*0.82); ctx.stroke();
+  }
+  // hub
+  ctx.fillStyle='#0d141c'; ctx.beginPath(); ctx.arc(cx,cy,R*0.16,0,TAU); ctx.fill();
+  ctx.strokeStyle=COL.cyan; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,R*0.16,0,TAU); ctx.stroke();
+
+  // Shift Gate arc
+  const gr=R*GATE_RADIUS;
+  ctx.save();
+  ctx.strokeStyle=COL.cyan; ctx.lineWidth=14; ctx.lineCap='round';
+  ctx.globalAlpha=0.35+0.25*Math.sin(elapsed*6);
+  ctx.shadowColor=COL.cyan; ctx.shadowBlur=16;
+  ctx.beginPath(); ctx.arc(cx,cy,gr, gateAngle-GATE_ARC, gateAngle+GATE_ARC); ctx.stroke();
+  ctx.restore();
+
+  // marker (white dot)
+  const mx=cx+Math.cos(flyAngle)*R, my=cy+Math.sin(flyAngle)*R;
+  ctx.fillStyle=COL.white; ctx.shadowColor=COL.white; ctx.shadowBlur=12;
+  ctx.beginPath(); ctx.arc(mx,my,7,0,TAU); ctx.fill(); ctx.shadowBlur=0;
+
+  // alignment ring when in gate
+  const diff=Math.abs(((flyAngle-gateAngle+Math.PI)%TAU+TAU)%TAU-Math.PI);
+  if(diff<GATE_ARC){
+    ctx.strokeStyle=mix(CY,OR,Math.abs(Math.cos(wavePhase)));
+    ctx.lineWidth=2; ctx.beginPath(); ctx.arc(mx,my,16,0,TAU); ctx.stroke();
+  }
+}
+
+function drawPressure(){
+  const wCol = mix(CY,OR,pressure);
+  const amp = (10 + pressure*46);
+  const top=cy-H*0.30, bot=cy+H*0.30, mid=(top+bot)/2;
+  // hose
+  ctx.strokeStyle='#22303d'; ctx.lineWidth=26; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(waveX,top); ctx.lineTo(waveX,bot); ctx.stroke();
+  ctx.strokeStyle='rgba(0,0,0,.4)'; ctx.lineWidth=22;
+  ctx.beginPath(); ctx.moveTo(waveX,top); ctx.lineTo(waveX,bot); ctx.stroke();
+  // fluid fill from bottom
+  const fillH=(bot-top)*(0.15+pressure*0.8);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(waveX-11,top,22,bot-top); ctx.clip();
+  const fg=ctx.createLinearGradient(0,bot,0,bot-fillH);
+  fg.addColorStop(0,wCol); fg.addColorStop(1,mix(CY,OR,pressure*0.5));
+  ctx.fillStyle=fg; ctx.shadowColor=wCol; ctx.shadowBlur=18;
+  ctx.fillRect(waveX-11, bot-fillH, 22, fillH);
+  ctx.restore();
+  // animated bubbles
+  ctx.fillStyle='rgba(255,255,255,.25)';
+  for(let i=0;i<4;i++){
+    const by=bot-((elapsed*60+i*70)%fillH);
+    if(by>bot-fillH){ ctx.beginPath(); ctx.arc(waveX+Math.sin(elapsed*3+i)*5,by,1.6,0,TAU); ctx.fill(); }
+  }
+  // sine wave indicator to the right of hose
+  ctx.strokeStyle=wCol; ctx.lineWidth=2.5; ctx.shadowColor=wCol; ctx.shadowBlur=10;
+  ctx.beginPath();
+  for(let x=0;x<=120;x+=3){
+    const y=mid - Math.sin(wavePhase + x*0.06)*amp*0.6;
+    const px=waveX+20+x;
+    if(x===0) ctx.moveTo(px,y); else ctx.lineTo(px,y);
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
+  // peak marker dot
+  const pv=Math.cos(wavePhase);
+  const py=mid - pv*amp*0.6;
+  ctx.fillStyle= pv>0.7?COL.orange:COL.cyan;
+  ctx.beginPath(); ctx.arc(waveX+20+120,py,4,0,TAU); ctx.fill();
+  // label
+  ctx.fillStyle=COL.dim; ctx.font='10px "IBM Plex Mono"'; ctx.textAlign='center';
+  ctx.fillText('PRESSURE', waveX, bot+22);
+  ctx.fillStyle=wCol; ctx.fillText((pressure*100|0)+'%', waveX, top-10);
+}
+
+function drawParticles(){
+  for(const s of smoke){
+    ctx.globalAlpha=s.life*0.18; ctx.fillStyle='#8899aa';
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,TAU); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  for(const p of particles){
+    ctx.globalAlpha=clamp(p.life,0,1); ctx.fillStyle=p.color;
+    ctx.shadowColor=p.color; ctx.shadowBlur=8;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life,0,TAU); ctx.fill();
+  }
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
+}
+
+function drawGrind(){
+  if(state!=='fail') return;
+  const n=14;
+  ctx.strokeStyle=COL.red; ctx.lineWidth=2; ctx.shadowColor=COL.red; ctx.shadowBlur=10;
+  for(let i=0;i<n;i++){
+    const a=flyAngle*3+i*TAU/n;
+    ctx.globalAlpha=clamp(1-shearTime,0,1)*0.8;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    let x=cx,y=cy;
+    for(let s=0;s<5;s++){ x+=Math.cos(a)*rand(8,26); y+=Math.sin(a)*rand(8,26); ctx.lineTo(x,y); }
+    ctx.stroke();
+  }
+  ctx.shadowBlur=0; ctx.globalAlpha=1;
+}
+
+function render(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  // shake
+  let ox=0,oy=0;
+  if(shake>0){ ox=rand(-shake,shake); oy=rand(-shake,shake); }
+  ctx.translate(ox,oy);
+
+  // bg
+  ctx.fillStyle=COL.bg; ctx.fillRect(-40,-40,W+80,H+80);
+  drawGrid();
+  drawPressure();
+  drawFlywheel();
+  drawGrind();
+  drawParticles();
+}
+
+// ---------- HUD sync ----------
+function syncHUD(){
+  rpmNum.textContent=String(Math.round(rpm)).padStart(4,'0');
+  gearNum.textContent=gear;
+  const engaged = engaging && state==='playing';
+  light.classList.toggle('on',engaged);
+  clutchState.textContent = engaged?'ENGAGED':(state==='fail'?'SHEARED':'RELEASED');
+}
+
+// ---------- main loop ----------
+function frame(now){
+  let dt=(now-last)/1000; last=now;
+  if(dt>0.05) dt=0.05;
+  update(dt);
+  render();
+  syncHUD();
+  requestAnimationFrame(frame);
+}
+
+resize();
+reset();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

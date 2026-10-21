@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Audit — Identity Sequence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1210;
+    --panel:#15201C;
+    --ink:#E8F0EA;
+    --gold:#C9A227;
+    --mute:#3A4A42;
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --ease-inout:cubic-bezier(.65,.05,.36,1);
+    --dur:8s;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#050807;
+    color:var(--ink);
+    font-family:"IBM Plex Sans",sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---------- STAGE (16:9) ---------- */
+  .stage{
+    position:relative;
+    width:min(96vw, calc(96vh * 16 / 9));
+    aspect-ratio:16/9;
+    background:var(--bg);
+    overflow:hidden;
+    isolation:isolate;
+    box-shadow:0 0 0 1px rgba(201,162,39,.10), 0 40px 120px -40px rgba(0,0,0,.9);
+    cursor:pointer;
+    user-select:none;
+  }
+
+  /* atmospheric layers */
+  .atmos{position:absolute;inset:0;pointer-events:none}
+  .vignette{background:radial-gradient(120% 120% at 50% 42%, transparent 46%, rgba(0,0,0,.55) 100%);z-index:2}
+  .grain{
+    z-index:6;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+    animation:grain .5s steps(2) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0)}50%{transform:translate(-1.5%,1%)}100%{transform:translate(1%,-1.5%)}}
+  .dust{z-index:3;overflow:hidden}
+  .dust i{
+    position:absolute;bottom:-4%;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,240,234,.9),rgba(232,240,234,0) 70%);
+    opacity:0;animation-name:drift;animation-timing-function:linear;animation-iteration-count:infinite;
+  }
+  @keyframes drift{
+    0%{transform:translate(0,0) scale(1);opacity:0}
+    14%{opacity:.5}
+    82%{opacity:.14}
+    100%{transform:translate(var(--dx),-118%) scale(.7);opacity:0}
+  }
+  .fade{
+    z-index:10;background:var(--bg);
+    animation:fadeLoop var(--dur) linear infinite;
+  }
+  @keyframes fadeLoop{0%,86%{opacity:0}96%,100%{opacity:1}}
+
+  /* ---------- LOCKUP ---------- */
+  .lockup{
+    position:absolute;inset:0;z-index:5;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:clamp(14px,2.2vh,26px);
+    animation:breathe var(--dur) var(--ease-inout) infinite;
+  }
+  @keyframes breathe{0%,64%{transform:scale(1)}75%{transform:scale(1.012)}100%{transform:scale(1)}}
+
+  .mark{
+    position:relative;
+    width:clamp(120px,26vw,210px);
+    height:clamp(120px,26vw,210px);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mark svg{width:100%;height:100%;overflow:visible}
+  .ring{
+    fill:none;stroke:var(--ink);stroke-width:2.4;
+    stroke-dasharray:1;stroke-dashoffset:1;
+    animation:ringDraw var(--dur) var(--ease-out) infinite;
+    filter:drop-shadow(0 0 6px rgba(232,240,234,.18));
+  }
+  @keyframes ringDraw{
+    0%{stroke-dashoffset:1;opacity:1}
+    15%{stroke-dashoffset:0;opacity:1}
+    22%{stroke-dashoffset:0;opacity:1}
+    30%{stroke-dashoffset:0;opacity:0}
+    100%{stroke-dashoffset:1;opacity:0}
+  }
+  .gold-rule{
+    position:absolute;top:50%;left:50%;height:2px;
+    transform:translate(-50%,-50%);
+    background:linear-gradient(90deg,transparent,var(--gold) 18%,#F0D87A 50%,var(--gold) 82%,transparent);
+    box-shadow:0 0 14px rgba(201,162,39,.55);
+    animation:goldRule var(--dur) var(--ease-out) infinite;
+  }
+  @keyframes goldRule{
+    0%{width:0;opacity:1}
+    15%{width:100%;opacity:1}
+    22%{width:100%;opacity:1}
+    30%{width:100%;opacity:0}
+    100%{width:0;opacity:0}
+  }
+
+  /* wordmark + sweep */
+  .wordmark{
+    position:relative;display:inline-block;overflow:hidden;
+    font-family:"Manrope","Söhne",sans-serif;
+    font-weight:800;
+    font-size:clamp(2rem,6.6vw,5.4rem);
+    letter-spacing:.06em;
+    line-height:1;
+    color:var(--ink);
+    animation:wmReveal var(--dur) var(--ease-inout) infinite;
+  }
+  .wm-text{display:block;opacity:1}
+  .sweep{
+    position:absolute;top:0;left:0;height:100%;width:42%;
+    transform:translateX(-160%) skewX(-16deg);
+    background:linear-gradient(90deg,transparent,rgba(240,216,122,.05) 25%,rgba(240,216,122,.6) 50%,rgba(240,216,122,.05) 75%,transparent);
+    mix-blend-mode:screen;pointer-events:none;
+    animation:sweep var(--dur) var(--ease-inout) infinite;
+  }
+  @keyframes wmReveal{
+    0%,15%{opacity:0;transform:translateY(14px);filter:blur(7px)}
+    30%{opacity:1;transform:translateY(0);filter:blur(0)}
+    86%{opacity:1}
+    96%,100%{opacity:0}
+  }
+  @keyframes sweep{
+    0%,18%{transform:translateX(-160%) skewX(-16deg)}
+    30%{transform:translateX(260%) skewX(-16deg)}
+    100%{transform:translateX(260%) skewX(-16deg)}
+  }
+
+  /* ledger hairlines */
+  .ledger{
+    display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.4vh,14px);
+  }
+  .hair{
+    height:1px;width:clamp(220px,46vw,560px);
+    background:linear-gradient(90deg,transparent,var(--mute) 20%,var(--mute) 80%,transparent);
+    transform:scaleX(0);
+    animation:hair var(--dur) var(--ease-out) infinite;
+  }
+  @keyframes hair{
+    0%,42%{transform:scaleX(0)}
+    52%{transform:scaleX(1)}
+    86%{transform:scaleX(1)}
+    96%,100%{transform:scaleX(1)}
+  }
+
+  /* subline */
+  .subline{
+    font-family:"IBM Plex Sans",sans-serif;
+    font-weight:500;
+    font-size:clamp(.72rem,1.7vw,1.15rem);
+    color:var(--ink);
+    text-transform:uppercase;
+    white-space:nowrap;
+    animation:sub var(--dur) var(--ease-out) infinite;
+  }
+  @keyframes sub{
+    0%,42%{opacity:0;letter-spacing:.4em;transform:translateY(6px)}
+    56%{opacity:1;letter-spacing:.16em;transform:translateY(0)}
+    86%{opacity:1;letter-spacing:.16em}
+    96%,100%{opacity:0}
+  }
+
+  /* ---------- HUD (timeline scrubber) ---------- */
+  .hud{
+    position:absolute;left:0;right:0;bottom:0;z-index:20;
+    display:flex;align-items:center;gap:clamp(10px,1.6vw,18px);
+    padding:clamp(10px,2vh,20px) clamp(14px,3vw,34px);
+    opacity:.24;transition:opacity .45s ease;
+  }
+  .stage:hover .hud,.stage:focus-within .hud{opacity:1}
+  .hud-label{
+    font-size:clamp(.55rem,1vw,.72rem);letter-spacing:.22em;text-transform:uppercase;
+    color:var(--mute);white-space:nowrap;font-weight:500;
+  }
+  .track{
+    position:relative;flex:1;height:3px;border-radius:3px;cursor:pointer;
+    background:rgba(232,240,234,.12);
+  }
+  .fill{position:absolute;left:0;top:0;bottom:0;width:12.5%;border-radius:3px;
+    background:linear-gradient(90deg,var(--mute),var(--gold));box-shadow:0 0 8px rgba(201,162,39,.4)}
+  .marker{position:absolute;top:50%;left:0;width:2px;height:12px;transform:translate(-50%,-50%);
+    background:var(--gold);box-shadow:0 0 6px rgba(201,162,39,.7);border-radius:2px}
+  .beat{position:absolute;top:50%;width:1px;height:9px;transform:translate(-50%,-50%);background:var(--mute);opacity:.6}
+  .hud-time{
+    font-variant-numeric:tabular-nums;font-size:clamp(.55rem,1vw,.72rem);
+    letter-spacing:.08em;color:var(--mute);white-space:nowrap;
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .stage *{animation:none !important}
+    .ring{display:none}
+    .gold-rule{width:100%;opacity:0}
+    .wordmark{opacity:1;transform:none;filter:none}
+    .sweep{opacity:0}
+    .subline{opacity:1;letter-spacing:.16em;transform:none}
+    .hair{transform:scaleX(1)}
+    .fade{opacity:0}
+    .dust i{display:none}
+    .lockup{transform:none}
+    .hud{opacity:1}
+    .fill{width:100%}
+    .marker{left:100%}
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage" role="img" aria-label="Meridian Audit — animated brand identity sequence">
+    <!-- atmosphere -->
+    <div class="atmos dust" id="dust"></div>
+    <div class="atmos vignette"></div>
+    <div class="atmos grain"></div>
+
+    <!-- identity lockup -->
+    <div class="lockup">
+      <div class="mark">
+        <div class="gold-rule"></div>
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="ring" cx="50" cy="50" r="42" pathLength="1"/>
+        </svg>
+      </div>
+
+      <div class="wordmark">
+        <span class="wm-text">MERIDIAN</span>
+        <span class="sweep"></span>
+      </div>
+
+      <div class="ledger">
+        <div class="hair"></div>
+        <div class="subline">Audit</div>
+        <div class="hair"></div>
+      </div>
+    </div>
+
+    <!-- dissolve to black -->
+    <div class="atmos fade"></div>
+
+    <!-- timeline HUD -->
+    <div class="hud">
+      <span class="hud-label">Identity Sequence</span>
+      <div class="track" id="track">
+        <div class="fill" id="fill"></div>
+        <div class="beat" style="left:15%"></div>
+        <div class="beat" style="left:42.5%"></div>
+        <div class="beat" style="left:65%"></div>
+        <div class="beat" style="left:87.5%"></div>
+        <div class="marker" id="marker"></div>
+      </div>
+      <span class="hud-time" id="time">0.00 / 8.00s</span>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const fill = document.getElementById('fill');
+  const marker = document.getElementById('marker');
+  const timeEl = document.getElementById('time');
+  const track = document.getElementById('track');
+  const DUR = 8000;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // seed drifting dust particles
+  const dust = document.getElementById('dust');
+  const N = 26;
+  for(let i=0;i<N;i++){
+    const p = document.createElement('i');
+    const size = 1 + Math.random()*3;
+    p.style.width = p.style.height = size.toFixed(2)+'px';
+    p.style.left = (Math.random()*100).toFixed(2)+'%';
+    p.style.setProperty('--dx', (Math.random()*40-20).toFixed(1)+'px');
+    p.style.animationDuration = (6 + Math.random()*8).toFixed(2)+'s';
+    p.style.animationDelay = (-Math.random()*12).toFixed(2)+'s';
+    dust.appendChild(p);
+  }
+
+  let start = performance.now();
+
+  function restart(){
+    stage.style.animation = 'none';
+    void stage.offsetWidth; // reflow
+    stage.style.animation = '';
+    start = performance.now();
+    if(reduce){ fill.style.width='100%'; marker.style.left='100%'; timeEl.textContent='8.00 / 8.00s'; }
+  }
+
+  // restart on click or space (story still plays without pointer)
+  stage.addEventListener('click', restart);
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'){ e.preventDefault(); restart(); }
+  });
+
+  // optional scrub — pause, seek, resume
+  let scrubbing = false;
+  function seekFromEvent(e){
+    const r = track.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX);
+    let frac = (cx - r.left)/r.width;
+    frac = Math.max(0, Math.min(1, frac));
+    stage.style.animationPlayState = 'paused';
+    start = performance.now() - frac*DUR;
+    paint(frac*DUR);
+  }
+  track.addEventListener('pointerdown', e=>{
+    scrubbing = true;
+    try{ track.setPointerCapture(e.pointerId); }catch(_){}
+    seekFromEvent(e);
+  });
+  track.addEventListener('pointermove', e=>{ if(scrubbing) seekFromEvent(e); });
+  function endScrub(){
+    if(!scrubbing) return;
+    scrubbing = false;
+    stage.style.animationPlayState = 'running';
+  }
+  track.addEventListener('pointerup', endScrub);
+  track.addEventListener('pointercancel', endScrub);
+
+  function paint(el){
+    const frac = Math.min(1, Math.max(0, el/DUR));
+    fill.style.width = (frac*100).toFixed(2)+'%';
+    marker.style.left = (frac*100).toFixed(2)+'%';
+    timeEl.textContent = (frac*8).toFixed(2)+' / 8.00s';
+  }
+
+  function loop(now){
+    if(!scrubbing){
+      const el = (now - start) % DUR;
+      paint(el);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  if(reduce){
+    fill.style.width='100%'; marker.style.left='100%'; timeEl.textContent='8.00 / 8.00s';
+  } else {
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>

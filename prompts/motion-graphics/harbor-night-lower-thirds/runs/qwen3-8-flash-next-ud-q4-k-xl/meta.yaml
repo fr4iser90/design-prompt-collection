@@ -1,0 +1,32 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-10-21"
+updated: "2026-10-21"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+context_tokens: 126000
+duration_ms: 378240
+gen_ms: 378240
+ttft_ms: 3279
+queue_wait_ms: 361
+wall_ms: 381880
+rejected_at: "2026-10-21T11:46:42.108Z"
+last_reject_reason: "build_fail:Aborted — SSE/TCP stream closed (slot should free)"
+review_score: 6
+review_summary: "Atmospheric broadcast look with correct palette and show bug, but the captured frame is mid-transition (clipped name, faint secondary) and includes a scrubber/replay UI strip that reads as player chrome rather than a cle"
+reviewed_at: "2026-10-21T12:11:41.673Z"
+review_issues:
+  - "Captured mid-animation: nameplate clipped to 'A CHEN', secondary line barely legible"
+  - "Bottom scrubber + 'SPACE / CLICK — REPLAY' reads as player chrome, not broadcast frame"
+  - "Nameplate sits slightly outside title-safe left margin"
+  - "Type is functional but not expressive; Fraunces display not evident in still"
