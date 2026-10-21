@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 265 | 257 | 227 | 38 |
+| 265 | 260 | 227 | 38 |
 
 ## Quick start
 
@@ -2259,9 +2259,11 @@ An 8s kinetic identity loop for 'Dot & Grain' studio. CMYK halftone dots drift, 
 
 [prompt](prompts/motion-graphics/halftone-rasterize/prompt.md) · [extended](prompts/motion-graphics/halftone-rasterize/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | — | — | — | — | — | — | — | — | — |
 
 ---
 
@@ -2289,9 +2291,11 @@ Create a single-file HTML5/CSS/JS motion graphics piece titled 'Wet Ink Spread' 
 
 [prompt](prompts/motion-graphics/ink-spread-capillary/prompt.md) · [extended](prompts/motion-graphics/ink-spread-capillary/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.5s | 93s | — | [open](prompts/motion-graphics/ink-spread-capillary/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2303,9 +2307,11 @@ Heavy serif glyphs crash onto a paper plate, shaking the canvas and bleeding red
 
 [prompt](prompts/motion-graphics/letterpress-mono-drop/prompt.md) · [extended](prompts/motion-graphics/letterpress-mono-drop/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | — | — | — | — | — | — | — | — | — |
 
 ---
 

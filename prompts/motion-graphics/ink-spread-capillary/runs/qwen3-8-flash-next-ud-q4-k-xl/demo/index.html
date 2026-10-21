@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Absorb Press — Wet Ink Spread</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F0F0F0;
+    --ink:#000000;
+    --grey:#808080;
+    --hair:rgba(0,0,0,.14);
+    --display:'Playfair Display','Baskerville','Baskerville Old Face','Libre Baskerville','Georgia',serif;
+    --mono:'Space Mono','Courier New',Courier,monospace;
+    --pad:clamp(1.1rem, 5vw, 4.2rem);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{height:100%;}
+  body{
+    min-height:100vh; min-height:100dvh;
+    background:var(--paper); color:var(--ink);
+    font-family:var(--mono);
+    overflow:hidden; position:relative;
+    display:flex; flex-direction:column;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* paper grain — subtle, static, sits over everything */
+  body::after{
+    content:""; position:fixed; inset:0; z-index:60; pointer-events:none;
+    opacity:.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size:140px 140px;
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    flex:0 0 auto;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:1rem; padding:var(--pad) var(--pad) .85rem;
+    border-bottom:1px solid var(--hair);
+  }
+  .brand{ display:flex; align-items:baseline; gap:.6ch; }
+  .mark{
+    width:1.35em; height:1.35em; flex:0 0 auto; align-self:center;
+    background:var(--ink); border-radius:50% 50% 50% 50% / 62% 62% 38% 38%;
+    box-shadow:inset -2px -2px 0 rgba(255,255,255,.25);
+  }
+  .brand b{ font-family:var(--display); font-weight:800; font-size:clamp(1.15rem,2.4vw,1.95rem); letter-spacing:-.015em; }
+  .brand span{ font-family:var(--mono); font-size:.7rem; letter-spacing:.24em; color:var(--grey); }
+
+  .meta{ font-size:.68rem; letter-spacing:.2em; color:var(--grey); text-align:right; line-height:1.5; }
+  .meta b{ color:var(--ink); font-weight:700; }
+
+  /* ---- stage ---- */
+  .stage{
+    flex:1 1 auto; min-height:0; position:relative;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:0 var(--pad);
+  }
+  .stage::before,.stage::after{
+    content:""; position:absolute; width:11px; height:11px; pointer-events:none;
+    border-color:var(--grey); opacity:.45;
+  }
+  .stage::before{ top:14px; left:14px; border-top:1.5px solid; border-left:1.5px solid; }
+  .stage::after{ bottom:14px; right:14px; border-bottom:1.5px solid; border-right:1.5px solid; }
+
+  .stack{ display:flex; flex-direction:column; align-items:center; text-align:center; width:100%; }
+
+  .overline{
+    font-size:clamp(.58rem,1.4vw,.8rem); letter-spacing:.42em;
+    text-transform:uppercase; color:var(--grey); margin:0 0 clamp(.9rem,2.4vw,1.6rem);
+  }
+
+  .inkwrap{ position:relative; width:100%; display:flex; justify-content:center; }
+  .ink{
+    display:block; line-height:.8; color:var(--ink);
+    font-family:var(--display); font-weight:800;
+    font-size:clamp(4.5rem, 24vw, 15rem);
+    letter-spacing:-.02em; white-space:nowrap;
+    will-change:transform;
+  }
+  /* the bleed lives only on the ink word */
+  .inkwrap{ filter:url(#ink-bleed); }
+
+  .caption{
+    margin:clamp(1.1rem,2.6vw,1.9rem) 0 0;
+    font-family:var(--mono); font-size:clamp(.72rem, 1.5vw, 1.05rem);
+    letter-spacing:.26em; text-transform:uppercase; color:var(--grey);
+    display:flex; align-items:center; gap:.9ch;
+  }
+  .cap-dot{ width:.55em; height:.55em; background:var(--grey); border-radius:50%; flex:0 0 auto; }
+
+  /* ---- timeline ---- */
+  .timeline{
+    flex:0 0 auto; padding:.9rem var(--pad) var(--pad);
+    border-top:1px solid var(--hair);
+    display:flex; align-items:center; gap:clamp(.7rem,2vw,1.4rem);
+  }
+  .phase{ font-size:.66rem; letter-spacing:.24em; color:var(--grey); white-space:nowrap; }
+  .phase b{ color:var(--ink); font-weight:700; }
+
+  .track{ flex:1 1 auto; height:2px; background:var(--hair); position:relative; }
+  .fill{ position:absolute; left:0; top:0; height:100%; width:0%; background:var(--ink); }
+  .fill::after{ content:""; position:absolute; right:-3px; top:50%; width:7px; height:7px; margin-top:-3.5px; background:var(--ink); border-radius:50%; }
+  .ticks{ position:absolute; inset:0; }
+  .ticks i{ position:absolute; top:-4px; width:1px; height:10px; background:var(--grey); opacity:.5; }
+
+  .readout{ font-size:.66rem; letter-spacing:.16em; color:var(--grey); white-space:nowrap; }
+  .readout b{ color:var(--ink); font-weight:700; }
+
+  @media (max-width:560px){
+    .meta{ display:none; }
+    .phase{ font-size:.58rem; letter-spacing:.16em; }
+    .readout{ font-size:.58rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .inkwrap{ filter:none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SVG filter definition -->
+  <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;">
+    <defs>
+      <filter id="ink-bleed" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+        <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="7" result="noise"/>
+        <feDisplacementMap id="disp" in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <b>Absorb Press</b>
+      <span>EST. MMXIV</span>
+    </div>
+    <div class="meta">
+      <div><b>WET INK SPREAD</b></div>
+      <div>PLATE 04 / CAPILLARY STUDY</div>
+    </div>
+  </header>
+
+  <!-- stage -->
+  <main class="stage">
+    <div class="stack">
+      <p class="overline">Absorb Press — Identity Loop</p>
+      <div class="inkwrap">
+        <span class="ink">INK</span>
+      </div>
+      <p class="caption"><span class="cap-dot" aria-hidden="true"></span>Capillary Action Simulation</p>
+    </div>
+  </main>
+
+  <!-- timeline -->
+  <footer class="timeline">
+    <div class="phase" id="phase"><b>STRIKE</b></div>
+    <div class="track">
+      <div class="fill" id="fill"></div>
+      <div class="ticks" aria-hidden="true">
+        <i style="left:25%"></i><i style="left:50%"></i><i style="left:75%"></i>
+      </div>
+    </div>
+    <div class="readout"><b id="clock">00.00</b> / 08.00s</div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var DURATION = 8000;
+  var MAX_SCALE = 18;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var turb = document.getElementById('turb');
+  var disp = document.getElementById('disp');
+  var fill = document.getElementById('fill');
+  var clock = document.getElementById('clock');
+  var phase = document.getElementById('phase');
+
+  var clamp = function(v,a,b){ return v < a ? a : v > b ? b : v; };
+  var lerp  = function(a,b,t){ return a + (b - a) * t; };
+  var easeInOutCubic = function(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2; };
+
+  function setSharp(){
+    disp.setAttribute('scale','0');
+    turb.setAttribute('baseFrequency','0.012');
+  }
+
+  function phaseName(p){
+    if (p < 0.25) return '<b>STRIKE</b>';
+    if (p < 0.75) return '<b>BLEED</b>';
+    return '<b>DRY</b>';
+  }
+
+  function apply(t){
+    var p = t / DURATION;
+    var s, f;
+    if (p < 0.25){
+      s = 0; f = 0.012;
+    } else if (p < 0.75){
+      var k = (p - 0.25) / 0.5;
+      var e = easeInOutCubic(k);
+      s = e * MAX_SCALE;
+      f = 0.012 + 0.004 * e;
+    } else {
+      var k2 = (p - 0.75) / 0.25;
+      var e2 = easeInOutCubic(k2);
+      s = MAX_SCALE * (1 - e2);
+      f = 0.016 - 0.004 * e2;
+    }
+    disp.setAttribute('scale', s.toFixed(3));
+    turb.setAttribute('baseFrequency', f.toFixed(4));
+    fill.style.width = (p * 100).toFixed(2) + '%';
+    clock.textContent = (t / 1000).toFixed(2);
+    phase.innerHTML = phaseName(p);
+  }
+
+  if (reduce){
+    setSharp();
+    fill.style.width = '0%';
+    clock.textContent = '00.00';
+    phase.innerHTML = '<b>STRIKE</b>';
+  } else {
+    var start = performance.now();
+    function frame(now){
+      var t = (now - start) % DURATION;
+      apply(t);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>
