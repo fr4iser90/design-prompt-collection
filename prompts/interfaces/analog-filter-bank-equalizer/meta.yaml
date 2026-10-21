@@ -1,0 +1,29 @@
+id: analog-filter-bank-equalizer
+title: "Analog Filter Bank Equalizer"
+category: interfaces
+tags:
+  - audio
+  - equalizer
+  - canvas2d
+  - instrument-panel
+  - utility
+  - precision
+  - engineering
+  - frequency
+  - tool-surface
+  - minimal
+status: polished
+summary: "High-precision analog equalizer UI with 5 draggable dials, real-time Canvas2D curve rendering, and industrial studio aesthetics."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

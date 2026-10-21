@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-21T12:33:49.319Z",
+  "generated_at": "2026-10-21T15:54:46.761Z",
   "schema": "schema/entry.schema.json",
-  "count": 244,
+  "count": 250,
   "categories": [
     "landing-pages",
     "animations",
@@ -8423,6 +8423,36 @@
       ]
     },
     {
+      "id": "carbon-capture-scrubber-efficiency",
+      "title": "Flue Gas Scrubbing",
+      "category": "motion-graphics",
+      "tags": [
+        "explainer",
+        "timeline",
+        "chemistry",
+        "industrial",
+        "data-story"
+      ],
+      "status": "polished",
+      "summary": "8-second looping motion graphic for GreenStack illustrating flue gas scrubbing efficiency using hard industrial geometry, responsive layout, and precise CSS/SVG animations.",
+      "path": "prompts/motion-graphics/carbon-capture-scrubber-efficiency",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.md",
+      "extended": "prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "concept-kong-scroll",
       "title": "Concept Kong Scroll",
       "category": "motion-graphics",
@@ -8436,13 +8466,74 @@
       "status": "draft",
       "summary": "Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s.",
       "path": "prompts/motion-graphics/concept-kong-scroll",
-      "preview": null,
+      "preview": "prompts/motion-graphics/concept-kong-scroll/preview.png",
       "prompt": "prompts/motion-graphics/concept-kong-scroll/prompt.md",
       "extended": "prompts/motion-graphics/concept-kong-scroll/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/concept-kong-scroll/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": null,
       "source_provider": null,
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 243081,
+          "gen_ms": 243081,
+          "ttft_ms": 2465,
+          "queue_wait_ms": 217,
+          "wall_ms": 245763,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/concept-kong-scroll/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/concept-kong-scroll/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 6,
+          "review_summary": "Clean grid-based motion prototype with correct palette and mono type, but the poster frame lacks the required readable 'Concept is King' headline and feels sparse."
+        }
+      ]
+    },
+    {
+      "id": "fiber-optic-total-internal-reflection",
+      "title": "Light Guiding Principles",
+      "category": "motion-graphics",
+      "tags": [
+        "timeline",
+        "explainer",
+        "optics",
+        "minimal",
+        "geometry",
+        "physics"
+      ],
+      "status": "polished",
+      "summary": "6s loop: Light enters LumenCore fiber, bounces via total internal reflection, exits clean. Interactive bend shows attenuation. High-contrast neon on black.",
+      "path": "prompts/motion-graphics/fiber-optic-total-internal-reflection",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.md",
+      "extended": "prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
       "created": "2026-10-21",
       "updated": "2026-10-21",
       "model_hints": [
@@ -8573,6 +8664,66 @@
       ]
     },
     {
+      "id": "osmotic-desalination-pressure",
+      "title": "Reverse Osmosis Pressure Explainer",
+      "category": "motion-graphics",
+      "tags": [
+        "explainer",
+        "timeline",
+        "diagram-motion",
+        "fluid-dynamics",
+        "industrial"
+      ],
+      "status": "polished",
+      "summary": "8s motion graphics for AquaFlux visualizing RO pressure mechanics. Dark teal industrial aesthetic, Syne/IBM Plex typography. Particles bounce off membrane; gauge sweeps to 80 PSI. Seamless loop.",
+      "path": "prompts/motion-graphics/osmotic-desalination-pressure",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/osmotic-desalination-pressure/prompt.md",
+      "extended": "prompts/motion-graphics/osmotic-desalination-pressure/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "phase-change-latent-heat",
+      "title": "ThermoStore: Latent Heat Buffer",
+      "category": "motion-graphics",
+      "tags": [
+        "timeline",
+        "explainer",
+        "thermodynamics",
+        "geometry",
+        "minimal"
+      ],
+      "status": "polished",
+      "summary": "An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A solid block melts layer-by-layer under a heat spike, holding temperature flat (latent plateau) before solidifying to release energy.…",
+      "path": "prompts/motion-graphics/phase-change-latent-heat",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/phase-change-latent-heat/prompt.md",
+      "extended": "prompts/motion-graphics/phase-change-latent-heat/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "signal-type-hero",
       "title": "Signal Type Hero",
       "category": "motion-graphics",
@@ -8586,11 +8737,11 @@
       "status": "draft",
       "summary": "Full-bleed kinetic typography hero for Signal Atelier: Communication Design energy with masks, glyph axes, and a poster-strong hold at ~1.5s.",
       "path": "prompts/motion-graphics/signal-type-hero",
-      "preview": null,
+      "preview": "prompts/motion-graphics/signal-type-hero/preview.png",
       "prompt": "prompts/motion-graphics/signal-type-hero/prompt.md",
       "extended": "prompts/motion-graphics/signal-type-hero/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/signal-type-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": null,
       "source_provider": null,
       "created": "2026-10-21",
@@ -8600,7 +8751,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 133936,
+          "gen_ms": 133936,
+          "ttft_ms": 3762,
+          "queue_wait_ms": 5435,
+          "wall_ms": 143134,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/signal-type-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/signal-type-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "A completely black, empty frame with no typography, brand, or composition visible."
+        }
+      ]
     },
     {
       "id": "smile-line-signature",
@@ -8616,11 +8797,11 @@
       "status": "draft",
       "summary": "Signature path for Warmmark Studio: one line → abstract mark → smile curve + wordmark — no emoji; poster hold at ~1.5s.",
       "path": "prompts/motion-graphics/smile-line-signature",
-      "preview": null,
+      "preview": "prompts/motion-graphics/smile-line-signature/preview.png",
       "prompt": "prompts/motion-graphics/smile-line-signature/prompt.md",
       "extended": "prompts/motion-graphics/smile-line-signature/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/smile-line-signature/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": null,
       "source_provider": null,
       "created": "2026-10-21",
@@ -8630,7 +8811,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 165166,
+          "gen_ms": 165166,
+          "ttft_ms": 2950,
+          "queue_wait_ms": 167,
+          "wall_ms": 168284,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/smile-line-signature/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/smile-line-signature/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 4,
+          "review_summary": "Captures the early line-draw phase but lacks the brand signal and poster intent required for the 1.5s mark."
+        }
+      ]
     },
     {
       "id": "volt-route-explainer",
@@ -13920,6 +14131,37 @@
       ]
     },
     {
+      "id": "phosphorescent-fungal-bloom",
+      "title": "Phosphorescent Bloom",
+      "category": "editorial",
+      "tags": [
+        "fungi",
+        "glow",
+        "read-time",
+        "attention",
+        "dark",
+        "organic"
+      ],
+      "status": "polished",
+      "summary": "A dark-mode essay where paragraph luminance correlates with read-time, creating a biological attention heat-map for 'Mycelium Quarterly'.",
+      "path": "prompts/editorial/phosphorescent-fungal-bloom",
+      "preview": null,
+      "prompt": "prompts/editorial/phosphorescent-fungal-bloom/prompt.md",
+      "extended": "prompts/editorial/phosphorescent-fungal-bloom/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "pressure-vessel-gauge-sweep",
       "title": "Barometric Essay: Atmosphere Quarterly",
       "category": "editorial",
@@ -14349,6 +14591,41 @@
       ]
     },
     {
+      "id": "analog-filter-bank-equalizer",
+      "title": "Analog Filter Bank Equalizer",
+      "category": "interfaces",
+      "tags": [
+        "audio",
+        "equalizer",
+        "canvas2d",
+        "instrument-panel",
+        "utility",
+        "precision",
+        "engineering",
+        "frequency",
+        "tool-surface",
+        "minimal"
+      ],
+      "status": "polished",
+      "summary": "High-precision analog equalizer UI with 5 draggable dials, real-time Canvas2D curve rendering, and industrial studio aesthetics.",
+      "path": "prompts/interfaces/analog-filter-bank-equalizer",
+      "preview": null,
+      "prompt": "prompts/interfaces/analog-filter-bank-equalizer/prompt.md",
+      "extended": "prompts/interfaces/analog-filter-bank-equalizer/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-10-21",
+      "updated": "2026-10-21",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "brine-crystal-halite-growth",
       "title": "Brine Crystal Halite Growth",
       "category": "interfaces",
@@ -14369,11 +14646,11 @@
       "status": "polished",
       "summary": "A dark industrial tank where salinity sliders dictate crystal lattice growth. High salinity breeds chaotic, rapid fracturing; low salinity yields slow, perfect geometric cubes. Achieve target purity.",
       "path": "prompts/interfaces/brine-crystal-halite-growth",
-      "preview": null,
+      "preview": "prompts/interfaces/brine-crystal-halite-growth/preview.png",
       "prompt": "prompts/interfaces/brine-crystal-halite-growth/prompt.md",
       "extended": "prompts/interfaces/brine-crystal-halite-growth/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-10-21",
@@ -14383,7 +14660,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-10-21",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 126000,
+          "duration_ms": 190497,
+          "gen_ms": 190497,
+          "ttft_ms": 7771,
+          "queue_wait_ms": 194,
+          "wall_ms": 198463,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 1,
+          "review_summary": "The screenshot is a blank, dark void with no visible UI, text, canvas, or controls."
+        }
+      ]
     },
     {
       "id": "ferrous-oxide-bloom-filter",

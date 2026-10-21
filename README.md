@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 244 | 240 | 206 | 38 |
+| 250 | 244 | 212 | 38 |
 
 ## Quick start
 
@@ -2203,6 +2203,20 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 ## Motion Graphics
 
+### Flue Gas Scrubbing
+
+8-second looping motion graphic for GreenStack illustrating flue gas scrubbing efficiency using hard industrial geometry, responsive layout, and precise CSS/SVG animations.
+
+**Status:** polished · `explainer` `timeline` `chemistry` `industrial` `data-story` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.md) · [extended](prompts/motion-graphics/carbon-capture-scrubber-efficiency/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Concept Kong Scroll
 
 Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s.
@@ -2210,6 +2224,22 @@ Scroll-story for Northmark Studio: six phases from point to brand system — con
 **Status:** draft · `scroll-story` `hero-kinetic` `svg-motion` `studio` `process`
 
 [prompt](prompts/motion-graphics/concept-kong-scroll/prompt.md) · [extended](prompts/motion-graphics/concept-kong-scroll/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/concept-kong-scroll/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 2.5s | 243s | 6 | [open](prompts/motion-graphics/concept-kong-scroll/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Light Guiding Principles
+
+6s loop: Light enters LumenCore fiber, bounces via total internal reflection, exits clean. Interactive bend shows attenuation. High-contrast neon on black.
+
+**Status:** polished · `timeline` `explainer` `optics` `minimal` `geometry` `physics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.md) · [extended](prompts/motion-graphics/fiber-optic-total-internal-reflection/prompt.full.md)
 
 _No shot preview yet._
 
@@ -2249,6 +2279,34 @@ _No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
+### Reverse Osmosis Pressure Explainer
+
+8s motion graphics for AquaFlux visualizing RO pressure mechanics. Dark teal industrial aesthetic, Syne/IBM Plex typography. Particles bounce off membrane; gauge sweeps to 80 PSI. Seamless loop.
+
+**Status:** polished · `explainer` `timeline` `diagram-motion` `fluid-dynamics` `industrial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/osmotic-desalination-pressure/prompt.md) · [extended](prompts/motion-graphics/osmotic-desalination-pressure/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### ThermoStore: Latent Heat Buffer
+
+An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A solid block melts layer-by-layer under a heat spike, holding temperature flat (latent plateau) before solidifying to release energy.…
+
+**Status:** polished · `timeline` `explainer` `thermodynamics` `geometry` `minimal` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/phase-change-latent-heat/prompt.md) · [extended](prompts/motion-graphics/phase-change-latent-heat/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Signal Type Hero
 
 Full-bleed kinetic typography hero for Signal Atelier: Communication Design energy with masks, glyph axes, and a poster-strong hold at ~1.5s.
@@ -2257,9 +2315,11 @@ Full-bleed kinetic typography hero for Signal Atelier: Communication Design ener
 
 [prompt](prompts/motion-graphics/signal-type-hero/prompt.md) · [extended](prompts/motion-graphics/signal-type-hero/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/signal-type-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.8s | 134s | 1 | [open](prompts/motion-graphics/signal-type-hero/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2271,9 +2331,11 @@ Signature path for Warmmark Studio: one line → abstract mark → smile curve +
 
 [prompt](prompts/motion-graphics/smile-line-signature/prompt.md) · [extended](prompts/motion-graphics/smile-line-signature/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/smile-line-signature/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 3.0s | 165s | 4 | [open](prompts/motion-graphics/smile-line-signature/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3645,6 +3707,20 @@ A digital folio where black stamped text oxidizes into rust flakes as you scroll
 
 ---
 
+### Phosphorescent Bloom
+
+A dark-mode essay where paragraph luminance correlates with read-time, creating a biological attention heat-map for 'Mycelium Quarterly'.
+
+**Status:** polished · `fungi` `glow` `read-time` `attention` `dark` `organic` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/phosphorescent-fungal-bloom/prompt.md) · [extended](prompts/editorial/phosphorescent-fungal-bloom/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Barometric Essay: Atmosphere Quarterly
 
 A long-form climate essay where narrative intensity drives an analog pressure gauge. Text density and contrast tighten as the needle sweeps toward the red zone, simulating an approaching storm front.
@@ -3759,6 +3835,20 @@ Direct manipulation of acoustic physics: drag foam panels onto a room diagram to
 
 ---
 
+### Analog Filter Bank Equalizer
+
+High-precision analog equalizer UI with 5 draggable dials, real-time Canvas2D curve rendering, and industrial studio aesthetics.
+
+**Status:** polished · `audio` `equalizer` `canvas2d` `instrument-panel` `utility` `precision` `engineering` `frequency` `tool-surface` `minimal` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/analog-filter-bank-equalizer/prompt.md) · [extended](prompts/interfaces/analog-filter-bank-equalizer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Brine Crystal Halite Growth
 
 A dark industrial tank where salinity sliders dictate crystal lattice growth. High salinity breeds chaotic, rapid fracturing; low salinity yields slow, perfect geometric cubes. Achieve target purity.
@@ -3767,9 +3857,11 @@ A dark industrial tank where salinity sliders dictate crystal lattice growth. Hi
 
 [prompt](prompts/interfaces/brine-crystal-halite-growth/prompt.md) · [extended](prompts/interfaces/brine-crystal-halite-growth/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 7.8s | 190s | 1 | [open](prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

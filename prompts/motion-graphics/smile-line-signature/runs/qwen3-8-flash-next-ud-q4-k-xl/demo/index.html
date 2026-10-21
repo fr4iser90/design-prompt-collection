@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warmmark Studio — Smile Line Signature</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F1E8;
+    --ink:#1A1512;
+    --coral:#E36A5D;
+    --olive:#5C6B4A;
+    --ink-soft:rgba(26,21,18,.55);
+    --ink-faint:rgba(26,21,18,.28);
+    --display:'Cormorant Garamond',Georgia,serif;
+    --body:'IBM Plex Sans',system-ui,sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{height:100%;}
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  .stage{
+    position:relative;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+  }
+
+  /* ---------- atmospheric background ---------- */
+  .bg{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(120% 90% at 22% 18%, rgba(227,106,93,.10), transparent 55%),
+      radial-gradient(110% 90% at 82% 88%, rgba(92,107,74,.12), transparent 52%),
+      radial-gradient(80% 70% at 50% 50%, rgba(255,255,255,.35), transparent 70%);
+    pointer-events:none;
+  }
+  .bg::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:radial-gradient(rgba(26,21,18,.06) 1px, transparent 1.4px);
+    background-size:26px 26px;
+    -webkit-mask-image:radial-gradient(120% 100% at 50% 45%, #000 30%, transparent 78%);
+            mask-image:radial-gradient(120% 100% at 50% 45%, #000 30%, transparent 78%);
+    opacity:.5;
+  }
+  .grain{
+    position:absolute; inset:-20%;
+    pointer-events:none;
+    opacity:.05;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 6s steps(5) infinite;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}20%{transform:translate(-4%,2%)}
+    40%{transform:translate(3%,-3%)}60%{transform:translate(-2%,4%)}
+    80%{transform:translate(4%,-2%)}100%{transform:translate(0,0)}
+  }
+
+  /* ---------- registration frame ---------- */
+  .frame{
+    position:absolute; inset:clamp(16px,3.2vw,40px);
+    pointer-events:none;
+  }
+  .corner{
+    position:absolute; width:26px; height:26px;
+    border-color:var(--ink-faint);
+    opacity:0;
+    animation:cornerIn 1.1s ease .15s forwards;
+  }
+  .corner.tl{top:0;left:0;border-top:1.5px solid;border-left:1.5px solid;}
+  .corner.tr{top:0;right:0;border-top:1.5px solid;border-right:1.5px solid;}
+  .corner.bl{bottom:0;left:0;border-bottom:1.5px solid;border-left:1.5px solid;}
+  .corner.br{bottom:0;right:0;border-bottom:1.5px solid;border-right:1.5px solid;}
+  @keyframes cornerIn{to{opacity:1;}}
+
+  /* ---------- svg signature ---------- */
+  .sig{
+    position:relative;
+    width:min(88vw, 720px);
+    height:auto;
+    display:block;
+    overflow:visible;
+    z-index:2;
+  }
+  .sig .guide{
+    stroke:var(--ink-faint);
+    stroke-width:1.4;
+    stroke-dasharray:2 9;
+    stroke-linecap:round;
+  }
+  .sig .stroke{
+    fill:none;
+    stroke:var(--ink);
+    stroke-width:6.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .sig .pen{ fill:var(--coral); }
+
+  /* ---------- wordmark ---------- */
+  .wordmark{
+    position:absolute;
+    left:0; right:0; bottom:clamp(48px,11vh,96px);
+    text-align:center;
+    z-index:3;
+    opacity:0;
+    transform:translateY(14px);
+    transition:opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
+    padding:0 20px;
+  }
+  .wordmark.show{ opacity:1; transform:translateY(0); }
+  .wordmark .name{
+    font-family:var(--display);
+    font-weight:500;
+    font-size:clamp(2.4rem, 6.4vw, 4.6rem);
+    line-height:.94;
+    letter-spacing:.005em;
+    color:var(--ink);
+  }
+  .wordmark .name em{
+    font-style:italic;
+    font-weight:400;
+    color:var(--coral);
+  }
+  .wordmark .studio{
+    margin-top:.55rem;
+    font-family:var(--body);
+    font-weight:400;
+    font-size:clamp(.62rem,1.5vw,.82rem);
+    letter-spacing:.42em;
+    text-transform:uppercase;
+    color:var(--olive);
+    padding-left:.42em;
+  }
+  .wordmark .rule{
+    width:clamp(60px,12vw,120px);
+    height:1px;
+    margin:.9rem auto 0;
+    background:linear-gradient(90deg,transparent,var(--ink-faint),transparent);
+  }
+
+  /* ---------- meta captions ---------- */
+  .meta{
+    position:absolute;
+    z-index:3;
+    font-family:var(--body);
+    font-size:clamp(.56rem,1.3vw,.7rem);
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    opacity:0;
+    animation:fadeIn 1s ease .35s forwards;
+  }
+  .meta.tl{top:clamp(30px,5vh,52px); left:clamp(30px,5vw,58px);}
+  .meta.br{bottom:clamp(26px,4vh,44px); right:clamp(30px,5vw,58px); text-align:right;}
+  .meta .dot{color:var(--coral);}
+  @keyframes fadeIn{to{opacity:1;}}
+
+  .replay{
+    position:absolute;
+    bottom:clamp(26px,4vh,44px);
+    left:clamp(30px,5vw,58px);
+    z-index:3;
+    font-family:var(--body);
+    font-size:clamp(.56rem,1.3vw,.68rem);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    display:flex; align-items:center; gap:.6em;
+    opacity:0;
+    animation:fadeIn 1.2s ease 1s forwards;
+  }
+  .replay .key{
+    display:inline-block;
+    border:1px solid var(--ink-faint);
+    border-radius:4px;
+    padding:.28em .6em .34em;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+  }
+  .replay .pulse{
+    width:5px;height:5px;border-radius:50%;
+    background:var(--coral);
+    animation:blink 1.8s ease-in-out infinite;
+  }
+  @keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+
+  @media (max-width:560px){
+    .meta.br{display:none;}
+    .wordmark{bottom:clamp(40px,13vh,80px);}
+    .replay{left:50%;transform:translateX(-50%);}
+  }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .grain{animation:none;}
+    .corner,.meta,.replay{animation:none;opacity:1;}
+    .replay .pulse{animation:none;}
+    .wordmark{transition:none;}
+  }
+</style>
+</head>
+<body>
+  <main class="stage" id="stage" aria-label="Warmmark Studio signature animation">
+    <div class="bg" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <div class="frame" aria-hidden="true">
+      <span class="corner tl"></span>
+      <span class="corner tr"></span>
+      <span class="corner bl"></span>
+      <span class="corner br"></span>
+    </div>
+
+    <div class="meta tl" aria-hidden="true">Warmmark&nbsp;Studio <span class="dot">·</span> Identity Motion</div>
+    <div class="meta br" aria-hidden="true">Smile Line <span class="dot">/</span> Signature 001</div>
+
+    <svg class="sig" id="sig" viewBox="0 0 600 300" role="img" aria-label="A single line morphing into a smile-curve signature mark">
+      <path class="guide" id="guide" d="M120 150 L480 150"></path>
+      <path class="stroke" id="stroke" d="M120 150 L480 150"></path>
+      <circle class="pen" id="pen" cx="120" cy="150" r="0"></circle>
+    </svg>
+
+    <div class="wordmark" id="wordmark" aria-hidden="true">
+      <div class="name">Warm<em>mark</em></div>
+      <div class="studio">Studio</div>
+      <div class="rule"></div>
+    </div>
+
+    <div class="replay" aria-hidden="true"><span class="pulse"></span><span class="key">Space</span> replay</div>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  var svg   = document.getElementById('sig');
+  var guide = document.getElementById('guide');
+  var stroke= document.getElementById('stroke');
+  var pen   = document.getElementById('pen');
+  var word  = document.getElementById('wordmark');
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- keyframe path states (all share the same command structure) ---- */
+  var KEY = {
+    line:  "M120 150 L480 150",
+    mark:  "M120 150 L300 150 L360 96 L300 150 L480 150",
+    smile: "M120 150 L300 150 L300 150 L300 150 L480 150",
+    hold:  "M120 150 L300 150 L300 150 L300 150 L480 150"
+  };
+
+  /* ---- parse a path into {cmds, pts} ---- */
+  function parse(d){
+    var cmds = d.match(/[ML][^ML]*/g);
+    var pts  = [];
+    for(var i=0;i<cmds.length;i++){
+      var nums = cmds[i].match(/-?\d+\.?\d*/g).map(Number);
+      pts.push({x:nums[0], y:nums[1]});
+    }
+    return {cmds:cmds, pts:pts};
+  }
+
+  var K = {};
+  for(var k in KEY){ K[k] = parse(KEY[k]); }
+
+  /* ---- build a path string from points ---- */
+  function build(pts){
+    var s = "";
+    for(var i=0;i<pts.length;i++){
+      s += (i===0 ? "M" : " L") + pts[i].x.toFixed(2) + " " + pts[i].y.toFixed(2);
+    }
+    return s;
+  }
+
+  /* ---- interpolate between two keyframe point sets ---- */
+  function lerpPts(a, b, t){
+    var out = [];
+    for(var i=0;i<a.length;i++){
+      out.push({
+        x: a[i].x + (b[i].x - a[i].x) * t,
+        y: a[i].y + (b[i].y - a[i].y) * t
+      });
+    }
+    return out;
+  }
+
+  /* ---- easing ---- */
+  function easeInOut(t){ return t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+  function easeOut(t){ return 1 - Math.pow(1-t,3); }
+
+  /* ---- timeline (ms) ---- */
+  var T = {
+    drawStart: 0,    drawEnd: 1200,
+    markStart: 1200, markEnd: 2800,
+    smileStart:2800, smileEnd:4500,
+    wordStart: 4500, breathStart:4500, breathEnd:6200,
+    loop: 7000
+  };
+
+  /* ---- measure the fully-drawn mark for stroke length ---- */
+  var fullLen = 0;
+  (function measure(){
+    var tmp = document.createElementNS('http://www.w3.org/2000/svg','path');
+    tmp.setAttribute('d', KEY.mark);
+    svg.appendChild(tmp);
+    fullLen = tmp.getTotalLength() || 600;
+    svg.removeChild(tmp);
+  })();
+
+  var rafId = null;
+  var startTime = 0;
+
+  /* ---- render one frame at absolute time t (ms) ---- */
+  function render(t){
+    var pts, prog;
+
+    if(t < T.markStart){
+      /* phase 1: line draws */
+      var p = Math.min(1, (t - T.drawStart) / (T.drawEnd - T.drawStart));
+      pts = lerpPts(K.line.pts, K.line.pts, 0);
+      prog = easeOut(p);
+      stroke.setAttribute('d', build(pts));
+      stroke.style.strokeDasharray = fullLen;
+      stroke.style.strokeDashoffset = fullLen * (1 - prog);
+      stroke.setAttribute('stroke', '#1A1512');
+      pen.setAttribute('r', 5);
+      var pt = stroke.getPointAtLength(fullLen * prog);
+      pen.setAttribute('cx', pt.x); pen.setAttribute('cy', pt.y);
+    }
+    else if(t < T.smileStart){
+      /* phase 2: line takes geometric turns -> signature mark */
+      var p2 = Math.min(1, (t - T.markStart) / (T.markEnd - T.markStart));
+      var e2 = easeInOut(p2);
+      pts = lerpPts(K.line.pts, K.mark.pts, e2);
+      stroke.setAttribute('d', build(pts));
+      stroke.style.strokeDasharray = fullLen;
+      stroke.style.strokeDashoffset = 0;
+      stroke.setAttribute('stroke', '#1A1512');
+      pen.setAttribute('r', 5);
+      var pt2 = stroke.getPointAtLength(fullLen);
+      pen.setAttribute('cx', pt2.x); pen.setAttribute('cy', pt2.y);
+      /* guide line fades as the mark forms */
+      guide.style.opacity = (1 - e2).toFixed(3);
+    }
+    else if(t < T.wordStart){
+      /* phase 3: morph to reduced smile-curve */
+      var p3 = Math.min(1, (t - T.smileStart) / (T.smileEnd - T.smileStart));
+      var e3 = easeInOut(p3);
+      pts = lerpPts(K.mark.pts, K.smile.pts, e3);
+      stroke.setAttribute('d', build(pts));
+      stroke.style.strokeDashoffset = 0;
+      /* ink -> coral as the smile is revealed */
+      stroke.setAttribute('stroke', lerpColor('#1A1512', '#E36A5D', e3));
+      pen.setAttribute('r', (5 * (1 - e3)).toFixed(2));
+      var pt3 = stroke.getPointAtLength(fullLen);
+      pen.setAttribute('cx', pt3.x); pen.setAttribute('cy', pt3.y);
+      guide.style.opacity = 0;
+    }
+    else {
+      /* phase 4: wordmark + breath, then hold */
+      var e4 = 1;
+      var breath = 0;
+      if(t >= T.breathStart && t < T.breathEnd){
+        var pb = (t - T.breathStart) / (T.breathEnd - T.breathStart);
+        breath = Math.sin(pb * Math.PI); /* single inhale-exhale */
+      }
+      var scale = 1 + 0.03 * breath;
+      var cx = 300, cy = 150;
+      var bpts = lerpPts(K.smile.pts, K.smile.pts, 0);
+      for(var i=0;i<bpts.length;i++){
+        bpts[i].x = cx + (bpts[i].x - cx) * scale;
+        bpts[i].y = cy + (bpts[i].y - cy) * scale;
+      }
+      stroke.setAttribute('d', build(bpts));
+      stroke.style.strokeDashoffset = 0;
+      stroke.setAttribute('stroke', '#E36A5D');
+      stroke.style.strokeWidth = (6.4 + 1.2 * breath).toFixed(2);
+      pen.setAttribute('r', 0);
+      guide.style.opacity = 0;
+    }
+  }
+
+  /* ---- simple hex color lerp ---- */
+  function hexToRgb(h){
+    return [parseInt(h.substr(1,2),16), parseInt(h.substr(3,2),16), parseInt(h.substr(5,2),16)];
+  }
+  function lerpColor(a, b, t){
+    var ca = hexToRgb(a), cb = hexToRgb(b);
+    var r = Math.round(ca[0]+(cb[0]-ca[0])*t);
+    var g = Math.round(ca[1]+(cb[1]-ca[1])*t);
+    var bl= Math.round(ca[2]+(cb[2]-ca[2])*t);
+    return 'rgb('+r+','+g+','+bl+')';
+  }
+
+  /* ---- loop driver ---- */
+  function loop(now){
+    if(!startTime) startTime = now;
+    var t = (now - startTime) % T.loop;
+    render(t);
+    word.classList.toggle('show', t >= T.wordStart);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function start(){
+    if(rafId) cancelAnimationFrame(rafId);
+    startTime = 0;
+    stroke.style.strokeWidth = 6.4;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  /* ---- reduced motion: jump to final still ---- */
+  function finalStill(){
+    stroke.setAttribute('d', build(K.smile.pts));
+    stroke.style.strokeDasharray = fullLen;
+    stroke.style.strokeDashoffset = 0;
+    stroke.setAttribute('stroke', '#E36A5D');
+    pen.setAttribute('r', 0);
+    guide.style.opacity = 0;
+    word.classList.add('show');
+  }
+
+  if(reduce){
+    finalStill();
+  } else {
+    start();
+  }
+
+  /* ---- space to replay ---- */
+  window.addEventListener('keydown', function(e){
+    if(e.code === 'Space'){
+      e.preventDefault();
+      if(reduce){ /* re-show still */ finalStill(); return; }
+      start();
+    }
+  });
+  document.getElementById('stage').addEventListener('click', function(){
+    if(!reduce) start();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Atelier — Communication Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E0E0C;
+    --paper:#F4F0E6;
+    --signal:#E23B2F;
+    --mute:#8A857A;
+    --ease:cubic-bezier(.22,.61,.15,1);
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --ease-snap:cubic-bezier(.34,1.4,.5,1);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  html,body{height:100%;background:var(--ink);overflow:hidden}
+
+  body{
+    font-family:"IBM Plex Sans",sans-serif;
+    color:var(--paper);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  .stage{
+    position:fixed;
+    inset:0;
+    background:var(--ink);
+    overflow:hidden;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- Atmospheric background ---------- */
+  .bg{position:absolute;inset:0;z-index:0}
+
+  .grain{
+    position:absolute;inset:-50%;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:.05;
+    mix-blend-mode:overlay;
+    animation:grain 1.1s steps(3) infinite;
+    pointer-events:none;
+  }
+  @keyframes grain{
+    0%{transform:translate(0,0)}
+    33%{transform:translate(-4%,3%)}
+    66%{transform:translate(3%,-2%)}
+    100%{transform:translate(0,0)}
+  }
+
+  .vignette{
+    position:absolute;inset:0;
+    background:radial-gradient(120% 90% at 50% 42%,transparent 45%,rgba(0,0,0,.55) 100%);
+    pointer-events:none;
+  }
+
+  /* ---------- Frame marks ---------- */
+  .frame{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0}
+  .stage.playing .frame{animation:fade .8s ease .25s forwards}
+  .stage.done .frame{opacity:1;animation:none}
+  .stage.no-motion .frame{opacity:1;animation:none}
+
+  .corner{position:absolute;width:26px;height:26px;border:1px solid var(--mute);opacity:.5}
+  .corner.tl{top:22px;left:22px;border-right:0;border-bottom:0}
+  .corner.tr{top:22px;right:22px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:22px;left:22px;border-right:0;border-top:0}
+  .corner.br{bottom:22px;right:22px;border-left:0;border-top:0}
+
+  .topline{
+    position:absolute;top:22px;left:50%;transform:translateX(-50%);
+    font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--mute);
+    font-weight:500;
+  }
+  .botline{
+    position:absolute;bottom:22px;left:50%;transform:translateX(-50%);
+    font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--mute);
+    font-weight:500;display:flex;gap:14px;align-items:center;white-space:nowrap;
+  }
+  .botline .dot{width:6px;height:6px;background:var(--signal);border-radius:50%;
+    animation:blink 2.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- Composition ---------- */
+  .comp{
+    position:absolute;inset:0;z-index:2;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:8vh 6vw;
+  }
+
+  /* Eyebrow — Signal Atelier */
+  .eyebrow{
+    position:relative;
+    font-size:clamp(12px,1.35vw,16px);
+    letter-spacing:.46em;text-transform:uppercase;font-weight:500;
+    color:var(--paper);
+    margin-bottom:clamp(14px,2.4vh,26px);
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::before{
+    content:"";width:clamp(26px,4vw,54px);height:2px;background:var(--signal);
+    transform-origin:left;transform:scaleX(0);
+  }
+  .stage.playing .eyebrow::before{animation:ruleIn .55s var(--ease) .12s forwards}
+  .stage.done .eyebrow::before,.stage.no-motion .eyebrow::before{transform:scaleX(1)}
+  @keyframes ruleIn{to{transform:scaleX(1)}}
+
+  .eyebrow .txt{display:flex;overflow:hidden}
+  .eyebrow .txt span{display:block;transform:translateY(115%)}
+  .stage.playing .eyebrow .txt span{animation:rise .6s var(--ease) .2s forwards}
+  .stage.done .eyebrow .txt span,.stage.no-motion .eyebrow .txt span{transform:translateY(0)}
+  @keyframes rise{to{transform:translateY(0)}}
+
+  /* Headline */
+  .headline{
+    font-family:"Fraunces",serif;
+    font-weight:600;
+    font-size:clamp(42px,9.4vw,138px);
+    line-height:.94;
+    letter-spacing:-.018em;
+    color:var(--paper);
+    display:flex;flex-direction:column;
+  }
+  .line{display:flex;overflow:hidden;padding-bottom:.04em}
+  .word{display:inline-block;white-space:nowrap}
+  .ch{
+    display:inline-block;
+    transform:translateY(118%) rotate(5deg);
+    opacity:0;
+    will-change:transform,opacity;
+  }
+  .stage.playing .ch{animation:chIn .8s var(--ease) var(--d) forwards}
+  @keyframes chIn{
+    0%{transform:translateY(118%) rotate(5deg);opacity:0}
+    60%{opacity:1}
+    100%{transform:translateY(0) rotate(0);opacity:1}
+  }
+  .stage.done .ch,.stage.no-motion .ch{transform:none;opacity:1}
+
+  /* Overscale surprise on "Design" */
+  .word--design .ch{
+    transform:scale(1.5) translateY(120%);
+    animation-name:chSnap;
+  }
+  @keyframes chSnap{
+    0%{transform:scale(1.5) translateY(120%);opacity:0}
+    45%{opacity:1}
+    72%{transform:scale(1.5) translateY(0);opacity:1}
+    100%{transform:scale(1) translateY(0);opacity:1}
+  }
+
+  /* Parallax layers */
+  .pl{will-change:transform}
+
+  /* Sub caption */
+  .sub{
+    margin-top:clamp(18px,3.2vh,34px);
+    font-size:clamp(12px,1.3vw,15px);
+    letter-spacing:.24em;text-transform:uppercase;
+    color:var(--mute);
+    max-width:52ch;
+    opacity:0;transform:translateY(14px);
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  }
+  .sub .sep{color:var(--signal);letter-spacing:0}
+  .stage.playing .sub{animation:subIn .7s var(--ease) 1.15s forwards}
+  .stage.done .sub,.stage.no-motion .sub{opacity:1;transform:none}
+  @keyframes subIn{to{opacity:1;transform:none}}
+
+  /* Red baseline rule under headline */
+  .underline{
+    height:3px;width:0;background:var(--signal);
+    margin-top:clamp(10px,1.8vh,20px);max-width:100%;
+  }
+  .stage.playing .underline{animation:ruleGrow .9s var(--ease-out) 1.0s forwards}
+  .stage.done .underline,.stage.no-motion .underline{width:100%}
+  @keyframes ruleGrow{to{width:100%}}
+
+  /* ---------- Overscale ghost word ---------- */
+  .ghost{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%) scale(1.02);
+    font-family:"Fraunces",serif;font-weight:700;
+    font-size:clamp(150px,44vw,620px);
+    letter-spacing:-.03em;line-height:1;
+    color:transparent;
+    -webkit-text-stroke:1px rgba(244,240,230,.10);
+    z-index:1;pointer-events:none;
+    opacity:0;white-space:nowrap;
+  }
+  .stage.playing .ghost{animation:ghostIn 1s ease .85s forwards}
+  @keyframes ghostIn{to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  .stage.done .ghost,.stage.no-motion .ghost{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+  /* ---------- Reveal sweep ---------- */
+  .sweep{
+    position:absolute;top:0;bottom:0;left:0;width:0;z-index:3;
+    background:linear-gradient(90deg,transparent,rgba(226,59,47,.16) 45%,rgba(226,59,47,.34) 50%,rgba(226,59,47,.16) 55%,transparent);
+    pointer-events:none;opacity:0;
+  }
+  .stage.playing .sweep{animation:sweep 1.5s cubic-bezier(.7,0,.2,1) .1s forwards}
+  @keyframes sweep{
+    0%{left:-30%;width:30%;opacity:1}
+    100%{left:100%;width:30%;opacity:0}
+  }
+
+  /* ---------- Replay hint ---------- */
+  .hint{
+    position:absolute;bottom:56px;right:6vw;z-index:4;
+    font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);
+    display:flex;align-items:center;gap:10px;
+    opacity:0;transform:translateY(8px);
+  }
+  .stage.done .hint,.stage.no-motion .hint{opacity:.85;transform:none;transition:opacity .5s,transform .5s}
+  .hint .key{
+    border:1px solid var(--mute);border-radius:4px;padding:3px 8px;
+    color:var(--paper);letter-spacing:.15em;
+  }
+
+  /* ---------- Reduced motion ---------- */
+  .stage.no-motion *{animation:none !important}
+  .stage.no-motion .ch{transform:none;opacity:1}
+  .stage.no-motion .ghost{opacity:1}
+  .stage.no-motion .sweep{display:none}
+
+  @media (max-width:640px){
+    .topline,.botline{font-size:9px;letter-spacing:.28em}
+    .hint{display:none}
+    .comp{padding:8vh 7vw}
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage" aria-label="Signal Atelier — Communication Design">
+    <div class="bg">
+      <div class="grain"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <div class="ghost" aria-hidden="true">SIGNAL</div>
+    <div class="sweep" aria-hidden="true"></div>
+
+    <div class="comp">
+      <div class="eyebrow pl" data-depth="0.05">
+        <span class="txt"><span>Signal Atelier</span></span>
+      </div>
+
+      <h1 class="headline" aria-label="Communication Design">
+        <span class="line pl" data-depth="0.10" aria-hidden="true">
+          <span class="word" data-text="Communication"></span>
+        </span>
+        <span class="line pl" data-depth="0.16" aria-hidden="true">
+          <span class="word word--design" data-text="Design"></span>
+        </span>
+      </h1>
+
+      <div class="underline pl" data-depth="0.06"></div>
+
+      <div class="sub pl" data-depth="0.08">
+        <span>Editorial Communication Design</span>
+        <span class="sep">/</span>
+        <span>Identity</span>
+        <span class="sep">/</span>
+        <span>Motion</span>
+        <span class="sep">/</span>
+        <span>Type Systems</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="corner tl"></span>
+      <span class="corner tr"></span>
+      <span class="corner bl"></span>
+      <span class="corner br"></span>
+      <div class="topline">Signal Atelier — Kinetic Type</div>
+      <div class="botline"><span class="dot"></span> Communication Design · MMXXV</div>
+    </div>
+
+    <div class="hint">
+      <span class="key">Space</span> Replay
+    </div>
+  </div>
+
+<script>
+(function(){
+  const stage = document.getElementById('stage');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Build per-character spans with staggered delays.
+  function build(){
+    document.querySelectorAll('.word').forEach((word)=>{
+      word.innerHTML='';
+      const text = word.getAttribute('data-text');
+      [...text].forEach((c,i)=>{
+        const s=document.createElement('span');
+        s.className='ch';
+        s.textContent = c;
+        // base delay 0.35s, stagger 0.03s; "Design" snaps slightly later for the surprise
+        const base = word.classList.contains('word--design') ? 0.62 : 0.35;
+        s.style.setProperty('--d', (base + i*0.03).toFixed(2)+'s');
+        word.appendChild(s);
+      });
+    });
+  }
+  build();
+
+  // Parallax layers
+  const layers = [...document.querySelectorAll('.pl')];
+
+  if(reduced){
+    stage.classList.add('no-motion');
+    return; // static poster, no motion loops
+  }
+
+  // ---- Parallax loop (rAF) ----
+  const mx={x:0,y:0}, cur={x:0,y:0};
+  let scrollY=0;
+  let raf=null, running=false;
+
+  function loop(){
+    cur.x += (mx.x-cur.x)*0.06;
+    cur.y += (mx.y-cur.y)*0.06;
+    for(const l of layers){
+      const d=parseFloat(l.dataset.depth)||0;
+      const px = cur.x * d * 46;
+      const py = cur.y * d * 46 + scrollY * d * 0.35;
+      l.style.transform = `translate3d(${px.toFixed(2)}px,${py.toFixed(2)}px,0)`;
+    }
+    raf=requestAnimationFrame(loop);
+  }
+  function startLoop(){ if(!running){running=true; loop();} }
+  function stopLoop(){ if(running){cancelAnimationFrame(raf);running=false;} }
+
+  window.addEventListener('mousemove',(e)=>{
+    mx.x=(e.clientX/window.innerWidth-0.5)*2;
+    mx.y=(e.clientY/window.innerHeight-0.5)*2;
+  });
+  window.addEventListener('mouseleave',()=>{mx.x=0;mx.y=0;});
+  window.addEventListener('scroll',()=>{scrollY=window.scrollY||0;},{passive:true});
+
+  // ---- Timeline ----
+  let doneTimer=null;
+  function play(){
+    stage.classList.remove('done','no-motion');
+    // force reflow so animations restart
+    void stage.offsetWidth;
+    stage.classList.add('playing');
+    startLoop();
+    clearTimeout(doneTimer);
+    doneTimer=setTimeout(()=>{
+      stage.classList.add('done');
+      stage.classList.remove('playing');
+    },6000);
+  }
+
+  function replay(){
+    stopLoop();
+    cur.x=cur.y=0; mx.x=mx.y=0;
+    // reset parallax transforms
+    for(const l of layers) l.style.transform='';
+    play();
+  }
+
+  // Autoplay
+  play();
+
+  // Replay triggers
+  stage.addEventListener('click', replay);
+  window.addEventListener('keydown',(e)=>{
+    if(e.code==='Space'){ e.preventDefault(); replay(); }
+  });
+
+  // Pause parallax when tab hidden
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden) stopLoop();
+    else if(!stage.classList.contains('no-motion')) startLoop();
+  });
+})();
+</script>
+</body>
+</html>

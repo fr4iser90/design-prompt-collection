@@ -1,0 +1,24 @@
+id: phase-change-latent-heat
+title: "ThermoStore: Latent Heat Buffer"
+category: motion-graphics
+tags:
+  - timeline
+  - explainer
+  - thermodynamics
+  - geometry
+  - minimal
+status: polished
+summary: "An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A solid block melts layer-by-layer under a heat spike, holding temperature flat (latent plateau) before solidifying to release energy.…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-10-21"
+updated: "2026-10-21"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

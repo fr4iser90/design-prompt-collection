@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Concept Kong Scroll — Northmark Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#111114; --chalk:#EDE6D6; --kong:#C45C26; --cool:#4A6FA5;
+    --disp:'Space Grotesk','General Sans',system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:auto}
+  body{
+    background:var(--ink); color:var(--chalk);
+    font-family:var(--disp);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #spacer{height:600vh}
+
+  .stage{
+    position:fixed; inset:0;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 90% at 72% 18%, rgba(74,111,165,.10), transparent 60%),
+      radial-gradient(90% 80% at 20% 88%, rgba(196,92,38,.06), transparent 62%),
+      var(--ink);
+  }
+  .stage::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(130% 110% at 50% 45%, transparent 55%, rgba(0,0,0,.55) 100%);
+    mix-blend-mode:multiply;
+  }
+
+  #art{position:absolute; inset:0; width:100%; height:100%; display:block}
+
+  /* ---- SVG element classes ---- */
+  .line{fill:none; stroke:var(--chalk); stroke-width:1; opacity:0;
+        transition:opacity .12s linear}
+  .line.kong{stroke:var(--kong); stroke-width:2}
+  .line.cool{stroke:var(--cool)}
+  .plane{fill:var(--chalk); opacity:0; transition:opacity .12s linear}
+  .plane.kong{fill:var(--kong)} .plane.cool{fill:var(--cool)}
+  .dot{fill:var(--chalk); opacity:0; transition:opacity .12s linear}
+  .dot.kong{fill:var(--kong)} .dot.cool{fill:var(--cool)}
+
+  /* ---- Text overlay ---- */
+  .overlay{
+    position:absolute; inset:0; pointer-events:none;
+    padding:clamp(22px,4.6vw,64px);
+    display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+  }
+  .kicker{
+    font-family:var(--mono); font-size:clamp(10px,1.1vw,13px);
+    letter-spacing:.42em; text-transform:uppercase; color:var(--kong);
+    margin-bottom:clamp(12px,2vh,22px);
+    opacity:0; transform:translateY(10px); transition:opacity .5s ease,transform .5s ease;
+  }
+  .headline{
+    font-weight:700; text-transform:uppercase; line-height:.82;
+    letter-spacing:-.02em;
+    font-size:clamp(46px,12.5vw,168px);
+  }
+  .headline .l{
+    display:block; color:var(--chalk);
+    opacity:0; transform:translateY(.34em);
+    transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1);
+  }
+  .headline .l.king{color:var(--kong)}
+  .subline{
+    font-family:var(--mono); font-weight:500;
+    font-size:clamp(15px,2.6vw,34px); letter-spacing:.02em;
+    color:var(--chalk); margin-top:clamp(10px,2vh,20px);
+    opacity:0; transform:translateY(12px);
+    transition:opacity .6s ease,transform .6s ease;
+  }
+  .subline em{font-style:normal; color:var(--cool)}
+  .brandmark{
+    font-family:var(--mono); font-weight:600;
+    font-size:clamp(13px,1.5vw,18px); letter-spacing:.34em; text-transform:uppercase;
+    color:var(--chalk); margin-top:clamp(18px,3.4vh,34px);
+    opacity:0; transform:translateY(12px);
+    transition:opacity .6s ease,transform .6s ease;
+  }
+  .brandmark b{color:var(--kong); font-weight:600}
+
+  .overlay.show .kicker{opacity:1;transform:none}
+  .overlay.show .headline .l{opacity:1;transform:none}
+  .overlay.show .headline .l:nth-child(2){transition-delay:.08s}
+  .overlay.show .headline .l:nth-child(3){transition-delay:.16s}
+  .overlay.show .subline{opacity:1;transform:none;transition-delay:.24s}
+  .overlay.show .brandmark{opacity:1;transform:none;transition-delay:.36s}
+
+  /* ---- HUD ---- */
+  .hud{
+    position:absolute; inset:0; pointer-events:none;
+    font-family:var(--mono); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--chalk);
+    opacity:.72;
+  }
+  .hud .tl{position:absolute; top:clamp(18px,3vw,30px); left:clamp(18px,3vw,30px);
+           display:flex; align-items:center; gap:9px}
+  .hud .rec{width:8px;height:8px;border-radius:50%;background:var(--kong);
+            box-shadow:0 0 0 0 rgba(196,92,38,.6); animation:pulse 2.4s ease-out infinite}
+  .hud .tr{position:absolute; top:clamp(18px,3vw,30px); right:clamp(18px,3vw,30px); text-align:right}
+  .hud .bl{position:absolute; bottom:clamp(18px,3vw,30px); left:clamp(18px,3vw,30px)}
+  .hud .br{position:absolute; bottom:clamp(18px,3vw,30px); right:clamp(18px,3vw,30px);
+           text-align:right; color:rgba(237,230,214,.55)}
+  .hud b{color:var(--kong); font-weight:600}
+  .phase{color:var(--cool)}
+  .progress-track{position:absolute; left:clamp(18px,3vw,30px); right:clamp(18px,3vw,30px);
+    bottom:calc(clamp(18px,3vw,30px) - 12px); height:1px; background:rgba(237,230,214,.16)}
+  .progress-fill{position:absolute; left:0; top:0; height:1px; width:0%; background:var(--kong)}
+  .ticks{position:absolute; left:clamp(18px,3vw,30px); right:clamp(18px,3vw,30px);
+    bottom:calc(clamp(18px,3vw,30px) - 26px); display:flex; justify-content:space-between;
+    font-size:9px; color:rgba(237,230,214,.35)}
+
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(196,92,38,.55)}70%{box-shadow:0 0 0 7px rgba(196,92,38,0)}100%{box-shadow:0 0 0 0 rgba(196,92,38,0)}}
+
+  .grain{position:absolute; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  .hint{
+    position:absolute; bottom:clamp(52px,9vh,74px); left:50%; transform:translateX(-50%);
+    font-family:var(--mono); font-size:10px; letter-spacing:.3em; text-transform:uppercase;
+    color:rgba(237,230,214,.5); pointer-events:none; transition:opacity .6s ease;
+  }
+  .hint.gone{opacity:0}
+
+  @media (max-width:640px){
+    .headline{font-size:clamp(40px,17vw,90px)}
+    .hud .br,.ticks{display:none}
+    .kicker{letter-spacing:.28em}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important; animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="spacer"></div>
+
+<div class="stage" id="stage">
+  <svg id="art" viewBox="0 0 1200 630" preserveAspectRatio="xMidYMid slice" aria-label="Concept Kong process animation"></svg>
+
+  <div class="overlay" id="overlay">
+    <div class="kicker">Northmark Studio — Process</div>
+    <h1 class="headline">
+      <span class="l">Concept</span>
+      <span class="l">is</span>
+      <span class="l king">King.</span>
+    </h1>
+    <div class="subline">Design is <em>Kong.</em></div>
+    <div class="brandmark"><b>◆</b> Northmark Studio</div>
+  </div>
+
+  <div class="hud">
+    <div class="tl"><span class="rec"></span> Concept Kong Scroll</div>
+    <div class="tr">Northmark Studio<br><span style="opacity:.5">Motion Prototype</span></div>
+    <div class="bl"><span class="phase" id="phase">01 · Briefing</span></div>
+    <div class="br"><span id="pct">00</span>% · <span style="opacity:.5">scroll / space</span></div>
+    <div class="ticks">
+      <span>Briefing</span><span>Idee</span><span>Konzept</span><span>Design</span><span>System</span><span>Ergebnis</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+  </div>
+
+  <div class="hint" id="hint">Scroll to advance · Space to replay</div>
+  <div class="grain"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  var svg=document.getElementById("art");
+  var overlay=document.getElementById("overlay");
+  var phaseEl=document.getElementById("phase");
+  var pctEl=document.getElementById("pct");
+  var fillEl=document.getElementById("fill");
+  var hint=document.getElementById("hint");
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var VW=1200, VH=630, CX=600, CY=315;
+  var COLS=13, ROWS=7;
+  var GX=(VW-CX)/(COLS-1), GY=(VH-CY)/(ROWS-1);
+
+  var PHASES=[
+    {name:"01 · Briefing"},
+    {name:"02 · Idee"},
+    {name:"03 · Konzept"},
+    {name:"04 · Design"},
+    {name:"05 · System"},
+    {name:"06 · Ergebnis"}
+  ];
+
+  function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+  function invLerp(a,b,v){return (v-a)/(b-a);}
+  function smooth(a,b,v){var t=clamp(invLerp(a,b,v),0,1);return t*t*(3-2*t);}
+
+  // ---- element factories ----
+  function el(tag,attrs){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);return e;}
+  function dot(x,y,r,cls){var c=el("circle",{cx:x,cy:y,r:r});c.setAttribute("class","dot"+(cls?" "+cls:""));return c;}
+  function line(x1,y1,x2,y2,cls){var l=el("line",{x1:x1,y1:y1,x2:x2,y2:y2});l.setAttribute("class","line"+(cls?" "+cls:""));return l;}
+  function rect(x,y,w,h,cls){var r=el("rect",{x:x,y:y,width:w,height:h});r.setAttribute("class","plane"+(cls?" "+cls:""));return r;}
+
+  var grid=[], dots=[], lines=[], planes=[], apps=[];
+
+  function addGrid(){
+    var x,y,i,j;
+    for(i=0;i<COLS;i++){x=CX+(i-(COLS-1)/2)*GX;grid.push(line(x,0,x,VH,""));}
+    for(j=0;j<ROWS;j++){y=CY+(j-(ROWS-1)/2)*GY;grid.push(line(0,y,VW,y,""));}
+    // kong vertical spine at center
+    grid.push(line(CX,0,CX,VH,"kong"));
+  }
+
+  function addIdee(){
+    var dx=176, dy=150;
+    // kong wedge
+    var w=el("polygon",{points:(CX-8)+","+(CY-dy)+" "+(CX-8-dx)+","+(CY+dy*0.5)+" "+(CX-8-dx*0.2)+","+(CY+dy)});
+    w.setAttribute("class","plane kong"); planes.push(w);
+    // cool wedge
+    var c=el("polygon",{points:(CX+8)+","+(CY-dy)+" "+(CX+8+dx)+","+(CY+dy*0.5)+" "+(CX+8+dx*0.2)+","+(CY+dy)});
+    c.setAttribute("class","plane cool"); planes.push(c);
+    // split line
+    lines.push(line(CX,CY-dy,CX,CY+dy,"chalk"));
+    // corner accents
+    dots.push(dot(CX-dx,CY-dy,5,"kong"));
+    dots.push(dot(CX+dx,CY-dy,5,"cool"));
+  }
+
+  function addKonzept(){
+    // horizontal rule
+    lines.push(line(CX-250,CY-120,CX+250,CY-120,"chalk"));
+    // kong spine
+    lines.push(line(CX,CY-120,CX,CY+150,"kong"));
+    // cool bar
+    lines.push(line(CX-180,CY+150,CX+180,CY+150,"cool"));
+    // node dots at corners
+    dots.push(dot(CX-250,CY-120,5,"chalk"));
+    dots.push(dot(CX+250,CY-120,5,"chalk"));
+    dots.push(dot(CX-180,CY+150,5,"cool"));
+    dots.push(dot(CX+180,CY+150,5,"cool"));
+    // small cool plane
+    var p=rect(CX+120,CY-40,80,80,"cool"); planes.push(p);
+  }
+
+  function addDesign(){
+    var i;
+    // type planes
+    var t1=rect(CX-300,CY-190,230,26,"chalk"); planes.push(t1);
+    var t2=rect(CX-300,CY-150,150,26,"chalk"); planes.push(t2);
+    var t3=rect(CX-300,CY-110,190,10,"kong"); planes.push(t3);
+    // baseline
+    lines.push(line(CX-320,CY+60,CX+320,CY+60,"chalk"));
+    // kong accent line
+    lines.push(line(CX-320,CY+60,CX-40,CY+60,"kong"));
+    // measure ticks
+    for(i=0;i<9;i++){
+      var x=CX-320+i*80;
+      lines.push(line(x,CY+60,x,CY+78,"chalk"));
+    }
+    dots.push(dot(CX-320,CY+60,5,"kong"));
+    dots.push(dot(CX+320,CY+60,5,"cool"));
+  }
+
+  function addSystem(){
+    var cols=4, rows=3, gx=210, gy=170;
+    var ox=CX-(cols-1)*gx/2, oy=CY-(rows-1)*gy/2;
+    for(var r=0;r<rows;r++){
+      for(var c=0;c<cols;c++){
+        var x=ox+c*gx, y=oy+r*gy, type=(c*3+r)%3, a;
+        if(type===0){a=rect(x-60,y-45,120,90,"cool");}
+        else if(type===1){a=dot(x,y,42,"kong");}
+        else{a=rect(x-70,y-12,140,24,"chalk");}
+        a.setAttribute("class","plane");
+        a.dataset.type=type; a.dataset.ox=x; a.dataset.oy=y;
+        apps.push(a);
+      }
+    }
+  }
+
+  function addErgebnis(){
+    var i;
+    // densify grid
+    for(i=0;i<COLS;i++){var x=CX+(i-(COLS-1)/2)*GX;grid.push(line(x,0,x,VH,""));}
+    for(i=0;i<ROWS;i++){var y=CY+(i-(ROWS-1)/2)*GY;grid.push(line(0,y,VW,y,""));}
+    // brand frame
+    lines.push(line(CX-360,CY-150,CX+360,CY-150,"chalk"));
+    lines.push(line(CX-360,CY+150,CX+360,CY+150,"chalk"));
+    lines.push(line(CX-360,CY-150,CX-360,CY+150,"kong"));
+    lines.push(line(CX+360,CY-150,CX+360,CY+150,"cool"));
+    dots.push(dot(CX-360,CY-150,6,"kong"));
+    dots.push(dot(CX+360,CY-150,6,"cool"));
+    dots.push(dot(CX-360,CY+150,6,"cool"));
+    dots.push(dot(CX+360,CY+150,6,"kong"));
+    // corner marks
+    dots.push(dot(70,70,5,"kong"));
+    dots.push(dot(VW-70,VH-70,5,"cool"));
+  }
+
+  function build(){
+    addGrid(); addIdee(); addKonzept(); addDesign(); addSystem(); addErgebnis();
+    // append in paint order: grid, planes, lines, dots, apps
+    grid.forEach(function(e){svg.appendChild(e);});
+    planes.forEach(function(e){svg.appendChild(e);});
+    lines.forEach(function(e){svg.appendChild(e);});
+    dots.forEach(function(e){svg.appendChild(e);});
+    apps.forEach(function(e){svg.appendChild(e);});
+  }
+
+  // ---- per-element opacity by progress ----
+  function opGrid(p){
+    var b=smooth(0,0.06,p);
+    var fade=1-0.55*smooth(0.62,0.82,p);
+    return b*fade;
+  }
+  function opIdee(p){return smooth(0.12,0.24,p)*(1-smooth(0.42,0.56,p));}
+  function opKonzept(p){return smooth(0.28,0.40,p)*(1-smooth(0.60,0.74,p));}
+  function opDesign(p){return smooth(0.45,0.58,p)*(1-smooth(0.78,0.92,p));}
+  function opSystem(p){return smooth(0.62,0.76,p)*(1-smooth(0.88,1.0,p));}
+  function opErgebnis(p){return smooth(0.80,0.98,p);}
+
+  // ---- morph transform for the two wedge planes ----
+  function morphIdee(e,prog){
+    var t=clamp(prog,0,1);
+    var sx=1-0.95*t;
+    var tx=(e.classList.contains("kong")?-1:1)*176*(1-t);
+    return "translate("+tx+" 0) translate("+CX+" "+CY+") scale("+sx+" 1) translate("+(-CX)+" "+(-CY)+")";
+  }
+  function morphKonzept(e,prog){
+    var t=clamp(prog,0,1);
+    var tx=(e.classList.contains("kong")?-1:1)*176*t;
+    var ty=150*t;
+    return "translate("+tx+" "+ty+")";
+  }
+
+  function setTransform(e,tx,ty,sx,sy){
+    e.setAttribute("transform","translate("+tx+" "+ty+") scale("+sx+" "+sy+")");
+  }
+
+  function update(p){
+    // grid
+    var g=opGrid(p);
+    for(var i=0;i<grid.length;i++){
+      var l=grid[i];
+      var kong=l.classList.contains("kong");
+      l.style.opacity = kong ? Math.max(g, smooth(0.80,0.95,p)) : g;
+    }
+    // idee planes
+    var oi=opIdee(p);
+    planes.forEach(function(e){
+      if(e.dataset.k==="idee"){
+        e.style.opacity=oi;
+        e.setAttribute("transform",morphIdee(e,smooth(0.12,0.45,p)));
+      } else if(e.dataset.k==="konzept"){
+        e.style.opacity=opKonzept(p);
+        e.setAttribute("transform",morphKonzept(e,smooth(0.28,0.60,p)));
+      } else {
+        // design / ergebnis planes
+        var isDesign=e.dataset.k==="design";
+        var isErgebnis=e.dataset.k==="ergebnis";
+        var o=isDesign?opDesign(p):(isErgebnis?opErgebnis(p):0);
+        e.style.opacity=o;
+        var s=0.6+0.4*o;
+        setTransform(e,(CX-(parseFloat(e.getAttribute("x"))+parseFloat(e.getAttribute("width"))/2))*(1-s),
+                       (CY-(parseFloat(e.getAttribute("y"))+parseFloat(e.getAttribute("height"))/2))*(1-s),s,s);
+      }
+    });
+    // lines
+    lines.forEach(function(e){
+      var k=e.dataset.k;
+      var o=0;
+      if(k==="idee")o=oi;
+      else if(k==="konzept")o=opKonzept(p);
+      else if(k==="design")o=opDesign(p);
+      else if(k==="ergebnis")o=opErgebnis(p);
+      e.style.opacity=o;
+    });
+    // dots
+    dots.forEach(function(e){
+      var k=e.dataset.k;
+      var o=0;
+      if(k==="idee")o=oi;
+      else if(k==="konzept")o=opKonzept(p);
+      else if(k==="design")o=opDesign(p);
+      else if(k==="ergebnis")o=opErgebnis(p);
+      e.style.opacity=o;
+    });
+    // apps
+    var os=opSystem(p);
+    apps.forEach(function(e){
+      e.style.opacity=os;
+      var ox=parseFloat(e.dataset.ox), oy=parseFloat(e.dataset.oy);
+      var s=0.5+0.5*os;
+      setTransform(e,(CX-ox)*(1-s)*0.35,(CY-oy)*(1-s)*0.35,s,s);
+    });
+
+    // text overlay
+    var show=(p>=0.26 && p<=0.60) || (p>=0.86);
+    overlay.classList.toggle("show",show);
+
+    // HUD
+    var idx=Math.min(5,Math.floor(p*6));
+    phaseEl.textContent=PHASES[idx].name;
+    pctEl.textContent=String(Math.round(p*100)).padStart(2,"0");
+    fillEl.style.width=(p*100)+"%";
+  }
+
+  // ---- scroll mapping ----
+  var progress=0, target=0, lastScroll=-1;
+  function onScroll(){
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    var y=window.scrollY||window.pageYOffset;
+    target=max>0?clamp(y/max,0,1):0;
+    if(y>40){hint.classList.add("gone");}
+  }
+  window.addEventListener("scroll",onScroll,{passive:true});
+
+  // ---- autoplay scrub ----
+  var AUTO_DUR=1.9, AUTO_END=0.36;
+  var autoActive=true, t0=performance.now();
+  function easeOut(t){return 1-Math.pow(1-t,3);}
+
+  // ---- render loop ----
+  var raf;
+  function loop(now){
+    if(autoActive){
+      var t=(now-t0)/1000;
+      var ap=easeOut(clamp(t/AUTO_DUR,0,1))*AUTO_END;
+      progress=ap;
+      // hand off to scroll once autoplay settles or user scrolls
+      if(t>=AUTO_DUR){autoActive=false;}
+    } else {
+      // smooth toward scroll target
+      progress+=(target-progress)*0.14;
+      if(Math.abs(target-progress)<0.0006)progress=target;
+    }
+    update(progress);
+    raf=requestAnimationFrame(loop);
+  }
+
+  // ---- replay ----
+  function replay(){
+    window.scrollTo(0,0);
+    target=0; progress=0;
+    autoActive=true; t0=performance.now();
+    hint.classList.remove("gone");
+  }
+  window.addEventListener("keydown",function(e){
+    if(e.code==="Space"){e.preventDefault();replay();}
+  });
+  document.getElementById("stage").addEventListener("click",function(){replay();});
+
+  // ---- init ----
+  build();
+
+  if(reduce){
+    progress=1; target=1;
+    update(1);
+    hint.classList.add("gone");
+  } else {
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
+</body>
+</html>
