@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 272 | 271 | 231 | 41 |
+| 274 | 272 | 233 | 41 |
 
 ## Quick start
 
@@ -2283,6 +2283,20 @@ An 8s kinetic identity loop for 'Dot & Grain' studio. CMYK halftone dots drift, 
 
 ---
 
+### The Yield Curve
+
+A single vertical bar grows physically from dark soil into a wheat stalk, hitting a target line with a mechanical thud as a counter ticks to 4.2M Tons.
+
+**Status:** polished · `timeline` `data-story` `agriculture` `finance` `growth` `editorial` `tactile` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/harvest-yield-metric-arc/prompt.md) · [extended](prompts/motion-graphics/harvest-yield-metric-arc/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Wet Ink Spread
 
 Create a single-file HTML5/CSS/JS motion graphics piece titled 'Wet Ink Spread' for 'Absorb Press'. Full-bleed viewport, #F0F0F0 background. Centered 'INK' in Baskerville #000000. 8s loop simulating capillary action…
@@ -3537,6 +3551,20 @@ Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bur
 
 ---
 
+### Clockwork Automata Kit
+
+High-fidelity single-file HTML studio for generating and previewing procedural clockwork automata sprites with blueprint aesthetics.
+
+**Status:** polished · `2d` `sprites` `atlas` `steampunk` `mechanical` `assets` `canvas2d` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/clockwork-automata-kit/prompt.md) · [extended](prompts/assets/clockwork-automata-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Copper Sulfide Tarnish Plate
 
 High-fidelity 3D asset studio for copper plates with dynamic sulfide tarnish, featuring GLB/SVG export and procedural weathering.
@@ -3593,9 +3621,11 @@ A single-file HTML Asset Studio for a 2D Monochrome Noir Detective game kit, fea
 
 [prompt](prompts/assets/monochrome-noir-detective-kit/prompt.md) · [extended](prompts/assets/monochrome-noir-detective-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/monochrome-noir-detective-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 4.7s | 277s | 8 | [open](prompts/assets/monochrome-noir-detective-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

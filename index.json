@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T16:16:23.547Z",
+  "generated_at": "2026-11-04T17:09:50.150Z",
   "schema": "schema/entry.schema.json",
-  "count": 272,
+  "count": 274,
   "categories": [
     "landing-pages",
     "animations",
@@ -8725,6 +8725,38 @@
       ]
     },
     {
+      "id": "harvest-yield-metric-arc",
+      "title": "The Yield Curve",
+      "category": "motion-graphics",
+      "tags": [
+        "timeline",
+        "data-story",
+        "agriculture",
+        "finance",
+        "growth",
+        "editorial",
+        "tactile"
+      ],
+      "status": "polished",
+      "summary": "A single vertical bar grows physically from dark soil into a wheat stalk, hitting a target line with a mechanical thud as a counter ticks to 4.2M Tons.",
+      "path": "prompts/motion-graphics/harvest-yield-metric-arc",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/harvest-yield-metric-arc/prompt.md",
+      "extended": "prompts/motion-graphics/harvest-yield-metric-arc/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "ink-spread-capillary",
       "title": "Wet Ink Spread",
       "category": "motion-graphics",
@@ -13555,6 +13587,38 @@
       ]
     },
     {
+      "id": "clockwork-automata-kit",
+      "title": "Clockwork Automata Kit",
+      "category": "assets",
+      "tags": [
+        "2d",
+        "sprites",
+        "atlas",
+        "steampunk",
+        "mechanical",
+        "assets",
+        "canvas2d"
+      ],
+      "status": "polished",
+      "summary": "High-fidelity single-file HTML studio for generating and previewing procedural clockwork automata sprites with blueprint aesthetics.",
+      "path": "prompts/assets/clockwork-automata-kit",
+      "preview": null,
+      "prompt": "prompts/assets/clockwork-automata-kit/prompt.md",
+      "extended": "prompts/assets/clockwork-automata-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "copper-sulfide-tarnish-plate",
       "title": "Copper Sulfide Tarnish Plate",
       "category": "assets",
@@ -13754,11 +13818,11 @@
       "status": "polished",
       "summary": "A single-file HTML Asset Studio for a 2D Monochrome Noir Detective game kit, featuring SVG silhouettes, noir aesthetics, and interactive viewer features.",
       "path": "prompts/assets/monochrome-noir-detective-kit",
-      "preview": null,
+      "preview": "prompts/assets/monochrome-noir-detective-kit/preview.png",
       "prompt": "prompts/assets/monochrome-noir-detective-kit/prompt.md",
       "extended": "prompts/assets/monochrome-noir-detective-kit/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/assets/monochrome-noir-detective-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-04",
@@ -13768,7 +13832,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-04",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 277124,
+          "gen_ms": 277124,
+          "ttft_ms": 4721,
+          "queue_wait_ms": 72,
+          "wall_ms": 281918,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/assets/monochrome-noir-detective-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/assets/monochrome-noir-detective-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong noir aesthetic with excellent typography, atmospheric rain effects, and a cohesive monochrome palette with selective crimson accents."
+        }
+      ]
     },
     {
       "id": "orbital-relay-module",
