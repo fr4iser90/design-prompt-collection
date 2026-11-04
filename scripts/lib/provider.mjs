@@ -1,8 +1,41 @@
 // Shared OpenAI-compatible chat + entry filesystem helpers.
 import fs from "node:fs";
 import path from "node:path";
+import { Agent, fetch as undiciFetch } from "undici";
 import { CATEGORIES, PROVIDER_BASES, loadEnvFile, today, envFlag } from "./helpers.mjs";
 import { waitForIdleSlot, fetchModelSlots } from "./slots.mjs";
+
+export const ONE_HOUR_MS = 60 * 60 * 1000;
+
+/**
+ * Node's built-in fetch (undici) defaults headersTimeout/bodyTimeout to 300_000ms.
+ * That kills non-stream JSON fills after ~300s of "waiting for full response … / 3600s"
+ * even though AbortSignal.timeout(timeoutMs) is 1h — UND_ERR_HEADERS_TIMEOUT.
+ * Keep undici socket timeouts aligned with the app-level timeout.
+ *
+ * Called from chatCompletions() below (same file). Callers of chatCompletions:
+ * scripts/ai-fill.mjs, scripts/ai-build.mjs, scripts/review.mjs.
+ */
+/** @type {import("undici").Agent | null} */
+let sharedDispatcher = null;
+/** @type {number} */
+let sharedDispatcherTimeout = 0;
+
+function dispatcherFor(timeoutMs) {
+  const t = Math.max(Number(timeoutMs) || ONE_HOUR_MS, 60_000);
+  if (sharedDispatcher && sharedDispatcherTimeout >= t) return sharedDispatcher;
+  if (sharedDispatcher) {
+    sharedDispatcher.close().catch(() => {});
+  }
+  sharedDispatcherTimeout = t;
+  sharedDispatcher = new Agent({
+    connectTimeout: 60_000,
+    headersTimeout: t,
+    bodyTimeout: t,
+    keepAliveTimeout: 10_000,
+  });
+  return sharedDispatcher;
+}
 
 export function resolveAiConfig(root, { requireKey = true } = {}) {
   loadEnvFile(path.join(root, ".env"));
@@ -70,8 +103,6 @@ export function engineLabel(engine, engineRev, engineVersion) {
   const pin = engineRev || engineVersion;
   return pin ? `${engine}@${pin}` : engine;
 }
-
-export const ONE_HOUR_MS = 60 * 60 * 1000;
 
 /** Shared abort for Ctrl+C/SIGTERM — close the in-flight SSE/TCP socket. */
 const shutdown = new AbortController();
@@ -429,11 +460,14 @@ export async function chatCompletions({
       const requestStart = Date.now();
       let firstTokenAt = null;
 
-      const res = await fetch(url, {
+      // Use undici fetch + Agent so headers/body timeouts match timeoutMs
+      // (global fetch keeps the 300s undici default → UND_ERR_HEADERS_TIMEOUT).
+      const res = await undiciFetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
         signal,
+        dispatcher: dispatcherFor(timeoutMs),
       });
 
       if (!res.ok) {

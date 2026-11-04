@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T15:24:36.535Z",
+  "generated_at": "2026-11-04T16:16:23.547Z",
   "schema": "schema/entry.schema.json",
-  "count": 271,
+  "count": 272,
   "categories": [
     "landing-pages",
     "animations",
@@ -13738,6 +13738,37 @@
           "review_summary": "The 3D canvas is completely empty, failing to render the required Toroidal Core, filmstrip, or sidebar, resulting in a broken/blank page."
         }
       ]
+    },
+    {
+      "id": "monochrome-noir-detective-kit",
+      "title": "Monochrome Noir Detective",
+      "category": "assets",
+      "tags": [
+        "2d",
+        "silhouette",
+        "noir",
+        "high-contrast",
+        "dramatic",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "A single-file HTML Asset Studio for a 2D Monochrome Noir Detective game kit, featuring SVG silhouettes, noir aesthetics, and interactive viewer features.",
+      "path": "prompts/assets/monochrome-noir-detective-kit",
+      "preview": null,
+      "prompt": "prompts/assets/monochrome-noir-detective-kit/prompt.md",
+      "extended": "prompts/assets/monochrome-noir-detective-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "orbital-relay-module",

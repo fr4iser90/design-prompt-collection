@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 271 | 271 | 230 | 41 |
+| 272 | 271 | 231 | 41 |
 
 ## Quick start
 
@@ -3582,6 +3582,20 @@ Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-f
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/magnetic-levitation-core/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.6s | 313s | 2 | [open](prompts/assets/magnetic-levitation-core/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Monochrome Noir Detective
+
+A single-file HTML Asset Studio for a 2D Monochrome Noir Detective game kit, featuring SVG silhouettes, noir aesthetics, and interactive viewer features.
+
+**Status:** polished · `2d` `silhouette` `noir` `high-contrast` `dramatic` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/monochrome-noir-detective-kit/prompt.md) · [extended](prompts/assets/monochrome-noir-detective-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
