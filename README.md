@@ -1,12 +1,12 @@
 # Design Prompt Collection
 
-High-refined prompts for **landing pages**, **animations**, **motion graphics**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
+AI-refined prompts for **landing pages**, **animations**, **motion graphics**, **concepts**, **games**, **webgl**, **editorial**, and **interfaces**.
 
 Each entry has a shared prompt brief; **model runs** live under `runs/<model-slug>/` (demo + screenshot) so models never overwrite each other.
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 289 | 287 | 248 | 41 |
+| 294 | 289 | 253 | 41 |
 
 ## Quick start
 
@@ -2219,6 +2219,20 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 ---
 
+### The Honeycomb Reduction
+
+A 3D honeycomb lattice where precious-metal catalysts strip oxygen atoms from NOx molecules in a rhythmic, satisfying visual snap. Toxic red inputs become clean green outputs.
+
+**Status:** polished · `explainer` `timeline` `diagram-motion` `chemical` `automotive` `industrial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/catalytic-converter-reduction/prompt.md) · [extended](prompts/motion-graphics/catalytic-converter-reduction/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Concept Kong Scroll
 
 Scroll-story for Northmark Studio: six phases from point to brand system — continuous morph; poster at ~1.5s.
@@ -2296,6 +2310,20 @@ A single vertical bar grows physically from dark soil into a wheat stalk, hittin
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/harvest-yield-metric-arc/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.5s | 100s | 6 | [open](prompts/motion-graphics/harvest-yield-metric-arc/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Pascal's Squeeze
+
+6s loop 'Pascal's Squeeze' for HydroForm. Tactile hydraulic pressure multiplication. Desktop/Mobile responsive. Vanilla JS. Acceptance: 60fps, reduced motion support.
+
+**Status:** polished · `explainer` `timeline` `physics` `mechanical` `industrial` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/hydraulic-press-reservoir/prompt.md) · [extended](prompts/motion-graphics/hydraulic-press-reservoir/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3311,6 +3339,20 @@ A rhythm game where players sync clicks with an emergent swarm pulse. Join the b
 
 ---
 
+### Cathedral Catapult Siege
+
+Tactile medieval siege: drag to tension a sling, release to launch stone. Over-tension snaps rope; hit castle gates for score. Canvas 2D physics toy.
+
+**Status:** polished · `physics` `trajectory` `catapult` `canvas2d` `state-stack` `game` `toybox-physics` `tactile` `mechanical` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/catapult-kinetic-launch/prompt.md) · [extended](prompts/games/catapult-kinetic-launch/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Circuit Breaker Arc Timing
 
 High-stakes timing game: close breakers when the oscillating electric arc is shortest. Industrial aesthetic, 5 circuits, precision scoring.
@@ -3662,6 +3704,20 @@ ABYSS LURE: A high-fidelity 2D bioluminescent asset studio. Features cursor-driv
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/deep-sea-angler/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.9s | 321s | 8 | [open](prompts/assets/deep-sea-angler/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Rust & Corrosion Erosion Kit
+
+OXIDE YIELD: A 2D game asset studio with a real-time oxidation slider morphing 16 sprites from clean steel to deep corrosion. Includes procedural rust layering, filmstrip viewer, and PNG/SVG export tools.
+
+**Status:** polished · `game-kit` `2d` `industrial` `decay` `hazard` `canvas2d` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/ferrous-rust-erosion-kit/prompt.md) · [extended](prompts/assets/ferrous-rust-erosion-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -4048,6 +4104,20 @@ A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' ti
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 2.7s | 369s | 1 | [open](prompts/webgl/sodium-vapor-crt-glass/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Obsidian Shear & Chill
+
+Raymarched SDF volcanic glass shard where a tensile stress slider drives Voronoi crack propagation and internal thermal glow, revealing molten core.
+
+**Status:** polished · `raw-webgl` `raymarching` `sdf` `glsl` `fracture-simulation` `thermal-radiation` `volcanic-glass` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/volcanic-glass-cooling-shear/prompt.md) · [extended](prompts/webgl/volcanic-glass-cooling-shear/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -4511,9 +4581,11 @@ Artisan cheese rind logger with procedural noise texture evolving from sparse wh
 
 [prompt](prompts/interfaces/linen-fermentation-log/prompt.md) · [extended](prompts/interfaces/linen-fermentation-log/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/linen-fermentation-log/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.0s | 255s | 2 | [open](prompts/interfaces/linen-fermentation-log/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4637,9 +4709,11 @@ A cryo-blast timer interface where a circular gauge visually compresses as air i
 
 [prompt](prompts/interfaces/vacuum-chamber-plunge/prompt.md) · [extended](prompts/interfaces/vacuum-chamber-plunge/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/vacuum-chamber-plunge/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 11s | 121s | 1 | [open](prompts/interfaces/vacuum-chamber-plunge/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

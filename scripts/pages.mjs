@@ -205,7 +205,7 @@ function main() {
       body: `
 <header class="site"><div class="wrap">
   <a class="brand" href="./index.html">Design Prompt Collection</a>
-  <p>High-refined prompts with per-model demos and screenshots.</p>
+  <p>AI-refined prompts with per-model demos and screenshots.</p>
   <nav class="nav-cats">
     ${CAT_ORDER.filter((c) => (byCat[c] || []).length)
       .map((c) => `<a href="#${c}">${esc(c)}</a>`)

@@ -1,0 +1,26 @@
+id: volcanic-glass-cooling-shear
+title: "Obsidian Shear & Chill"
+category: webgl
+tags:
+  - raw-webgl
+  - raymarching
+  - sdf
+  - glsl
+  - fracture-simulation
+  - thermal-radiation
+  - volcanic-glass
+status: polished
+summary: "Raymarched SDF volcanic glass shard where a tensile stress slider drives Voronoi crack propagation and internal thermal glow, revealing molten core."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

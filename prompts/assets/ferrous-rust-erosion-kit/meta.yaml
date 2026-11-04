@@ -1,0 +1,26 @@
+id: ferrous-rust-erosion-kit
+title: "Rust & Corrosion Erosion Kit"
+category: assets
+tags:
+  - game-kit
+  - 2d
+  - industrial
+  - decay
+  - hazard
+  - canvas2d
+  - assets
+status: polished
+summary: "OXIDE YIELD: A 2D game asset studio with a real-time oxidation slider morphing 16 sprites from clean steel to deep corrosion. Includes procedural rust layering, filmstrip viewer, and PNG/SVG export tools."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

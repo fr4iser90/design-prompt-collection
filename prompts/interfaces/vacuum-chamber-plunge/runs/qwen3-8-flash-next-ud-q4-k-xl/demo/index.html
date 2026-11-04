@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="SubZero — vacuum chamber cryo-blast preservation timer.">
+<title>SubZero · Vacuum Plunge Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SubZero — Vacuum Plunge Timer
+   Palette: #0A1128 cryo-blue · #00F0FF cyan · #E0E1DD off-white
+   ============================================================ */
+:root{
+  --bg:#0A1128;
+  --accent:#00F0FF;
+  --text:#E0E1DD;
+  --error:#FF3333;
+  --glass:rgba(224,225,221,0.10);
+  --glass-2:rgba(224,225,221,0.18);
+  --edge:#1A2A4A;
+  --gauge:clamp(240px, 66vmin, 620px);
+  --comp:0;                       /* compression 0 → 1 */
+  --pulse:0;                      /* cyan pulse 0 → 1 */
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'JetBrains Mono',monospace;
+  overflow:hidden;
+  position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- atmospheric layers ---------- */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(224,225,221,0.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(224,225,221,0.035) 1px,transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask-image:radial-gradient(circle at 50% 46%,#000 0%,transparent 72%);
+          mask-image:radial-gradient(circle at 50% 46%,#000 0%,transparent 72%);
+}
+.vignette{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(circle at 50% 42%,transparent 40%,rgba(0,0,0,.55) 100%);
+}
+.scanlines{
+  position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(224,225,221,.02) 0 1px,transparent 1px 3px);
+}
+
+/* ---------- entrance (sucked-in) ---------- */
+.stage{
+  position:relative;z-index:2;height:100%;
+  animation:enter .85s var(--ease) both;
+}
+@keyframes enter{from{transform:scale(1.2);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ---------- header chrome ---------- */
+.chrome{
+  position:fixed;top:0;left:0;right:0;z-index:5;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:clamp(1rem,3vw,2rem);
+}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand-mark{
+  width:26px;height:26px;flex:none;color:var(--accent);
+  animation:spin 26s linear infinite;
+}
+.brand-mark path{stroke:currentColor;stroke-width:1.4;fill:none}
+.brand-name{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;
+  font-size:1.05rem;letter-spacing:.16em;color:var(--text);
+}
+.brand-sub{
+  font-size:.6rem;letter-spacing:.28em;color:rgba(224,225,221,.4);
+  display:block;margin-top:2px;
+}
+.status{
+  display:flex;align-items:center;gap:.55rem;
+  font-size:.68rem;letter-spacing:.22em;color:var(--text);
+  padding:.42rem .7rem;border:1px solid var(--glass-2);border-radius:2px;
+  background:rgba(10,17,40,.5);backdrop-filter:blur(4px);
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 8px var(--accent);animation:blink 2.4s ease-in-out infinite;
+}
+.status[data-state="active"] .status-dot{animation-duration:.9s}
+.status[data-state="complete"] .status-dot{animation:none;background:var(--accent)}
+.status[data-state="error"]{border-color:var(--error);color:var(--error)}
+.status[data-state="error"] .status-dot{background:var(--error);box-shadow:0 0 8px var(--error);animation:none}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- gauge ---------- */
+.gauge-wrap{
+  position:absolute;top:46%;left:50%;
+  transform:translate(-50%,-50%);
+  width:var(--gauge);height:var(--gauge);
+  display:flex;align-items:center;justify-content:center;
+}
+.gauge{
+  position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at center,
+    #0A1128 calc(var(--comp) * 62%),
+    #16264a calc(var(--comp) * 62% + 2%),
+    var(--edge) 100%);
+  border:2px solid rgba(224,225,221,.18);
+  box-shadow:inset 0 0 60px rgba(0,0,0,.6);
+}
+.gauge::after{
+  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.55);
+}
+#pcanvas{position:absolute;inset:0;z-index:1}
+.glow{
+  position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:50%;
+  box-shadow:inset 0 0 calc(30px + var(--pulse)*70px) rgba(0,240,255,calc(var(--pulse)*.55));
+}
+.ticks{position:absolute;inset:0;z-index:2}
+.ticks span{
+  position:absolute;top:0;left:50%;width:1px;height:100%;
+  transform:translateX(-50%) rotate(var(--a));
+}
+.ticks span::before{
+  content:"";position:absolute;top:8px;left:0;width:1px;height:var(--h,8px);
+  background:var(--c,rgba(224,225,221,.25));
+}
+
+/* ---------- timer overlay ---------- */
+.timer{position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem}
+.timer-label{font-size:.6rem;letter-spacing:.34em;color:rgba(224,225,221,.55)}
+.timer-num{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(2.6rem,14vmin,6.6rem);line-height:1;letter-spacing:.01em;
+  color:var(--text);
+  text-shadow:0 0 calc(6px + var(--pulse)*22px) rgba(0,240,255,calc(.15 + var(--pulse)*.55));
+}
+.timer-num.placeholder{color:rgba(224,225,221,.28)}
+.timer-sub{font-size:.62rem;letter-spacing:.24em;color:rgba(224,225,221,.5);margin-top:.3rem}
+.timer-sub b{color:var(--accent);font-weight:500}
+
+/* ---------- controls ---------- */
+.controls{
+  position:absolute;left:50%;bottom:clamp(1.25rem,5vh,3.25rem);
+  transform:translateX(-50%);z-index:6;
+  display:flex;flex-direction:column;align-items:center;gap:1rem;
+}
+.control-row{display:flex;align-items:center;gap:.85rem}
+.stepper{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.35rem .45rem;border:1px solid var(--glass-2);border-radius:3px;
+  background:rgba(10,17,40,.55);
+}
+.stepper-label{font-size:.6rem;letter-spacing:.24em;color:rgba(224,225,221,.5);padding:0 .1rem}
+.step{
+  width:44px;height:44px;flex:none;
+  display:grid;place-items:center;cursor:pointer;
+  border:1px solid var(--glass-2);border-radius:2px;background:transparent;
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:1.15rem;line-height:1;
+  transition:background .18s,border-color .18s,color .18s,transform .1s;
+}
+.step:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,240,255,.06)}
+.step:active{transform:scale(.9)}
+.step:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.val{
+  min-width:2.4ch;text-align:center;font-family:'Space Grotesk',sans-serif;
+  font-weight:600;font-size:1.5rem;color:var(--text);
+}
+.divider{width:1px;height:34px;background:var(--glass-2)}
+.engage{
+  position:relative;min-width:150px;height:52px;padding:0 1.8rem;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.85rem;
+  letter-spacing:.2em;color:var(--accent);background:transparent;
+  border:1px solid var(--accent);border-radius:3px;
+  transition:background .2s,color .2s,transform .1s,box-shadow .2s;
+}
+.engage:hover:not(:disabled){background:var(--accent);color:#04101f;box-shadow:0 0 22px rgba(0,240,255,.4)}
+.engage:active:not(:disabled){transform:scale(.96)}
+.engage:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.engage:disabled{color:rgba(224,225,221,.35);border-color:var(--glass-2);cursor:not-allowed}
+.engage[hidden]{display:none}
+.engage.release{color:#04101f;background:var(--accent);border-color:var(--accent);animation:releaseIn .4s var(--ease) both}
+.engage.release:hover{box-shadow:0 0 26px rgba(0,240,255,.5)}
+@keyframes releaseIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+
+.err-msg{
+  font-size:.66rem;letter-spacing:.24em;color:var(--error);
+  min-height:1em;opacity:0;transition:opacity .2s;text-align:center;
+}
+.err-msg.show{opacity:1}
+
+/* ---------- error shake ---------- */
+.gauge.shake{animation:shake .3s ease}
+.gauge.shake,.gauge.shake .glow{border-color:var(--error)!important}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}80%{transform:translateX(4px)}
+}
+
+/* ---------- mobile ---------- */
+@media (max-width:768px){
+  .chrome{padding:1rem}
+  .brand{position:absolute;left:50%;top:1rem;transform:translateX(-50%);flex-direction:column;align-items:center;gap:.25rem}
+  .brand-sub{display:none}
+  .status{position:fixed;left:1rem;bottom:1rem;top:auto}
+  .gauge-wrap{top:42%}
+  .controls{bottom:3.6rem;width:92%}
+  .control-row{flex-direction:column;gap:.7rem;width:100%}
+  .divider{width:60%;height:1px}
+  .engage{width:100%}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  .stage{animation:none}
+  .brand-mark,.status-dot,.engage.release{animation:none!important}
+  .gauge.shake{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="vignette"></div>
+<div class="scanlines"></div>
+
+<div class="stage">
+  <header class="chrome">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2v20M4.2 7l15.6 10M19.8 7L4.2 17"/>
+        <path d="M12 2l-2 3h4zM12 22l-2-3h4z"/>
+      </svg>
+      <div>
+        <span class="brand-name">SUBZERO</span>
+        <span class="brand-sub">CRYO-BLAST · VACUUM SYSTEM</span>
+      </div>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite" data-state="ready">
+      <span class="status-dot"></span>
+      <span id="statusText">CHAMBER READY</span>
+    </div>
+  </header>
+
+  <div class="gauge-wrap">
+    <div class="gauge" id="gauge">
+      <canvas id="pcanvas"></canvas>
+      <div class="glow"></div>
+      <div class="ticks" id="ticks"></div>
+      <div class="timer" role="timer" aria-live="polite" aria-atomic="true">
+        <div class="timer-label">VACUUM PLUNGE</div>
+        <div class="timer-num placeholder" id="timerNum">00:00</div>
+        <div class="timer-sub"><span id="stateLabel">STANDBY</span> · <b id="pressureVal">0</b> kPa</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <div class="stepper" aria-label="Set minutes">
+        <button class="step" data-t="m" data-d="-1" aria-label="Decrease minutes">−</button>
+        <span class="val" id="minVal">00</span>
+        <button class="step" data-t="m" data-d="1" aria-label="Increase minutes">+</button>
+        <span class="stepper-label">MIN</span>
+      </div>
+      <div class="divider"></div>
+      <div class="stepper" aria-label="Set seconds">
+        <button class="step" data-t="s" data-d="-1" aria-label="Decrease seconds">−</button>
+        <span class="val" id="secVal">00</span>
+        <button class="step" data-t="s" data-d="1" aria-label="Increase seconds">+</button>
+        <span class="stepper-label">SEC</span>
+      </div>
+    </div>
+    <button class="engage" id="engage" aria-label="Engage vacuum cycle">ENGAGE</button>
+    <p class="err-msg" id="errMsg" role="alert">SET DURATION</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const root=document.documentElement;
+  const $=id=>document.getElementById(id);
+  const gauge=$('gauge'), canvas=$('pcanvas'), ctx=canvas.getContext('2d');
+  const timerNum=$('timerNum'), pressureVal=$('pressureVal'), stateLabel=$('stateLabel');
+  const minVal=$('minVal'), secVal=$('secVal'), engage=$('engage'), errMsg=$('errMsg');
+  const statusEl=$('status'), statusText=$('statusText');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- build tick marks ---------- */
+  const ticks=$('ticks');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('span');
+    const major=i%5===0;
+    s.style.setProperty('--a',(i*6)+'deg');
+    s.style.setProperty('--h',major?'16px':'7px');
+    s.style.setProperty('--c',major?'rgba(0,240,255,.35)':'rgba(224,225,221,.16)');
+    ticks.appendChild(s);
+  }
+
+  /* ---------- state ---------- */
+  let minutes=0, seconds=0, state='idle';
+  let totalMs=0, remainingMs=0, lastTs=0, lastSecond=-1;
+  let comp=0, pulse=0;
+  let dpr=1, cw=0, ch=0;
+
+  /* ---------- canvas sizing ---------- */
+  function resize(){
+    const r=gauge.getBoundingClientRect();
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    cw=r.width; ch=r.height;
+    canvas.width=Math.round(cw*dpr);
+    canvas.height=Math.round(ch*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize',resize);
+
+  /* ---------- particles ---------- */
+  const MAX=46, parts=[];
+  function spawn(){
+    parts.push({
+      x:Math.random()*cw, y:ch+Math.random()*20,
+      vy:-(0.3+Math.random()*0.4), amp:6+Math.random()*10,
+      freq:0.001+Math.random()*0.002, phase:Math.random()*6.28,
+      size:1+Math.random()*2.4, opacity:0.15+Math.random()*0.3,
+      life:1, cyan:false
+    });
+  }
+  function updateParticles(dt){
+    const active=state==='active';
+    const complete=state==='complete';
+    if(!complete && parts.length<MAX && Math.random()<(active?0.6:0.28)) spawn();
+    for(let i=parts.length-1;i>=0;i--){
+      const p=parts[i];
+      const speed=active?4.2:0.65;
+      const decay=active?0.012:0.006;
+      p.y-=p.vy*speed*dt;
+      p.x+=Math.sin(p.y*p.freq+p.phase)*p.amp*dt*0.02;
+      p.opacity-=decay*dt;
+      if(active) p.cyan=true;
+      if(complete) p.opacity-=0.03*dt;
+      if(p.opacity<=0||p.y<-10) parts.splice(i,1);
+    }
+  }
+  function drawParticles(){
+    ctx.clearRect(0,0,cw,ch);
+    for(const p of parts){
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,6.2832);
+      ctx.fillStyle=p.cyan?'rgba(0,240,255,'+p.opacity+')':'rgba(224,225,221,'+p.opacity+')';
+      ctx.fill();
+    }
+  }
+
+  /* ---------- formatting ---------- */
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=ms=>{const s=Math.ceil(ms/1000);return pad(Math.floor(s/60))+':'+pad(s%60);};
+
+  /* ---------- UI sync ---------- */
+  function setStatus(s){
+    const map={idle:'CHAMBER READY',active:'EVACUATING',complete:'CHAMBER SEALED',error:'ERROR'};
+    statusText.textContent=map[s];
+    statusEl.dataset.state=s;
+  }
+  function updateButtons(){
+    if(state==='complete'){
+      engage.hidden=false; engage.textContent='RELEASE';
+      engage.classList.add('release'); engage.disabled=false;
+      engage.setAttribute('aria-label','Release chamber');
+    }else if(state==='active'){
+      engage.hidden=false; engage.textContent='ENGAGING';
+      engage.classList.remove('release'); engage.disabled=true;
+    }else{
+      engage.hidden=false; engage.textContent='ENGAGE';
+      engage.classList.remove('release'); engage.disabled=false;
+    }
+  }
+  function refresh(){
+    const total=minutes*60+seconds;
+    minVal.textContent=pad(minutes);
+    secVal.textContent=pad(seconds);
+    if(state==='idle'){
+      if(total===0){ timerNum.textContent='00:00'; timerNum.classList.add('placeholder'); stateLabel.textContent='STANDBY'; }
+      else{ timerNum.textContent=fmt(total*1000); timerNum.classList.remove('placeholder'); stateLabel.textContent='SET'; }
+    }
+    updateButtons();
+  }
+
+  /* ---------- actions ---------- */
+  function change(t,d){
+    if(state!=='idle')return;
+    if(t==='m') minutes=Math.min(99,Math.max(0,minutes+d));
+    else seconds=Math.min(59,Math.max(0,seconds+d));
+    refresh();
+  }
+  function engageStart(){
+    if(state==='active')return;
+    if(state==='complete'){ release(); return; }
+    if(minutes===0&&seconds===0){ error(); return; }
+    totalMs=(minutes*60+seconds)*1000;
+    remainingMs=totalMs; lastSecond=-1;
+    state='active'; setStatus('active'); stateLabel.textContent='EVACUATING';
+    timerNum.classList.remove('placeholder');
+    updateButtons();
+  }
+  function release(){
+    state='idle'; comp=0; pulse=0;
+    root.style.setProperty('--comp',0); root.style.setProperty('--pulse',0);
+    setStatus('idle'); refresh();
+  }
+  function complete(){
+    state='complete'; comp=1; pulse=0;
+    root.style.setProperty('--comp',1); root.style.setProperty('--pulse',0);
+    timerNum.textContent='00:00'; timerNum.classList.remove('placeholder');
+    pressureVal.textContent='0'; stateLabel.textContent='SEALED';
+    setStatus('complete'); updateButtons();
+  }
+  function error(){
+    state='error'; setStatus('error');
+    gauge.classList.add('shake'); errMsg.classList.add('show');
+    setTimeout(()=>{gauge.classList.remove('shake');},320);
+    setTimeout(()=>{errMsg.classList.remove('show');},1700);
+    setTimeout(()=>{if(state==='error'){state='idle';setStatus('idle');refresh();}},1900);
+  }
+
+  /* ---------- main loop ---------- */
+  function loop(ts){
+    if(!lastTs) lastTs=ts;
+    const dt=Math.min((ts-lastTs)/16.667,3);
+    lastTs=ts;
+
+    if(state==='active'){
+      remainingMs-=(ts-(loop._prev||ts));
+      if(remainingMs<=0){ complete(); }
+      const prog=Math.min(1,1-remainingMs/totalMs);
+      comp+=(prog-comp)*0.12;
+      const sec=Math.ceil(remainingMs/1000);
+      if(sec!==lastSecond){ lastSecond=sec; pulse=1; }
+      pulse=Math.max(0,pulse-dt*0.05);
+      root.style.setProperty('--comp',comp.toFixed(4));
+      root.style.setProperty('--pulse',pulse.toFixed(4));
+      timerNum.textContent=fmt(Math.max(0,remainingMs));
+      pressureVal.textContent=Math.round(101*(1-comp));
+    }else if(state==='idle'){
+      comp+=(0-comp)*0.08; root.style.setProperty('--comp',comp.toFixed(4));
+      pulse=Math.max(0,pulse-dt*0.05); root.style.setProperty('--pulse',pulse.toFixed(4));
+    }
+
+    updateParticles(dt);
+    drawParticles();
+    loop._prev=ts;
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- wire events ---------- */
+  document.querySelectorAll('.step').forEach(b=>b.addEventListener('click',()=>change(b.dataset.t,+b.dataset.d)));
+  engage.addEventListener('click',engageStart);
+
+  resize(); refresh(); setStatus('idle');
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
