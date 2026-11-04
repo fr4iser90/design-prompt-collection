@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grain &amp; Ledger — The Yield Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --soil:#8B5A2B;
+    --gold:#E6C229;
+    --ink:#2C2C2C;
+    --dur:6s;
+    --serif:"Playfair Display", Georgia, "Times New Roman", serif;
+    --sans:"Oswald", "Arial Narrow", system-ui, sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:#170f07;
+    font-family:var(--sans);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:2.2vmin;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .stage{
+    position:relative;
+    width:min(1280px, 96vw);
+    aspect-ratio:16/9;
+    overflow:hidden;
+    background:var(--soil);
+    box-shadow:0 40px 90px -20px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.04);
+  }
+
+  /* ---- ATMOSPHERE ---- */
+  .soil{position:absolute;inset:0;animation:bgsoil var(--dur) linear infinite;}
+  @keyframes bgsoil{0%,83%{background:var(--soil);}88%,97%{background:var(--gold);}100%{background:var(--soil);}}
+
+  .grain{
+    position:absolute;inset:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:170px 170px;
+    mix-blend-mode:soft-light;opacity:.55;
+  }
+  .vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(125% 105% at 50% 42%, transparent 52%, rgba(0,0,0,.42) 100%);}
+
+  /* ---- HUD (editorial framing) ---- */
+  .hud{position:absolute;inset:0;pointer-events:none;color:var(--gold);z-index:2;}
+  .hud .tl{position:absolute;top:3.6%;left:3.8%;font-size:clamp(9px,1.1vmin,13px);letter-spacing:.28em;text-transform:uppercase;font-weight:500;}
+  .hud .tr{position:absolute;top:3.6%;right:3.8%;font-size:clamp(9px,1.1vmin,13px);letter-spacing:.24em;text-transform:uppercase;font-weight:500;}
+  .hud .bl{position:absolute;bottom:3.4%;left:3.8%;font-size:clamp(8px,1vmin,12px);letter-spacing:.24em;text-transform:uppercase;opacity:.8;}
+  .hud .br{position:absolute;bottom:3.4%;right:3.8%;font-size:clamp(8px,1vmin,12px);letter-spacing:.24em;text-transform:uppercase;opacity:.8;}
+  .hud .tick{display:inline-block;width:.7em;height:.7em;border:1.5px solid currentColor;vertical-align:middle;margin-right:.5em;transform:translateY(-1px);}
+
+  /* ---- SCENE ---- */
+  .scene{position:absolute;inset:0;z-index:1;transform-origin:center center;animation:shake var(--dur) linear infinite;}
+  @keyframes shake{
+    0%{transform:translate(0,0);}
+    57.4%{transform:translate(0,0);}
+    58.3%{transform:translate(3px,-3px);}
+    59.2%{transform:translate(-3px,2px);}
+    60.1%{transform:translate(2px,-1px);}
+    61%{transform:translate(-1px,1px);}
+    62.2%{transform:translate(0,0);}
+    100%{transform:translate(0,0);}
+  }
+
+  .ground{position:absolute;left:0;right:0;bottom:18%;height:2px;background:rgba(0,0,0,.30);}
+  .ground::after{content:"";position:absolute;left:50%;top:-1px;width:1px;height:8px;background:rgba(0,0,0,.45);}
+
+  /* ---- TARGET LINE ---- */
+  .target{position:absolute;left:50%;bottom:78%;transform:translate(-50%,50%);z-index:2;animation:target var(--dur) linear infinite;}
+  @keyframes target{0%,3%{opacity:0;}11%,100%{opacity:1;}}
+  .target .line{display:block;width:34vmin;height:2px;background:rgba(255,255,255,.55);position:relative;}
+  .target .line::before{content:"";position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:8px;height:8px;background:var(--gold);border-radius:50%;}
+  .target .lbl{position:absolute;right:0;top:-1.9em;transform:translateX(100%);font-size:clamp(8px,1.05vmin,12px);letter-spacing:.32em;text-transform:uppercase;color:rgba(255,255,255,.72);white-space:nowrap;font-weight:500;}
+
+  /* ---- STALK ---- */
+  .stalk{position:absolute;left:50%;bottom:18%;transform:translateX(-50%);width:5vmin;height:60vmin;z-index:1;}
+  .stalk-inner{position:absolute;inset:0;transform-origin:bottom center;animation:grow var(--dur) cubic-bezier(0.25,1,0.5,1) infinite;}
+  @keyframes grow{
+    0%,16.6%{transform:scaleY(0);}
+    58.3%{transform:scaleY(1);}
+    59.2%{transform:scaleY(.94);}
+    60.1%{transform:scaleY(1.015);}
+    61.5%{transform:scaleY(1);}
+    100%{transform:scaleY(1);}
+  }
+  .bar{
+    position:absolute;left:0;right:0;bottom:0;height:100%;
+    background:linear-gradient(90deg, rgba(0,0,0,.30), rgba(255,255,255,.24) 28%, rgba(255,255,255,.05) 55%, rgba(0,0,0,.34));
+    border-radius:1.2vmin 1.2vmin .4vmin .4vmin;
+    box-shadow:0 0 3vmin rgba(230,194,41,.28);
+  }
+  .bar::after{content:"";position:absolute;inset:0;border-radius:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.6' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");background-size:40px 120px;mix-blend-mode:soft-light;opacity:.4;}
+  .bar::before{content:"";position:absolute;left:50%;top:2%;bottom:0;width:1px;background:rgba(255,255,255,.22);transform:translateX(-50%);}
+
+  .leaf{position:absolute;height:1.5vmin;width:7vmin;background:var(--gold);box-shadow:0 0 1.2vmin rgba(0,0,0,.18);}
+  .leaf.r{left:50%;top:var(--y);clip-path:polygon(0 0,100% 50%,0 100%);transform-origin:left center;transform:scaleX(0) rotate(0deg);animation:leafR var(--dur) ease-out infinite;}
+  .leaf.l{right:50%;top:var(--y);clip-path:polygon(100% 0,0 50%,100% 100%);transform-origin:right center;transform:scaleX(0) rotate(0deg);animation:leafL var(--dur) ease-out infinite;}
+  @keyframes leafR{0%,var(--s){transform:scaleX(0) rotate(-14deg);}calc(var(--s) + 5%),100%{transform:scaleX(1) rotate(-22deg);}}
+  @keyframes leafL{0%,var(--s){transform:scaleX(0) rotate(14deg);}calc(var(--s) + 5%),100%{transform:scaleX(1) rotate(22deg);}}
+
+  .head{position:absolute;left:50%;top:0;transform:translate(-50%,-52%);width:6vmin;height:12vmin;z-index:3;opacity:0;animation:head var(--dur) ease-out infinite;}
+  @keyframes head{0%,50%{opacity:0;transform:translate(-50%,-52%) scale(.2);}58.3%{opacity:1;transform:translate(-50%,-52%) scale(1);}60%{transform:translate(-50%,-52%) scale(1.05);}61.5%,100%{opacity:1;transform:translate(-50%,-52%) scale(1);}}
+  .head .grain-shape{position:absolute;left:50%;top:0;transform:translateX(-50%);width:3.4vmin;height:11vmin;background:var(--gold);clip-path:polygon(50% 0,100% 22%,100% 78%,50% 100%,0 78%,0 22%);box-shadow:0 0 1.6vmin rgba(230,194,41,.4);}
+  .head .awns{position:absolute;left:50%;top:-1.4vmin;transform:translateX(-50%);width:2.4vmin;height:3vmin;}
+  .head .awns i{position:absolute;bottom:0;left:50%;width:1px;height:3vmin;background:var(--gold);transform-origin:bottom center;opacity:.85;}
+  .head .awns i:nth-child(1){transform:translateX(-50%) rotate(-26deg);}
+  .head .awns i:nth-child(2){transform:translateX(-50%) rotate(-9deg);}
+  .head .awns i:nth-child(3){transform:translateX(-50%) rotate(9deg);}
+  .head .awns i:nth-child(4){transform:translateX(-50%) rotate(26deg);}
+
+  /* ---- SEED ---- */
+  .seed{position:absolute;left:50%;bottom:18%;transform:translate(-50%,50%);width:2.6vmin;height:2.6vmin;background:var(--gold);border-radius:50%;z-index:4;box-shadow:0 0 3vmin rgba(230,194,41,.6);animation:seed var(--dur) linear infinite;}
+  @keyframes seed{
+    0%{transform:translate(-50%,50%) scale(1);opacity:1;}
+    4%{transform:translate(-50%,50%) scale(1.12);opacity:1;}
+    8%{transform:translate(-50%,50%) scale(1);opacity:1;}
+    12%{transform:translate(-50%,50%) scale(1.12);opacity:1;}
+    16%{transform:translate(-50%,50%) scale(1);opacity:1;}
+    22%{transform:translate(-50%,50%) scale(1);opacity:0;}
+    100%{transform:translate(-50%,50%) scale(1);opacity:0;}
+  }
+
+  /* ---- NUMBER ---- */
+  .number{position:absolute;left:50%;bottom:80%;transform:translate(-50%,50%);z-index:3;text-align:center;animation:num var(--dur) steps(1,end) infinite;}
+  @keyframes num{0%,58.2%{opacity:0;}58.4%,100%{opacity:1;}}
+  .num-main{font-family:var(--serif);font-weight:900;font-size:clamp(46px,11.5vmin,150px);line-height:.86;color:var(--ink);letter-spacing:-.01em;}
+  .num-unit{font-family:var(--sans);font-weight:500;font-size:clamp(11px,2.1vmin,22px);letter-spacing:.55em;text-transform:uppercase;color:var(--ink);margin-top:.7em;padding-left:.55em;}
+
+  /* ---- LOGO ---- */
+  .logo{position:absolute;left:50%;bottom:6.2%;transform:translateX(-50%);z-index:3;text-align:center;animation:logo var(--dur) ease-out infinite;}
+  @keyframes logo{0%,80%{opacity:0;transform:translateX(-50%) translateY(10px);}88%,100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+  .logo .mark{font-family:var(--serif);font-weight:700;font-size:clamp(15px,2.7vmin,30px);color:var(--ink);letter-spacing:.01em;}
+  .logo .rule{width:5vmin;height:1px;background:var(--ink);margin:.8em auto;opacity:.55;}
+  .logo .sub{font-family:var(--sans);font-weight:400;font-size:clamp(8px,1.05vmin,12px);letter-spacing:.42em;text-transform:uppercase;color:var(--ink);opacity:.72;}
+
+  /* ---- LOOP RESTART ---- */
+  .restart{position:absolute;inset:0;z-index:6;background:transparent;border:0;cursor:pointer;}
+  .restart:focus-visible{outline:2px solid var(--gold);outline-offset:-6px;}
+  .hint{position:absolute;right:3.8%;bottom:11%;z-index:5;font-size:clamp(8px,1vmin,11px);letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.5);pointer-events:none;animation:hintfade var(--dur) linear infinite;}
+  @keyframes hintfade{0%{opacity:0;}6%{opacity:.55;}20%{opacity:.55;}26%,100%{opacity:0;}}
+
+  @media (prefers-reduced-motion: reduce){
+    .soil,.scene,.stalk-inner,.leaf,.head,.seed,.number,.logo,.target,.hint{animation:none !important;}
+    .soil{background:var(--gold);}
+    .stalk-inner{transform:scaleY(1);}
+    .leaf.r{transform:scaleX(1) rotate(-22deg);}
+    .leaf.l{transform:scaleX(1) rotate(22deg);}
+    .head{opacity:1;transform:translate(-50%,-52%) scale(1);}
+    .seed{opacity:0;}
+    .number{opacity:1;}
+    .logo{opacity:1;transform:translateX(-50%) translateY(0);}
+    .target{opacity:1;}
+    .hint{opacity:0;}
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="soil"></div>
+    <div class="grain"></div>
+
+    <div class="scene">
+      <div class="ground"></div>
+
+      <div class="target">
+        <span class="lbl">Target Yield</span>
+        <span class="line"></span>
+      </div>
+
+      <div class="stalk">
+        <div class="stalk-inner">
+          <div class="bar"></div>
+          <span class="leaf r" style="--y:62%;--s:20%;"></span>
+          <span class="leaf l" style="--y:48%;--s:26%;"></span>
+          <span class="leaf r" style="--y:34%;--s:32%;"></span>
+          <span class="leaf l" style="--y:20%;--s:38%;"></span>
+          <div class="head">
+            <div class="awns"><i></i><i></i><i></i><i></i></div>
+            <div class="grain-shape"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seed"></div>
+
+      <div class="number">
+        <div class="num-main">4.2M</div>
+        <div class="num-unit">Tons</div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="tl"><span class="tick"></span>Grain &amp; Ledger — Yield Report</div>
+      <div class="tr">FY 2025 · Sector 07</div>
+      <div class="bl">Fig. 01 — The Yield Curve</div>
+      <div class="br">6s Loop · 16:9</div>
+    </div>
+
+    <div class="logo">
+      <div class="mark">Grain &amp; Ledger</div>
+      <div class="rule"></div>
+      <div class="sub">Agri-Financial Consultancy</div>
+    </div>
+
+    <div class="vignette"></div>
+    <div class="hint">Click / Space to replay</div>
+    <button class="restart" aria-label="Replay The Yield Curve"></button>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const restart = () => {
+      stage.querySelectorAll('*').forEach(el => {
+        el.style.animation = 'none';
+        void el.offsetWidth;
+        el.style.animation = '';
+      });
+    };
+    stage.addEventListener('click', restart);
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') { e.preventDefault(); restart(); }
+    });
+  </script>
+</body>
+</html>

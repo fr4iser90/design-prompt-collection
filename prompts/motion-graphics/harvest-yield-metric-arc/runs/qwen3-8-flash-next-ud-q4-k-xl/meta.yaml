@@ -1,0 +1,29 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-11-04"
+updated: "2026-11-04"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+context_tokens: 262144
+duration_ms: 100243
+gen_ms: 100243
+ttft_ms: 3458
+queue_wait_ms: 66
+wall_ms: 103768
+review_score: 6
+review_summary: "Captures the 'Seed' beat (Beat 1) with a textured soil background and central gold dot, but fails to show the core 'Growth' or 'Impact' visual elements (the bar and large numbers) in this static frame."
+reviewed_at: "2026-11-04T17:18:38.138Z"
+review_issues:
+  - "Static frame only shows Beat 1 (Seed), missing the main visual payload (the growing bar and '4.2M' number)"
+  - "Brand name 'Grain & Ledger' is present but relegated to a small header, not a hero-level signal as required by rules"
+  - "Composition is extremely minimal/empty for a static screenshot, lacking the promised 'poster composition' energy"

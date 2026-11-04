@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 274 | 272 | 233 | 41 |
+| 275 | 274 | 234 | 41 |
 
 ## Quick start
 
@@ -2291,9 +2291,11 @@ A single vertical bar grows physically from dark soil into a wheat stalk, hittin
 
 [prompt](prompts/motion-graphics/harvest-yield-metric-arc/prompt.md) · [extended](prompts/motion-graphics/harvest-yield-metric-arc/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/harvest-yield-metric-arc/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.5s | 100s | 6 | [open](prompts/motion-graphics/harvest-yield-metric-arc/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2390,6 +2392,20 @@ An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A s
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 4.7s | 197s | 6 | [open](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Caustic Refraction Loop
+
+Scroll-driven optical simulation for Vitreous Labs. Light refraction, caustic patterns, and water level manipulation via SVG filters and Snell's law approximation. Quiet luxury aesthetic, no glassmorphism.
+
+**Status:** polished · `hero-kinetic` `light-refraction` `glass` `architectural` `caustics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/saline-glass-caustics/prompt.md) · [extended](prompts/motion-graphics/saline-glass-caustics/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3559,9 +3575,11 @@ High-fidelity single-file HTML studio for generating and previewing procedural c
 
 [prompt](prompts/assets/clockwork-automata-kit/prompt.md) · [extended](prompts/assets/clockwork-automata-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/clockwork-automata-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 4.3s | 369s | 1 | [open](prompts/assets/clockwork-automata-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

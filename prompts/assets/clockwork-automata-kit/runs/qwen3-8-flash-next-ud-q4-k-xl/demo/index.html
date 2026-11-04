@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clockwork Automata Kit — 2D Sprite Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CLOCKWORK AUTOMATA KIT — Asset Studio
+   Palette: charcoal blueprint + brass / silver / copper / dark-iron
+   Type:    Cinzel (engraved headers) + IBM Plex Mono (data/labels)
+   ============================================================ */
+:root{
+  --bg:#1A1A1A; --grid:#2F4F4F; --brass:#B87333; --silver:#C0C0C0;
+  --copper:#8B4513; --iron:#2F4F4F; --red:#8B0000; --text:#E0E0E0;
+  --panel:#202020; --panel2:#262626; --line:#333;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --serif:'Cinzel',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text); font-family:var(--mono);
+  line-height:1.45; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  /* blueprint grid + warm ambient glow */
+  background-image:
+    radial-gradient(1200px 520px at 50% -12%, rgba(184,115,51,.10), transparent 62%),
+    radial-gradient(900px 500px at 88% 118%, rgba(47,79,79,.16), transparent 60%),
+    linear-gradient(rgba(47,79,79,.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(47,79,79,.16) 1px, transparent 1px);
+  background-size:auto,auto,28px 28px,28px 28px;
+  background-attachment:fixed;
+}
+body::before{ /* vignette */
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(120% 120% at 50% 40%, transparent 55%, rgba(0,0,0,.55));
+}
+::selection{background:var(--brass);color:#111}
+h1,h2,h3{font-family:var(--serif);text-transform:uppercase;letter-spacing:.05em;color:var(--brass);font-weight:700}
+
+/* ---------- Studio frame ---------- */
+.studio{
+  position:relative;z-index:1;max-width:1200px;margin:26px auto;
+  background:linear-gradient(180deg,#1f1f1f,#191919);
+  border:2px solid var(--brass);
+  box-shadow:0 0 0 1px #000, 0 30px 80px rgba(0,0,0,.6), inset 0 0 60px rgba(0,0,0,.5);
+  animation:gearlock .9s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+@keyframes gearlock{0%{transform:scale(.9) translateY(14px);opacity:0}60%{opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
+
+/* corner rivets */
+.rivet{position:absolute;width:14px;height:14px;border-radius:50%;z-index:6;
+  background:radial-gradient(circle at 35% 30%,#e6c88a,var(--brass) 55%,#5a3416);
+  box-shadow:0 0 0 2px #0c0c0c, inset 0 -2px 3px rgba(0,0,0,.6);}
+.rivet.tl{top:-8px;left:-8px}.rivet.tr{top:-8px;right:-8px}
+.rivet.bl{bottom:-8px;left:-8px}.rivet.br{bottom:-8px;right:-8px}
+/* ticking border gears */
+.tick{position:absolute;width:22px;height:22px;z-index:5;color:var(--brass);opacity:.9;
+  animation:tick 1s steps(12) infinite;transform-origin:center;}
+.tick.top{top:8px;left:50%;margin-left:-11px}
+.tick.bot{bottom:8px;left:50%;margin-left:-11px}
+.tick.lft{top:50%;left:8px;margin-top:-11px;animation-duration:2s}
+.tick.rgt{top:50%;right:8px;margin-top:-11px;animation-duration:2s}
+@keyframes tick{to{transform:rotate(360deg)}}
+
+/* ---------- Header ---------- */
+header{padding:26px 30px 18px;border-bottom:1px solid var(--line);
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:16px}
+.brand .emblem{width:52px;height:52px;color:var(--brass);flex:none;animation:spin 14s linear infinite}
+.brand h1{font-size:clamp(1.5rem,5vw,2.5rem);line-height:.98;font-weight:900;
+  color:#e9c78f;text-shadow:0 1px 0 #000,0 2px 12px rgba(184,115,51,.25)}
+.brand .sub{font-family:var(--mono);font-size:.72rem;letter-spacing:.28em;color:var(--silver);
+  text-transform:uppercase;margin-top:6px}
+.status{font-size:.68rem;color:var(--silver);letter-spacing:.12em;text-align:right;line-height:1.7}
+.status b{color:var(--brass);font-weight:500}
+.status .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3fae5a;
+  box-shadow:0 0 8px #3fae5a;margin-right:6px;animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---------- Main grid ---------- */
+.main{display:grid;grid-template-columns:320px 1fr;gap:0}
+.inv{border-right:1px solid var(--line);padding:18px 16px 24px;max-height:760px;overflow-y:auto}
+.inv::-webkit-scrollbar,.filmstrip::-webkit-scrollbar,.scrub::-webkit-scrollbar{height:8px;width:8px}
+.inv::-webkit-scrollbar-thumb,.filmstrip::-webkit-scrollbar-thumb,.scrub::-webkit-scrollbar-thumb{background:#3a3a3a;border-radius:8px}
+.inv::-webkit-scrollbar-track{background:#141414}
+
+.inv h2,.viewer h2{font-size:.82rem;letter-spacing:.2em;color:var(--silver);
+  border-bottom:1px dashed var(--grid);padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between}
+.inv h2 span{color:var(--brass);font-family:var(--mono);font-size:.66rem}
+.inv-group{margin-bottom:22px}
+.inv-group h3{font-size:.7rem;color:var(--brass);letter-spacing:.16em;margin-bottom:10px;opacity:.85}
+
+.card{position:relative;display:flex;gap:12px;align-items:center;padding:8px;border:1px solid #303030;
+  background:linear-gradient(180deg,#232323,#1c1c1c);cursor:pointer;margin-bottom:10px;
+  transition:all .3s ease-out;border-radius:3px}
+.card:hover{border-color:var(--brass);transform:translateY(-1px)}
+.card.sel{border-color:var(--brass);box-shadow:0 0 10px rgba(184,115,51,.5)}
+.card.sel::before{content:'';position:absolute;left:-1px;top:8px;bottom:8px;width:3px;background:var(--brass)}
+.thumb{width:56px;height:56px;flex:none;background:#111;border:1px solid #333;image-rendering:pixelated;
+  background-size:contain;background-repeat:no-repeat;background-position:center;transition:transform .3s ease-out}
+.card:hover .thumb{transform:scale(1.06)}
+.cmeta{min-width:0}
+.cmeta .cn{font-size:.78rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmeta .cs{font-size:.6rem;color:var(--silver);letter-spacing:.08em;margin-top:3px}
+.cmeta .cs b{color:var(--brass);font-weight:500}
+
+/* ---------- Viewer ---------- */
+.viewer{padding:18px 22px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.vhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.vhead h2{margin:0;border:0;padding:0;font-size:1.15rem;color:#e9c78f}
+.vhead .tag{font-size:.62rem;color:var(--silver);letter-spacing:.14em}
+.screen{position:relative;width:100%;aspect-ratio:800/600;background:#101414;
+  border:1px solid var(--grid);box-shadow:inset 0 0 40px rgba(0,0,0,.7), inset 0 0 0 1px #000}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block}
+/* blueprint corner ticks */
+.screen::before,.screen::after{content:'';position:absolute;width:16px;height:16px;pointer-events:none;z-index:3}
+.screen::before{top:8px;left:8px;border-top:2px solid var(--brass);border-left:2px solid var(--brass)}
+.screen::after{bottom:8px;right:8px;border-bottom:2px solid var(--brass);border-right:2px solid var(--brass)}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4}
+.flash.go{animation:flash .18s ease-out}
+@keyframes flash{0%{opacity:.55}100%{opacity:0}}
+.readout{position:absolute;top:10px;right:12px;z-index:3;font-size:.62rem;color:var(--silver);
+  text-align:right;letter-spacing:.06em;pointer-events:none;line-height:1.6}
+.readout b{color:var(--brass);font-weight:500}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px;
+  background:linear-gradient(180deg,#232323,#1b1b1b);border:1px solid #2c2c2c;border-radius:3px}
+.btn{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;color:var(--text);
+  background:#2a2a2a;border:1px solid #3a3a3a;padding:8px 12px;cursor:pointer;border-radius:2px;
+  transition:all .2s ease-out;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--brass);color:#e9c78f}
+.btn:active{transform:translateY(2px)}
+.btn.on{background:var(--brass);color:#141009;border-color:var(--brass)}
+.btn svg{width:14px;height:14px}
+.ctl{display:flex;align-items:center;gap:10px}
+.ctl label{font-size:.62rem;color:var(--silver);letter-spacing:.1em}
+.ctl .val{color:var(--brass);font-size:.72rem;min-width:34px;text-align:center}
+input[type=range]{-webkit-appearance:none;appearance:none;height:6px;width:130px;border-radius:6px;
+  background:linear-gradient(90deg,var(--brass),#5a3416);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e6c88a,var(--brass) 55%,#5a3416);
+  box-shadow:0 0 0 2px #0c0c0c, inset 0 -2px 3px rgba(0,0,0,.6);cursor:grab}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e6c88a,var(--brass) 55%,#5a3416);cursor:grab}
+.scrub{flex:1 1 220px;min-width:160px}
+.scrub input[type=range]{width:100%}
+.scrub .ticks{display:flex;justify-content:space-between;font-size:.55rem;color:#5a5a5a;margin-top:2px}
+
+/* filmstrip */
+.stripwrap{border:1px solid #2c2c2c;background:#141414;padding:8px;border-radius:3px}
+.stripwrap .lbl{font-size:.6rem;color:var(--silver);letter-spacing:.14em;margin:2px 4px 8px}
+.filmstrip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px}
+.fcell{position:relative;flex:none;width:64px;height:64px;background:#0d0d0d;border:1px solid #2a2a2a;
+  scroll-snap-align:start;cursor:pointer;image-rendering:pixelated;
+  background-size:contain;background-repeat:no-repeat;background-position:center;transition:all .2s ease-out}
+.fcell:hover{border-color:var(--silver)}
+.fcell.on{border-color:var(--brass);box-shadow:0 0 8px rgba(184,115,51,.5)}
+.fcell .fn{position:absolute;bottom:1px;left:2px;font-size:.5rem;color:var(--silver);text-shadow:0 0 3px #000}
+.fcell.on .fn{color:var(--brass)}
+
+/* metadata */
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#2c2c2c;border:1px solid #2c2c2c;border-radius:3px;overflow:hidden}
+.meta div{background:#1c1c1c;padding:10px 12px}
+.meta .k{font-size:.56rem;color:var(--silver);letter-spacing:.12em}
+.meta .v{font-size:.9rem;color:var(--brass);margin-top:4px}
+
+/* footer */
+footer{padding:20px 22px;border-top:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.dl{position:relative;font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;padding:12px 20px;
+  border:1px solid var(--brass);cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;gap:10px;
+  transition:all .2s ease-out;min-width:190px;justify-content:center}
+.dl:active{transform:translateY(2px)}
+.dl.brass{background:linear-gradient(180deg,#c9873f,var(--brass));color:#141009;font-weight:600}
+.dl.brass:hover{box-shadow:0 0 16px rgba(184,115,51,.5)}
+.dl.silver{background:linear-gradient(180deg,#d2d2d2,#9a9a9a);color:#111;font-weight:600;border-color:#9a9a9a}
+.dl.silver:hover{box-shadow:0 0 16px rgba(192,192,192,.4)}
+.dl .gear{width:16px;height:16px;animation:spin 2s linear infinite}
+.dl .spin{display:none}
+.dl.busy .txt{display:none}
+.dl.busy .spin{display:inline-flex;align-items:center;gap:8px}
+.foot-note{font-size:.62rem;color:var(--silver);letter-spacing:.08em;margin-left:auto;text-align:right}
+.foot-note b{color:var(--brass);font-weight:500}
+
+/* style-guide modal */
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(2px)}
+.modal.open{display:flex;animation:fade .25s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal .box{max-width:560px;width:100%;max-height:88vh;overflow:auto;background:#1c1c1c;border:2px solid var(--brass);
+  padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.modal h2{font-size:1.1rem;margin-bottom:14px}
+.modal .rule{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--grid)}
+.modal .rule .n{font-family:var(--serif);color:var(--brass);font-size:1.4rem;line-height:1;flex:none;width:34px}
+.modal .rule p{font-size:.74rem;color:var(--text)}
+.modal .rule p b{color:var(--silver);font-weight:500}
+.modal .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.sw{width:52px;text-align:center;font-size:.5rem;color:var(--silver)}
+.sw i{display:block;height:34px;border:1px solid #000;border-radius:2px;margin-bottom:4px}
+.modal .close{position:absolute;top:14px;right:18px;color:var(--silver);cursor:pointer;font-size:1.2rem}
+
+/* ---------- Responsive ---------- */
+@media (max-width:768px){
+  .studio{margin:10px}
+  header{padding:18px 16px}
+  .main{grid-template-columns:1fr}
+  .inv{border-right:0;border-bottom:1px solid var(--line);max-height:none;padding:16px;
+    display:flex;overflow-x:auto;gap:12px;scroll-snap-type:x mandatory}
+  .inv-group{margin:0;display:flex;gap:12px;scroll-snap-align:start}
+  .inv-group h3{display:none}
+  .card{min-width:220px;margin:0;scroll-snap-align:start}
+  .viewer{padding:16px}
+  .meta{grid-template-columns:repeat(2,1fr)}
+  footer{flex-direction:column;align-items:stretch}
+  .dl{width:100%}
+  .foot-note{margin-left:0;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<main class="studio" id="studio">
+  <!-- corner rivets + ticking gears -->
+  <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+  <svg class="tick top" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+  <svg class="tick bot" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+  <svg class="tick lft" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+  <svg class="tick rgt" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+
+  <header>
+    <div class="brand">
+      <svg class="emblem" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>
+      <div>
+        <h1>Clockwork Automata Kit</h1>
+        <div class="sub">2D Production Pack · v1.0 · Articulated Precision</div>
+      </div>
+    </div>
+    <div class="status">
+      <div><span class="dot"></span>STUDIO ONLINE · <b id="clock">--:--:--</b></div>
+      <div>ASSETS: <b>1 HERO</b> · <b>6 PROPS</b> · <b>4 VFX</b></div>
+      <div>FRAMES: <b>26</b> HERO · <b>16</b> VFX · GRID 64px</div>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- ===== Inventory ===== -->
+    <aside class="inv" id="inv">
+      <div class="inv-group" data-group="hero">
+        <h3>Hero Automaton</h3>
+        <div id="heroCards"></div>
+      </div>
+      <div class="inv-group" data-group="props">
+        <h3>Props</h3>
+        <div id="propCards"></div>
+      </div>
+      <div class="inv-group" data-group="vfx">
+        <h3>VFX</h3>
+        <div id="vfxCards"></div>
+      </div>
+    </aside>
+
+    <!-- ===== Viewer ===== -->
+    <section class="viewer">
+      <div class="vhead">
+        <h2 id="vTitle">Idle Cycle</h2>
+        <div class="tag" id="vTag">HERO · 8 FRAMES · 64×64 · BRASS/STEEL/COPPER</div>
+      </div>
+
+      <div class="screen">
+        <canvas id="preview" width="800" height="600"></canvas>
+        <div class="flash" id="flash"></div>
+        <div class="readout" id="readout"></div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <button class="btn" id="prevBtn" aria-label="Step back one frame">◀</button>
+          <button class="btn on" id="playBtn" aria-label="Play or pause animation">❚❚ PAUSE</button>
+          <button class="btn" id="nextBtn" aria-label="Step forward one frame">▶</button>
+        </div>
+        <div class="ctl">
+          <label for="fps">FPS</label>
+          <input type="range" id="fps" min="6" max="12" value="8" aria-label="Frames per second">
+          <span class="val" id="fpsVal">8</span>
+        </div>
+        <div class="ctl">
+          <button class="btn on" id="loopBtn" aria-label="Toggle loop">⟳ LOOP</button>
+        </div>
+        <div class="ctl">
+          <button class="btn" id="atlasBtn" aria-label="Toggle atlas poster view">▦ ATLAS</button>
+        </div>
+        <div class="scrub ctl">
+          <input type="range" id="scrub" min="0" max="7" value="0" aria-label="Frame scrubber">
+        </div>
+      </div>
+
+      <div class="stripwrap">
+        <div class="lbl">FRAME FILMSTRIP — click to inspect</div>
+        <div class="filmstrip" id="filmstrip"></div>
+      </div>
+
+      <div class="meta" id="meta">
+        <div><div class="k">FRAME</div><div class="v" id="mFrame">0 / 8</div></div>
+        <div><div class="k">DIMENSION</div><div class="v" id="mDim">64 × 64</div></div>
+        <div><div class="k">SCALE</div><div class="v" id="mScale">×8</div></div>
+        <div><div class="k">EST. SIZE</div><div class="v" id="mSize">—</div></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <button class="dl brass" id="dlPng" aria-label="Download PNG atlas">
+      <span class="txt">⬇ DOWNLOAD PNG ATLAS</span>
+      <span class="spin"><svg class="gear" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>GENERATING…</span>
+    </button>
+    <button class="dl silver" id="dlSvg" aria-label="Download current frame as SVG">
+      <span class="txt">⬇ DOWNLOAD SVG SPRITE</span>
+      <span class="spin"><svg class="gear" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l1.6 3.1a9 9 0 0 1 2.3 1l3.2-1.2 1.4 2.4-2.3 2.4a9 9 0 0 1 .7 2.5L24 11v2l-3.1.6a9 9 0 0 1-.7 2.5l2.3 2.4-1.4 2.4-3.2-1.2a9 9 0 0 1-2.3 1L12 24l-1.6-3.1a9 9 0 0 1-2.3-1L4.9 21.1 3.5 18.7l2.3-2.4a9 9 0 0 1-.7-2.5L0 13v-2l3.1-.6a9 9 0 0 1 .7-2.5L1.5 5.5l1.4-2.4 3.2 1.2a9 9 0 0 1 2.3-1L12 0zm0 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>GENERATING…</span>
+    </button>
+    <button class="dl silver" id="guideBtn" aria-label="Open style guide">⚙ STYLE GUIDE</button>
+    <div class="foot-note">
+      Procedural Canvas sprites · bevel-honest · <b>requestAnimationFrame</b> loop<br>
+      PNG atlas + vector SVG export · no external assets
+    </div>
+  </footer>
+</main>
+
+<!-- Style guide modal -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Style guide">
+  <div class="box" style="position:relative">
+    <span class="close" id="closeModal">✕</span>
+    <h2>Style Bible</h2>
+    <div class="rule"><div class="n">1</div><p><b>Bevel honesty.</b> Light source is top-left. Every metal plate carries a highlight along its top/left edge and a shadow along its bottom/right edge — never flat.</p></div>
+    <div class="rule"><div class="n">2</div><p><b>Silhouette readability.</b> Limbs separate from the torso at 64px. Internal rivets and panels never break the outer outline.</p></div>
+    <div class="rule"><div class="n">3</div><p><b>Articulation.</b> Visible hinges, rivets and pistons. Joints move on mechanical logic — knees bend forward, gears mesh, pistons compress.</p></div>
+    <div class="rule"><div class="n">4</div><p><b>Materials.</b> Brushed brass, oxidized copper, polished steel and dark iron. Walk cycles show weight shift; strikes show anticipation & follow-through.</p></div>
+    <div class="swatches">
+      <div class="sw"><i style="background:#B87333"></i>BRASS</div>
+      <div class="sw"><i style="background:#C0C0C0"></i>STEEL</div>
+      <div class="sw"><i style="background:#8B4513"></i>COPPER</div>
+      <div class="sw"><i style="background:#2F4F4F"></i>IRON</div>
+      <div class="sw"><i style="background:#8B0000"></i>RED</div>
+      <div class="sw"><i style="background:#E0E0E0"></i>TEXT</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CLOCKWORK AUTOMATA KIT — procedural sprite engine + studio
+   All sprites are drawn on-canvas (no external assets).
+   ============================================================ */
+(() => {
+'use strict';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SIZE = 64;
+
+/* ---- material palette ---- */
+const M = {
+  brass:  {base:'#B87333', hi:'#E9C78F', lo:'#5A3416'},
+  steel:  {base:'#C0C0C0', hi:'#F0F0F0', lo:'#6E6E6E'},
+  copper: {base:'#8B4513', hi:'#C77A3A', lo:'#4A2408'},
+  iron:   {base:'#2F4F4F', hi:'#5A8080', lo:'#122020'},
+  dark:   {base:'#141414', hi:'#3A3A3A', lo:'#000000'},
+};
+
+/* ---- math helpers ---- */
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t*t*(3-2*t);
+const easeIn=t=>t*t;
+const easeOut=t=>1-(1-t)*(1-t);
+const easeInOut=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+
+/* ============================================================
+   DRAW PRIMITIVES — bevel-honest metal shapes
+   ============================================================ */
+function bevelRect(c,x,y,w,h,mat,r=2){
+  r=Math.min(r,w/2,h/2);
+  // body
+  c.fillStyle=mat.base; rr(c,x,y,w,h,r); c.fill();
+  // top/left highlight
+  c.fillStyle=mat.hi; rr(c,x,y,w,Math.max(1,h*0.32),r); c.fill();
+  c.fillStyle=mat.hi; rr(c,x,y,Math.max(1,w*0.24),h,r); c.fill();
+  // bottom/right shadow
+  c.fillStyle=mat.lo; rr(c,x,y+h*0.62,w,h*0.38,r); c.fill();
+  c.fillStyle=mat.lo; rr(c,x+w*0.74,y,w*0.26,h,r); c.fill();
+  // re-apply base band so highlight/shadow read as edges only
+  c.fillStyle=mat.base; rr(c,x+Math.max(1,w*0.24),y+Math.max(1,h*0.32),w-Math.max(1,w*0.5),h-Math.max(1,h*0.64),Math.max(0,r-1)); c.fill();
+  // outline
+  c.strokeStyle='rgba(0,0,0,.55)'; c.lineWidth=1; rr(c,x+.5,y+.5,w-1,h-1,r); c.stroke();
+}
+function rr(c,x,y,w,h,r){ r=Math.min(r,w/2,h/2); c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+
+function bevelCircle(c,x,y,r,mat){
+  const g=c.createRadialGradient(x-r*0.4,y-r*0.4,r*0.15,x,y,r);
+  g.addColorStop(0,mat.hi); g.addColorStop(.55,mat.base); g.addColorStop(1,mat.lo);
+  c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,7); c.fill();
+  c.strokeStyle='rgba(0,0,0,.5)'; c.lineWidth=1; c.stroke();
+}
+function rivet(c,x,y,r=1.4){ bevelCircle(c,x,y,r,M.steel); }
+function rivetRow(c,x0,y,x1,r=1.3){ for(let x=x0;x<=x1;x+=4) rivet(c,x,y,r); }
+function panelLine(c,x0,y,x1,col='rgba(0,0,0,.4)'){ c.strokeStyle=col; c.lineWidth=1; c.beginPath(); c.moveTo(x0,y); c.lineTo(x1,y); c.stroke(); }
+
+function limb(c,x0,y0,x1,y1,w,mat){
+  const ang=Math.atan2(y1-y0,x1-x0), len=Math.hypot(x1-x0,y1-y0);
+  c.save(); c.translate(x0,y0); c.rotate(ang);
+  bevelRect(c,-w/2,-w/2,len+w,w,mat,w/2);
+  c.restore();
+}
+function gearShape(c,x,y,rOuter,teeth,mat,rot=0){
+  const rInner=rOuter*0.72;
+  c.save(); c.translate(x,y); c.rotate(rot);
+  c.fillStyle=mat.base; c.beginPath();
+  for(let i=0;i<teeth;i++){
+    const a=i/teeth*Math.PI*2, a2=(i+0.5)/teeth*Math.PI*2;
+    c.lineTo(Math.cos(a)*rOuter,Math.sin(a)*rOuter);
+    c.lineTo(Math.cos(a2)*rOuter,Math.sin(a2)*rOuter);
+    const a3=(i+0.5)/teeth*Math.PI*2, a4=(i+1)/teeth*Math.PI*2;
+    c.lineTo(Math.cos(a3)*rInner,Math.sin(a3)*rInner);
+    c.lineTo(Math.cos(a4)*rInner,Math.sin(a4)*rInner);
+  }
+  c.closePath(); c.fill();
+  // bevel ring
+  const g=c.createRadialGradient(-rOuter*0.3,-rOuter*0.3,rOuter*0.1,0,0,rOuter);
+  g.addColorStop(0,'rgba(255,255,255,.35)'); g.addColorStop(.6,'rgba(255,255,255,0)'); g.addColorStop(1,'rgba(0,0,0,.4)');
+  c.fillStyle=g; c.fill();
+  c.strokeStyle='rgba(0,0,0,.5)'; c.lineWidth=1; c.stroke();
+  // hub
+  bevelCircle(c,0,0,rOuter*0.42,mat);
+  bevelCircle(c,0,0,rOuter*0.16,M.dark);
+  c.restore();
+}
+function piston(c,x,y,ext,mat){ // vertical piston, ext 0..1
+  bevelRect(c,x-3,y,6,10,mat,2);
+  bevelRect(c,x-2,y+8,4,6+ext*8,M.steel,1);
+  bevelCircle(c,x,y+8+6+ext*8,3,mat);
+}
+function steam(c,x,y,r,alpha){
+  const g=c.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,`rgba(232,236,238,${alpha})`);
+  g.addColorStop(.6,`rgba(190,200,204,${alpha*0.5})`);
+  g.addColorStop(1,'rgba(190,200,204,0)');
+  c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,7); c.fill();
+}
+function spark(c,x,y,len,ang,col){
+  c.strokeStyle=col; c.lineWidth=1; c.beginPath();
+  c.moveTo(x,y); c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len); c.stroke();
+}
+function flame(c,x,y,s){
+  const g=c.createRadialGradient(x,y,0,x,y,s);
+  g.addColorStop(0,'#FFF4C0'); g.addColorStop(.4,'#FFB347'); g.addColorStop(1,'rgba(255,80,0,0)');
+  c.fillStyle=g; c.beginPath(); c.arc(x,y,s,0,7); c.fill();
+}
+
+/* ============================================================
+   SPRITE GENERATOR — each function paints one 64x64 frame
+   ============================================================ */
+const GEN = {
+  /* ---- HERO: articulated brass automaton ---- */
+  heroIdle(c,f){
+    const t=f/8, br=ease(t)*1.2;
+    // legs (iron)
+    limb(c,29,44,27,56,6,M.iron); limb(c,35,44,37,56,6,M.iron);
+    bevelRect(c,23,55,9,4,M.iron,1); bevelRect(c,33,55,9,4,M.iron,1);
+    // torso
+    bevelRect(c,22,22-br,20,24,M.brass,3);
+    rivetRow(c,25,26-br,39); rivetRow(c,25,42-br,39);
+    panelLine(c,24,34-br,40);
+    // chest gear + gauge
+    gearShape(c,32,31-br,6,8,M.steel,t*Math.PI);
+    bevelCircle(c,26,38-br,2.6,M.copper); bevelCircle(c,38,38-br,2.6,M.copper);
+    // arms
+    limb(c,23,25-br,19,38+br,5,M.copper); limb(c,41,25-br,45,38+br,5,M.copper);
+    bevelCircle(c,19,38+br,2.4,M.steel); bevelCircle(c,45,38+br,2.4,M.steel);
+    // head
+    bevelRect(c,26,8-br,12,13,M.brass,3);
+    bevelRect(c,28,12-br,8,4,M.dark,1); // eye slit
+    c.fillStyle='#FFB347'; c.fillRect(30,13-br,2,2); // glowing eye
+    rivet(c,27,9-br); rivet(c,37,9-br);
+    // antenna
+    limb(c,32,8-br,32,4,2,M.steel); bevelCircle(c,32,4,1.6,M.copper);
+  },
+  heroWalk(c,f){
+    const t=f/8, ph=t*Math.PI*2;
+    const bob=-Math.abs(Math.sin(ph))*2;
+    const legA=Math.sin(ph)*6, legB=Math.sin(ph+Math.PI)*6;
+    const footA=clamp(Math.sin(ph),-1,1), footB=clamp(Math.sin(ph+Math.PI),-1,1);
+    // legs with knee articulation
+    limb(c,30,44,30+legA,50,6,M.iron); limb(c,30+legA,50,30+legA*1.4,56-footA,5,M.iron);
+    limb(c,34,44,34+legB,50,6,M.iron); limb(c,34+legB,50,34+legB*1.4,56-footB,5,M.iron);
+    bevelRect(c,30+legA*1.4-4,55-footA,8,4,M.iron,1); bevelRect(c,34+legB*1.4-4,55-footB,8,4,M.iron,1);
+    // torso
+    bevelRect(c,22,22+bob,20,24,M.brass,3);
+    rivetRow(c,25,26+bob,39); panelLine(c,24,34+bob,40);
+    gearShape(c,32,31+bob,6,8,M.steel,t*Math.PI*2);
+    bevelCircle(c,26,38+bob,2.6,M.copper); bevelCircle(c,38,38+bob,2.6,M.copper);
+    // arms swinging opposite legs
+    limb(c,23,25+bob,21-legA,36+bob,5,M.copper); limb(c,41,25+bob,43+legA,36+bob,5,M.copper);
+    bevelCircle(c,21-legA,36+bob,2.4,M.steel); bevelCircle(c,43+legA,36+bob,2.4,M.steel);
+    // head
+    bevelRect(c,26,8+bob,12,13,M.brass,3);
+    bevelRect(c,28,12+bob,8,4,M.dark,1); c.fillStyle='#FFB347'; c.fillRect(30,13+bob,2,2);
+    rivet(c,27,9+bob); rivet(c,37,9+bob);
+    limb(c,32,8+bob,32,4,2,M.steel); bevelCircle(c,32,4,1.6,M.copper);
+    // steam puff from back
+    steam(c,20,20+bob,3+Math.abs(Math.sin(ph))*2,0.3);
+  },
+  heroStrike(c,f){
+    const t=f/6;
+    let arm,ext=0,lean=0,glow=0;
+    if(t<0.34){ const k=ease(t/0.34); arm=lerp(36,18,k); lean=lerp(0,-2,k); }
+    else if(t<0.5){ const k=easeIn((t-0.34)/0.16); arm=lerp(18,50,k); lean=lerp(-2,3,k); glow=k; }
+    else { const k=easeOut((t-0.5)/0.5); arm=lerp(50,40,k); lean=lerp(3,0,k); glow=1-k; }
+    // legs braced
+    limb(c,28,44,25,56,6,M.iron); limb(c,36,44,39,56,6,M.iron);
+    bevelRect(c,21,55,8,4,M.iron,1); bevelRect(c,36,55,8,4,M.iron,1);
+    c.save(); c.translate(32,34); c.rotate(lean*0.03); c.translate(-32,-34);
+    // torso
+    bevelRect(c,22,22,20,24,M.brass,3); rivetRow(c,25,26,39); panelLine(c,24,34,40);
+    gearShape(c,32,31,6,8,M.steel,t*Math.PI*2);
+    bevelCircle(c,26,38,2.6,M.copper); bevelCircle(c,38,38,2.6,M.copper);
+    // back arm + striking arm with piston hammer
+    limb(c,41,25,45,38,5,M.copper);
+    limb(c,23,25,18,arm,5,M.copper);
+    bevelCircle(c,18,arm,2.4,M.steel);
+    piston(c,18,arm,glow,M.steel); bevelRect(c,14,arm+14,8,6,M.brass,2);
+    c.restore();
+    // head
+    bevelRect(c,26,8,12,13,M.brass,3); bevelRect(c,28,12,8,4,M.dark,1);
+    c.fillStyle='#FF6A2A'; c.fillRect(30,13,2,2); rivet(c,27,9); rivet(c,37,9);
+    // impact sparks
+    if(glow>0.4){ for(let i=0;i<6;i++){ const a=Math.random()*7; spark(c,17,arm+16,5+glow*4,a,'#FFD27A'); } flame(c,18,arm+16,6*glow); }
+  },
+  heroRepair(c,f){
+    const t=f/4, kneel=ease(t)*6, wrench=Math.sin(t*Math.PI*2)*0.5;
+    // kneeling legs
+    limb(c,28,44,24,52,6,M.iron); limb(c,24,52,30,56,5,M.iron);
+    limb(c,36,44,40,50,6,M.iron); limb(c,40,50,38,56,5,M.iron);
+    bevelRect(c,27,55,8,4,M.iron,1); bevelRect(c,35,55,7,4,M.iron,1);
+    // torso leaning forward
+    bevelRect(c,22,22+kneel,20,24-kneel*0.4,M.brass,3); rivetRow(c,25,26+kneel,39);
+    gearShape(c,32,31+kneel,6,8,M.steel,t*Math.PI*2);
+    // arms reaching down with wrench
+    limb(c,23,25+kneel,26,44+kneel,5,M.copper); limb(c,41,25+kneel,38,44+kneel,5,M.copper);
+    bevelCircle(c,26,44+kneel,2.4,M.steel); bevelCircle(c,38,44+kneel,2.4,M.steel);
+    // wrench tool
+    c.save(); c.translate(32,46+kneel); c.rotate(wrench);
+    bevelRect(c,-1,-1,12,4,M.steel,1); bevelCircle(c,11,1,3,M.steel); bevelCircle(c,11,1,1.4,M.dark);
+    c.restore();
+    // head
+    bevelRect(c,26,8+kneel,12,13,M.brass,3); bevelRect(c,28,12+kneel,8,4,M.dark,1);
+    c.fillStyle='#7FE0FF'; c.fillRect(30,13+kneel,2,2); rivet(c,27,9+kneel); rivet(c,37,9+kneel);
+    // sparks from work
+    if(t>0.3&&t<0.8){ for(let i=0;i<4;i++) spark(c,34,46+kneel,4,Math.random()*7,'#FFD27A'); }
+  },
+
+  /* ---- PROPS ---- */
+  propGearBig(c){ gearShape(c,32,32,24,12,M.brass,0); for(let i=0;i<6;i++){const a=i/6*7; rivet(c,32+Math.cos(a)*15,32+Math.sin(a)*15,1.6);} },
+  propGearSmall(c){ gearShape(c,32,32,14,8,M.steel,0); rivet(c,32,32,2); },
+  propPipe(c){
+    bevelRect(c,8,28,48,10,M.copper,3);
+    bevelRect(c,6,24,6,18,M.brass,2); bevelRect(c,52,24,6,18,M.brass,2);
+    rivetRow(c,9,26,55,1.2); rivetRow(c,9,40,55,1.2);
+    // joint flanges
+    bevelRect(c,26,24,4,18,M.steel,1); bevelRect(c,38,24,4,18,M.steel,1);
+  },
+  propValve(c){
+    bevelRect(c,24,30,16,20,M.copper,3); rivetRow(c,26,48,38);
+    gearShape(c,32,22,10,8,M.brass,0); bevelRect(c,30,20,4,26,M.steel,1);
+    bevelCircle(c,32,22,3,M.steel);
+    bevelRect(c,20,36,8,6,M.steel,2); bevelRect(c,36,36,8,6,M.steel,2);
+  },
+  propLever(c){
+    bevelRect(c,12,40,40,12,M.iron,3); rivet(c,18,46); rivet(c,46,46);
+    bevelRect(c,28,14,8,30,M.steel,2);
+    bevelCircle(c,32,14,5,M.brass); bevelCircle(c,32,14,2,M.dark);
+    bevelCircle(c,32,40,4,M.steel);
+    c.fillStyle='#8B0000'; c.fillRect(30,10,4,4);
+  },
+  propPlate(c){
+    bevelRect(c,8,12,48,40,M.iron,3);
+    rivet(c,14,18); rivet(c,50,18); rivet(c,14,46); rivet(c,50,46);
+    rivet(c,32,18); rivet(c,32,46);
+    panelLine(c,12,32,52); panelLine(c,32,16,32,48);
+    bevelRect(c,26,26,12,12,M.brass,2); bevelCircle(c,32,32,3,M.steel);
+  },
+
+  /* ---- VFX ---- */
+  vfxSteam(c,f){ const t=f/4;
+    steam(c,32,40,8+t*10,0.5*(1-t*0.8));
+    steam(c,26,34-t*8,6+t*8,0.4*(1-t));
+    steam(c,38,32-t*10,5+t*7,0.35*(1-t));
+    steam(c,32,26-t*12,4+t*6,0.3*(1-t));
+  },
+  vfxSpark(c,f){ const t=f/4;
+    flame(c,32,32,10*(1-t*0.6));
+    for(let i=0;i<10;i++){ const a=i/10*7+t; const len=8+t*16;
+      spark(c,32,32,len,a, t<0.5?'#FFF4C0':'#FFB347'); }
+    for(let i=0;i<6;i++){ const a=i/6*7-t*0.5; const len=4+t*10;
+      spark(c,32,32,len,a,'#FF6A2A'); }
+  },
+  vfxSmoke(c,f){ const t=f/4;
+    for(let i=0;i<4;i++){ const p=(t+i*0.25)%1; const y=52-p*44;
+      steam(c,32+Math.sin(p*4+i)*4,y,5+p*7,0.4*(1-p)); }
+  },
+  vfxGearRot(c,f){ const t=f/8;
+    gearShape(c,24,32,14,8,M.brass,-t*Math.PI*2);
+    gearShape(c,42,32,12,8,M.steel,t*Math.PI*2);
+    rivet(c,24,32,2); rivet(c,42,32,2);
+  }
+};
+
+/* ============================================================
+   ASSET DEFINITIONS
+   ============================================================ */
+const ASSETS = {
+  idle:   {name:'Idle Cycle',   group:'hero', frames:8,  gen:GEN.heroIdle,  tag:'HERO · 8 FRAMES · 64×64 · BRASS/STEEL/COPPER'},
+  walk:   {name:'Walk Cycle',   group:'hero', frames:8,  gen:GEN.heroWalk,  tag:'HERO · 8 FRAMES · WEIGHT SHIFT · LEG ALTERNATION'},
+  strike: {name:'Strike Cycle', group:'hero', frames:6,  gen:GEN.heroStrike,tag:'HERO · 6 FRAMES · ANTICIPATION + FOLLOW-THROUGH'},
+  repair: {name:'Repair Cycle', group:'hero', frames:4,  gen:GEN.heroRepair,tag:'HERO · 4 FRAMES · KNEEL + WRENCH'},
+  gearBig:  {name:'Large Gear',    group:'props', frames:1, gen:GEN.propGearBig,  tag:'PROP · STATIC · BRASS'},
+  gearSmall:{name:'Small Gear',    group:'props', frames:1, gen:GEN.propGearSmall,tag:'PROP · STATIC · STEEL'},
+  pipe:     {name:'Steam Pipe',    group:'props', frames:1, gen:GEN.propPipe,     tag:'PROP · STATIC · COPPER'},
+  valve:    {name:'Pressure Valve',group:'props', frames:1, gen:GEN.propValve,    tag:'PROP · STATIC · COPPER/BRASS'},
+  lever:    {name:'Lever',         group:'props', frames:2, gen:GEN.propLever,    tag:'PROP · 2 STATES · UP / DOWN'},
+  plate:    {name:'Rivet Plate',   group:'props', frames:1, gen:GEN.propPlate,    tag:'PROP · STATIC · IRON'},
+  steam:  {name:'Steam Puff',    group:'vfx', frames:4, gen:GEN.vfxSteam,   tag:'VFX · 4 FRAMES · EMISSIVE'},
+  spark:  {name:'Spark Burst',   group:'vfx', frames:4, gen:GEN.vfxSpark,   tag:'VFX · 4 FRAMES · EMISSIVE'},
+  smoke:  {name:'Smoke Trail',   group:'vfx', frames:4, gen:GEN.vfxSmoke,   tag:'VFX · 4 FRAMES · ALPHA'},
+  gearRot:{name:'Gear Rotation', group:'vfx', frames:8, gen:GEN.vfxGearRot, tag:'VFX · 8 FRAMES · LOOPING'},
+};
+
+/* ============================================================
+   FRAME CACHE — offscreen canvases, pixel-perfect
+   ============================================================ */
+const cache = {};
+function getFrame(id,i){
+  const key=id+'_'+i;
+  if(cache[key]) return cache[key];
+  const cv=document.createElement('canvas'); cv.width=SIZE; cv.height=SIZE;
+  const cx=cv.getContext('2d');
+  const a=ASSETS[id];
+  if(id==='lever' && a.frames===2){
+    cx.save(); cx.translate(32,40); cx.rotate(i===0?-0.5:0.5); cx.translate(-32,-40);
+    GEN.propLever(cx,i); cx.restore();
+  } else {
+    a.gen(cx,i);
+  }
+  cache[key]=cv; return cv;
+}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state={ id:'idle', fps:8, playing:!RM, loop:true, frame:0, atlas:false };
+let last=performance.now(), acc=0;
+
+/* ============================================================
+   DOM
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const canvas=$('#preview'), ctx=canvas.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const flash=$('#flash'), readout=$('#readout');
+
+/* ---- build inventory cards ---- */
+function buildCards(){
+  const groups={hero:$('#heroCards'),props:$('#propCards'),vfx:$('#vfxCards')};
+  let idx=0;
+  for(const id in ASSETS){
+    const a=ASSETS[id];
+    const el=document.createElement('div');
+    el.className='card'; el.dataset.id=id;
+    el.style.animation='fadein .4s ease both'; el.style.animationDelay=(idx*50)+'ms';
+    const thumb=document.createElement('div'); thumb.className='thumb';
+    thumb.style.backgroundImage=`url(${getFrame(id,0).toDataURL()})`;
+    const meta=document.createElement('div'); meta.className='cmeta';
+    meta.innerHTML=`<div class="cn">${a.name}</div><div class="cs"><b>${a.frames}</b> frame${a.frames>1?'s':''} · 64px</div>`;
+    el.append(thumb,meta);
+    el.addEventListener('click',()=>select(id));
+    groups[a.group].appendChild(el);
+    idx++;
+  }
+}
+
+/* ---- build filmstrip ---- */
+function buildStrip(){
+  const strip=$('#filmstrip'); strip.innerHTML='';
+  const a=ASSETS[state.id];
+  for(let i=0;i<a.frames;i++){
+    const cell=document.createElement('div'); cell.className='fcell'; cell.dataset.i=i;
+    cell.style.backgroundImage=`url(${getFrame(state.id,i).toDataURL()})`;
+    cell.innerHTML=`<span class="fn">${i+1}</span>`;
+    cell.addEventListener('click',()=>{ state.frame=i; state.playing=false; syncPlay(); });
+    strip.appendChild(cell);
+  }
+}
+
+/* ---- selection ---- */
+function select(id){
+  state.id=id; state.frame=0; state.atlas=false;
+  const a=ASSETS[id];
+  $('#vTitle').textContent=a.name; $('#vTag').textContent=a.tag;
+  $('#scrub').max=a.frames-1; $('#scrub').value=0;
+  document.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));
+  buildStrip();
+  if(!RM){ flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go'); }
+  state.playing=!RM; syncPlay();
+  updateMeta();
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function drawScreenBG(){
+  ctx.fillStyle='#101414'; ctx.fillRect(0,0,800,600);
+  ctx.strokeStyle='rgba(47,79,79,.35)'; ctx.lineWidth=1;
+  for(let x=0;x<=800;x+=20){ ctx.beginPath(); ctx.moveTo(x+.5,0); ctx.lineTo(x+.5,600); ctx.stroke(); }
+  for(let y=0;y<=600;y+=20){ ctx.beginPath(); ctx.moveTo(0,y+.5); ctx.lineTo(800,y+.5); ctx.stroke(); }
+  ctx.strokeStyle='rgba(47,79,79,.6)';
+  for(let x=0;x<=800;x+=100){ ctx.beginPath(); ctx.moveTo(x+.5,0); ctx.lineTo(x+.5,600); ctx.stroke(); }
+  for(let y=0;y<=600;y+=100){ ctx.beginPath(); ctx.moveTo(0,y+.5); ctx.lineTo(800,y+.5); ctx.stroke(); }
+}
+function drawFrame(f){
+  const a=ASSETS[state.id];
+  const scale=Math.floor(Math.min(800,600)/(a.frames>1?SIZE:SIZE)); // 8x for single, fit for strip
+  const s=8;
+  const x=(800-SIZE*s)/2, y=(600-SIZE*s)/2;
+  ctx.drawImage(getFrame(state.id,f),x,y,SIZE*s,SIZE*s);
+  // frame border
+  ctx.strokeStyle='rgba(184,115,51,.5)'; ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,SIZE*s-1,SIZE*s-1);
+}
+function drawAtlas(){
+  const a=ASSETS[state.id];
+  const cols=Math.ceil(Math.sqrt(a.frames));
+  const rows=Math.ceil(a.frames/cols);
+  const s=Math.floor(Math.min((800-40)/cols,(600-40)/rows));
+  const w=cols*s, h=rows*s, ox=(800-w)/2, oy=(600-h)/2;
+  for(let i=0;i<a.frames;i++){
+    const cx=ox+(i%cols)*s, cy=oy+Math.floor(i/cols)*s;
+    ctx.drawImage(getFrame(state.id,i),cx+1,cy+1,s-2,s-2);
+    ctx.strokeStyle='rgba(192,192,192,.25)'; ctx.strokeRect(cx+.5,cy+.5,s-1,s-1);
+    ctx.fillStyle='rgba(184,115,51,.8)'; ctx.font='10px "IBM Plex Mono", monospace';
+    ctx.fillText(String(i+1).padStart(2,'0'),cx+4,cy+12);
+  }
+  ctx.strokeStyle='rgba(184,115,51,.6)'; ctx.strokeRect(ox+.5,oy+.5,w-1,h-1);
+}
+function render(){
+  drawScreenBG();
+  if(state.atlas) drawAtlas(); else drawFrame(state.frame);
+  // readout
+  const a=ASSETS[state.id];
+  readout.innerHTML=`<b>${state.atlas?'ATLAS':state.id.toUpperCase()}</b><br>FR ${state.atlas?a.frames:(state.frame+1)}/${a.frames}<br>${state.atlas?'POSTER':(state.playing?'▶ PLAY':'❚❚ HOLD')} · ${state.fps} FPS`;
+  // filmstrip highlight
+  document.querySelectorAll('.fcell').forEach(c=>c.classList.toggle('on',+c.dataset.i===state.frame));
+  $('#scrub').value=state.frame;
+  $('#mFrame').textContent=`${state.atlas?'ALL':(state.frame+1)} / ${a.frames}`;
+}
+
+/* ============================================================
+   LOOP — requestAnimationFrame, deltaTime-driven FPS
+   ============================================================ */
+function loop(now){
+  const dt=now-last; last=now;
+  if(state.playing && !state.atlas){
+    acc+=dt;
+    const step=1000/state.fps;
+    while(acc>=step){
+      acc-=step; state.frame++;
+      if(state.frame>=ASSETS[state.id].frames){
+        if(state.loop) state.frame=0;
+        else { state.frame=ASSETS[state.id].frames-1; state.playing=false; syncPlay(); }
+      }
+    }
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+function syncPlay(){ $('#playBtn').textContent=state.playing?'❚❚ PAUSE':'▶ PLAY'; $('#playBtn').classList.toggle('on',state.playing); }
+$('#playBtn').addEventListener('click',()=>{ state.playing=!state.playing; syncPlay(); });
+$('#prevBtn').addEventListener('click',()=>{ state.playing=false; syncPlay(); state.frame=(state.frame-1+ASSETS[state.id].frames)%ASSETS[state.id].frames; });
+$('#nextBtn').addEventListener('click',()=>{ state.playing=false; syncPlay(); state.frame=(state.frame+1)%ASSETS[state.id].frames; });
+$('#fps').addEventListener('input',e=>{ state.fps=+e.target.value; $('#fpsVal').textContent=state.fps; });
+$('#loopBtn').addEventListener('click',e=>{ state.loop=!state.loop; e.target.classList.toggle('on',state.loop); });
+$('#atlasBtn').addEventListener('click',e=>{ state.atlas=!state.atlas; e.target.classList.toggle('on',state.atlas); });
+$('#scrub').addEventListener('input',e=>{ state.frame=+e.target.value; state.playing=false; syncPlay(); });
+
+/* ============================================================
+   METADATA + SIZE ESTIMATE
+   ============================================================ */
+function updateMeta(){
+  const a=ASSETS[state.id];
+  $('#mDim').textContent='64 × 64';
+  $('#mScale').textContent='×8';
+  // estimate PNG size of atlas via toBlob
+  buildAtlasCanvas(state.id).toBlob(b=>{ if(b) $('#mSize').textContent=(b.size/1024).toFixed(1)+' KB'; },'image/png');
+}
+
+/* ============================================================
+   EXPORT — PNG atlas + SVG sprite
+   ============================================================ */
+function buildAtlasCanvas(id){
+  const a=ASSETS[id];
+  const cols=Math.min(a.frames,8);
+  const rows=Math.ceil(a.frames/cols);
+  const cv=document.createElement('canvas');
+  cv.width=cols*SIZE; cv.height=rows*SIZE;
+  const cx=cv.getContext('2d');
+  for(let i=0;i<a.frames;i++){
+    cx.drawImage(getFrame(id,i),(i%cols)*SIZE,Math.floor(i/cols)*SIZE);
+  }
+  return cv;
+}
+function download(url,name){
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function busy(btn,fn){
+  btn.classList.add('busy'); btn.disabled=true;
+  setTimeout(()=>{ try{ fn(); }catch(e){ console.error(e); } btn.classList.remove('busy'); btn.disabled=false; },450);
+}
+$('#dlPng').addEventListener('click',e=>busy(e.currentTarget,()=>{
+  const url=buildAtlasCanvas(state.id).toDataURL('image/png');
+  download(url,`clockwork_${state.id}_atlas.png`);
+}));
+$('#dlSvg').addEventListener('click',e=>busy(e.currentTarget,()=>{
+  const url=canvasToSVG(getFrame(state.id,state.frame));
+  download(url,`clockwork_${state.id}_f${state.frame+1}.svg`);
+}));
+
+/* vectorize current frame: transparent PNG embedded in a valid SVG */
+function canvasToSVG(cv){
+  const png=cv.toDataURL('image/png');
+  const svg=`<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64" shape-rendering="crispEdges"><image width="64" height="64" xlink:href="${png}"/></svg>`;
+  const blob=new Blob([svg],{type:'image/svg+xml'});
+  return URL.createObjectURL(blob);
+}
+
+/* ============================================================
+   STYLE GUIDE MODAL
+   ============================================================ */
+$('#guideBtn').addEventListener('click',()=>$('#modal').classList.add('open'));
+$('#closeModal').addEventListener('click',()=>$('#modal').classList.remove('open'));
+$('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') $('#modal').classList.remove('open'); });
+
+/* ============================================================
+   CLOCK
+   ============================================================ */
+function tickClock(){ const d=new Date(); $('#clock').textContent=d.toTimeString().slice(0,8); }
+setInterval(tickClock,1000); tickClock();
+
+/* fadein keyframe injected for staggered cards */
+const st=document.createElement('style'); st.textContent='@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}';
+document.head.appendChild(st);
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+buildCards();
+select('idle');
+updateMeta();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
