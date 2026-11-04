@@ -1,0 +1,26 @@
+id: annealed-titanium-iridescence
+title: "Titanium Oxide Bloom"
+category: webgl
+tags:
+  - three-js
+  - pbr
+  - thin-film-interference
+  - webgl-shader
+  - color-space
+  - parameter-scrub
+  - single-file-html
+status: polished
+summary: "A single curved titanium plate under studio lighting. Scrubbing temperature (200–600°C) drives a custom thin-film interference shader, physically simulating oxide layer growth from bare metal to peacock blue."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

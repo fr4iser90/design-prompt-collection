@@ -1,0 +1,29 @@
+id: microfilm-reel-focus-scan
+title: "Microfilm Reel Focus"
+category: editorial
+tags:
+  - microfilm
+  - optical
+  - focus
+  - archives
+  - scanline
+  - analog
+  - depth-of-field
+  - editorial
+  - interactive
+  - precision
+status: polished
+summary: "Scroll-driven microfilm reader where text blurs at edges and snaps sharp in a central optical gate, simulating 16mm reel mechanics with grain and jitter."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

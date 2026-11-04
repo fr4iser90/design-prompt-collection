@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 278 | 275 | 237 | 41 |
+| 283 | 278 | 242 | 41 |
 
 ## Quick start
 
@@ -3367,9 +3367,11 @@ Draw smooth white tracks to guide glass marbles into swaying collection cups. Av
 
 [prompt](prompts/games/glass-marble-rail-drag/prompt.md) · [extended](prompts/games/glass-marble-rail-drag/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/glass-marble-rail-drag/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.1s | 203s | 6 | [open](prompts/games/glass-marble-rail-drag/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3631,6 +3633,20 @@ High-fidelity single-file Asset Studio for 'Abyssal Trench Kit', featuring proce
 
 ---
 
+### Deep Sea Angler
+
+ABYSS LURE: A high-fidelity 2D bioluminescent asset studio. Features cursor-driven lighting, procedural anglerfish anatomy, and functional PNG/SVG export tools in a single-file HTML/CSS/JS environment.
+
+**Status:** polished · `2d` `creature` `assets` `canvas2d` `light` `horror` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/deep-sea-angler/prompt.md) · [extended](prompts/assets/deep-sea-angler/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Magnetic Levitation Core
 
 Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-fi pack with 4 levitating artifacts, animated field lines, and GLB export.
@@ -3679,6 +3695,20 @@ Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio vi
 
 ---
 
+### Pneumatic Piston
+
+AIR DRIVE: A high-fidelity 2D industrial machinery asset studio. Features pistons, valves, and gauges with Canvas2D animations, material depth, and export tools.
+
+**Status:** polished · `2d` `industrial` `assets` `canvas2d` `mechanical` `physics` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/pneumatic-piston/prompt.md) · [extended](prompts/assets/pneumatic-piston/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Retro-Futuristic Arcade Kit
 
 Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D game kit with 16 procedural assets, CRT effects, and download functionality.
@@ -3687,9 +3717,11 @@ Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D g
 
 [prompt](prompts/assets/retro-futuristic-arcade-kit/prompt.md) · [extended](prompts/assets/retro-futuristic-arcade-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/retro-futuristic-arcade-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 18s | 285s | 1 | [open](prompts/assets/retro-futuristic-arcade-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3701,13 +3733,29 @@ Build a single-file HTML asset studio for the 'Volcanic Geothermal Kit' (MAGMA C
 
 [prompt](prompts/assets/volcanic-geothermal-kit/prompt.md) · [extended](prompts/assets/volcanic-geothermal-kit/prompt.full.md)
 
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/volcanic-geothermal-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.3s | 429s | 8 | [open](prompts/assets/volcanic-geothermal-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+## Webgl
+
+### Titanium Oxide Bloom
+
+A single curved titanium plate under studio lighting. Scrubbing temperature (200–600°C) drives a custom thin-film interference shader, physically simulating oxide layer growth from bare metal to peacock blue.
+
+**Status:** polished · `three-js` `pbr` `thin-film-interference` `webgl-shader` `color-space` `parameter-scrub` `single-file-html` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/annealed-titanium-iridescence/prompt.md) · [extended](prompts/webgl/annealed-titanium-iridescence/prompt.full.md)
+
 _No shot preview yet._
 
 _No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
-
-## Webgl
 
 ### Polar Veil
 
@@ -4063,6 +4111,20 @@ A recipe journal where the layout behaves like a folded linen napkin. Scrolling 
 
 ---
 
+### Microfilm Reel Focus
+
+Scroll-driven microfilm reader where text blurs at edges and snaps sharp in a central optical gate, simulating 16mm reel mechanics with grain and jitter.
+
+**Status:** polished · `microfilm` `optical` `focus` `archives` `scanline` `analog` `depth-of-field` `editorial` `interactive` `precision` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/microfilm-reel-focus-scan/prompt.md) · [extended](prompts/editorial/microfilm-reel-focus-scan/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### The Containment Protocol
 
 A safety report where scrolling compresses a copper canister seal; radiation particles drift and text density shifts as integrity drops.
@@ -4270,6 +4332,20 @@ A dark industrial tank where salinity sliders dictate crystal lattice growth. Hi
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 7.8s | 190s | 1 | [open](prompts/interfaces/brine-crystal-halite-growth/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Crimson Dye Bath Revision
+
+A textile revision tool interface for 'Cinnabar & Co.' featuring a vertical split layout comparing raw fabric against a dyed result. A custom slider controls immersion time, applying a crimson dye overlay via CSS…
+
+**Status:** polished · `textile` `color-theory` `split-pane` `slider-interaction` `state-management` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/crimson-dye-bath-revision/prompt.md) · [extended](prompts/interfaces/crimson-dye-bath-revision/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
