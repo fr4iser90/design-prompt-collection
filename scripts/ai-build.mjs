@@ -87,6 +87,21 @@ MOTION-GRAPHICS — TIMELINE BUILD RULES:
 - prefers-reduced-motion: jump to final hold / static title card`
       : "";
 
+  const assetsNote =
+    entry.category === "assets"
+      ? `
+ASSETS — PACK STUDIO BUILD RULES:
+- This is an asset STUDIO / PACK VIEWER — not a landing page, not a playable game
+- Pack title = hero-level signal; show Style bible + Inventory grid in the first viewport
+- HIGH QUALITY ONLY: authored silhouettes, bevel/material honesty — ban stick figures, emoji kits, placeholder cubes as the hero
+- Must ship REAL downloads via Blob/URL.createObjectURL (SVG and/or PNG atlas; GLB for 3D via Three.js GLTFExporter)
+- Three.js from a CDN is allowed ONLY for assets 3d / game-kit 3D viewers + exporters (exception to "no external JS")
+- Autoplay/hold so Poster frame @ ~1.5s is shot-readable (1200×630)
+- 2–3 motions: idle cycle, hover/select feedback, ambient studio light or filmstrip scroll
+- prefers-reduced-motion: static poster grid / still orbit angle
+- Ban: marketing CTA soup; "Download on Steam"; empty shelves; purple-glow SaaS`
+      : "";
+
   const system = `You are an elite front-end designer-engineer.
 Build a single self-contained HTML file that executes the design prompt.
 
@@ -99,7 +114,7 @@ HARD OUTPUT RULES:
 - BRAND: the exact brand/product name from the brief must appear as a hero-level signal in the first viewport (large type or dominant wordmark — not only tiny nav text). If the brief names a brand, render that string visibly.
 - Follow the prompt art direction precisely (no hero cards/badges, expressive type, atmospheric background, 2–3 motions, prefers-reduced-motion)
 - Avoid purple-glow SaaS and cream+terracotta clichés unless the brief asks for them
-- Output is stored under runs/<model>/demo/index.html and screenshotted for README${mgNote}`;
+- Output is stored under runs/<model>/demo/index.html and screenshotted for README${mgNote}${assetsNote}`;
 
   const user = `Category: ${entry.category}
 Title: ${entry.title}

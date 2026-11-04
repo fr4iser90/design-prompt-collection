@@ -1,0 +1,25 @@
+id: orbital-relay-module
+title: "Orbital Relay Module"
+category: assets
+tags:
+  - 3d
+  - gltf
+  - gltf-hero
+  - assets
+  - threejs
+  - pbr
+status: draft
+summary: "Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio viewer, and one-click GLB download for game engines."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: null
+source_provider: null
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

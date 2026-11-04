@@ -1,0 +1,25 @@
+id: chronograph-mech-sprites
+title: "Chronograph Mech Sprites"
+category: assets
+tags:
+  - 2d
+  - sprites
+  - atlas
+  - sprite-production
+  - assets
+  - canvas2d
+status: draft
+summary: "Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: null
+source_provider: null
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

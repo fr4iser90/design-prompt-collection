@@ -8,6 +8,7 @@ export const CATEGORIES = [
   "motion-graphics",
   "concepts",
   "games",
+  "assets",
   "webgl",
   "editorial",
   "interfaces",

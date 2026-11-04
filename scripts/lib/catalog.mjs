@@ -189,6 +189,13 @@ export const LANES = {
     "Light/shadow or detection games: tension from being seen. Sparse HUD, strong silhouette read.",
   "toybox-physics":
     "Playable physics toy: catapult, balance, fluid. Toys first, score second.",
+  // assets — high-quality production packs (not stick figures / primitives)
+  "sprite-production":
+    "2D production sprites/tilesets/atlases: bevel honesty, silhouette read at 32–64px, idle+walk+action frames, PNG/SVG download — no stick figures.",
+  "gltf-hero":
+    "3D hero mesh family: authored form + filmic materials, orbit viewer, GLB export — no placeholder cubes as the hero.",
+  "game-kit-cohesion":
+    "Themed game kit (8–20 items): player, hazards, props, UI, VFX in ONE visual language — production-grade cohesion, not cute placeholders.",
   // webgl
   "shader-sculpt":
     "Fragment/vertex craft as the hero: SDF, noise, light models. Composition over UI chrome.",
@@ -233,6 +240,9 @@ export const LANE_FOR = {
   "rhythm-timing": ["games"],
   "stealth-signal": ["games"],
   "toybox-physics": ["games"],
+  "sprite-production": ["assets"],
+  "gltf-hero": ["assets"],
+  "game-kit-cohesion": ["assets"],
   "shader-sculpt": ["webgl"],
   "material-lab": ["webgl"],
   "volumetric-atmosphere": ["webgl", "animations"],

@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 265 | 260 | 227 | 38 |
+| 268 | 260 | 227 | 41 |
 
 ## Quick start
 
@@ -3498,6 +3498,50 @@ High-precision rhythm game: trim spinning turbine blades with a laser at exact a
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/turbine-blade-cutoff/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 5.0s | 364s | 8 | [open](prompts/games/turbine-blade-cutoff/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+## Assets
+
+### Brine Station Kit
+
+Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates, and VFX in one visual language with atlas download.
+
+**Status:** draft · `game-kit` `2d` `kit` `game-kit-cohesion` `assets` `canvas2d`
+
+[prompt](prompts/assets/brine-station-kit/prompt.md) · [extended](prompts/assets/brine-station-kit/prompt.full.md)
+
+![Brine Station Kit](prompts/assets/brine-station-kit/preview.svg)
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Chronograph Mech Sprites
+
+Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download.
+
+**Status:** draft · `2d` `sprites` `atlas` `sprite-production` `assets` `canvas2d`
+
+[prompt](prompts/assets/chronograph-mech-sprites/prompt.md) · [extended](prompts/assets/chronograph-mech-sprites/prompt.full.md)
+
+![Chronograph Mech Sprites](prompts/assets/chronograph-mech-sprites/preview.svg)
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Orbital Relay Module
+
+Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio viewer, and one-click GLB download for game engines.
+
+**Status:** draft · `3d` `gltf` `gltf-hero` `assets` `threejs` `pbr`
+
+[prompt](prompts/assets/orbital-relay-module/prompt.md) · [extended](prompts/assets/orbital-relay-module/prompt.full.md)
+
+![Orbital Relay Module](prompts/assets/orbital-relay-module/preview.svg)
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

@@ -1,0 +1,25 @@
+id: brine-station-kit
+title: "Brine Station Kit"
+category: assets
+tags:
+  - game-kit
+  - 2d
+  - kit
+  - game-kit-cohesion
+  - assets
+  - canvas2d
+status: draft
+summary: "Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates, and VFX in one visual language with atlas download."
+preview: preview.svg
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: null
+source_provider: null
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

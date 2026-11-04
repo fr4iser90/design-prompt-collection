@@ -176,6 +176,8 @@ BAD: UI knob physics; SaaS landing with nav/CTA soup; feature cards; purple glow
 BAD: "a concept exploring the future of productivity" with no artifact, no layout, no fails.`,
   games: `GOOD: "HOLDFAST — one-screen tug: hold to tension a cable; release to fling a weight into a moving socket. Fail = slack snap. Score = sockets cleared. Input: pointer down/up."
 BAD: "atmospheric indie game landing"; Flappy/Snake/runner; pretty scene you cannot play; CTA to Download.`,
+  assets: `GOOD: "CHRONOGRAPH MECH — 2D production pack: brushed-steel hero idle/walk/strike (3×8 @64px), 6 props, 4 VFX, UI plate; filmstrip viewer; PNG atlas + SVG download; poster @1.5s = atlas grid + bevel hero."
+BAD: stick-figure packs; emoji kits; placeholder cubes; Kenney clone without thesis; marketing page about assets; "simple shapes" kits.`,
   webgl: `GOOD: material/light/shader/camera is the hero; one interaction (orbit/deform/scrub).
 BAD: Three.js canvas under a SaaS header; product configurator with price cards.`,
   editorial: `GOOD: publication brand; reading rhythm; folio/rail; photo as craft.
@@ -264,6 +266,25 @@ GAME DESIGN BAR (do NOT apply landing-page hero/CTA rules here):
 - Ban ABSOLUTELY: landing pages about games; Download/CTA heroes; Flappy Bird / Snake / endless runner / Pong / 2048 clones; unplayable concept art; "atmospheric exploration" with no fail state
 - Expressive fantasy OK — mechanics must still be implementable in one HTML file by a mid-level JS dev in one sitting
 ${FEW_SHOT.games}`,
+
+  assets: `CATEGORY = assets
+ASSET PRODUCTION BAR (do NOT apply landing-page hero/CTA rules; do NOT write a game loop):
+- Deliverable = single-file HTML **asset studio**: high-quality pack viewer + real downloads (SVG / PNG atlas / GLB)
+- Pick ONE pack type and tag it: 2d | 3d | game-kit
+- Mandatory fields in the brief (name them explicitly):
+  1) Pack title / fantasy (short proper noun)
+  2) Pack type (2d sprites/tileset/atlas OR 3d hero mesh family OR game-kit)
+  3) Style bible — materials, edge language, light, silhouette rules (hex roles)
+  4) Inventory with COUNTS (frames, props, enemies, UI plates, VFX) — production set, not a single doodle
+  5) Download formats (what the user actually gets)
+  6) Viewer UX (filmstrip / orbit / kit grid) + Poster frame @ ~1.5s for shots
+  7) Type pairing for studio chrome (never Inter/Roboto/Arial)
+- HIGH QUALITY ONLY: bevels, material honesty, readable silhouettes at game sizes (32–64px for 2D; filmic PBR / authored form for 3D)
+- Game-kits = cohesive Player + Enemy/Hazard + Props + UI + VFX in ONE visual language (8–20 items)
+- prompt_full MUST include: ## Pack type, ## Style bible, ## Inventory, ## Download, ## Viewer (plus Concept/Palette/Type/Constraints/Acceptance)
+- Stack: Canvas/SVG and/or Three.js CDN for 3D export — NO Blender/Godot; NO external asset CDNs of finished art
+- Ban ABSOLUTELY: stick figures; emoji kits; primitive cubes/spheres as the hero; "simple shapes" packs; flat Kenney clones without thesis; marketing landings about downloading assets; purple-glow SaaS chrome; cream+terracotta clichés
+${FEW_SHOT.assets}`,
 
   webgl: `CATEGORY = webgl
 ${DESIGN_CANON}
@@ -361,6 +382,7 @@ const WORD_TARGETS = {
   "motion-graphics": { md: [400, 900], full: [700, 1400], label: "timed motion-graphics sequence" },
   concepts: { md: [300, 700], full: [600, 1200], label: "concept / artifact oneshot" },
   games: { md: [300, 700], full: [600, 1200], label: "browser one-shot game" },
+  assets: { md: [400, 900], full: [700, 1400], label: "high-quality asset pack studio" },
   webgl: { md: [300, 700], full: [500, 1100], label: "WebGL scene oneshot" },
   editorial: { md: [500, 1200], full: [800, 1800], label: "editorial / folio" },
   interfaces: { md: [500, 1000], full: [800, 1500], label: "tool / interface" },
@@ -779,6 +801,13 @@ function requireFullSections(full, id, category) {
       ["## Entities", /##\s*Entities\b/i],
       ["## Feel", /##\s*Feel\b/i],
     ],
+    assets: [
+      ["## Pack type", /##\s*Pack type\b/i],
+      ["## Style bible", /##\s*Style bible\b/i],
+      ["## Inventory", /##\s*Inventory\b/i],
+      ["## Download", /##\s*Download\b/i],
+      ["## Viewer", /##\s*Viewer\b/i],
+    ],
     concepts: [
       ["## Artifact", /##\s*Artifact\b/i],
       ["## Interaction", /##\s*Interaction\b/i],
@@ -841,6 +870,13 @@ function sanitizeEntry(raw, { category, status, existingIds }) {
     .slice(0, 12);
   if (tags.length < 3) throw new Error(`Need ≥3 tags for ${id}`);
   if (category === "games" && !tags.includes("game")) tags.push("game");
+  if (category === "assets" && !tags.includes("assets")) tags.push("assets");
+  if (
+    category === "assets" &&
+    !tags.some((t) => /^(2d|3d|game-kit)$/.test(t))
+  ) {
+    tags.push("2d");
+  }
   if (
     category === "webgl" &&
     !tags.some((t) => /webgl|three|shader|canvas/.test(t))

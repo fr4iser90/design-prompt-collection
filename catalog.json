@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-21T19:16:50.196Z",
-  "count": 265,
+  "generated_at": "2026-11-04T10:18:32.804Z",
+  "count": 268,
   "ids": [
     "abyssal-pressure-depth-scale",
     "acoustic-panel-attenuation",
@@ -29,6 +29,7 @@
     "boulangerie-crumb-structure",
     "brine-crystal-halite-growth",
     "brine-evaporation-surface-tension",
+    "brine-station-kit",
     "broadsheet-column-cascade",
     "brushed-steel-knob-rail",
     "butcher-block-grain-map",
@@ -46,6 +47,7 @@
     "chime-resonance-brand",
     "chiral-mobius-strip-ribbon",
     "chitin-molting-exoskeleton",
+    "chronograph-mech-sprites",
     "circuit-breaker-arc-timing",
     "code-canvas-dev-tool",
     "codex-leaf-gold-illumination",
@@ -168,6 +170,7 @@
     "obsidian-sheer-slice",
     "offset-plate-registration-error",
     "orbital-decay-ribbon",
+    "orbital-relay-module",
     "osmotic-desalination-pressure",
     "oxidized-brass-tarnish",
     "oxidized-coin-valuation",
@@ -285,11 +288,13 @@
     "Article Body",
     "Assembly",
     "BLOCK",
+    "BRINE STATION",
     "Background",
     "Base State",
     "Base Surface",
     "Beat Sheet & Motion Logic",
     "Bubbles",
+    "CHRONOGRAPH MECH",
     "COMMUNICATION",
     "CONGESTED GRID",
     "Canister Graphic",
@@ -422,6 +427,7 @@
     "No UI Chrome",
     "Northline",
     "Northmark Studio",
+    "ORBITAL RELAY MODULE",
     "Orbit Mechanics",
     "PP Neue Montreal",
     "Particle Class",
@@ -536,7 +542,7 @@
   "tag_frequency": {
     "industrial": 28,
     "physics": 27,
-    "canvas2d": 20,
+    "canvas2d": 22,
     "minimal": 18,
     "precision": 18,
     "tactile": 18,
@@ -627,6 +633,7 @@
     "north-light": 4,
     "optics": 4,
     "paper": 4,
+    "pbr": 4,
     "pressure": 4,
     "print": 4,
     "scanline": 4,
@@ -640,6 +647,7 @@
     "aquatic-depth": 3,
     "architecture": 3,
     "arid-minimal": 3,
+    "assets": 3,
     "audio": 3,
     "brand-motion": 3,
     "ceramic": 3,
@@ -671,7 +679,6 @@
     "night": 3,
     "paper-texture": 3,
     "particle-system": 3,
-    "pbr": 3,
     "porcelain": 3,
     "rhythm": 3,
     "saline": 3,
@@ -694,6 +701,7 @@
     "water": 3,
     "weather": 3,
     "weave": 3,
+    "2d": 2,
     "accounting": 2,
     "alignment": 2,
     "analog": 2,
@@ -827,6 +835,7 @@
     "wind": 2,
     "wood-grain": 2,
     "zine": 2,
+    "3d": 1,
     "3d-math": 1,
     "3d-transform": 1,
     "abstract": 1,
@@ -855,6 +864,7 @@
     "artisanal": 1,
     "assembly": 1,
     "astronomy": 1,
+    "atlas": 1,
     "attention": 1,
     "audio-reactive": 1,
     "aviation": 1,
@@ -1028,6 +1038,8 @@
     "fungal": 1,
     "fungi": 1,
     "furnace": 1,
+    "game-kit": 1,
+    "game-kit-cohesion": 1,
     "garden": 1,
     "gasket": 1,
     "gastronomy": 1,
@@ -1040,6 +1052,8 @@
     "glass-texture": 1,
     "gloss": 1,
     "glossy": 1,
+    "gltf": 1,
+    "gltf-hero": 1,
     "gold": 1,
     "graph": 1,
     "gravity": 1,
@@ -1106,6 +1120,7 @@
     "kiln": 1,
     "kinetic-identity": 1,
     "kintsugi": 1,
+    "kit": 1,
     "knobs": 1,
     "kobo": 1,
     "kumiko": 1,
@@ -1356,6 +1371,8 @@
     "spring-damping": 1,
     "spring-physics": 1,
     "sprinting": 1,
+    "sprite-production": 1,
+    "sprites": 1,
     "staccato": 1,
     "stack": 1,
     "stacking": 1,
@@ -1397,6 +1414,7 @@
     "texture-overlay": 1,
     "texture-transition": 1,
     "thermal-glow": 1,
+    "threejs": 1,
     "tide": 1,
     "tileable": 1,
     "timer": 1,
@@ -1678,6 +1696,9 @@
     "games: Echo Chamber Sync — Build 'Echo Chamber Sync', a single-file HTML5 Canvas sonar timing game. Tap to emit expanding rings, hitting targets within tight tolerance while avoiding noise hazards. Features responsive desktop/mobile controls,…",
     "games: Tensile Integrity — Build truss bridges with rigid-body physics. Place nodes, connect beams, test against wind and traffic. Fail if stress exceeds yield. Score based on efficiency and stability.",
     "games: Turbine Blade Cutoff — High-precision rhythm game: trim spinning turbine blades with a laser at exact alignment. Single-file HTML5 Canvas, industrial aesthetic, progressive difficulty.",
+    "assets: Brine Station Kit — Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates, and VFX in one visual language with atlas download.",
+    "assets: Chronograph Mech Sprites — Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download.",
+    "assets: Orbital Relay Module — Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio viewer, and one-click GLB download for game engines.",
     "webgl: Polar Veil — Interactive 3D aurora curtain built with vertex-displaced planes and additive blending, simulating solar wind intensity through color-shifting noise fields.",
     "webgl: Bismuth Dendrite Growth — Interactive WebGL bismuth dendrite growth simulation with iridescent shaders and cooling rate controls.",
     "webgl: The Lab Trap — Photorealistic WebGL study of a borosilicate bubble trap with interactive liquid level simulation, focusing on accurate refraction and caustics.",
@@ -5254,6 +5275,56 @@
         "summary": "High-precision rhythm game: trim spinning turbine blades with a laser at exact alignment. Single-file HTML5 Canvas, industrial aesthetic, progressive difficulty.",
         "brands": [
           "Turbine Blade Cutoff"
+        ]
+      }
+    ],
+    "assets": [
+      {
+        "id": "brine-station-kit",
+        "title": "Brine Station Kit",
+        "tags": [
+          "game-kit",
+          "2d",
+          "kit",
+          "game-kit-cohesion",
+          "assets",
+          "canvas2d"
+        ],
+        "summary": "Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates, and VFX in one visual language with atlas download.",
+        "brands": [
+          "BRINE STATION"
+        ]
+      },
+      {
+        "id": "chronograph-mech-sprites",
+        "title": "Chronograph Mech Sprites",
+        "tags": [
+          "2d",
+          "sprites",
+          "atlas",
+          "sprite-production",
+          "assets",
+          "canvas2d"
+        ],
+        "summary": "Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download.",
+        "brands": [
+          "CHRONOGRAPH MECH"
+        ]
+      },
+      {
+        "id": "orbital-relay-module",
+        "title": "Orbital Relay Module",
+        "tags": [
+          "3d",
+          "gltf",
+          "gltf-hero",
+          "assets",
+          "threejs",
+          "pbr"
+        ],
+        "summary": "Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio viewer, and one-click GLB download for game engines.",
+        "brands": [
+          "ORBITAL RELAY MODULE"
         ]
       }
     ],

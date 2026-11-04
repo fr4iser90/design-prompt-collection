@@ -1,13 +1,14 @@
 {
-  "generated_at": "2026-10-21T19:16:50.184Z",
+  "generated_at": "2026-11-04T10:18:30.844Z",
   "schema": "schema/entry.schema.json",
-  "count": 265,
+  "count": 268,
   "categories": [
     "landing-pages",
     "animations",
     "motion-graphics",
     "concepts",
     "games",
+    "assets",
     "webgl",
     "editorial",
     "interfaces",
@@ -13400,6 +13401,99 @@
           "review_summary": "Strong industrial start screen with excellent typography hierarchy and atmospheric depth, though the turbine visual is obscured by the overlay."
         }
       ]
+    },
+    {
+      "id": "brine-station-kit",
+      "title": "Brine Station Kit",
+      "category": "assets",
+      "tags": [
+        "game-kit",
+        "2d",
+        "kit",
+        "game-kit-cohesion",
+        "assets",
+        "canvas2d"
+      ],
+      "status": "draft",
+      "summary": "Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates, and VFX in one visual language with atlas download.",
+      "path": "prompts/assets/brine-station-kit",
+      "preview": "prompts/assets/brine-station-kit/preview.svg",
+      "prompt": "prompts/assets/brine-station-kit/prompt.md",
+      "extended": "prompts/assets/brine-station-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "chronograph-mech-sprites",
+      "title": "Chronograph Mech Sprites",
+      "category": "assets",
+      "tags": [
+        "2d",
+        "sprites",
+        "atlas",
+        "sprite-production",
+        "assets",
+        "canvas2d"
+      ],
+      "status": "draft",
+      "summary": "Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download.",
+      "path": "prompts/assets/chronograph-mech-sprites",
+      "preview": "prompts/assets/chronograph-mech-sprites/preview.svg",
+      "prompt": "prompts/assets/chronograph-mech-sprites/prompt.md",
+      "extended": "prompts/assets/chronograph-mech-sprites/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "orbital-relay-module",
+      "title": "Orbital Relay Module",
+      "category": "assets",
+      "tags": [
+        "3d",
+        "gltf",
+        "gltf-hero",
+        "assets",
+        "threejs",
+        "pbr"
+      ],
+      "status": "draft",
+      "summary": "Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio viewer, and one-click GLB download for game engines.",
+      "path": "prompts/assets/orbital-relay-module",
+      "preview": "prompts/assets/orbital-relay-module/preview.svg",
+      "prompt": "prompts/assets/orbital-relay-module/prompt.md",
+      "extended": "prompts/assets/orbital-relay-module/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": null,
+      "source_provider": null,
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "aurora-borealis-shader-veil",
