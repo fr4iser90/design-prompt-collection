@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 270 | 270 | 229 | 41 |
+| 271 | 270 | 230 | 41 |
 
 ## Quick start
 
@@ -3534,6 +3534,20 @@ Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bur
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/chronograph-mech-sprites/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.0s | 289s | 6 | [open](prompts/assets/chronograph-mech-sprites/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Copper Sulfide Tarnish Plate
+
+High-fidelity 3D asset studio for copper plates with dynamic sulfide tarnish, featuring GLB/SVG export and procedural weathering.
+
+**Status:** polished · `3d` `patina` `copper` `weathering` `pbr` `procedural` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/copper-sulfide-tarnish-plate/prompt.md) · [extended](prompts/assets/copper-sulfide-tarnish-plate/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

@@ -1,0 +1,26 @@
+id: copper-sulfide-tarnish-plate
+title: "Copper Sulfide Tarnish Plate"
+category: assets
+tags:
+  - 3d
+  - patina
+  - copper
+  - weathering
+  - pbr
+  - procedural
+  - assets
+status: polished
+summary: "High-fidelity 3D asset studio for copper plates with dynamic sulfide tarnish, featuring GLB/SVG export and procedural weathering."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

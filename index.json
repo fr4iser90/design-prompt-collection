@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T14:01:02.127Z",
+  "generated_at": "2026-11-04T14:40:09.072Z",
   "schema": "schema/entry.schema.json",
-  "count": 270,
+  "count": 271,
   "categories": [
     "landing-pages",
     "animations",
@@ -13553,6 +13553,38 @@
           "review_summary": "Strong studio chrome and palette, but the hero zoom pane is empty and the filmstrip sprites read as flat stick-figures rather than machined mechs."
         }
       ]
+    },
+    {
+      "id": "copper-sulfide-tarnish-plate",
+      "title": "Copper Sulfide Tarnish Plate",
+      "category": "assets",
+      "tags": [
+        "3d",
+        "patina",
+        "copper",
+        "weathering",
+        "pbr",
+        "procedural",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "High-fidelity 3D asset studio for copper plates with dynamic sulfide tarnish, featuring GLB/SVG export and procedural weathering.",
+      "path": "prompts/assets/copper-sulfide-tarnish-plate",
+      "preview": null,
+      "prompt": "prompts/assets/copper-sulfide-tarnish-plate/prompt.md",
+      "extended": "prompts/assets/copper-sulfide-tarnish-plate/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "deep-ocean-abyss-kit",
