@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Copper Sulfide Tarnish Plate — Asset Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --copper:#b87333;
+    --copper-lit:#e0a566;
+    --oxide:#7a4f2a;
+    --verd:#4a6b5d;
+    --sulfide:#1a1a1a;
+    --slate:#2c3e50;
+    --slate-2:#22303d;
+    --slate-3:#182430;
+    --ink:#0e141a;
+    --text:#ecf0f1;
+    --muted:#9fb0bd;
+    --faint:#6b7f8d;
+    --hair:rgba(236,240,241,.10);
+    --panel:rgba(24,36,48,.86);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink);
+    color:var(--text);
+    font-family:'Lato',system-ui,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{position:fixed;inset:0}
+  #canvas-wrap{position:absolute;inset:0}
+  #canvas-wrap canvas{display:block;width:100%;height:100%}
+
+  /* ---------- atmospheric overlays ---------- */
+  .grain{
+    position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(120% 90% at 32% 42%, transparent 46%, rgba(6,10,14,.55) 100%);
+  }
+  .spot{
+    position:absolute;top:-16%;left:24%;width:60vw;height:70vh;pointer-events:none;z-index:1;
+    background:radial-gradient(closest-side, rgba(224,165,102,.14), transparent 70%);
+    filter:blur(6px);
+    animation:spot 16s ease-in-out infinite alternate;
+  }
+  @keyframes spot{from{transform:translateX(-4%) scale(1)}to{transform:translateX(6%) scale(1.08)}}
+
+  /* ---------- brand lockup ---------- */
+  .brand{
+    position:absolute;top:30px;left:38px;z-index:5;pointer-events:none;
+    opacity:0;transform:translateY(10px);
+    transition:opacity .8s ease,transform .8s cubic-bezier(.16,1,.3,1);
+  }
+  .loaded .brand{opacity:1;transform:none}
+  .eyebrow{
+    font-family:'Lato',sans-serif;font-weight:700;font-size:11px;letter-spacing:.34em;
+    text-transform:uppercase;color:var(--copper-lit);margin-bottom:12px;
+  }
+  .eyebrow::before{content:"";display:inline-block;width:26px;height:1px;background:var(--copper);vertical-align:middle;margin-right:12px}
+  .brand h1{
+    font-family:'Cinzel',serif;font-weight:900;line-height:.92;
+    font-size:clamp(30px,4.4vw,60px);letter-spacing:.01em;
+    text-transform:uppercase;
+    color:var(--text);
+    text-shadow:0 2px 30px rgba(0,0,0,.6);
+  }
+  .brand h1 .thin{display:block;font-weight:400;font-size:.5em;letter-spacing:.28em;color:var(--muted);margin-top:.55em}
+  .brand .sub{
+    margin-top:16px;max-width:340px;font-size:13.5px;line-height:1.6;color:var(--muted);font-weight:300;
+  }
+  .brand .sub b{color:var(--copper-lit);font-weight:700}
+
+  /* ---------- HUD chips ---------- */
+  .hud{
+    position:absolute;left:38px;bottom:34px;z-index:5;display:flex;gap:26px;flex-wrap:wrap;
+    opacity:0;transform:translateY(10px);transition:opacity .8s ease .2s,transform .8s ease .2s;
+  }
+  .loaded .hud{opacity:1;transform:none}
+  .chip{display:flex;flex-direction:column;gap:3px}
+  .chip .k{font-family:'Lato';font-weight:700;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+  .chip .v{font-family:'Cinzel',serif;font-weight:700;font-size:15px;color:var(--text)}
+  .chip .v small{font-family:'Lato';font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.05em}
+
+  /* ---------- control panel ---------- */
+  .panel{
+    position:absolute;top:0;right:0;height:100%;width:344px;z-index:6;
+    background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-left:1px solid var(--hair);
+    padding:26px 26px 26px;overflow-y:auto;
+    display:flex;flex-direction:column;gap:22px;
+    transform:translateX(24px);opacity:0;
+    transition:transform .9s cubic-bezier(.16,1,.3,1) .15s,opacity .9s ease .15s;
+  }
+  .loaded .panel{transform:none;opacity:1}
+  .panel::-webkit-scrollbar{width:8px}
+  .panel::-webkit-scrollbar-thumb{background:rgba(184,115,51,.4);border-radius:8px}
+  .panel::-webkit-scrollbar-track{background:transparent}
+
+  .p-head{border-bottom:1px solid var(--hair);padding-bottom:16px}
+  .p-head .kicker{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--copper-lit);font-weight:700}
+  .p-head h2{font-family:'Cinzel',serif;font-weight:700;font-size:19px;margin-top:6px;letter-spacing:.02em}
+
+  .section{display:flex;flex-direction:column;gap:12px}
+  .sec-label{
+    font-family:'Lato';font-weight:700;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .sec-label span{color:var(--faint);font-weight:400;letter-spacing:.08em;text-transform:none}
+
+  /* time slider */
+  .years{font-family:'Cinzel',serif;font-weight:900;font-size:38px;line-height:1;color:var(--copper-lit)}
+  .years small{font-family:'Lato';font-weight:400;font-size:14px;color:var(--muted);letter-spacing:.05em;margin-left:6px}
+  .slider{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--copper) 0%,var(--copper) var(--p,15%),rgba(236,240,241,.14) var(--p,15%));
+  }
+  .slider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;cursor:grab;
+    background:radial-gradient(circle at 34% 30%,#f0c088,var(--copper) 55%,#7a4a20);
+    border:2px solid #2a1a0d;box-shadow:0 3px 10px rgba(0,0,0,.5),inset 0 1px 2px rgba(255,255,255,.5);
+    transition:transform .15s ease;
+  }
+  .slider::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.12)}
+  .slider::-moz-range-thumb{
+    width:24px;height:24px;border-radius:50%;cursor:grab;
+    background:radial-gradient(circle at 34% 30%,#f0c088,var(--copper) 55%,#7a4a20);
+    border:2px solid #2a1a0d;box-shadow:0 3px 10px rgba(0,0,0,.5);
+  }
+  .ticks{display:flex;justify-content:space-between;font-size:10px;color:var(--faint);letter-spacing:.05em;margin-top:-4px}
+
+  .state{
+    border:1px solid var(--hair);border-radius:10px;padding:14px;background:rgba(0,0,0,.18);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .state .row{display:flex;align-items:center;gap:10px}
+  .state .sw{width:20px;height:20px;border-radius:5px;flex:none;border:1px solid rgba(255,255,255,.18);transition:background .3s}
+  .state .nm{font-family:'Cinzel',serif;font-weight:700;font-size:13px}
+  .state .desc{font-size:12px;line-height:1.55;color:var(--muted);font-weight:300}
+  .mbar{display:flex;flex-direction:column;gap:6px;margin-top:2px}
+  .mbar .l{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .mbar .track{height:4px;border-radius:4px;background:rgba(236,240,241,.1);overflow:hidden}
+  .mbar .fill{height:100%;border-radius:4px;transition:width .25s ease}
+
+  /* mesh selector */
+  .mesh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .mesh-btn{
+    position:relative;min-height:44px;padding:12px 6px 10px;border-radius:10px;cursor:pointer;
+    background:rgba(0,0,0,.2);border:1px solid var(--hair);color:var(--muted);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    font-family:'Lato';font-weight:700;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    transition:border-color .2s,color .2s,background .2s,transform .1s;
+  }
+  .mesh-btn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.4;transition:stroke .2s}
+  .mesh-btn:hover{border-color:rgba(184,115,51,.6);color:var(--text)}
+  .mesh-btn:active{transform:scale(.96)}
+  .mesh-btn.active{border-color:var(--copper);color:var(--copper-lit);background:rgba(184,115,51,.12)}
+  .mesh-btn.active::after{content:"";position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--copper-lit)}
+
+  /* toggles */
+  .toggle{display:flex;align-items:center;justify-content:space-between;min-height:44px;cursor:pointer}
+  .toggle .t-l{font-size:12.5px;color:var(--text);font-weight:400}
+  .toggle .t-l small{display:block;color:var(--faint);font-size:10.5px;font-weight:300;margin-top:2px}
+  .switch{width:44px;height:24px;border-radius:20px;background:rgba(236,240,241,.14);position:relative;flex:none;transition:background .2s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+  .toggle.on .switch{background:rgba(184,115,51,.5)}
+  .toggle.on .switch::after{transform:translateX(20px);background:var(--copper-lit)}
+
+  /* export */
+  .export{display:flex;flex-direction:column;gap:10px}
+  .btn{
+    min-height:48px;border-radius:10px;cursor:pointer;font-family:'Lato';font-weight:700;font-size:12.5px;
+    letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:10px;
+    transition:transform .1s,box-shadow .2s,background .2s,border-color .2s;
+  }
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .btn:active{transform:scale(.97)}
+  .btn-primary{background:linear-gradient(180deg,#c98244,#a5601f);color:#1a1108;border:1px solid #d99a5c;box-shadow:0 4px 16px rgba(184,115,51,.28)}
+  .btn-primary:hover{box-shadow:0 0 0 1px var(--copper-lit),0 6px 26px rgba(224,165,102,.5)}
+  .btn-ghost{background:rgba(255,255,255,.03);color:var(--text);border:1px solid var(--hair)}
+  .btn-ghost:hover{border-color:var(--copper);color:var(--copper-lit)}
+
+  .foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--hair);font-size:10.5px;color:var(--faint);line-height:1.6;letter-spacing:.03em}
+  .foot b{color:var(--muted);font-weight:700}
+
+  /* ---------- mobile bottom sheet ---------- */
+  .drag-handle{display:none}
+  @media (max-width:860px){
+    #app{display:flex;flex-direction:column}
+    #canvas-wrap{position:relative;flex:0 0 58%;height:58%}
+    .brand{top:20px;left:20px;transform:scale(.82);transform-origin:top left}
+    .brand .sub{display:none}
+    .hud{left:20px;bottom:auto;top:calc(58% - 46px);gap:18px;transform:scale(.85);transform-origin:bottom left}
+    .panel{
+      position:relative;top:auto;right:auto;height:auto;width:100%;flex:1 1 42%;
+      border-left:none;border-top:1px solid var(--hair);
+      transform:none;opacity:1;border-radius:20px 20px 0 0;padding-top:8px;
+      box-shadow:0 -10px 30px rgba(0,0,0,.4);
+    }
+    .drag-handle{display:block;width:44px;height:5px;border-radius:5px;background:rgba(236,240,241,.2);margin:6px auto 4px}
+    .p-head{padding-top:6px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="canvas-wrap">
+    <div class="spot"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+
+    <div class="brand">
+      <div class="eyebrow">Procedural 3D Hero Mesh Family</div>
+      <h1>Copper Sulfide<br>Tarnish Plate<span class="thin">Weathering System</span></h1>
+      <p class="sub">Physically-modeled surface degradation — <b>fresh copper → sulfide black → verdigris</b>, driven by a single time uniform. Scrub a century of exposure, then export baked PBR.</p>
+    </div>
+
+    <div class="hud">
+      <div class="chip"><span class="k">Material</span><span class="v">PBR · Metallic</span></div>
+      <div class="chip"><span class="k">Tarnish</span><span class="v" id="hud-state">Fresh</span></div>
+      <div class="chip"><span class="k">Motif</span><span class="v" id="hud-motif">Shield</span></div>
+      <div class="chip"><span class="k">Exposure</span><span class="v" id="hud-years">15 <small>yrs</small></span></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="drag-handle"></div>
+    <div class="p-head">
+      <div class="kicker">Asset Studio</div>
+      <h2>Control Deck</h2>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Years of Exposure <span>0 — 100</span></div>
+      <div class="years"><span id="years-val">15</span><small>years</small></div>
+      <input class="slider" id="time" type="range" min="0" max="100" step="0.1" value="15" style="--p:15%">
+      <div class="ticks"><span>Fresh</span><span>Oxidised</span><span>Verdigris</span></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Material State</div>
+      <div class="state">
+        <div class="row"><span class="sw" id="state-sw"></span><span class="nm" id="state-nm">Fresh Copper</span></div>
+        <div class="desc" id="state-desc">Highly reflective bare copper. Metallic sheen dominates; roughness is low.</div>
+        <div class="mbar">
+          <div class="l"><span>Base Copper</span></div><div class="track"><div class="fill" id="f-cu" style="background:#b87333;width:100%"></div></div>
+          <div class="l"><span>Sulfide Black</span></div><div class="track"><div class="fill" id="f-sulf" style="background:#1a1a1a;width:0%"></div></div>
+          <div class="l"><span>Oxide Brown</span></div><div class="track"><div class="fill" id="f-ox" style="background:#7a4f2a;width:0%"></div></div>
+          <div class="l"><span>Verdigris Green</span></div><div class="track"><div class="fill" id="f-verd" style="background:#4a6b5d;width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Hero Mesh <span>3 motifs</span></div>
+      <div class="mesh-grid" id="mesh-grid">
+        <button class="mesh-btn active" data-mesh="0"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M12 8v6M9.5 11h5"/></svg>Shield</button>
+        <button class="mesh-btn" data-mesh="1"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg>Gear</button>
+        <button class="mesh-btn" data-mesh="2"><svg viewBox="0 0 24 24"><path d="M12 3l4 5-4 4-4-4z"/><path d="M12 12v6M8 20h8"/></svg>Crest</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Viewing</div>
+      <div class="toggle on" id="tg-rotate"><div class="t-l">Idle Auto-Orbit<small>Rotates after 5s of stillness</small></div><div class="switch"></div></div>
+      <div class="toggle on" id="tg-wire"><div class="t-l">Bevel Highlights<small>Chamfer rim edge light</small></div><div class="switch"></div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Export</div>
+      <div class="export">
+        <button class="btn btn-primary" id="dl-glb"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>Export GLB · PBR</button>
+        <button class="btn btn-ghost" id="dl-svg"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M4 19h16"/></svg>Export SVG Patina Mask</button>
+      </div>
+    </div>
+
+    <div class="foot">
+      <b>6 mesh variants</b> · 3 procedural tarnish maps · baked Albedo / Normal / Roughness / Metallic. Geometry generated in-browser — no external assets.
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   1. PROCEDURAL NOISE (value noise, tileable-ish)
+   ============================================================ */
+function hash2(x, y){
+  let h = Math.sin(x*127.1 + y*311.7) * 43758.5453123;
+  return h - Math.floor(h);
+}
+function smooth(t){ return t*t*(3-2*t); }
+function vnoise(x, y){
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const xf = x-xi, yf = y-yi;
+  const a = hash2(xi,yi), b = hash2(xi+1,yi), c = hash2(xi,yi+1), d = hash2(xi+1,yi+1);
+  const u = smooth(xf), v = smooth(yf);
+  return a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v;
+}
+function fbm(x, y, oct){
+  let s=0, amp=0.5, f=1, norm=0;
+  for(let i=0;i<oct;i++){ s += amp*vnoise(x*f, y*f); norm += amp; amp*=0.5; f*=2; }
+  return s/norm;
+}
+function clamp01(v){ return v<0?0:(v>1?1:v); }
+function sstep(a,b,x){ const t=clamp01((x-a)/(b-a)); return t*t*(3-2*t); }
+
+/* ============================================================
+   2. CANVAS TEXTURES (Albedo + Roughness/Metallic packed)
+   ============================================================ */
+const TEX = 512;
+function makeAlbedo(){
+  const c=document.createElement('canvas'); c.width=c.height=TEX;
+  const g=c.getContext('2d');
+  const img=g.createImageData(TEX,TEX);
+  const d=img.data;
+  for(let y=0;y<TEX;y++){
+    for(let x=0;x<TEX;x++){
+      const u=x/TEX, v=y/TEX;
+      const n=fbm(u*6, v*6, 5);
+      const streak=fbm(u*1.2, v*14, 3);
+      let r=184, gg=115, b=51;
+      const t=(n-0.5)*40 + (streak-0.5)*18;
+      r=clamp01((r+t)/255)*255; gg=clamp01((gg+t*0.7)/255)*255; b=clamp01((b+t*0.5)/255)*255;
+      const i=(y*TEX+x)*4;
+      d[i]=r; d[i+1]=gg; d[i+2]=b; d[i+3]=255;
+    }
+  }
+  g.putImageData(img,0,0);
+  const tex=new THREE.CanvasTexture(c);
+  tex.colorSpace=THREE.SRGBColorSpace;
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  tex.anisotropy=8;
+  return tex;
+}
+function makeRoughMetal(){
+  // R = roughness, G = metallic, B = unused
+  const c=document.createElement('canvas'); c.width=c.height=TEX;
+  const g=c.getContext('2d');
+  const img=g.createImageData(TEX,TEX);
+  const d=img.data;
+  for(let y=0;y<TEX;y++){
+    for(let x=0;x<TEX;x++){
+      const u=x/TEX, v=y/TEX;
+      const n=fbm(u*8, v*8, 4);
+      const rough=0.34 + (n-0.5)*0.16; // 0.26..0.42
+      const metal=1.0;
+      const i=(y*TEX+x)*4;
+      d[i]=clamp01(rough)*255; d[i+1]=metal*255; d[i+2]=0; d[i+3]=255;
+    }
+  }
+  g.putImageData(img,0,0);
+  const tex=new THREE.CanvasTexture(c);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
+  return tex;
+}
+
+/* ============================================================
+   3. EMBOSSED PLATE GEOMETRY (author silhouettes, <5k tris)
+   ============================================================ */
+function shieldShape(){
+  const s=new THREE.Shape();
+  s.moveTo(0,0.92);
+  s.bezierCurveTo(0.22,0.92,0.42,0.86,0.5,0.78);
+  s.lineTo(0.5,-0.12);
+  s.bezierCurveTo(0.5,-0.5,0.28,-0.72,0,-0.94);
+  s.bezierCurveTo(-0.28,-0.72,-0.5,-0.5,-0.5,-0.12);
+  s.lineTo(-0.5,0.78);
+  s.bezierCurveTo(-0.42,0.86,-0.22,0.92,0,0.92);
+  return s;
+}
+function gearShape(teeth){
+  const s=new THREE.Shape();
+  const outer=0.5, inner=0.4, hole=0.14;
+  const step=(Math.PI*2)/teeth;
+  for(let i=0;i<teeth;i++){
+    const a0=i*step;
+    const pts=[
+      [Math.cos(a0)*inner, Math.sin(a0)*inner],
+      [Math.cos(a0+step*0.16)*outer, Math.sin(a0+step*0.16)*outer],
+      [Math.cos(a0+step*0.44)*outer, Math.sin(a0+step*0.44)*outer],
+      [Math.cos(a0+step*0.6)*inner, Math.sin(a0+step*0.6)*inner],
+    ];
+    pts.forEach((p,idx)=>{ if(i===0&&idx===0) s.moveTo(p[0],p[1]); else s.lineTo(p[0],p[1]); });
+  }
+  s.closePath();
+  const h=new THREE.Path();
+  h.absarc(0,0,hole,0,Math.PI*2,true);
+  s.holes.push(h);
+  return s;
+}
+function crestShape(){
+  const s=new THREE.Shape();
+  // diamond crest with notched base
+  s.moveTo(0,0.9);
+  s.lineTo(0.42,0.34);
+  s.lineTo(0.3,0.34);
+  s.lineTo(0.44,-0.1);
+  s.lineTo(0.2,-0.1);
+  s.lineTo(0.32,-0.5);
+  s.lineTo(0.1,-0.5);
+  s.lineTo(0,-0.9);
+  s.lineTo(-0.1,-0.5);
+  s.lineTo(-0.32,-0.5);
+  s.lineTo(-0.2,-0.1);
+  s.lineTo(-0.44,-0.1);
+  s.lineTo(-0.3,0.34);
+  s.lineTo(-0.42,0.34);
+  s.closePath();
+  return s;
+}
+function plateShape(){
+  const s=new THREE.Shape();
+  const w=0.62,h=0.8,r=0.09;
+  s.moveTo(-w+r,-h);
+  s.lineTo(w-r,-h); s.quadraticCurveTo(w,-h,w,-h+r);
+  s.lineTo(w,h-r); s.quadraticCurveTo(w,h,w-r,h);
+  s.lineTo(-w+r,h); s.quadraticCurveTo(-w,h,-w,h-r);
+  s.lineTo(-w,-h+r); s.quadraticCurveTo(-w,-h,-w+r,-h);
+  return s;
+}
+const M = THREE.MathUtils;
+function buildPlate(motif){
+  const plate = new THREE.ExtrudeGeometry(plateShape(), {depth:0.05, bevelEnabled:true, bevelThickness:0.018, bevelSize:0.02, bevelSegments:2, curveSegments:10});
+  plate.center();
+
+  const base = new THREE.ShapeGeometry(plateShape(), 12);
+  const emb = [];
+  if(motif===0){
+    const sh=shieldShape();
+    const e=new THREE.ExtrudeGeometry(sh,{depth:0.05,bevelEnabled:true,bevelThickness:0.014,bevelSize:0.014,bevelSegments:2,curveSegments:14});
+    e.scale(0.82,0.82,1); e.center(); emb.push(e);
+  } else if(motif===1){
+    const e=new THREE.ExtrudeGeometry(gearShape(10),{depth:0.05,bevelEnabled:true,bevelThickness:0.012,bevelSize:0.012,bevelSegments:1,curveSegments:6});
+    e.scale(0.92,0.92,1); e.center(); emb.push(e);
+    const hub=new THREE.ExtrudeGeometry(new THREE.Shape().absarc(0,0,0.2,0,Math.PI*2),{depth:0.05,bevelEnabled:false,curveSegments:16});
+    hub.center(); emb.push(hub);
+  } else {
+    const e=new THREE.ExtrudeGeometry(crestShape(),{depth:0.05,bevelEnabled:true,bevelThickness:0.012,bevelSize:0.012,bevelSegments:1,curveSegments:8});
+    e.scale(0.9,0.9,1); e.center(); emb.push(e);
+    const ring=new THREE.ExtrudeGeometry(new THREE.Shape().absarc(0,0.42,0.11,0,Math.PI*2),{depth:0.05,bevelEnabled:false,curveSegments:16});
+    ring.center(); emb.push(ring);
+  }
+
+  const group=new THREE.Group();
+  const plateMesh=new THREE.Mesh(plate);
+  const baseMesh=new THREE.Mesh(base);
+  baseMesh.position.z=0.028;
+  group.add(plateMesh, baseMesh);
+  const embMeshes=[];
+  emb.forEach(e=>{ const m=new THREE.Mesh(e); m.position.z=0.028; group.add(m); embMeshes.push(m); });
+
+  // merge plate + base + emb into single BufferGeometry (all share material)
+  const geos=[plate, base, ...emb];
+  const merged=mergeGeoms(geos);
+  const mesh=new THREE.Mesh(merged);
+
+  // compute edge factor (distance to plate border) for tarnish-from-edges
+  computeEdgeFactor(merged);
+
+  // rim highlight wireframe
+  const edges=new THREE.LineSegments(new THREE.EdgesGeometry(plate, 24), new THREE.LineBasicMaterial({color:0xe0a566, transparent:true, opacity:0.0}));
+  edges.position.z=0.0;
+  group.add(edges);
+
+  return { mesh, group, edges, motif };
+}
+function mergeGeoms(geos){
+  const list=geos.map(g=>{
+    const gg=g.index ? g.toNonIndexed() : g;
+    return gg;
+  });
+  // manual merge of position + normal + uv
+  let vc=0; list.forEach(g=>vc+=g.attributes.position.count);
+  const pos=new Float32Array(vc*3), nor=new Float32Array(vc*3), uv=new Float32Array(vc*2);
+  let o=0;
+  list.forEach(g=>{
+    const p=g.attributes.position.array, n=g.attributes.normal.array, u=g.attributes.uv?g.attributes.uv.array:null;
+    const c=g.attributes.position.count;
+    pos.set(p, o*3); nor.set(n, o*3);
+    if(u) uv.set(u, o*2);
+    o+=c;
+  });
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(nor,3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(uv,2));
+  return geo;
+}
+function computeEdgeFactor(geo){
+  const pos=geo.attributes.position;
+  const w=0.62, h=0.8, maxD=0.13;
+  const arr=new Float32Array(pos.count);
+  for(let i=0;i<pos.count;i++){
+    const x=pos.getX(i), y=pos.getY(i);
+    const dx=Math.max(0, Math.abs(x)-(w-maxD));
+    const dy=Math.max(0, Math.abs(y)-(h-maxD));
+    const d=Math.sqrt(dx*dx+dy*dy);
+    arr[i]=clamp01(d/maxD); // 0 interior -> 1 border
+  }
+  geo.setAttribute('aEdge', new THREE.BufferAttribute(arr,1));
+}
+
+/* ============================================================
+   4. MATERIAL (copper + dynamic tarnish via onBeforeCompile)
+   ============================================================ */
+const U = {
+  uTimeProgress:{value:0.15},
+  uHover:{value:0},
+  uCu:{value:new THREE.Color(0xb87333)},
+  uSulf:{value:new THREE.Color(0x1a1a1a)},
+  uOx:{value:new THREE.Color(0x7a4f2a)},
+  uVerd:{value:new THREE.Color(0x4a6b5d)},
+};
+const albedoTex=makeAlbedo();
+const rmTex=makeRoughMetal();
+
+const material=new THREE.MeshStandardMaterial({
+  color:0xb87333, metalness:1.0, roughness:0.38,
+  map:albedoTex, roughnessMap:rmTex, metalnessMap:rmTex,
+  envMapIntensity:1.0,
+});
+material.customProgramCacheKey=()=>'copperTarnish';
+material.onBeforeCompile=(shader)=>{
+  Object.assign(shader.uniforms, U);
+  shader.vertexShader=shader.vertexShader
+    .replace('#include <common>', '#include <common>\nattribute float aEdge;\nvarying float vEdge;')
+    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvEdge=aEdge;');
+  shader.fragmentShader=shader.fragmentShader
+    .replace('#include <common>',
+`#include <common>
+varying float vEdge;
+uniform float uTimeProgress; uniform float uHover;
+uniform vec3 uCu; uniform vec3 uSulf; uniform vec3 uOx; uniform vec3 uVerd;`)
+    .replace('#include <map_fragment>',
+`#include <map_fragment>
+{
+  float tp = uTimeProgress;
+  float nz = vnoise2(vUv*vec2(5.0,5.0));
+  float nz2 = vnoise2(vUv*vec2(13.0,13.0));
+  float edge = vEdge;
+  float m = clamp01(tp*1.5 + edge*0.55 + (nz-0.5)*0.30 + (nz2-0.5)*0.12);
+  float wSulf = sstep(0.00,0.16,m) * (1.0-sstep(0.20,0.52,m));
+  float wOx   = sstep(0.16,0.34,m) * (1.0-sstep(0.46,0.72,m));
+  float wVerd = sstep(0.46,0.78,m);
+  float wCu   = clamp01(1.0 - wSulf - wOx - wVerd);
+  vec3 tarn = (uCu*wCu + uSulf*wSulf + uOx*wOx + uVerd*wVerd) / max(0.0001, wCu+wSulf+wOx+wVerd);
+  diffuseColor.rgb *= mix(vec3(1.0), tarn/uCu, 0.9);
+  diffuseColor.rgb += uCu * uHover * 0.18;
+  roughnessFactor = clamp(roughnessFactor + m*0.45 + uHover*0.0, 0.0, 1.0);
+  metalnessFactor = clamp(metalnessFactor * (1.0 - m*0.85), 0.0, 1.0);
+}`)
+    .replace('#include <color_fragment>',
+`#include <color_fragment>
+float vnoise2(vec2 p){
+  vec2 i=floor(p); vec2 f=fract(p); f=f*f*(3.0-2.0*f);
+  float a=fract(sin(dot(i,vec2(127.1,311.7)))*43758.5453);
+  float b=fract(sin(dot(i+vec2(1.0,0.0),vec2(127.1,311.7)))*43758.5453);
+  float c=fract(sin(dot(i+vec2(0.0,1.0),vec2(127.1,311.7)))*43758.5453);
+  float d=fract(sin(dot(i+vec2(1.0,1.0),vec2(127.1,311.7)))*43758.5453);
+  return mix(mix(a,b,f.x), mix(c,d,f.x), f.y);
+}
+`);
+};
+
+/* ============================================================
+   5. SCENE
+   ============================================================ */
+const wrap=document.getElementById('canvas-wrap');
+const renderer=new THREE.WebGLRenderer({antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+wrap.appendChild(renderer.domElement);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x10161d);
+scene.fog=new THREE.Fog(0x10161d, 6, 14);
+
+const camera=new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+camera.position.set(0,0,5);
+
+const controls=new OrbitControls(camera, renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=0.06;
+controls.minDistance=2.2;
+controls.maxDistance=7;
+controls.enablePan=false;
+controls.autoRotate=false;
+
+// studio environment
+function buildEnv(){
+  const c=document.createElement('canvas'); c.width=512; c.height=256;
+  const g=c.getContext('2d');
+  const grd=g.createLinearGradient(0,0,0,256);
+  grd.addColorStop(0,'#5a6b78'); grd.addColorStop(0.45,'#2c3e50'); grd.addColorStop(1,'#0c1116');
+  g.fillStyle=grd; g.fillRect(0,0,512,256);
+  function blob(x,y,r,col){ const rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,col); rg.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle=rg; g.fillRect(0,0,512,256); }
+  blob(150,70,120,'rgba(255,240,220,0.95)');
+  blob(380,110,150,'rgba(224,165,102,0.6)');
+  blob(260,210,180,'rgba(120,150,170,0.35)');
+  blob(40,150,90,'rgba(255,255,255,0.25)');
+  const tex=new THREE.CanvasTexture(c);
+  tex.mapping=THREE.EquirectangularReflectionMapping;
+  tex.colorSpace=THREE.SRGBColorSpace;
+  const pmrem=new THREE.PMREMGenerator(renderer);
+  const env=pmrem.fromEquirectangular(tex).texture;
+  pmrem.dispose(); tex.dispose();
+  return env;
+}
+scene.environment=buildEnv();
+
+// key light
+const key=new THREE.DirectionalLight(0xfff2e0, 2.2);
+key.position.set(3,4,4);
+scene.add(key);
+const rim=new THREE.DirectionalLight(0x88aacc, 0.8);
+rim.position.set(-4,-1,-3);
+scene.add(rim);
+const amb=new THREE.AmbientLight(0x33404d, 0.6);
+scene.add(amb);
+
+// ground disc
+const ground=new THREE.Mesh(
+  new THREE.CircleGeometry(6,48),
+  new THREE.MeshStandardMaterial({color:0x0c1218, roughness:0.9, metalness:0})
+);
+ground.rotation.x=-Math.PI/2; ground.position.y=-1.05;
+scene.add(ground);
+
+// plate container
+const holder=new THREE.Group();
+scene.add(holder);
+
+const plates=[buildPlate(0), buildPlate(1), buildPlate(2)];
+let current=0;
+function showPlate(i){
+  plates.forEach((p,idx)=>{ p.group.visible = idx===i; });
+  holder.add(plates[i].group);
+  current=i;
+}
+plates.forEach(p=>holder.add(p.group));
+showPlate(0);
+
+/* ============================================================
+   6. UI WIRING
+   ============================================================ */
+const timeSlider=document.getElementById('time');
+const yearsVal=document.getElementById('years-val');
+const hudYears=document.getElementById('hud-years');
+const hudState=document.getElementById('hud-state');
+const hudMotif=document.getElementById('hud-motif');
+const stateNm=document.getElementById('state-nm');
+const stateDesc=document.getElementById('state-desc');
+const stateSw=document.getElementById('state-sw');
+const fCu=document.getElementById('f-cu'), fSulf=document.getElementById('f-sulf'), fOx=document.getElementById('f-ox'), fVerd=document.getElementById('f-verd');
+
+const MOTIF_NAMES=['Shield','Gear','Crest'];
+
+function stateFor(t){
+  if(t<0.10) return ['Fresh Copper','Highly reflective bare copper. Metallic sheen dominates; roughness is low.','#b87333'];
+  if(t<0.30) return ['Sulfide Bloom','Thin sulfide film creeps inward from the chamfered rim. Sheen dulls.',' #2a2420'];
+  if(t<0.55) return ['Copper Oxide','Oxide brown spreads across the field; embossing softens under matte patina.','#7a4f2a'];
+  if(t<0.80) return ['Verdigris Onset','Copper carbonate green begins colonising recesses and edges.','#4a6b5d'];
+  return ['Full Verdigris','Complete verdigris coverage. Non-metallic, matte, fully weathered.','#5b7d6c'];
+}
+function layerWeights(t){
+  const m=t;
+  const wSulf=sstep(0.00,0.16,m)*(1-sstep(0.20,0.52,m));
+  const wOx=sstep(0.16,0.34,m)*(1-sstep(0.46,0.72,m));
+  const wVerd=sstep(0.46,0.78,m);
+  const wCu=clamp01(1-wSulf-wOx-wVerd);
+  return {wCu,wSulf,wOx,wVerd};
+}
+function applyTime(t){
+  U.uTimeProgress.value=t;
+  const yrs=Math.round(t*100);
+  yearsVal.textContent=yrs;
+  hudYears.innerHTML=yrs+' <small>yrs</small>';
+  timeSlider.style.setProperty('--p', (t*100)+'%');
+  const [nm,desc,sw]=stateFor(t);
+  stateNm.textContent=nm; hudState.textContent=nm.split(' ')[0];
+  stateDesc.textContent=desc; stateSw.style.background=sw.trim();
+  const w=layerWeights(t);
+  fCu.style.width=(w.wCu*100)+'%';
+  fSulf.style.width=(w.wSulf*100)+'%';
+  fOx.style.width=(w.wOx*100)+'%';
+  fVerd.style.width=(w.wVerd*100)+'%';
+}
+let userTouchedTime=false;
+timeSlider.addEventListener('input',()=>{ userTouchedTime=true; applyTime(parseFloat(timeSlider.value)/100); });
+
+document.getElementById('mesh-grid').addEventListener('click',(e)=>{
+  const btn=e.target.closest('.mesh-btn'); if(!btn) return;
+  document.querySelectorAll('.mesh-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const i=parseInt(btn.dataset.mesh);
+  showPlate(i);
+  hudMotif.textContent=MOTIF_NAMES[i];
+});
+
+// toggles
+let autoOn=true, wireOn=true;
+const tgRotate=document.getElementById('tg-rotate'), tgWire=document.getElementById('tg-wire');
+tgRotate.addEventListener('click',()=>{ autoOn=!autoOn; tgRotate.classList.toggle('on',autoOn); });
+tgWire.addEventListener('click',()=>{
+  wireOn=!wireOn; tgWire.classList.toggle('on',wireOn);
+  plates.forEach(p=>p.edges.material.opacity=wireOn?0.35:0);
+});
+plates.forEach(p=>p.edges.material.opacity=0.35);
+
+// hover glow on mesh
+let hoverTarget=0;
+document.querySelectorAll('.btn').forEach(b=>{
+  b.addEventListener('mouseenter',()=>hoverTarget=1);
+  b.addEventListener('mouseleave',()=>hoverTarget=0);
+});
+
+/* ============================================================
+   7. EXPORTS
+   ============================================================ */
+function download(blob, name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+document.getElementById('dl-glb').addEventListener('click',()=>{
+  const exporter=new GLTFExporter();
+  const exportGroup=new THREE.Group();
+  plates.forEach(p=>{
+    const g=p.group.clone();
+    g.traverse(o=>{ if(o.isMesh){ o.material=material; } });
+    exportGroup.add(g);
+  });
+  exporter.parse(exportGroup,(result)=>{
+    const blob=new Blob([result],{type:'model/gltf-binary'});
+    download(blob,'copper-sulfide-tarnish-plate.glb');
+  },(err)=>console.warn(err),{binary:true});
+});
+
+function makeSVGMask(){
+  const S=100, cx=50, cy=50, w=62, h=80, r=9;
+  const layers=[
+    {fill:'#b87333', rx:0, ry:0, op:1},
+    {fill:'#1a1a1a', rx:1, ry:1, op:0.5},
+    {fill:'#7a4f2a', rx:7, ry:9, op:0.45},
+    {fill:'#4a6b5d', rx:13, ry:16, op:0.4},
+  ];
+  let rects='';
+  layers.forEach((L,i)=>{
+    const x=cx-w/2+L.rx, y=cy-h/2+L.ry, ww=w-L.rx*2, hh=h-L.ry*2, rr=Math.max(2,r-L.rx*0.5);
+    rects+=`  <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${ww.toFixed(1)}" height="${hh.toFixed(1)}" rx="${rr.toFixed(1)}" fill="${L.fill}" fill-opacity="${L.op}"/>\n`;
+  });
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="620" height="800" viewBox="0 0 100 100">
+  <title>Copper Sulfide Tarnish — Patina Progression Mask</title>
+  <desc>Vector representation of tarnish progression: edges degrade first (sulfide), interior retains fresh copper.</desc>
+  <defs>
+    <radialGradient id="patina" cx="50%" cy="50%" r="62%">
+      <stop offset="0%" stop-color="#b87333"/>
+      <stop offset="55%" stop-color="#7a4f2a"/>
+      <stop offset="80%" stop-color="#4a6b5d"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="100" height="100" fill="url(#patina)"/>
+${rects}</svg>`;
+  download(new Blob([svg],{type:'image/svg+xml'}),'copper-patina-mask.svg');
+}
+document.getElementById('dl-svg').addEventListener('click',makeSVGMask);
+
+/* ============================================================
+   8. ANIMATION LOOP
+   ============================================================ */
+function resize(){
+  const r=wrap.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect=r.width/r.height;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+resize();
+
+const clock=new THREE.Clock();
+let lastInteract=performance.now();
+let entranceDone=reduced;
+let introStart=performance.now();
+
+controls.addEventListener('start',()=>lastInteract=performance.now());
+controls.addEventListener('change',()=>lastInteract=performance.now());
+
+function easeOutCubic(x){ return 1-Math.pow(1-x,3); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const now=performance.now();
+  const dt=clock.getDelta();
+
+  // entrance dolly 5 -> 3
+  if(!entranceDone){
+    const e=clamp01((now-introStart)/1200);
+    const z=5 - 2*easeOutCubic(e);
+    camera.position.setLength(z);
+    if(e>=1) entranceDone=true;
+  }
+
+  // intro tarnish ramp 0 -> 0.15 over 3s (unless user touched)
+  if(!reduced && !userTouchedTime && introStart){
+    const e=clamp01((now-introStart-400)/3000);
+    if(e<1){
+      const t=easeOutCubic(e)*0.15;
+      timeSlider.value=(t*100).toFixed(1);
+      applyTime(t);
+    } else {
+      userTouchedTime=true;
+    }
+  }
+
+  // idle auto-rotate
+  if(autoOn && !reduced && (now-lastInteract)>5000){
+    holder.rotation.y += 0.2*Math.PI/180;
+  }
+
+  // hover glow ease
+  U.uHover.value += (hoverTarget - U.uHover.value)*Math.min(1,dt*8);
+
+  controls.update();
+  renderer.render(scene,camera);
+}
+animate();
+
+// reveal
+requestAnimationFrame(()=>document.body.classList.add('loaded'));
+applyTime(0.15);
+</script>
+</body>
+</html>

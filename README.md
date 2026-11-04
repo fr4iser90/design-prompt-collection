@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 271 | 270 | 230 | 41 |
+| 271 | 271 | 230 | 41 |
 
 ## Quick start
 
@@ -3545,9 +3545,11 @@ High-fidelity 3D asset studio for copper plates with dynamic sulfide tarnish, fe
 
 [prompt](prompts/assets/copper-sulfide-tarnish-plate/prompt.md) · [extended](prompts/assets/copper-sulfide-tarnish-plate/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/copper-sulfide-tarnish-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 4.9s | 264s | 1 | [open](prompts/assets/copper-sulfide-tarnish-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
