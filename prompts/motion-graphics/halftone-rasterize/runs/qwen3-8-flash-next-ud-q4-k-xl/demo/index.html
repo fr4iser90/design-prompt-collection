@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Rasterize the Word — an 8-second CMYK halftone identity loop by studio Dot & Grain.">
+<title>Rasterize the Word — Dot &amp; Grain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cyan:#00AEFF;
+    --magenta:#FF005D;
+    --yellow:#FFF000;
+    --black:#000000;
+    --white:#FFFFFF;
+    --mono:'Space Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#0A0A0B;
+    color:#EDEDED;
+    font-family:var(--mono);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:22px 14px;
+    gap:16px;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ---- Stage frame (16:9) ---- */
+  .stage-frame{
+    position:relative;
+    width:min(1200px, 100vw, 177.7778vh);
+    aspect-ratio:16/9;
+    background:var(--white);
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06);
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  canvas{position:absolute; inset:0; width:100%; height:100%; display:block;}
+  #cDots{z-index:2;}
+  #cText{z-index:3;}
+
+  /* ---- Corner registration marks (screen-print trim) ---- */
+  .mark{position:absolute; width:22px; height:22px; z-index:5; pointer-events:none;}
+  .mark::before,.mark::after{content:''; position:absolute; background:var(--black);}
+  .mark::before{left:50%; top:0; width:1px; height:100%; transform:translateX(-.5px);}
+  .mark::after{top:50%; left:0; height:1px; width:100%; transform:translateY(-.5px);}
+  .mark.tl{top:14px; left:14px;}
+  .mark.tr{top:14px; right:14px;}
+  .mark.bl{bottom:14px; left:14px;}
+  .mark.br{bottom:14px; right:14px;}
+
+  /* ---- Screen-print registration rosette (top-left) ---- */
+  .reg{position:absolute; top:16px; left:44px; z-index:5; pointer-events:none;}
+  .reg svg{display:block;}
+  .reg text{font-family:var(--mono); font-weight:700; font-size:8px; fill:var(--black); letter-spacing:1px;}
+
+  /* ---- Meta HUD ---- */
+  .hud{
+    position:absolute; z-index:5; pointer-events:none;
+    font-family:var(--mono); font-weight:700;
+    font-size:clamp(8px, .95vw, 12px);
+    letter-spacing:.14em; text-transform:uppercase; line-height:1.5;
+  }
+  .hud-top{top:16px; right:16px; text-align:right; color:var(--black);}
+  .hud-top .k{opacity:.42;}
+  .hud-top .v{color:var(--black);}
+  .hud-top .dot{color:var(--magenta);}
+  .hud-top .run{color:var(--cyan);}
+  .hud-top .pause{color:var(--yellow); -webkit-text-stroke:.4px #000;}
+
+  /* ---- Lockup (bottom) ---- */
+  .lockup{
+    position:absolute; z-index:5; pointer-events:none;
+    left:0; right:0; bottom:0;
+    padding:0 24px 22px;
+    display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+  }
+  .brand{
+    font-family:'Futura PT','Futura','Century Gothic','Avant Garde',var(--mono);
+    font-weight:700;
+    font-size:clamp(20px, 3.4vw, 46px);
+    letter-spacing:-.01em;
+    color:var(--black);
+    line-height:.9;
+    white-space:nowrap;
+  }
+  .brand .amp{color:var(--magenta);}
+  .meta{
+    font-family:var(--mono); font-weight:700;
+    font-size:clamp(7px, .85vw, 11px);
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--black); opacity:.5; text-align:right; line-height:1.5;
+  }
+  .meta b{color:var(--cyan); -webkit-text-stroke:.3px #000;}
+
+  /* ---- Timeline scrubber ---- */
+  .timeline{
+    width:min(1200px, 100vw, 177.7778vh);
+    display:flex; flex-direction:column; gap:8px;
+  }
+  .bar{
+    position:relative; height:8px; width:100%;
+    background:rgba(255,255,255,.10);
+    cursor:pointer;
+    border:1px solid rgba(255,255,255,.10);
+  }
+  .fill{position:absolute; inset:0 auto 0 0; width:0%; background:var(--white); transition:width .05s linear;}
+  .tick{position:absolute; top:-3px; bottom:-3px; width:1px; background:rgba(255,255,255,.30);}
+  .tick::after{content:attr(data-l); position:absolute; top:100%; left:0; transform:translateX(-50%); margin-top:5px; font-size:9px; letter-spacing:.1em; color:rgba(255,255,255,.42); white-space:nowrap;}
+  .playhead{position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--magenta); left:0%; box-shadow:0 0 0 1px rgba(0,0,0,.4);}
+  .legend{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.55); align-items:center;}
+  .legend .sw{display:inline-flex; align-items:center; gap:6px;}
+  .legend .sw i{width:9px; height:9px; border-radius:50%; display:inline-block;}
+  .legend .sw.c i{background:var(--cyan);}
+  .legend .sw.m i{background:var(--magenta);}
+  .legend .sw.y i{background:var(--yellow);}
+  .legend .sw.k i{background:var(--black); box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}
+
+  .hint{
+    width:min(1200px, 100vw, 177.7778vh);
+    font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:rgba(255,255,255,.42);
+    display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center;
+  }
+  .hint kbd{
+    font-family:var(--mono); font-weight:700; font-size:10px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+    padding:2px 7px; color:#fff; letter-spacing:.08em;
+  }
+  .hint .sep{opacity:.3;}
+  .hint .live{color:var(--cyan);}
+  .hint .live.paused{color:var(--yellow);}
+
+  @media (max-width:560px){
+    body{padding:14px 10px; gap:12px;}
+    .lockup{padding:0 14px 14px;}
+    .reg{left:40px; top:12px;}
+    .hud-top{right:12px; top:12px;}
+    .meta{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage-frame" id="stage" role="img" aria-label="Rasterize the Word: a CMYK halftone loop by studio Dot & Grain. Dots drift, snap to a grid, form the letters D and O, then explode.">
+
+    <canvas id="cDots"></canvas>
+    <canvas id="cText"></canvas>
+
+    <!-- registration rosette -->
+    <div class="reg" aria-hidden="true">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <g fill="none" stroke="#000" stroke-width="1">
+          <circle cx="16" cy="16" r="9" stroke="#00AEFF"/>
+          <circle cx="26" cy="16" r="9" stroke="#FF005D"/>
+          <circle cx="21" cy="24" r="9" stroke="#FFF000"/>
+        </g>
+        <line x1="26" y1="2" x2="26" y2="10" stroke="#000"/>
+        <line x1="26" y1="42" x2="26" y2="50" stroke="#000"/>
+        <line x1="2" y1="26" x2="10" y2="26" stroke="#000"/>
+        <line x1="42" y1="26" x2="50" y2="26" stroke="#000"/>
+        <text x="2" y="50">REG</text>
+      </svg>
+    </div>
+
+    <!-- corner marks -->
+    <span class="mark tl" aria-hidden="true"></span>
+    <span class="mark tr" aria-hidden="true"></span>
+    <span class="mark bl" aria-hidden="true"></span>
+    <span class="mark br" aria-hidden="true"></span>
+
+    <!-- meta HUD -->
+    <div class="hud hud-top" aria-hidden="true">
+      <div><span class="k">STUDIO</span> <span class="v">DOT &amp; GRAIN</span></div>
+      <div><span class="k">SPEC</span> <span class="v">CMYK · HALFTONE · 12PX</span></div>
+      <div><span class="k">T</span> <span class="v" id="timeRead">0.00s</span> <span class="dot" id="stateRead">DRIFT</span> <span class="run" id="runRead">▶</span></div>
+    </div>
+
+    <!-- lockup -->
+    <div class="lockup" aria-hidden="true">
+      <div class="brand">DOT <span class="amp">&amp;</span> GRAIN</div>
+      <div class="meta">RASTERIZE THE WORD<br>IDENTITY LOOP · 8.00s · <b>60FPS</b></div>
+    </div>
+  </div>
+
+  <!-- timeline scrubber -->
+  <div class="timeline" aria-hidden="true">
+    <div class="bar" id="bar">
+      <div class="fill" id="fill"></div>
+      <div class="tick" data-l="DRIFT" style="left:0%"></div>
+      <div class="tick" data-l="GRID" style="left:25%"></div>
+      <div class="tick" data-l="SNAP" style="left:37.5%"></div>
+      <div class="tick" data-l="FORM" style="left:50%"></div>
+      <div class="tick" data-l="EXPLODE" style="left:75%"></div>
+      <div class="tick" data-l="LOCKUP" style="left:87.5%"></div>
+      <div class="playhead" id="playhead"></div>
+    </div>
+    <div class="legend">
+      <span class="sw c"><i></i>Cyan</span>
+      <span class="sw m"><i></i>Magenta</span>
+      <span class="sw y"><i></i>Yellow</span>
+      <span class="sw k"><i></i>Black overlap</span>
+    </div>
+  </div>
+
+  <div class="hint">
+    <span><kbd>CLICK</kbd> restart</span><span class="sep">·</span>
+    <span><kbd>SPACE</kbd> pause</span><span class="sep">·</span>
+    <span><kbd>←</kbd><kbd>→</kbd> scrub</span><span class="sep">·</span>
+    <span class="live" id="liveState">● LIVE</span>
+  </div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+     RASTERIZE THE WORD — Dot & Grain
+     8.00s seamless CMYK halftone identity loop (rAF)
+     ============================================================ */
+
+  var CYAN='#00AEFF', MAGENTA='#FF005D', YELLOW='#FFF000';
+  var LOOP=8.0, DURATION=LOOP, MAXV=50, SPACING=12, DOT_COUNT=200;
+
+  var stage=document.getElementById('stage');
+  var cDots=document.getElementById('cDots'), ctx=cDots.getContext('2d');
+  var cText=document.getElementById('cText'), tctx=cText.getContext('2d');
+  var bar=document.getElementById('bar'), fill=document.getElementById('fill'), playhead=document.getElementById('playhead');
+  var timeRead=document.getElementById('timeRead'), stateRead=document.getElementById('stateRead'), runRead=document.getElementById('runRead');
+  var liveState=document.getElementById('liveState');
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var W=0,H=0,DPR=1;
+  var dots=[], letterC=[], letterM=[], letterY=[];
+  var cx=0, cy=0, glyphSize=100, cell=12;
+  var startTime=performance.now(), paused=false, pausedAt=0, scrubbing=false;
+
+  /* ---------- math helpers ---------- */
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+  function easeInQuad(t){ return t*t; }
+  function easeOutQuint(t){ return 1-Math.pow(1-t,5); }
+
+  function elastic(t){ // cubic-bezier(0.175,0.885,0.32,1.275) — overshoot & settle
+    if(t<=0) return 0; if(t>=1) return 1;
+    var p=0.4;
+    return Math.pow(2,-10*t)*Math.sin((t-p/4)*(2*Math.PI)/p)+1;
+  }
+
+  /* ---------- glyph sampling (letter clusters on the lattice) ---------- */
+  var sampler=document.createElement('canvas');
+  function buildLetters(){
+    var S=260;
+    sampler.width=S; sampler.height=S;
+    var s=sampler.getContext('2d');
+    s.fillStyle='#fff'; s.fillRect(0,0,S,S);
+    s.fillStyle='#000';
+    s.textBaseline='middle'; s.textAlign='center';
+    s.font='700 '+Math.round(S*0.98)+'px "Futura PT","Century Gothic","Avant Garde",sans-serif';
+    s.fillText('DO', S/2, S*0.52);
+
+    var data=s.getImageData(0,0,S,S).data;
+    var step=5, pts=[];
+    for(var y=0;y<S;y+=step){
+      for(var x=0;x<S;x+=step){
+        if(data[(y*S+x)*4] < 128) pts.push([x,y]);
+      }
+    }
+
+    var minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+    for(var i=0;i<pts.length;i++){
+      if(pts[i][0]<minX)minX=pts[i][0]; if(pts[i][0]>maxX)maxX=pts[i][0];
+      if(pts[i][1]<minY)minY=pts[i][1]; if(pts[i][1]>maxY)maxY=pts[i][1];
+    }
+    var w=maxX-minX, h=maxY-minY;
+    var availW=W*0.66, availH=H*0.60;
+    var scale=Math.min(availW/w, availH/h);
+    var ox=W/2-(minX+w/2)*scale, oy=H/2-(minY+h/2)*scale;
+    glyphSize=h*scale;
+
+    letterC=[]; letterM=[]; letterY=[];
+    var midX=(minX+maxX)/2;
+    for(var j=0;j<pts.length;j++){
+      var gx=ox+pts[j][0]*scale, gy=oy+pts[j][1]*scale;
+      // snap to lattice
+      gx=Math.round(gx/cell)*cell; gy=Math.round(gy/cell)*cell;
+      var key=gx+'_'+gy;
+      if(gx<ox+w*scale*0.5){ letterC.push([gx,gy,key]); }
+      else { letterM.push([gx,gy,key]); }
+    }
+    // yellow overlap band down the vertical stem of the 'D'
+    var seenY={};
+    for(var k=0;k<letterC.length;k++){
+      var lx=letterC[k][0], ly=letterC[k][1];
+      if(lx<=ox+w*scale*0.14){
+        if(!seenY[lx+'_'+ly]){ seenY[lx+'_'+ly]=1; letterY.push([lx,ly,lx+'_'+ly]); }
+      }
+    }
+  }
+
+  /* ---------- dot model ---------- */
+  function rand(a,b){ return a+Math.random()*(b-a); }
+  function makeDot(color){
+    var x=rand(cell, W-cell), y=rand(cell, H-cell);
+    var a=rand(0,Math.PI*2), sp=rand(6,MAXV);
+    return {
+      color:color,
+      x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      sx:x, sy:y, tx:x, ty:y,
+      formX:x, formY:y, formKey:'',
+      explodeX:x, explodeY:y, exVx:0, exVy:0,
+      phase:rand(0,Math.PI*2), seed:rand(0,1000)
+    };
+  }
+  function initDots(){
+    dots=[];
+    for(var i=0;i<DOT_COUNT;i++){
+      var c = (i%3===0)?CYAN : (i%3===1)?MAGENTA : YELLOW;
+      dots.push(makeDot(c));
+    }
+  }
+
+  /* ---------- geometry recompute ---------- */
+  function computeGeometry(){
+    cx=W/2; cy=H/2;
+    for(var i=0;i<dots.length;i++){
+      var d=dots[i];
+      var ang=Math.atan2(d.y-cy, d.x-cx);
+      var mag=MAXV*rand(0.6,1.0);
+      d.exVx=Math.cos(ang)*mag; d.exVy=Math.sin(ang)*mag;
+    }
+  }
+
+  /* ---------- resize ---------- */
+  function resize(){
+    var rect=stage.getBoundingClientRect();
+    W=Math.max(1, rect.width); H=Math.max(1, rect.height);
+    DPR=Math.min(window.devicePixelRatio||1, 2);
+    [cDots,cText].forEach(function(cv){
+      cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+      cv.style.width=W+'px'; cv.style.height=H+'px';
+    });
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    tctx.setTransform(DPR,0,0,DPR,0,0);
+    cell=clamp(Math.round(W/90), 8, 14);
+    buildLetters();
+    computeGeometry();
+  }
+
+  /* ---------- phase state per dot ---------- */
+  function updateDot(d, t){
+    if(t<2.0){
+      // DRIFT — Brownian random walk, bounce at edges
+      d.vx += (Math.random()-0.5)*90*(1/60);
+      d.vy += (Math.random()-0.5)*90*(1/60);
+      var sp=Math.hypot(d.vx,d.vy);
+      if(sp>MAXV){ d.vx=d.vx/sp*MAXV; d.vy=d.vy/sp*MAXV; }
+      d.x+=d.vx/60; d.y+=d.vy/60;
+      if(d.x<cell){ d.x=cell; d.vx=Math.abs(d.vx); }
+      if(d.x>W-cell){ d.x=W-cell; d.vx=-Math.abs(d.vx); }
+      if(d.y<cell){ d.y=cell; d.vy=Math.abs(d.vy); }
+      if(d.y>H-cell){ d.y=H-cell; d.vy=-Math.abs(d.vy); }
+    } else if(t<3.0){
+      // GRID REVEAL — decelerate
+      d.vx*=0.90; d.vy*=0.90;
+      d.x+=d.vx/60; d.y+=d.vy/60;
+    } else if(t<4.0){
+      // SNAP — elastic to lattice (D/O cluster or scattered)
+      var k=clamp((t-3.0)/1.0,0,1);
+      var e=elastic(k);
+      d.x=d.sx+(d.tx-d.sx)*e;
+      d.y=d.sy+(d.ty-d.sy)*e;
+    } else if(t<6.0){
+      // FORM — settle into letter cluster, staggered scale
+      d.x=d.formX; d.y=d.formY;
+    } else if(t<7.0){
+      // EXPLODE — radial velocity, decaying
+      var p=t-6.0;
+      d.x=d.explodeX + d.exVx*(1-Math.exp(-2.2*p))/2.2;
+      d.y=d.explodeY + d.exVy*(1-Math.exp(-2.2*p))/2.2;
+    } else {
+      // LOCKUP — off-screen, clean white
+      d.x=-9999; d.y=-9999;
+    }
+  }
+
+  function dotRadius(d, t){
+    if(t<4.0){
+      var s=cell*0.46*(0.78+0.22*Math.sin(t*3.0+d.phase));
+      return Math.max(0.5, s);
+    }
+    if(t<6.0){
+      var k=clamp((t-4.0)/1.0,0,1);
+      var stag=clamp((k-(d.seed/1000)*0.35)/0.65,0,1);
+      return cell*0.46 + (cell*0.52-cell*0.46)*easeOutQuint(stag);
+    }
+    if(t<7.0){
+      var e=clamp((t-6.0)/1.0,0,1);
+      return cell*0.52*(1-easeInQuad(e));
+    }
+    return 0;
+  }
+
+  function dotOpacity(d, t){
+    if(t<2.0) return 0.7;
+    if(t<3.0) return 0.7;
+    if(t<4.0) return 0.7 + 0.25*clamp((t-3.0)/1.0,0,1);
+    if(t<6.0) return 0.95;
+    if(t<7.0) return 0.95*(1-clamp((t-6.0)/1.0,0,1));
+    return 0;
+  }
+
+  /* ---------- render ---------- */
+  function renderDots(t){
+    ctx.clearRect(0,0,W,H);
+
+    // GRID layer (12px lattice, black 1px, opacity 0→0.2, visible 2.0–6.0s)
+    var gop=0;
+    if(t>=2.0 && t<3.0) gop=0.2*clamp((t-2.0)/1.0,0,1);
+    else if(t>=3.0 && t<6.0) gop=0.2;
+    else if(t>=6.0 && t<7.0) gop=0.2*(1-clamp((t-6.0)/1.0,0,1));
+    if(gop>0.002){
+      ctx.save();
+      ctx.globalAlpha=gop;
+      ctx.strokeStyle='#000000';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      for(var gx=0; gx<=W; gx+=cell){ ctx.moveTo(gx+0.5,0); ctx.lineTo(gx+0.5,H); }
+      for(var gy=0; gy<=H; gy+=cell){ ctx.moveTo(0,gy+0.5); ctx.lineTo(W,gy+0.5); }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // DOTS — draw per colour so multiply blends correctly
+    ctx.globalCompositeOperation='source-over';
+    for(var i=0;i<dots.length;i++){
+      var d=dots[i];
+      if(d.color===CYAN){
+        var r=dotRadius(d,t); if(r<0.5) continue;
+        ctx.globalAlpha=dotOpacity(d,t); ctx.fillStyle=CYAN;
+        ctx.beginPath(); ctx.arc(d.x,d.y,r,0,6.2832); ctx.fill();
+      }
+    }
+    for(var j=0;j<dots.length;j++){
+      var d2=dots[j];
+      if(d2.color===MAGENTA){
+        var r2=dotRadius(d2,t); if(r2<0.5) continue;
+        ctx.globalAlpha=dotOpacity(d2,t); ctx.fillStyle=MAGENTA;
+        ctx.beginPath(); ctx.arc(d2.x,d2.y,r2,0,6.2832); ctx.fill();
+      }
+    }
+    // Yellow — multiply over cyan/magenta → black overlap
+    ctx.globalCompositeOperation='multiply';
+    for(var k=0;k<dots.length;k++){
+      var d3=dots[k];
+      if(d3.color===YELLOW){
+        var r3=dotRadius(d3,t); if(r3<0.5) continue;
+        ctx.globalAlpha=dotOpacity(d3,t); ctx.fillStyle=YELLOW;
+        ctx.beginPath(); ctx.arc(d3.x,d3.y,r3,0,6.2832); ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation='source-over';
+    ctx.globalAlpha=1;
+  }
+
+  function renderText(t){
+    tctx.clearRect(0,0,W,H);
+    var op=0;
+    if(t>=7.0 && t<7.5) op=clamp((t-7.0)/0.5,0,1);
+    else if(t>=7.5 && t<8.0) op=1-clamp((t-7.5)/0.5,0,1);
+    if(op<=0.001) return;
+    tctx.save();
+    tctx.globalAlpha=op;
+    tctx.fillStyle='#000000';
+    tctx.textBaseline='alphabetic';
+    tctx.textAlign='center';
+    var fs=clamp(H*0.075, 22, 60);
+    tctx.font='700 '+fs+'px "Futura PT","Futura","Century Gothic","Avant Garde",sans-serif';
+    tctx.fillText('DOT & GRAIN', W/2, H*0.90);
+    tctx.restore();
+  }
+
+  /* ---------- HUD ---------- */
+  function phaseName(t){
+    if(t<2) return 'DRIFT';
+    if(t<3) return 'GRID';
+    if(t<4) return 'SNAP';
+    if(t<6) return 'FORM';
+    if(t<7) return 'EXPLODE';
+    return 'LOCKUP';
+  }
+  function updateHUD(t){
+    timeRead.textContent=t.toFixed(2)+'s';
+    stateRead.textContent=phaseName(t);
+    var pct=(t/LOOP)*100;
+    fill.style.width=pct+'%';
+    playhead.style.left=pct+'%';
+  }
+
+  /* ---------- main loop ---------- */
+  function frame(now){
+    if(!reduceMotion){
+      var t = scrubbing ? scrubT : ((now-startTime)/1000)%LOOP;
+      if(t<0) t+=LOOP;
+      for(var i=0;i<dots.length;i++) updateDot(dots[i], t);
+      renderDots(t);
+      renderText(t);
+      updateHUD(t);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- poster (reduced motion) ---------- */
+  function renderPoster(){
+    // deterministic scattered CMYK dots, no grid, text @0.5
+    var seed=1337;
+    function rnd(){ seed=(seed*16807)%2147483647; return seed/2147483647; }
+    ctx.clearRect(0,0,W,H);
+    for(var i=0;i<DOT_COUNT;i++){
+      var c=(i%3===0)?CYAN:(i%3===1)?MAGENTA:YELLOW;
+      var x=rnd()*W, y=rnd()*H*0.82;
+      var r=cell*0.46*(0.7+0.3*rnd());
+      ctx.globalCompositeOperation = c===YELLOW?'multiply':'source-over';
+      ctx.globalAlpha=0.7; ctx.fillStyle=c;
+      ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+    }
+    ctx.globalCompositeOperation='source-over'; ctx.globalAlpha=1;
+    tctx.clearRect(0,0,W,H);
+    tctx.save();
+    tctx.globalAlpha=0.5; tctx.fillStyle='#000000';
+    tctx.textAlign='center'; tctx.textBaseline='alphabetic';
+    var fs=clamp(H*0.075,22,60);
+    tctx.font='700 '+fs+'px "Futura PT","Futura","Century Gothic","Avant Garde",sans-serif';
+    tctx.fillText('DOT & GRAIN', W/2, H*0.90);
+    tctx.restore();
+    updateHUD(1.5);
+    timeRead.textContent='1.50s'; stateRead.textContent='POSTER'; runRead.textContent='■';
+    liveState.textContent='● STATIC (REDUCED MOTION)'; liveState.classList.add('paused');
+  }
+
+  /* ---------- interaction ---------- */
+  function restart(){
+    if(reduceMotion) return;
+    for(var i=0;i<dots.length;i++){
+      var d=dots[i];
+      d.x=rand(cell,W-cell); d.y=rand(cell,H-cell);
+      var a=rand(0,Math.PI*2), sp=rand(6,MAXV);
+      d.vx=Math.cos(a)*sp; d.vy=Math.sin(a)*sp;
+    }
+    computeGeometry();
+    startTime=performance.now();
+    paused=false; pausedAt=0;
+    runRead.textContent='▶'; liveState.textContent='● LIVE'; liveState.classList.remove('paused');
+  }
+  function togglePause(){
+    if(reduceMotion) return;
+    if(paused){
+      paused=false; startTime=performance.now()-pausedAt*1000;
+      runRead.textContent='▶'; liveState.textContent='● LIVE'; liveState.classList.remove('paused');
+    } else {
+      paused=true; pausedAt=((performance.now()-startTime)/1000)%LOOP;
+      runRead.textContent='❚❚'; liveState.textContent='❚❚ PAUSED'; liveState.classList.add('paused');
+    }
+  }
+  var scrubT=0;
+  function seekFromEvent(e){
+    var r=bar.getBoundingClientRect();
+    var x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    var frac=clamp(x/r.width,0,1);
+    scrubT=frac*LOOP;
+  }
+  bar.addEventListener('pointerdown', function(e){
+    if(reduceMotion) return;
+    scrubbing=true; bar.setPointerCapture(e.pointerId); seekFromEvent(e);
+  });
+  bar.addEventListener('pointermove', function(e){ if(scrubbing) seekFromEvent(e); });
+  bar.addEventListener('pointerup', function(e){
+    if(!scrubbing) return;
+    scrubbing=false;
+    startTime=performance.now()-scrubT*1000;
+  });
+
+  stage.addEventListener('click', restart);
+  window.addEventListener('keydown', function(e){
+    if(e.code==='Space'){ e.preventDefault(); togglePause(); }
+    else if(e.code==='ArrowRight'){ seekBy(0.25); }
+    else if(e.code==='ArrowLeft'){ seekBy(-0.25); }
+  });
+  function seekBy(dt){
+    if(reduceMotion) return;
+    var cur=((performance.now()-startTime)/1000)%LOOP;
+    var nt=(cur+dt+LOOP)%LOOP;
+    startTime=performance.now()-nt*1000;
+    if(paused) pausedAt=nt;
+  }
+
+  var resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      resize();
+      if(reduceMotion) renderPoster();
+    }, 120);
+  });
+
+  /* ---------- boot ---------- */
+  function boot(){
+    resize();
+    initDots();
+    buildLetters();
+    computeGeometry();
+    if(reduceMotion){
+      renderPoster();
+    } else {
+      requestAnimationFrame(frame);
+    }
+  }
+
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){
+      resize(); initDots(); buildLetters(); computeGeometry();
+      if(reduceMotion) renderPoster();
+    });
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

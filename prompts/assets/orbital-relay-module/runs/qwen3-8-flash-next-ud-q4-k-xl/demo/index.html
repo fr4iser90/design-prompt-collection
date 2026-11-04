@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBITAL RELAY MODULE — Asset Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0A0E14; --hull:#2B3444; --ceramic:#E8ECF2; --signal:#6EC8FF;
+  --ink:#F2EFE8; --muted:#8A93A3; --panel:rgba(15,20,28,.72);
+  --line:rgba(138,147,163,.22); --line2:rgba(138,147,163,.4);
+  --mono:'JetBrains Mono',ui-monospace,monospace; --disp:'Space Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--mono); color:var(--ink); background:var(--void); overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(120% 90% at 80% 8%, rgba(110,200,255,.07), transparent 45%),
+    radial-gradient(90% 70% at 12% 90%, rgba(110,200,255,.04), transparent 50%),
+    linear-gradient(180deg,#0B1017 0%,#0A0E14 55%,#070A0F 100%);
+}
+canvas{display:block}
+#stage{position:fixed;inset:0;z-index:1}
+/* film grain */
+#stage::after{
+  content:"";position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+#ui{position:fixed;inset:0;z-index:10;pointer-events:none}
+#ui > *{pointer-events:auto}
+
+/* ---- brand ---- */
+.brand{position:absolute;top:20px;left:24px;display:flex;gap:14px;align-items:flex-start}
+.brand .mark{
+  width:44px;height:44px;flex:0 0 auto;border:1px solid var(--line2);border-radius:10px;
+  display:grid;place-items:center;background:linear-gradient(160deg,#141b25,#0c1119);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 8px 24px rgba(0,0,0,.5);
+}
+.brand .mark svg{width:26px;height:26px}
+.brand h1{font-family:var(--disp);font-weight:700;letter-spacing:-.02em;line-height:.98;
+  font-size:clamp(19px,2.3vw,30px);text-transform:uppercase}
+.brand h1 b{color:var(--signal);font-weight:700}
+.brand .sub{font-size:10px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;margin-top:6px}
+.brand .sub .dot{color:var(--signal)}
+
+/* ---- top-right cluster ---- */
+.topright{position:absolute;top:22px;right:24px;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.pill{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:rgba(10,14,20,.55);
+  display:flex;align-items:center;gap:8px;backdrop-filter:blur(6px)}
+.pill .led{width:7px;height:7px;border-radius:50%;background:var(--signal);box-shadow:0 0 10px var(--signal);animation:led 2.4s ease-in-out infinite}
+@keyframes led{0%,100%{opacity:.35}50%{opacity:1}}
+.dl{display:flex;gap:8px}
+.btn{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);
+  border:1px solid var(--line2);background:rgba(15,20,28,.6);border-radius:8px;padding:9px 13px;cursor:pointer;
+  transition:.18s ease;display:flex;align-items:center;gap:8px;backdrop-filter:blur(6px)}
+.btn:hover{border-color:var(--signal);color:#fff;background:rgba(110,200,255,.1);transform:translateY(-1px)}
+.btn svg{width:13px;height:13px}
+.btn.primary{background:linear-gradient(180deg,#172231,#0e1520);border-color:rgba(110,200,255,.5)}
+.btn.primary:hover{border-color:var(--signal);box-shadow:0 6px 22px rgba(110,200,255,.18)}
+
+/* ---- panels ---- */
+.panel{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  backdrop-filter:blur(14px);box-shadow:0 24px 60px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04)}
+.phead{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+.phead .t{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.phead .c{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--ink)}
+
+/* style bible */
+.bible{left:24px;top:118px;width:236px}
+.swatches{padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px}
+.sw{display:flex;align-items:center;gap:11px;cursor:pointer;transition:.15s}
+.sw .chip{width:34px;height:34px;border-radius:8px;flex:0 0 auto;border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+.sw .meta{display:flex;flex-direction:column;line-height:1.35}
+.sw .nm{font-size:11px;color:var(--ink)}
+.sw .hx{font-size:9.5px;color:var(--muted);letter-spacing:.05em}
+.sw:hover .nm{color:var(--signal)}
+.sw .tag{margin-left:auto;font-size:8.5px;letter-spacing:.14em;color:var(--muted);border:1px solid var(--line);
+  border-radius:5px;padding:3px 5px;text-transform:uppercase}
+
+/* inventory */
+.inv{right:24px;top:118px;width:250px}
+.sect{padding:11px 14px;border-bottom:1px solid var(--line)}
+.sect:last-child{border-bottom:0}
+.sect .lab{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:.14s;
+  border:1px solid transparent}
+.row:hover{background:rgba(110,200,255,.07);border-color:var(--line)}
+.row.active{background:rgba(110,200,255,.12);border-color:rgba(110,200,255,.45)}
+.row .id{font-size:9px;color:var(--signal);width:34px;flex:0 0 auto;letter-spacing:.04em}
+.row .nm{font-size:11.5px;color:var(--ink);flex:1}
+.row .st{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.row .st.on{color:var(--signal)}
+.row .st.off{color:#5a6472}
+
+/* bottom control bar */
+.bar{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;
+  padding:8px;border-radius:12px;background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);
+  box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.seg{display:flex;gap:3px;background:rgba(0,0,0,.35);border-radius:9px;padding:3px}
+.seg button{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted);background:transparent;
+  border:0;border-radius:6px;padding:8px 11px;cursor:pointer;transition:.15s;text-transform:uppercase}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:linear-gradient(180deg,#2a3646,#182231);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.sep{width:1px;height:26px;background:var(--line);margin:0 4px}
+.tog{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--muted);background:transparent;
+  border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;transition:.15s;text-transform:uppercase}
+.tog:hover{color:var(--ink);border-color:var(--line2)}
+.tog.on{color:var(--signal);border-color:rgba(110,200,255,.5);background:rgba(110,200,255,.08)}
+.expo{display:flex;align-items:center;gap:9px;padding:0 6px}
+.expo label{font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+input[type=range]{-webkit-appearance:none;appearance:none;width:88px;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,var(--signal),#33405a);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--signal);box-shadow:0 0 8px rgba(110,200,255,.5)}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--ink);border:2px solid var(--signal)}
+
+/* HUD readout */
+.hud{position:absolute;left:24px;bottom:22px;font-size:9.5px;color:var(--muted);letter-spacing:.1em;line-height:1.9}
+.hud b{color:var(--signal);font-weight:500}
+.hud .k{color:#5a6472}
+
+/* hint */
+.hint{position:absolute;right:24px;bottom:22px;font-size:9.5px;color:var(--muted);letter-spacing:.1em;text-align:right;line-height:1.8}
+.hint b{color:var(--ink);font-weight:500}
+
+/* loader */
+#loader{position:fixed;inset:0;z-index:40;background:var(--void);display:grid;place-items:center;transition:opacity .6s ease}
+#loader.hide{opacity:0;pointer-events:none}
+#loader .l{font-family:var(--disp);font-weight:600;letter-spacing:.3em;text-transform:uppercase;font-size:13px;color:var(--muted)}
+#loader .bar{width:180px;height:2px;background:#1a2231;border-radius:2px;margin-top:16px;overflow:hidden}
+#loader .bar i{display:block;height:100%;width:40%;background:var(--signal);border-radius:2px;animation:load 1.1s ease-in-out infinite}
+@keyframes load{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+
+/* responsive */
+@media (max-width:980px){
+  .bible,.inv{position:static}
+  #ui{display:flex;flex-direction:column;justify-content:space-between}
+  .bible{margin:14px 16px 0;width:auto}
+  .inv{margin:8px 16px 0;width:auto}
+  .hud{display:none}
+  .bar{position:fixed;left:12px;right:12px;bottom:12px;transform:none;flex-wrap:wrap;justify-content:center}
+  .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .pill .led{animation:none;opacity:.8}
+  #loader .bar i{animation:none;width:100%}
+}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<div id="ui">
+  <div class="brand">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#6EC8FF" stroke-width="1.4">
+        <circle cx="12" cy="12" r="3.2" fill="#6EC8FF" stroke="none"/>
+        <path d="M12 2.5a9.5 9.5 0 0 1 9.5 9.5" opacity=".9"/>
+        <path d="M12 6a6 6 0 0 1 6 6" opacity=".55"/>
+        <path d="M4.5 17.5 12 12l7.5 5.5" opacity=".8"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Orbital Relay <b>Module</b></h1>
+      <div class="sub">Hard-Surface Prop Family <span class="dot">·</span> glTF Hero Pack</div>
+    </div>
+  </div>
+
+  <div class="topright">
+    <div class="pill"><span class="led"></span> Studio · glTF-HERO · PBR</div>
+    <div class="dl">
+      <button class="btn primary" id="dlHero">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        orbital-relay.glb
+      </button>
+      <button class="btn" id="dlProps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+        props.glb
+      </button>
+    </div>
+  </div>
+
+  <div class="panel bible">
+    <div class="phead"><span class="t">Style Bible</span><span class="c">4 materials</span></div>
+    <div class="swatches">
+      <div class="sw" data-mat="hull"><span class="chip" style="background:linear-gradient(150deg,#39465a,#1c2431)"></span><span class="meta"><span class="nm">Anodized Hull</span><span class="hx">#2B3444 · metal</span></span><span class="tag">PBR</span></div>
+      <div class="sw" data-mat="ceramic"><span class="chip" style="background:linear-gradient(150deg,#f4f7fb,#c9d2de)"></span><span class="meta"><span class="nm">Ceramic Radiator</span><span class="hx">#E8ECF2 · dielectric</span></span><span class="tag">PBR</span></div>
+      <div class="sw" data-mat="signal"><span class="chip" style="background:linear-gradient(150deg,#a9e0ff,#2f9be0);box-shadow:inset 0 0 12px rgba(255,255,255,.5)"></span><span class="meta"><span class="nm">Signal Glass</span><span class="hx">#6EC8FF · transmit</span></span><span class="tag">PBR</span></div>
+      <div class="sw" data-mat="docking"><span class="chip" style="background:linear-gradient(150deg,#202832,#0c1119)"></span><span class="meta"><span class="nm">Docking Collar</span><span class="hx">#141A22 · metal</span></span><span class="tag">PBR</span></div>
+    </div>
+  </div>
+
+  <div class="panel inv">
+    <div class="phead"><span class="t">Inventory</span><span class="c" id="invCount">8 meshes</span></div>
+    <div class="sect">
+      <div class="lab">Variants</div>
+      <div class="row" data-variant="A"><span class="id">V-01</span><span class="nm">Dish Angle A · stow</span><span class="st off">idle</span></div>
+      <div class="row" data-variant="B"><span class="id">V-02</span><span class="nm">Dish Angle B · deploy</span><span class="st off">idle</span></div>
+      <div class="row" data-variant="C"><span class="id">V-03</span><span class="nm">Radiator Extended</span><span class="st off">idle</span></div>
+    </div>
+    <div class="sect">
+      <div class="lab">Support Props ×4</div>
+      <div class="row" data-part="bolt"><span class="id">P-01</span><span class="nm">Clamp Bolt</span><span class="st on" data-vis="1">shown</span></div>
+      <div class="row" data-part="umbilical"><span class="id">P-02</span><span class="nm">Umbilical Hose</span><span class="st on" data-vis="1">shown</span></div>
+      <div class="row" data-part="strobe"><span class="id">P-03</span><span class="nm">Beacon Strobe</span><span class="st on" data-vis="1">shown</span></div>
+      <div class="row" data-part="puck"><span class="id">P-04</span><span class="nm">Cargo Puck</span><span class="st on" data-vis="1">shown</span></div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="seg" id="modeSeg">
+      <button data-mode="solid" class="on">Solid</button>
+      <button data-mode="wire">Wireframe</button>
+    </div>
+    <div class="sep"></div>
+    <button class="tog on" id="orbitTog">Auto-Orbit</button>
+    <button class="tog" id="resetTog">Reset View</button>
+    <div class="sep"></div>
+    <div class="expo"><label>Exposure</label><input type="range" id="expo" min="0.4" max="1.8" step="0.02" value="1.05"></div>
+  </div>
+
+  <div class="hud">
+    <div><span class="k">mesh</span> <b id="hudMesh">—</b></div>
+    <div><span class="k">tris</span> <b id="hudTri">—</b> · <span class="k">verts</span> <b id="hudVert">—</b></div>
+    <div><span class="k">cam</span> <b id="hudCam">—</b></div>
+  </div>
+  <div class="hint">
+    <div><b>drag</b> orbit · <b>scroll</b> dolly</div>
+    <div>click a mesh to isolate</div>
+  </div>
+</div>
+
+<div id="loader"><div style="text-align:center"><div class="l">Assembling Relay</div><div class="bar"><i></i></div></div></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- renderer / scene / camera ---------- */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 100);
+const POSTER = new THREE.Vector3(3.4, 2.0, 3.6);
+const HOME = new THREE.Vector3(3.9, 2.6, 4.4);
+camera.position.copy(HOME);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.06;
+controls.minDistance = 3; controls.maxDistance = 11;
+controls.maxPolarAngle = 1.52; controls.minPolarAngle = 0.18;
+controls.autoRotate = !RM; controls.autoRotateSpeed = 0.9;
+controls.target.set(0, 0.85, 0);
+
+/* environment (HDRI-like) */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+/* gradient backdrop */
+const bgTex = (()=>{
+  const c=document.createElement('canvas'); c.width=16; c.height=256;
+  const g=c.getContext('2d').createLinearGradient(0,0,0,256);
+  g.addColorStop(0,'#141b26'); g.addColorStop(.5,'#0b1017'); g.addColorStop(1,'#070a0f');
+  const ctx=c.getContext('2d'); ctx.fillStyle=g; ctx.fillRect(0,0,16,256);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+})();
+scene.background = bgTex;
+
+/* ---------- materials ---------- */
+function makePanelTex(){
+  const c=document.createElement('canvas'); c.width=512; c.height=512; const x=c.getContext('2d');
+  x.fillStyle='#2b3444'; x.fillRect(0,0,512,512);
+  x.strokeStyle='rgba(0,0,0,.5)'; x.lineWidth=3;
+  for(let i=0;i<=512;i+=64){ x.beginPath();x.moveTo(i,0);x.lineTo(i,512);x.stroke();x.beginPath();x.moveTo(0,i);x.lineTo(512,i);x.stroke(); }
+  x.strokeStyle='rgba(255,255,255,.06)'; x.lineWidth=1;
+  for(let i=0;i<=512;i+=64){ x.beginPath();x.moveTo(i+1,0);x.lineTo(i+1,512);x.stroke(); }
+  x.fillStyle='rgba(255,255,255,.05)';
+  for(let i=32;i<512;i+=64)for(let j=32;j<512;j+=64){ x.beginPath();x.arc(i,j,3,0,7);x.fill(); }
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
+}
+const panelTex = makePanelTex();
+const panelBump = (()=>{ const t=panelTex.clone(); t.needsUpdate=true; return t; })();
+
+const M = {
+  hull: new THREE.MeshStandardMaterial({ color:0x2b3444, metalness:.85, roughness:.42, map:panelTex, bumpMap:panelBump, bumpScale:.006 }),
+  ceramic: new THREE.MeshStandardMaterial({ color:0xe8ecf2, metalness:0, roughness:.5 }),
+  signal: new THREE.MeshPhysicalMaterial({ color:0x6ec8ff, metalness:0, roughness:.08, transparent:true, opacity:.55, transmission:.7, thickness:.5, ior:1.45, clearcoat:1, clearcoatRoughness:.15, emissive:0x0a2a44, emissiveIntensity:.35 }),
+  docking: new THREE.MeshStandardMaterial({ color:0x141a22, metalness:.9, roughness:.55 }),
+  accent: new THREE.MeshStandardMaterial({ color:0x6ec8ff, emissive:0x6ec8ff, emissiveIntensity:1.1, metalness:.3, roughness:.3 }),
+  strobe: new THREE.MeshStandardMaterial({ color:0xff5566, emissive:0xff3344, emissiveIntensity:1.2, metalness:.2, roughness:.4 }),
+  dark: new THREE.MeshStandardMaterial({ color:0x0c1119, metalness:.6, roughness:.7 }),
+};
+Object.values(M).forEach(m=>m.userData={base:m.emissiveIntensity ?? 0});
+
+/* ---------- geometry helpers ---------- */
+function cyl(rT,rB,h,seg=48){ return new THREE.CylinderGeometry(rT,rB,h,seg); }
+function lat(pts,seg=56){ return new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(p[0],p[1])),seg); }
+
+const relay = new THREE.Group();
+relay.name = 'ORBITAL_RELAY_MODULE';
+scene.add(relay);
+
+/* --- docking collar --- */
+const collar = new THREE.Group(); collar.name='DOCKING_COLLAR'; collar.userData.id='DOCKING_COLLAR';
+collar.add(new THREE.Mesh(new THREE.TorusGeometry(.52,.07,16,60), M.docking).rotateX(Math.PI/2));
+collar.add(new THREE.Mesh(cyl(.6,.6,.16,48), M.docking).translateY(-.28));
+for(let i=0;i<8;i++){ const a=i/8*Math.PI*2; const m=new THREE.Mesh(cyl(.035,.035,.14,12), M.hull); m.position.set(Math.cos(a)*.5,0,Math.sin(a)*.5); collar.add(m); }
+const collarGlow = new THREE.Mesh(new THREE.TorusGeometry(.52,.012,10,60), M.accent); collarGlow.rotation.x=Math.PI/2; collarGlow.position.y=.02; collar.add(collarGlow);
+collar.position.y = .12; relay.add(collar);
+
+/* --- sealed body --- */
+const body = new THREE.Group(); body.name='SEALED_BODY'; body.userData.id='SEALED_BODY';
+const bodyPts = [[0,-.2],[.6,-.2],[.6,-.12],[.66,-.05],[.66,.5],[.6,.58],[.5,.62],[0,.62]];
+body.add(new THREE.Mesh(lat(bodyPts,56), M.hull));
+// panel bands
+[.1,.32].forEach(y=>{ const b=new THREE.Mesh(new THREE.TorusGeometry(.665,.012,8,64), M.dark); b.rotation.x=Math.PI/2; b.position.y=y; body.add(b); });
+// signal window band (glass)
+const window = new THREE.Mesh(new THREE.TorusGeometry(.668,.05,14,64), M.signal); window.rotation.x=Math.PI/2; window.position.y=.4; body.add(window);
+// top cap with beacon mast
+const cap = new THREE.Mesh(lat([[0,.62],[.5,.62],[.42,.7],[0,.7]],48), M.hull); body.add(cap);
+relay.add(body);
+
+/* --- antenna dish (pivot group) --- */
+const dish = new THREE.Group(); dish.name='ANTENNA_DISH'; dish.userData.id='ANTENNA_DISH';
+const boom = new THREE.Mesh(cyl(.06,.08,.7,20), M.hull); boom.rotation.z=Math.PI/2; boom.position.set(.72,.34,0); dish.add(boom);
+const dishLat = [[0,0],[.1,.02],[.2,.05],[.3,.1],[.38,.17],[.44,.25]];
+const dishMesh = new THREE.Mesh(lat(dishLat,56), M.hull); dishMesh.position.set(1.05,.34,0); dishMesh.rotation.z=-Math.PI/2; dish.add(dishMesh);
+// glass face
+const face = new THREE.Mesh(new THREE.CircleGeometry(.4,48), M.signal); face.position.set(1.05,.34,0); face.rotation.y=Math.PI/2; dish.add(face);
+// rim
+const rim = new THREE.Mesh(new THREE.TorusGeometry(.44,.02,10,60), M.accent); rim.position.set(1.05,.34,0); rim.rotation.y=Math.PI/2; dish.add(rim);
+// feed
+const feed = new THREE.Mesh(cyl(.012,.012,.28,8), M.hull); feed.position.set(.9,.34,0); feed.rotation.z=Math.PI/2; dish.add(feed);
+const feedTip = new THREE.Mesh(new THREE.SphereGeometry(.03,16,16), M.accent); feedTip.position.set(1.05,.34,0); dish.add(feedTip);
+relay.add(dish);
+
+/* --- radiator stack --- */
+const radiator = new THREE.Group(); radiator.name='RADIATOR_STACK'; radiator.userData.id='RADIATOR_STACK';
+const radBase = new THREE.Mesh(cyl(.12,.12,.1,20), M.hull); radBase.position.set(-.62,.25,0); radiator.add(radBase);
+const radPivot = new THREE.Group(); radPivot.position.set(-.62,.25,0);
+for(let i=0;i<5;i++){ const f=new THREE.Mesh(new THREE.BoxGeometry(.5,.5,.018), M.ceramic); f.position.set(-.28,0,(i-2)*.11); f.userData.breathe=i; radiator.add(f); radPivot.add(f); }
+const radFrame = new THREE.Mesh(new THREE.BoxGeometry(.03,.55,.6), M.hull); radFrame.position.set(-.02,0,0); radiator.add(radFrame); radPivot.add(radFrame);
+relay.add(radiator);
+
+/* ---------- support props ---------- */
+const props = new THREE.Group(); props.name='SUPPORT_PROPS'; scene.add(props);
+const propRefs = {};
+
+// clamp bolt
+(function(){ const g=new THREE.Group(); g.name='CLAMP_BOLT'; g.userData.id='CLAMP_BOLT';
+  const head=new THREE.Mesh(cyl(.09,.09,.06,6), M.docking); head.position.y=.03; g.add(head);
+  const shaft=new THREE.Mesh(cyl(.05,.05,.16,16), M.hull); shaft.position.y=-.08; g.add(shaft);
+  g.position.set(.5,0.12,.42); props.add(g); propRefs.bolt=g;
+})();
+// umbilical hose
+(function(){ const g=new THREE.Group(); g.name='UMBILICAL_HOSE'; g.userData.id='UMBILICAL_HOSE';
+  const curve=new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-.55,.35,.15), new THREE.Vector3(-.95,.15,.5), new THREE.Vector3(-.9,-.4,.85), new THREE.Vector3(-.3,-.75,.9)
+  ]);
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,64,.045,10,false), M.dark); g.add(tube);
+  const c1=new THREE.Mesh(cyl(.07,.07,.08,16), M.docking); c1.position.copy(curve.getPoint(0)); g.add(c1);
+  const c2=new THREE.Mesh(cyl(.07,.07,.08,16), M.docking); c2.position.copy(curve.getPoint(1)); g.add(c2);
+  props.add(g); propRefs.umbilical=g;
+})();
+// beacon strobe
+(function(){ const g=new THREE.Group(); g.name='BEACON_STROBE'; g.userData.id='BEACON_STROBE';
+  const base=new THREE.Mesh(cyl(.05,.06,.05,16), M.hull); g.add(base);
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(.055,20,16,0,Math.PI*2,0,Math.PI/2), M.strobe); dome.position.y=.02; g.add(dome);
+  g.position.set(0,.72,0); props.add(g); propRefs.strobe=g;
+  const light=new THREE.PointLight(0xff3344,2,4,2); light.position.set(0,.85,0); scene.add(light); propRefs.strobeLight=light;
+})();
+// cargo puck
+(function(){ const g=new THREE.Group(); g.name='CARGO_PUCK'; g.userData.id='CARGO_PUCK';
+  const body=new THREE.Mesh(cyl(.22,.22,.12,32), M.hull); g.add(body);
+  const top=new THREE.Mesh(new THREE.TorusGeometry(.16,.02,10,40), M.docking); top.rotation.x=Math.PI/2; top.position.y=.06; g.add(top);
+  const led=new THREE.Mesh(cyl(.03,.03,.005,16), M.accent); led.position.y=.061; g.add(led);
+  g.position.set(.65,0,-.55); props.add(g); propRefs.puck=g;
+})();
+
+/* ---------- ground + contact shadow ---------- */
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40,40), new THREE.ShadowMaterial({ opacity:.4 }));
+ground.rotation.x=-Math.PI/2; ground.position.y=0; ground.receiveShadow=true; scene.add(ground);
+// subtle radial contact glow
+(function(){ const c=document.createElement('canvas'); c.width=c.height=256; const x=c.getContext('2d');
+  const g=x.createRadialGradient(128,128,10,128,128,128); g.addColorStop(0,'rgba(110,200,255,.16)'); g.addColorStop(1,'rgba(110,200,255,0)');
+  x.fillStyle=g; x.fillRect(0,0,256,256); const t=new THREE.CanvasTexture(c);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(6,6), new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));
+  m.rotation.x=-Math.PI/2; m.position.y=.005; scene.add(m);
+})();
+
+/* ---------- lights ---------- */
+const key = new THREE.DirectionalLight(0xdfeaff, 2.6); key.position.set(5,6,3.5); key.castShadow=true;
+key.shadow.mapSize.set(2048,2048); key.shadow.camera.near=1; key.shadow.camera.far=25;
+key.shadow.camera.left=-4; key.shadow.camera.right=4; key.shadow.camera.top=4; key.shadow.camera.bottom=-4;
+key.shadow.bias=-0.0004; scene.add(key);
+const fill = new THREE.DirectionalLight(0x3a5a7a, .5); fill.position.set(-4,2,-3); scene.add(fill);
+const rim = new THREE.DirectionalLight(0x6ec8ff, 1.4); rim.position.set(-2,3,-5); scene.add(rim);
+scene.add(new THREE.AmbientLight(0x1a2432, .5));
+
+/* ---------- shadow assignment ---------- */
+relay.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+props.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+
+/* ---------- isolate / stats ---------- */
+function updateStats(){
+  let tri=0, vert=0;
+  scene.traverse(o=>{ if(o.isMesh && o.geometry){ const g=o.geometry; const c=g.index?g.index.count:g.attributes.position.count; tri+=c/3; vert+=g.attributes.position.count; } });
+  document.getElementById('hudTri').textContent = Math.round(tri).toLocaleString();
+  document.getElementById('hudVert').textContent = Math.round(vert).toLocaleString();
+}
+updateStats();
+
+/* isolate */
+let isolated = null;
+function setMeshVisible(g,vis){ g.traverse(o=>{ if(o.isMesh) o.visible = vis; }); }
+function isolate(id){
+  isolated = (isolated===id) ? null : id;
+  const targets = [relay, props];
+  targets.forEach(t=>{
+    t.traverse(o=>{ if(o.isMesh){
+      const owner = findOwnerId(o);
+      o.visible = !isolated || owner===isolated;
+    }});
+  });
+  document.getElementById('hudMesh').textContent = isolated || 'FULL ASSEMBLY';
+  document.querySelectorAll('.row[data-part]').forEach(r=>{
+    const on = r.dataset.part===isolated;
+    r.classList.toggle('active', on);
+    const st=r.querySelector('.st'); if(st){ st.textContent = on?'isolated':(isolated?'hidden':'shown'); st.className='st '+(isolated&&!on?'off':'on'); }
+  });
+}
+function findOwnerId(o){ let p=o; while(p){ if(p.userData && p.userData.id) return p.userData.id; p=p.parent; } return null; }
+
+/* raycast click */
+const ray = new THREE.Raycaster(); const ptr = new THREE.Vector2();
+let downXY=null;
+renderer.domElement.addEventListener('pointerdown',e=>downXY=[e.clientX,e.clientY]);
+renderer.domElement.addEventListener('pointerup',e=>{
+  if(!downXY) return; if(Math.hypot(e.clientX-downXY[0],e.clientY-downXY[1])>6) return;
+  ptr.x=(e.clientX/innerWidth)*2-1; ptr.y=-(e.clientY/innerHeight)*2+1;
+  ray.setFromCamera(ptr,camera);
+  const hits = ray.intersectObjects([relay,props],true).filter(h=>h.object.isMesh && h.object.visible);
+  if(hits.length){ const id=findOwnerId(hits[0].object); if(id) isolate(id); } else isolate(null);
+});
+
+/* ---------- variants ---------- */
+const state = { dishA:0, dishB:0, radExt:0 };
+function applyVariants(){
+  // dish angle: A = up (stowed), B = forward (deployed)
+  const target = state.dishB ? -0.5 : (state.dishA ? 0.9 : 0.35);
+  dish.rotation.z += (target - dish.rotation.z)*0.15;
+  // radiator extended
+  const ext = state.radExt ? 1 : 0;
+  radPivot.children.forEach((f,i)=>{ if(f.userData.breathe!==undefined){ f.position.z = (i-2)*0.11 + (ext? (i-2)*0.06 : 0); } });
+  radPivot.scale.x += ((ext?1.35:1) - radPivot.scale.x)*0.15;
+}
+document.querySelectorAll('.row[data-variant]').forEach(r=>{
+  r.addEventListener('click',()=>{
+    const v=r.dataset.variant;
+    const on = r.classList.toggle('active');
+    if(v==='A') state.dishA = on?1:0;
+    if(v==='B') state.dishB = on?1:0;
+    if(v==='C') state.radExt = on?1:0;
+    const st=r.querySelector('.st'); st.textContent = on?'active':'idle'; st.className='st '+(on?'on':'off');
+    if(v==='B' && on) document.querySelector('[data-variant="A"]').classList.remove('active');
+    if(v==='A' && on) document.querySelector('[data-variant="B"]').classList.remove('active');
+  });
+});
+document.querySelectorAll('.row[data-part]').forEach(r=>{
+  r.addEventListener('click',()=>isolate(r.dataset.part.toUpperCase().replace('_','_')));
+});
+
+/* ---------- controls: wireframe / orbit / exposure ---------- */
+let wire=false;
+document.querySelectorAll('#modeSeg button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  wire = b.dataset.mode==='wire';
+  [relay,props].forEach(g=>g.traverse(o=>{ if(o.isMesh && o.material){ (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{ m.wireframe=wire; if(m===M.signal) m.wireframe=wire; }); } }));
+}));
+const orbitTog=document.getElementById('orbitTog');
+orbitTog.addEventListener('click',()=>{ controls.autoRotate=!controls.autoRotate; orbitTog.classList.toggle('on',controls.autoRotate); });
+document.getElementById('resetTog').addEventListener('click',()=>{
+  camera.position.copy(HOME); controls.target.set(0,0.85,0); controls.update(); isolate(null);
+});
+document.getElementById('expo').addEventListener('input',e=>{ renderer.toneMappingExposure=parseFloat(e.target.value); });
+
+/* ---------- material swatch highlight ---------- */
+document.querySelectorAll('.sw').forEach(sw=>{
+  sw.addEventListener('mouseenter',()=>{ const m=M[sw.dataset.mat]; if(m && m.emissiveIntensity!==undefined){ m.emissiveIntensity=(m.userData.base||0)+0.8; } });
+  sw.addEventListener('mouseleave',()=>{ const m=M[sw.dataset.mat]; if(m && m.emissiveIntensity!==undefined){ m.emissiveIntensity=m.userData.base||0; } });
+});
+
+/* ---------- downloads ---------- */
+const exporter = new GLTFExporter();
+function exportGLB(group, filename){
+  exporter.parse(group, (buf)=>{
+    const blob=new Blob([buf],{type:'model/gltf-binary'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+  }, (err)=>console.error(err), { binary:true, onlyVisible:false });
+}
+document.getElementById('dlHero').addEventListener('click',()=>exportGLB(relay,'orbital-relay.glb'));
+document.getElementById('dlProps').addEventListener('click',()=>exportGLB(props,'orbital-relay-props.glb'));
+
+/* ---------- animation ---------- */
+const clock=new THREE.Clock();
+const introDur=1.5;
+let started=false;
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+
+  // intro camera dolly to poster
+  if(!RM && !started){
+    const k=Math.min(t/introDur,1); const e=1-Math.pow(1-k,3);
+    camera.position.lerpVectors(HOME, POSTER, e);
+    if(k>=1) started=true;
+  } else if(RM){ camera.position.copy(POSTER); }
+
+  controls.update();
+
+  // beacon pulse
+  const pulse = 0.5+0.5*Math.sin(t*4.5);
+  M.strobe.emissiveIntensity = RM?1.2:(0.4+pulse*2.4);
+  if(propRefs.strobeLight) propRefs.strobeLight.intensity = RM?2:(0.3+pulse*3.5);
+  collarGlow.material.emissiveIntensity = 0.8+0.4*Math.sin(t*2.0);
+
+  // radiator breathe
+  if(!RM){
+    radPivot.children.forEach((f,i)=>{ if(f.userData.breathe!==undefined){ const ph=t*0.9+i*0.35; f.scale.y=1+Math.sin(ph)*0.02; f.rotation.x=Math.sin(ph)*0.006; } });
+  }
+
+  applyVariants();
+
+  // hud cam
+  document.getElementById('hudCam').textContent =
+    `${camera.position.x.toFixed(1)} ${camera.position.y.toFixed(1)} ${camera.position.z.toFixed(1)}`;
+
+  renderer.render(scene,camera);
+}
+animate();
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+/* hide loader */
+setTimeout(()=>document.getElementById('loader').classList.add('hide'), 650);
+</script>
+</body>
+</html>

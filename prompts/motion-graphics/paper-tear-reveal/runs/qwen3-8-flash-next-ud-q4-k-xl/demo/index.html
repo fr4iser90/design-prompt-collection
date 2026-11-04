@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rip & Read — The Tear Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Playfair+Display:ital,wght@0,800;1,800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F4F4;
+    --ink:#1A1A1A;
+    --reveal:#FF4500;
+    --shadow:#333333;
+    --ease-settle:cubic-bezier(0.25,0.1,0.25,1);
+    --dur:6s;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  html,body{height:100%}
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Oswald',Impact,'Arial Narrow',sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:geometricPrecision;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:fixed;
+    inset:0;
+    display:grid;
+    place-items:center;
+    background:var(--paper);
+    cursor:pointer;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+
+  /* ---------- WORD LAYER ---------- */
+  .word-layer{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:none;
+    z-index:2;
+  }
+  .word{
+    display:block;
+    width:100%;
+    text-align:center;
+    line-height:.8;
+    white-space:nowrap;
+  }
+  .secret{
+    font-family:'Oswald',Impact,'Arial Narrow',sans-serif;
+    font-weight:700;
+    color:var(--ink);
+    font-size:clamp(3.2rem, 19vw, 17rem);
+    letter-spacing:-.015em;
+    text-transform:uppercase;
+  }
+  .unlock{
+    font-family:'Playfair Display',Georgia,'Times New Roman',serif;
+    font-weight:800;
+    font-style:italic;
+    color:var(--reveal);
+    font-size:clamp(3.6rem, 21vw, 19rem);
+    letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+
+  /* ---------- HALF PAPER PANELS ---------- */
+  .paper{
+    position:absolute;
+    inset:0;
+    background:var(--paper);
+    will-change:transform;
+    z-index:3;
+  }
+  .paper--left{
+    clip-path:polygon(0 0, 56% 0, 44% 100%, 0 100%);
+    transform:translate3d(0,0,0);
+  }
+  .paper--right{
+    clip-path:polygon(56% 0, 100% 0, 100% 100%, 44% 100%);
+    transform:translate3d(0,0,0);
+  }
+  /* faint paper edge highlight to read as a physical sheet */
+  .paper::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.6), rgba(0,0,0,0) 60%);
+    opacity:.5;
+    pointer-events:none;
+  }
+
+  /* ---------- TEAR SHADOW ---------- */
+  .tear-shadow{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:4;
+    pointer-events:none;
+  }
+  .tear-shadow path{
+    fill:none;
+    stroke:var(--shadow);
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+  }
+
+  /* ---------- GRAIN OVERLAY ---------- */
+  .grain{
+    position:absolute;
+    inset:-10%;
+    width:120%;
+    height:120%;
+    z-index:6;
+    pointer-events:none;
+    opacity:.55;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    background-size:160px 160px;
+  }
+
+  /* ---------- BRAND / HUD ---------- */
+  .hud{
+    position:absolute;
+    inset:0;
+    z-index:7;
+    pointer-events:none;
+    font-family:'Oswald',Impact,sans-serif;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .brand{
+    position:absolute;
+    top:clamp(14px,3vw,30px);
+    left:clamp(16px,3.4vw,40px);
+    font-size:clamp(.7rem,1.4vw,1rem);
+    letter-spacing:.42em;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    gap:.7em;
+  }
+  .brand .dot{
+    width:9px;height:9px;
+    background:var(--reveal);
+    display:inline-block;
+    transform:rotate(45deg);
+  }
+  .piece{
+    position:absolute;
+    top:clamp(14px,3vw,30px);
+    right:clamp(16px,3.4vw,40px);
+    font-size:clamp(.55rem,1.1vw,.8rem);
+    letter-spacing:.32em;
+    font-weight:700;
+    opacity:.55;
+  }
+  .caption{
+    position:absolute;
+    bottom:clamp(14px,3vw,30px);
+    left:clamp(16px,3.4vw,40px);
+    font-size:clamp(.55rem,1.1vw,.8rem);
+    letter-spacing:.32em;
+    font-weight:700;
+    opacity:.5;
+  }
+  .hint{
+    position:absolute;
+    bottom:clamp(14px,3vw,30px);
+    right:clamp(16px,3.4vw,40px);
+    font-size:clamp(.55rem,1.1vw,.8rem);
+    letter-spacing:.32em;
+    font-weight:700;
+    opacity:.5;
+    display:flex;
+    align-items:center;
+    gap:.6em;
+  }
+  .hint .ring{
+    width:14px;height:14px;
+    border:2px solid var(--ink);
+    border-radius:50%;
+    display:inline-block;
+    position:relative;
+  }
+  .hint .ring::after{
+    content:"";
+    position:absolute;
+    inset:3px;
+    background:var(--ink);
+    border-radius:50%;
+    animation:pulse 1.6s var(--ease-settle) infinite;
+  }
+  @keyframes pulse{0%,100%{transform:scale(.4);opacity:.4}50%{transform:scale(1);opacity:1}}
+
+  /* ---------- PROGRESS RULE ---------- */
+  .progress{
+    position:absolute;
+    left:0;bottom:0;
+    height:4px;width:100%;
+    background:rgba(26,26,26,.12);
+    z-index:8;
+  }
+  .progress i{
+    display:block;height:100%;width:0;
+    background:var(--ink);
+    transform-origin:left;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-aspect-ratio:3/4){
+    .secret{font-size:clamp(2.6rem, 20vw, 12rem)}
+    .unlock{font-size:clamp(2.9rem, 22vw, 13rem)}
+    .brand{letter-spacing:.3em}
+    .piece,.hint{letter-spacing:.24em}
+  }
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .hint .ring::after{animation:none}
+  }
+</style>
+</head>
+<body>
+  <main class="stage" id="stage" role="img" aria-label="Rip and Read motion graphic: the word SECRET is torn diagonally to reveal the word UNLOCK in orange.">
+
+    <!-- Hidden word revealed behind the tear -->
+    <div class="word-layer" aria-hidden="true">
+      <span class="word unlock">UNLOCK</span>
+    </div>
+
+    <!-- Front paper carrying SECRET, split into two tearing halves -->
+    <div class="word-layer" aria-hidden="true">
+      <span class="word secret">SECRET</span>
+    </div>
+
+    <div class="paper paper--left" id="left"></div>
+    <div class="paper paper--right" id="right"></div>
+
+    <!-- Jagged tear line -->
+    <svg class="tear-shadow" id="tear" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path id="tearPath" d="M 52 0
+        L 51 7 L 54 12 L 50 18 L 53 24 L 49 30
+        L 52 36 L 48 42 L 51 48 L 47 54 L 50 60
+        L 46 66 L 49 72 L 45 78 L 48 84 L 44 90
+        L 47 96 L 46 100"></path>
+    </svg>
+
+    <!-- Grain -->
+    <div class="grain"></div>
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="brand"><span class="dot"></span>Rip &amp; Read</div>
+      <div class="piece">The Tear Line</div>
+      <div class="caption">Kinetic Type — No. 01</div>
+      <div class="hint"><span class="ring"></span>Click to Replay</div>
+    </div>
+
+    <!-- Loop progress -->
+    <div class="progress"><i id="bar"></i></div>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+
+  var stage   = document.getElementById('stage');
+  var left    = document.getElementById('left');
+  var right   = document.getElementById('right');
+  var tear    = document.getElementById('tear');
+  var tearPath= document.getElementById('tearPath');
+  var bar     = document.getElementById('bar');
+
+  var DUR = 6000; // 6s loop
+  var pathLen = tearPath.getTotalLength();
+  tearPath.style.strokeDasharray  = pathLen;
+  tearPath.style.strokeDashoffset = pathLen;
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Easing helpers ---- */
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function easeOutCubic(t){ return 1-Math.pow(1-t,3); }
+  function easeInOutCubic(t){ return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+  /* Piecewise "yank" timing for the tear: slow at resistance points,
+     fast at snap points -> mimics uneven physical ripping. */
+  function tearEase(p){
+    // control points: [progress, output]
+    var pts = [
+      [0.00, 0.00],
+      [0.18, 0.10],  // slow start, building tension
+      [0.30, 0.34],  // SNAP 1
+      [0.42, 0.40],  // resistance
+      [0.55, 0.62],  // SNAP 2
+      [0.66, 0.66],  // resistance
+      [0.80, 0.88],  // SNAP 3
+      [0.90, 0.92],  // resistance
+      [1.00, 1.00]   // SNAP 4
+    ];
+    for(var i=0;i<pts.length-1;i++){
+      var a=pts[i], b=pts[i+1];
+      if(p>=a[0] && p<=b[0]){
+        var local = (p-a[0])/(b[0]-a[0]);
+        return lerp(a[1], b[1], easeInOutCubic(local));
+      }
+    }
+    return 1;
+  }
+
+  /* ---- Render a single frame at normalized time t (0..1) ---- */
+  function render(t){
+    // Timeline: 0.0-1.0 lock | 1.0-2.5 tear | 2.5-4.0 reveal | 4.0-6.0 reset
+    var sep = 0;     // separation amount (0..1 -> maps to translate %)
+    var dash = 1;    // tear line reveal (0 hidden .. 1 fully drawn)
+
+    if(t < 1.0/6){
+      // LOCK
+      sep = 0;
+      dash = 1; // fully hidden
+      tear.style.opacity = 0;
+    } else if(t < 2.5/6){
+      // TEAR
+      var p = (t - 1.0/6) / (1.5/6); // 0..1
+      var e = tearEase(p);
+      dash = 1 - e;            // draw the tear line progressively
+      sep  = 0;                // still closed while tearing
+      tear.style.opacity = 1;
+    } else if(t < 4.0/6){
+      // REVEAL
+      var p2 = (t - 2.5/6) / (1.5/6);
+      var e2 = easeOutCubic(p2);
+      sep  = e2;               // halves slide apart
+      dash = 0;                // tear fully drawn
+      // fade the tear line slightly as the gap opens (depth line recedes)
+      tear.style.opacity = lerp(1, 0.55, e2);
+    } else {
+      // RESET
+      var p3 = (t - 4.0/6) / (2.0/6);
+      var e3 = easeInOutCubic(p3);
+      sep  = lerp(1, 0, e3);   // slide back together
+      dash = 0;
+      tear.style.opacity = lerp(0.55, 0, e3);
+    }
+
+    // Apply separation (hardware accelerated)
+    var tx = sep * 22; // up to ~22% of each half's width
+    left.style.transform  = 'translate3d(' + (-tx) + '%,0,0)';
+    right.style.transform = 'translate3d(' + ( tx) + '%,0,0)';
+
+    // Apply tear line drawing
+    tearPath.style.strokeDashoffset = (dash * pathLen);
+
+    // Progress bar
+    bar.style.width = (t*100) + '%';
+  }
+
+  /* ---- Loop driver ---- */
+  var start = null;
+  var rafId = null;
+
+  function frame(ts){
+    if(start === null) start = ts;
+    var elapsed = (ts - start) % DUR;
+    render(elapsed / DUR);
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function startLoop(){
+    if(reduce){
+      // Jump straight to poster frame (~1.5s, mid-tear) and hold.
+      render(1.5/6);
+      return;
+    }
+    if(rafId) cancelAnimationFrame(rafId);
+    start = null;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /* ---- Paper rustle sound cue (WebAudio, visual stands alone) ---- */
+  var audioCtx = null;
+  function rustle(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      var dur = 0.18;
+      var buf = audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
+      var data = buf.getChannelData(0);
+      for(var i=0;i<data.length;i++){
+        var env = Math.pow(1 - i/data.length, 2);
+        data[i] = (Math.random()*2-1) * env * 0.35;
+      }
+      var src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      var filt = audioCtx.createBiquadFilter();
+      filt.type = 'bandpass';
+      filt.frequency.value = 1800;
+      filt.Q.value = 0.6;
+      var gain = audioCtx.createGain();
+      gain.gain.value = 0.5;
+      src.connect(filt); filt.connect(gain); gain.connect(audioCtx.destination);
+      src.start();
+    }catch(e){ /* silent fallback */ }
+  }
+
+  // Play rustle once per loop when the tear begins (1.0s)
+  var lastRipMark = -1;
+  function checkRipCue(){
+    if(reduce) return;
+    var elapsed = (performance.now() - (start||performance.now())) % DUR;
+    if(elapsed > 1000 && elapsed < 1080 && lastRipMark !== Math.floor(performance.now()/DUR)){
+      lastRipMark = Math.floor(performance.now()/DUR);
+      rustle();
+    }
+  }
+  // piggyback cue check on the rAF loop
+  if(!reduce){
+    var origFrame = frame;
+    frame = function(ts){
+      origFrame(ts);
+      checkRipCue();
+    };
+  }
+
+  /* ---- Replay on click / space ---- */
+  function replay(){
+    start = null;
+    if(reduce){ render(1.5/6); return; }
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(frame);
+    rustle();
+  }
+  stage.addEventListener('click', replay);
+  window.addEventListener('keydown', function(e){
+    if(e.code === 'Space' || e.code === 'Enter'){ e.preventDefault(); replay(); }
+  });
+
+  // Kick off
+  startLoop();
+})();
+</script>
+</body>
+</html>

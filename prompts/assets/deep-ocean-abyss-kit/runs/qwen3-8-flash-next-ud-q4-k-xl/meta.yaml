@@ -1,0 +1,30 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-11-04"
+updated: "2026-11-04"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 1
+thinking_enabled: false
+stream: true
+temperature: 0.65
+context_tokens: 262144
+duration_ms: 320262
+gen_ms: 320262
+ttft_ms: 33074
+queue_wait_ms: 30183
+wall_ms: 413598
+rejected_at: "2026-11-04T11:41:46.025Z"
+last_reject_reason: "build_fail:terminated (UND_ERR_BODY_TIMEOUT) — NOT retrying (stream closed; do not re-POST)"
+review_score: 8
+review_summary: "A highly polished, atmospheric interface that perfectly captures the 'Dark Abyssal Glow' aesthetic with a clean, functional layout."
+reviewed_at: "2026-11-04T12:16:56.860Z"
+review_issues:
+  - "Procedural sprites are somewhat abstract and low-fidelity (e.g., the 'Nautilus-X' looks more like a generic fish than a submersible)."
+  - "The 'Poster Frame' composition is sparse, leaving significant empty space in the main canvas area."

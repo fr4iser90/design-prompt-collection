@@ -6,10 +6,10 @@ engine: "gufo"
 engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
 engine_rev: "fee9d2a"
 built_at: "2026-10-21"
-updated: "2026-10-21"
+updated: "2026-11-04"
 demo: demo/index.html
-preview: null
-status: built
+preview: preview.png
+status: ok
 build_attempts: 0
 thinking_enabled: false
 stream: true
@@ -20,3 +20,10 @@ gen_ms: 93244
 ttft_ms: 6526
 queue_wait_ms: 185
 wall_ms: 99955
+review_score: 6
+review_summary: "Strong typographic composition and correct palette, but the screenshot shows the 'sharp' state (0s) with no visible ink bleed effect, and the font choice is a heavy slab-serif rather than the requested Baskerville."
+reviewed_at: "2026-11-04T12:16:28.549Z"
+review_issues:
+  - "Missing visual effect: The screenshot captures the 0.0s state, failing to demonstrate the core 'Wet Ink Spread' mechanic (bleed/fuzziness)."
+  - "Font mismatch: The 'INK' text is a heavy slab-serif (resembling Rockwell or Courier Bold), whereas the brief explicitly requested 'Baskerville' (a high-contrast Didone/Transitional serif)."
+  - "UI Chrome: The brief requested 'No UI chrome', but the design includes a timeline scrubber, playhead, and corner crop marks."

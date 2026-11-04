@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molten Bronze Solidification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F0C0B;
+    --bronze:#D9A555;
+    --accent:#4A3B2C;
+    --white:#FFFFFF;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;width:100%;background:var(--bg);overflow:hidden}
+  body{
+    font-family:'IBM Plex Mono',ui-monospace,monospace;
+    color:var(--white);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    cursor:default;
+  }
+  #app{position:fixed;inset:0;z-index:0}
+  canvas{display:block}
+
+  .overlay{position:fixed;inset:0;z-index:10;pointer-events:none}
+
+  .title-block{position:absolute;top:2rem;left:2rem;max-width:min(60vw,640px)}
+  .title-block h1{
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-weight:300;
+    font-size:clamp(2rem,5vw,4rem);
+    line-height:0.98;
+    letter-spacing:-0.02em;
+    color:var(--white);
+    opacity:.9;
+  }
+  .title-block .sub{
+    margin-top:.7rem;
+    font-size:.72rem;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  .title-block .rule{
+    margin-top:1.1rem;width:64px;height:1px;background:var(--accent);opacity:.7;
+  }
+
+  .control-block{
+    position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);
+    width:min(360px,80vw);pointer-events:auto;
+  }
+  .control-block .row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--white);opacity:.85;margin-bottom:.85rem;
+  }
+  .control-block .val{color:var(--bronze);font-weight:500}
+  .control-block .hint{
+    margin-top:.85rem;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);text-align:center;
+  }
+
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:2px;
+    background:rgba(255,255,255,.12);outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--bronze);border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(217,165,85,.12),0 0 14px rgba(217,165,85,.35);
+    transition:box-shadow .2s ease,transform .15s ease;
+  }
+  input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15);box-shadow:0 0 0 6px rgba(217,165,85,.18),0 0 20px rgba(217,165,85,.5)}
+  input[type=range]::-moz-range-track{background:rgba(255,255,255,.12);height:2px;border:none}
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--bronze);border:none;cursor:pointer;
+    box-shadow:0 0 0 4px rgba(217,165,85,.12),0 0 14px rgba(217,165,85,.35);
+  }
+
+  .corner{
+    position:absolute;bottom:1.8rem;right:2rem;font-size:.58rem;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+  }
+  .corner b{color:var(--bronze);font-weight:500}
+
+  @media (max-width:640px){
+    .title-block{top:1.2rem;left:1.2rem;max-width:78vw}
+    .control-block{bottom:1.4rem;width:84vw}
+    .corner{display:none}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="overlay">
+  <div class="title-block">
+    <h1>Molten Bronze<br>Solidification</h1>
+    <div class="sub">Foundry &amp; Flux &nbsp;·&nbsp; Material Study</div>
+    <div class="rule"></div>
+  </div>
+
+  <div class="control-block">
+    <div class="row"><span>Cooling Rate (°C/s)</span><span class="val" id="rateVal">2.0</span></div>
+    <input id="rate" type="range" min="0.1" max="10" step="0.1" value="2">
+    <div class="hint">Slow → coarse grain &nbsp;·&nbsp; Fast → fine grain</div>
+  </div>
+
+  <div class="corner">WebGL · PBR · <b id="fps">60</b> FPS</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ---- state ----
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var temp = 1.0;
+  var coolingRate = 2.0;
+  var targetScale = reduced ? 1 : 0;
+  var currentScale = reduced ? 1 : 0;
+  var entranceStart = performance.now();
+  var time = 0;
+  var last = performance.now();
+  var fpsAcc = 0, fpsCount = 0, fpsTimer = 0;
+  var fpsEl = document.getElementById('fps');
+
+  // ---- renderer ----
+  var renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x0F0C0B, 1);
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0F0C0B);
+
+  var camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 4.2);
+
+  var lightDir = new THREE.Vector3(0.62, 0.72, 0.31).normalize();
+  var lightColor = new THREE.Color(1.0, 0.93, 0.82);
+
+  var group = new THREE.Group();
+  scene.add(group);
+
+  // ---- shader ----
+  var vertexShader = [
+    'uniform float uTime;',
+    'uniform float uTemp;',
+    'uniform float uHaze;',
+    'uniform float uGrainScale;',
+    'varying vec3 vNormal;',
+    'varying vec3 vViewDir;',
+    'varying vec3 vPos;',
+    'varying float vDisp;',
+    'varying float vGrain;',
+    'vec3 mod289(vec3 x){return x - floor(x*(1.0/289.0))*289.0;}',
+    'vec4 mod289(vec4 x){return x - floor(x*(1.0/289.0))*289.0;}',
+    'vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}',
+    'vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}',
+    'float snoise(vec3 v){',
+    ' const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);',
+    ' vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);',
+    ' vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g;',
+    ' vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);',
+    ' vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;',
+    ' i=mod289(i);',
+    ' vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));',
+    ' float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;',
+    ' vec4 j=p-49.0*floor(p*ns.z*ns.z);',
+    ' vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);',
+    ' vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);',
+    ' vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);',
+    ' vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));',
+    ' vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;',
+    ' vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);',
+    ' vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));',
+    ' p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;',
+    ' vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;',
+    ' return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));',
+    '}',
+    'void main(){',
+    ' vec3 pos = position;',
+    ' float blob = snoise(pos*1.25 + vec3(0.0, uTime*0.12, 0.0)) * 0.14;',
+    ' float haze = uHaze * snoise(pos*4.0 + vec3(0.0, uTime*3.5, uTime*2.2)) * 0.05;',
+    ' float disp = blob + haze;',
+    ' pos += normal * disp;',
+    ' vDisp = disp;',
+    ' vGrain = snoise(pos * uGrainScale);',
+    ' vec4 wp = modelMatrix * vec4(pos,1.0);',
+    ' vNormal = normalize(mat3(modelMatrix) * normal);',
+    ' vViewDir = normalize(cameraPosition - wp.xyz);',
+    ' vPos = wp.xyz;',
+    ' gl_Position = projectionMatrix * viewMatrix * wp;',
+    '}'
+  ].join('\n');
+
+  var fragmentShader = [
+    'uniform float uTemp;',
+    'uniform float uGrainScale;',
+    'uniform vec3 uLightDir;',
+    'uniform vec3 uLightColor;',
+    'uniform vec3 uAmbient;',
+    'uniform vec3 uBronze;',
+    'varying vec3 vNormal;',
+    'varying vec3 vViewDir;',
+    'varying vec3 vPos;',
+    'varying float vDisp;',
+    'varying float vGrain;',
+    'void main(){',
+    ' vec3 N = normalize(vNormal);',
+    ' vec3 V = normalize(vViewDir);',
+    ' vec3 L = normalize(uLightDir);',
+    ' vec3 H = normalize(L + V);',
+    ' float grain = vGrain;',
+    ' float NdotL = max(dot(N,L),0.0);',
+    ' float NdotH = max(dot(N,H),0.0);',
+    ' float NdotV = max(dot(N,V),0.0);',
+    ' float roughness = clamp(mix(0.10, 0.88, 1.0 - uTemp), 0.0, 1.0);',
+    ' roughness += grain * 0.16 * (1.0 - uTemp);',
+    ' roughness = clamp(roughness, 0.02, 1.0);',
+    ' float metalness = clamp(mix(0.55, 1.0, uTemp), 0.0, 1.0);',
+    ' float alpha = clamp((1.0 - roughness) * 0.5 + 0.05, 0.0, 1.0);',
+    ' float shininess = exp2(10.0 * (1.0 - roughness));',
+    ' float spec = pow(NdotH, shininess) * alpha;',
+    ' float fres = pow(1.0 - NdotV, 5.0);',
+    ' float ao = 1.0 - 0.28 * smoothstep(0.0, 0.18, abs(vDisp));',
+    ' float grainDark = 1.0 - 0.30 * (1.0 - uTemp) * smoothstep(-0.15, 0.5, grain);',
+    ' vec3 base = uBronze * grainDark * ao;',
+    ' vec3 diffuse = base * uAmbient;',
+    ' diffuse += base * NdotL * uLightColor * (0.35 + 0.5 * metalness);',
+    ' vec3 specCol = mix(vec3(1.0), base, metalness);',
+    ' vec3 specular = specCol * spec * uLightColor * 1.3;',
+    ' specular += specCol * fres * metalness * NdotL * 0.25;',
+    ' float t = uTemp;',
+    ' vec3 eWhite = vec3(1.0, 0.94, 0.72);',
+    ' vec3 eYellow = vec3(1.0, 0.94, 0.63);',
+    ' vec3 eOrange = vec3(1.0, 0.27, 0.0);',
+    ' vec3 eRed = vec3(0.545, 0.0, 0.0);',
+    ' vec3 emis;',
+    ' emis = mix(eYellow, eWhite, smoothstep(0.80, 1.0, t));',
+    ' emis = mix(eOrange, emis, smoothstep(0.80, 0.92, t));',
+    ' emis = mix(eRed, eOrange, smoothstep(0.40, 0.80, t));',
+    ' float emisIntensity = smoothstep(0.30, 0.42, t);',
+    ' emisIntensity *= 1.0 + 0.12 * grain;',
+    ' vec3 color = diffuse + specular + emis * emisIntensity;',
+    ' color = pow(color, vec3(0.4545));',
+    ' gl_FragColor = vec4(color, 1.0);',
+    '}'
+  ].join('\n');
+
+  var uniforms = {
+    uTime:       { value: 0 },
+    uTemp:       { value: 1 },
+    uHaze:       { value: 1 },
+    uGrainScale: { value: 10 },
+    uLightDir:   { value: lightDir },
+    uLightColor: { value: lightColor },
+    uAmbient:    { value: new THREE.Color(0x0F0C0B) },
+    uBronze:     { value: new THREE.Color(0xD9A555) }
+  };
+
+  var geometry = new THREE.SphereGeometry(1.25, 96, 96);
+  var material = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader
+  });
+  var blob = new THREE.Mesh(geometry, material);
+  group.add(blob);
+
+  // ---- interaction ----
+  var slider = document.getElementById('rate');
+  var rateVal = document.getElementById('rateVal');
+  function onSlide(){
+    coolingRate = parseFloat(slider.value);
+    rateVal.textContent = coolingRate.toFixed(1);
+  }
+  slider.addEventListener('input', onSlide);
+  onSlide();
+
+  // ---- resize ----
+  window.addEventListener('resize', function(){
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // ---- loop ----
+  function frame(now){
+    requestAnimationFrame(frame);
+    var dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+
+    // entrance ease-out-quart
+    if(!reduced){
+      var e = Math.min((now - entranceStart) / 1500, 1);
+      var eased = 1 - Math.pow(1 - e, 4);
+      targetScale = eased;
+    }
+    currentScale += (targetScale - currentScale) * Math.min(1, dt * 12);
+
+    // cooling
+    if(temp > 0.0001){
+      temp = Math.max(0, temp - dt * (coolingRate / 12.0));
+    }
+
+    time += dt;
+
+    uniforms.uTime.value = time;
+    uniforms.uTemp.value = temp;
+    uniforms.uHaze.value = reduced ? 0 : Math.max(0, (temp - 0.5) * 2.0);
+    uniforms.uGrainScale.value = 3.0 + 28.0 * Math.min(1, coolingRate / 10.0);
+
+    group.scale.setScalar(currentScale);
+    group.rotation.y += reduced ? 0 : 0.005;
+
+    renderer.render(scene, camera);
+
+    // fps
+    fpsAcc += 1 / Math.max(dt, 1e-4);
+    fpsCount++;
+    fpsTimer += dt;
+    if(fpsTimer >= 0.5){
+      fpsEl.textContent = Math.round(fpsAcc / fpsCount);
+      fpsAcc = 0; fpsCount = 0; fpsTimer = 0;
+    }
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -10,11 +10,11 @@ tags:
   - canvas2d
 status: draft
 summary: "Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bursts, and UI plate with filmstrip viewer plus PNG/SVG download."
-preview: preview.svg
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
-demo: null
-default_run: null
+demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
+default_run: qwen3-8-flash-next-ud-q4-k-xl
 source_model: null
 source_provider: null
 created: "2026-11-04"

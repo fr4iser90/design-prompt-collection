@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Foundry Press — Mono Drop Sequence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2E8E1;
+    --ink:#0F0F0F;
+    --bleed:#C41E3A;
+    --display:"Bodoni Moda", "Baskerville", "Baskerville Old Face", "Didot", "Times New Roman", serif;
+    --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    --fs:clamp(46px, 18.5vw, 248px);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+
+  body{
+    background:var(--ink);
+    color:var(--ink);
+    font-family:var(--mono);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    text-rendering:geometricPrecision;
+  }
+
+  /* ---------- STAGE ---------- */
+  .stage{
+    position:fixed; inset:0;
+    overflow:hidden;
+    background:var(--ink);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- PAPER ---------- */
+  .paper{
+    position:absolute; inset:0;
+    background:var(--paper);
+    opacity:0;
+    animation:paperIn var(--dur) linear infinite;
+  }
+  @keyframes paperIn{
+    0%   { opacity:0; }
+    2.2% { opacity:1; }
+    74%  { opacity:1; }
+    86%  { opacity:0; }
+    100% { opacity:0; }
+  }
+
+  .grain{
+    position:absolute; inset:-30%;
+    width:160%; height:160%;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-repeat:repeat;
+    opacity:.5;
+    mix-blend-mode:multiply;
+    pointer-events:none;
+    animation:grainShift var(--dur) steps(1) infinite;
+  }
+  @keyframes grainShift{
+    0%   { transform:translate(0,0); }
+    10%  { transform:translate(-2%,1%); }
+    25%  { transform:translate(1%,-2%); }
+    40%  { transform:translate(-1%,-1%); }
+    55%  { transform:translate(2%,1%); }
+    70%  { transform:translate(-1%,2%); }
+    85%  { transform:translate(1%,-1%); }
+    100% { transform:translate(0,0); }
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background:radial-gradient(120% 120% at 50% 46%, rgba(0,0,0,0) 52%, rgba(20,10,8,.16) 100%);
+    pointer-events:none;
+  }
+
+  /* ---------- WORDMARK ---------- */
+  .wordmark{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 3vw;
+    font-family:var(--display);
+    font-weight:900;
+    font-size:var(--fs);
+    line-height:1;
+    letter-spacing:-0.055em;
+    color:var(--ink);
+    user-select:none;
+    will-change:transform;
+  }
+
+  .letter{
+    position:relative;
+    display:inline-block;
+    transform:translate3d(0,-135%,0);
+    will-change:transform,opacity,filter;
+    animation-name:drop;
+    animation-timing-function:cubic-bezier(.55,0,.85,.35);
+    animation-fill-mode:both;
+    animation-duration:var(--dur);
+    animation-delay:var(--delay);
+  }
+
+  .bleed{
+    position:absolute;
+    left:-20%; right:-20%; bottom:-2%;
+    height:44%;
+    background:radial-gradient(58% 100% at 50% 100%, var(--bleed) 0%, rgba(196,30,58,.55) 32%, rgba(196,30,58,0) 72%);
+    filter:blur(6px);
+    mix-blend-mode:multiply;
+    transform:scale(0.3);
+    transform-origin:50% 100%;
+    opacity:0;
+    pointer-events:none;
+    animation-name:bleed;
+    animation-timing-function:linear;
+    animation-fill-mode:both;
+    animation-duration:var(--dur);
+    animation-delay:var(--delay);
+  }
+
+  @keyframes drop{
+    0%   { transform:translate3d(0,-135%,0); opacity:1; filter:blur(13px); }
+    15%  { transform:translate3d(0,-135%,0); opacity:1; filter:blur(13px); }
+    20%  { transform:translate3d(0,-3%,0);   opacity:1; filter:blur(9px); }
+    22.5%{ transform:translate3d(0,0,0) scaleY(.9); filter:blur(2px); }
+    25%  { transform:translate3d(0,0,0) scaleY(1);  filter:blur(0); }
+    75%  { transform:translate3d(0,0,0) scaleY(1);  opacity:1; filter:blur(0); }
+    86%  { transform:translate3d(0,0,0) scaleY(1);  opacity:0; filter:blur(0); }
+    100% { transform:translate3d(0,-135%,0); opacity:0; filter:blur(13px); }
+  }
+
+  @keyframes bleed{
+    0%   { transform:scale(.3); opacity:0; }
+    20%  { transform:scale(.3); opacity:0; }
+    22%  { transform:scale(.55); opacity:.62; }
+    26%  { transform:scale(.78); opacity:.5; }
+    35%  { transform:scale(.9);  opacity:.44; }
+    50%  { transform:scale(1.0); opacity:.4; }
+    66%  { transform:scale(1.08); opacity:.4; }
+    75%  { transform:scale(1.08); opacity:.4; }
+    84%  { transform:scale(1.1); opacity:0; }
+    100% { transform:scale(.3);  opacity:0; }
+  }
+
+  /* ---------- SUB-BRAND ---------- */
+  .subbrand{
+    position:absolute; left:50%; bottom:12.5%;
+    transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:.75em;
+    font-family:var(--mono);
+    font-size:clamp(10px, 1.15vw, 15px);
+    font-weight:500;
+    letter-spacing:.34em;
+    text-indent:.34em;
+    text-transform:uppercase;
+    color:var(--ink);
+    white-space:nowrap;
+    opacity:0;
+    animation:brandIn var(--dur) linear infinite;
+    user-select:none;
+  }
+  .subbrand::before{
+    content:"";
+    width:clamp(34px, 5vw, 78px); height:2px;
+    background:var(--bleed);
+    opacity:0;
+    animation:ruleIn var(--dur) linear infinite;
+  }
+  @keyframes brandIn{
+    0%,49%  { opacity:0; }
+    60%     { opacity:1; }
+    74%     { opacity:1; }
+    84%     { opacity:0; }
+    100%    { opacity:0; }
+  }
+  @keyframes ruleIn{
+    0%,49%  { opacity:0; transform:scaleX(0); }
+    62%     { opacity:1; transform:scaleX(1); }
+    74%     { opacity:1; transform:scaleX(1); }
+    84%     { opacity:0; transform:scaleX(1); }
+    100%    { opacity:0; transform:scaleX(0); }
+  }
+
+  /* ---------- EDITORIAL FRAME ---------- */
+  .corner{
+    position:absolute; width:22px; height:22px;
+    border:2px solid var(--bleed);
+    opacity:0;
+    animation:cornerIn var(--dur) linear infinite;
+    pointer-events:none;
+  }
+  .tl{ top:24px;    left:24px;    border-right:0; border-bottom:0; }
+  .tr{ top:24px;    right:24px;   border-left:0;  border-bottom:0; }
+  .bl{ bottom:24px; left:24px;    border-right:0; border-top:0; }
+  .br{ bottom:24px; right:24px;   border-left:0;  border-top:0; }
+  @keyframes cornerIn{
+    0%,1%   { opacity:0; }
+    3%      { opacity:.85; }
+    74%     { opacity:.85; }
+    84%     { opacity:0; }
+    100%    { opacity:0; }
+  }
+
+  .caption{
+    position:absolute; top:26px; left:50%;
+    transform:translateX(-50%);
+    font-family:var(--mono);
+    font-size:clamp(8px, .85vw, 11px);
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0;
+    animation:capIn var(--dur) linear infinite;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  @keyframes capIn{
+    0%,1%   { opacity:0; }
+    3%      { opacity:.5; }
+    74%     { opacity:.5; }
+    84%     { opacity:0; }
+    100%    { opacity:0; }
+  }
+
+  .loopmark{
+    position:absolute; bottom:26px; right:28px;
+    font-family:var(--mono);
+    font-size:clamp(8px, .8vw, 10px);
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0;
+    animation:capIn var(--dur) linear infinite;
+    pointer-events:none;
+  }
+
+  /* ---------- RESTART HINT ---------- */
+  .hint{
+    position:absolute; bottom:24px; left:28px;
+    font-family:var(--mono);
+    font-size:clamp(8px, .8vw, 10px);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0;
+    animation:hintIn var(--dur) linear infinite;
+    pointer-events:none;
+  }
+  @keyframes hintIn{
+    0%,50%  { opacity:0; }
+    58%     { opacity:.32; }
+    74%     { opacity:.32; }
+    84%     { opacity:0; }
+    100%    { opacity:0; }
+  }
+
+  /* ---------- REDUCED MOTION: STATIC POSTER ---------- */
+  @media (prefers-reduced-motion: reduce){
+    .paper{ animation:none; opacity:1; }
+    .grain{ animation:none; transform:none; }
+    .letter{
+      animation:none;
+      transform:translate3d(0,0,0) scaleY(1);
+      opacity:1;
+      filter:blur(0);
+    }
+    .bleed{
+      animation:none;
+      transform:scale(1);
+      opacity:.4;
+    }
+    .subbrand{ animation:none; opacity:1; }
+    .subbrand::before{ animation:none; opacity:1; transform:scaleX(1); }
+    .corner{ animation:none; opacity:.85; }
+    .caption, .loopmark{ animation:none; opacity:.5; }
+    .hint{ animation:none; opacity:.3; }
+  }
+</style>
+</head>
+<body>
+  <main class="stage" id="stage" role="img" aria-label="Foundry Press — Mono Drop Sequence: the word PRESS lands in letterpress ink on textured paper.">
+    <div class="paper"></div>
+    <div class="grain"></div>
+    <div class="vignette"></div>
+
+    <div class="wordmark" id="wordmark" aria-hidden="true">
+      <span class="letter" style="--delay:0s"><span class="bleed"></span>P</span>
+      <span class="letter" style="--delay:0.3s"><span class="bleed"></span>R</span>
+      <span class="letter" style="--delay:0.6s"><span class="bleed"></span>E</span>
+      <span class="letter" style="--delay:0.9s"><span class="bleed"></span>S</span>
+      <span class="letter" style="--delay:1.2s"><span class="bleed"></span>S</span>
+    </div>
+
+    <div class="subbrand" aria-hidden="true">Foundry&nbsp;Press</div>
+
+    <div class="caption" aria-hidden="true">Foundry Press · Letterpress Identity</div>
+    <div class="loopmark" aria-hidden="true">Loop · 06.0s</div>
+
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+
+    <div class="hint" aria-hidden="true">Click / Space · Replay</div>
+  </main>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var stage = document.getElementById('stage');
+  var wordmark = document.getElementById('wordmark');
+  var DUR = 6000;
+
+  // Impact schedule (ms within loop) + shake amplitude (px)
+  var IMPACTS = [
+    { t:1200, a:7 },   // P  — heaviest, poster-frame impact
+    { t:1500, a:4 },   // R
+    { t:1800, a:3 },   // E
+    { t:2100, a:2.4 }, // S
+    { t:2400, a:2 }    // S
+  ];
+  var DECAY = 200; // ms shake decay
+
+  var start = performance.now();
+
+  function restart(){
+    // Re-trigger the infinite CSS animations cleanly
+    var els = stage.querySelectorAll('.paper, .grain, .letter, .bleed, .subbrand, .subbrand::before, .corner, .caption, .loopmark, .hint');
+    // Simplest reliable reset: reflow the stage subtree
+    var nodes = stage.querySelectorAll('*');
+    nodes.forEach(function(n){ n.style.animation = 'none'; });
+    void stage.offsetWidth; // force reflow
+    nodes.forEach(function(n){ n.style.animation = ''; });
+    start = performance.now();
+  }
+
+  function frame(now){
+    if (reduce){ return; } // static poster, no rAF shake
+    var t = (now - start) % DUR;
+
+    var amp = 0;
+    for (var i = 0; i < IMPACTS.length; i++){
+      var d = t - IMPACTS[i].t;
+      if (d >= 0 && d < DECAY){
+        var env = Math.pow(1 - d / DECAY, 2); // fast decay
+        var a = IMPACTS[i].a * env;
+        if (a > amp) amp = a;
+      }
+    }
+
+    if (amp > 0.05){
+      var x = (Math.random() * 2 - 1) * amp;
+      var y = (Math.random() * 2 - 1) * amp;
+      wordmark.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0)';
+    } else {
+      wordmark.style.transform = 'translate3d(0,0,0)';
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  // Wait for fonts to settle before starting the timed sequence
+  function boot(){
+    stage.style.setProperty('--dur', DUR + 'ms');
+    if (reduce){ return; } // static fallback
+    restart();
+    requestAnimationFrame(frame);
+  }
+
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(boot);
+  } else {
+    window.addEventListener('load', boot);
+  }
+
+  // Restart controls
+  stage.addEventListener('click', function(){ if(!reduce) restart(); });
+  window.addEventListener('keydown', function(e){
+    if (e.code === 'Space'){ e.preventDefault(); if(!reduce) restart(); }
+  });
+})();
+</script>
+</body>
+</html>

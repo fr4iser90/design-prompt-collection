@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 268 | 260 | 227 | 41 |
+| 269 | 269 | 228 | 41 |
 
 ## Quick start
 
@@ -2263,7 +2263,7 @@ An 8s kinetic identity loop for 'Dot & Grain' studio. CMYK halftone dots drift, 
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | — | — | — | — | — | — | — | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/halftone-rasterize/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.3s | 172s | 8 | [open](prompts/motion-graphics/halftone-rasterize/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2295,7 +2295,7 @@ Create a single-file HTML5/CSS/JS motion graphics piece titled 'Wet Ink Spread' 
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.5s | 93s | — | [open](prompts/motion-graphics/ink-spread-capillary/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/ink-spread-capillary/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 6.5s | 93s | 6 | [open](prompts/motion-graphics/ink-spread-capillary/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2311,7 +2311,7 @@ Heavy serif glyphs crash onto a paper plate, shaking the canvas and bleeding red
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | — | — | — | — | — | — | — | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/letterpress-mono-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 27s | 88s | 1 | [open](prompts/motion-graphics/letterpress-mono-drop/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2355,9 +2355,11 @@ Create a 6-second looping motion graphic titled 'The Tear Line' for 'Rip & Read'
 
 [prompt](prompts/motion-graphics/paper-tear-reveal/prompt.md) · [extended](prompts/motion-graphics/paper-tear-reveal/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/paper-tear-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.7s | 97s | 2 | [open](prompts/motion-graphics/paper-tear-reveal/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3511,9 +3513,11 @@ Cohesive saline-industrial game kit: player diver, hazards, pickups, HUD plates,
 
 [prompt](prompts/assets/brine-station-kit/prompt.md) · [extended](prompts/assets/brine-station-kit/prompt.full.md)
 
-![Brine Station Kit](prompts/assets/brine-station-kit/preview.svg)
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/brine-station-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 1.6s | 314s | 8 | [open](prompts/assets/brine-station-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3525,9 +3529,27 @@ Production 2D chronograph-mech atlas: bevelled steel hero cycles, props, VFX bur
 
 [prompt](prompts/assets/chronograph-mech-sprites/prompt.md) · [extended](prompts/assets/chronograph-mech-sprites/prompt.full.md)
 
-![Chronograph Mech Sprites](prompts/assets/chronograph-mech-sprites/preview.svg)
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/chronograph-mech-sprites/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.0s | 289s | 6 | [open](prompts/assets/chronograph-mech-sprites/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Abyssal Trench Kit
+
+High-fidelity single-file Asset Studio for 'Abyssal Trench Kit', featuring procedural 2D game assets, sonar interactions, and atlas generation.
+
+**Status:** polished · `game-kit` `2d` `underwater` `bioluminescence` `assets` `canvas2d` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/deep-ocean-abyss-kit/prompt.md) · [extended](prompts/assets/deep-ocean-abyss-kit/prompt.full.md)
+
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/deep-ocean-abyss-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 33s | 320s | 8 | [open](prompts/assets/deep-ocean-abyss-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3539,9 +3561,11 @@ Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio vi
 
 [prompt](prompts/assets/orbital-relay-module/prompt.md) · [extended](prompts/assets/orbital-relay-module/prompt.full.md)
 
-![Orbital Relay Module](prompts/assets/orbital-relay-module/preview.svg)
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/orbital-relay-module/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 1.2s | 227s | 2 | [open](prompts/assets/orbital-relay-module/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3635,9 +3659,11 @@ A refractive glass bubble floats in void. Drag to stretch it like hot taffy—wa
 
 [prompt](prompts/webgl/hand-blown-glass-bubble-expansion/prompt.md) · [extended](prompts/webgl/hand-blown-glass-bubble-expansion/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/hand-blown-glass-bubble-expansion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 25s | 88s | 2 | [open](prompts/webgl/hand-blown-glass-bubble-expansion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3713,9 +3739,11 @@ A raw WebGL shader simulation of molten bronze cooling into solid metal. The her
 
 [prompt](prompts/webgl/melted-bronze-cool-down/prompt.md) · [extended](prompts/webgl/melted-bronze-cool-down/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/melted-bronze-cool-down/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 32s | 93s | 2 | [open](prompts/webgl/melted-bronze-cool-down/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3905,9 +3933,11 @@ A safety report where scrolling compresses a copper canister seal; radiation par
 
 [prompt](prompts/editorial/nuclear-waste-canister-seal/prompt.md) · [extended](prompts/editorial/nuclear-waste-canister-seal/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/nuclear-waste-canister-seal/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.9s | 221s | 8 | [open](prompts/editorial/nuclear-waste-canister-seal/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4289,9 +4319,11 @@ IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate actio
 
 [prompt](prompts/interfaces/substation-relay-lockout/prompt.md) · [extended](prompts/interfaces/substation-relay-lockout/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/substation-relay-lockout/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.9s | 202s | 9 | [open](prompts/interfaces/substation-relay-lockout/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

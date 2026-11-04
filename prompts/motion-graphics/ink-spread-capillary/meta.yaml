@@ -9,7 +9,7 @@ tags:
   - organic
 status: polished
 summary: "Create a single-file HTML5/CSS/JS motion graphics piece titled 'Wet Ink Spread' for 'Absorb Press'. Full-bleed viewport, #F0F0F0 background. Centered 'INK' in Baskerville #000000. 8s loop simulating capillary action…"
-preview: null
+preview: preview.png
 prompt: prompt.md
 extended: prompt.full.md
 demo: runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html
@@ -17,7 +17,7 @@ default_run: qwen3-8-flash-next-ud-q4-k-xl
 source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
 source_provider: "custom"
 created: "2026-10-21"
-updated: "2026-10-21"
+updated: "2026-11-04"
 model_hints:
   - cursor
   - chatgpt

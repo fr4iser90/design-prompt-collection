@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISOLATOROS // SUBSTATION RELAY LOCKOUT PROTOCOL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DIN+Condensed:wght@700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ISOLATOROS — DESIGN TOKENS
+   ============================================================ */
+:root{
+  --bg:#111111;
+  --yellow:#FFCC00;
+  --red:#E63946;
+  --text:#F4F1EA;
+  --border:#333333;
+  --grid:#222222;
+  --muted:#666666;
+  --log:#888888;
+  --font-head:'DIN Condensed','Arial Narrow',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;border-radius:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-mono);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+
+/* ============================================================
+   ATMOSPHERE — technical grid + vignette (behind everything)
+   ============================================================ */
+.atmos{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+}
+.vignette{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.72) 100%);
+}
+
+/* ============================================================
+   HAZARD STRIPE — reusable diagonal safety band
+   ============================================================ */
+.hazard{
+  background-image:repeating-linear-gradient(45deg,
+    var(--yellow) 0 16px,#111111 16px 32px);
+}
+
+/* ============================================================
+   SCREEN SHAKE (trip)
+   ============================================================ */
+.screen-shake{animation:shake .3s linear;}
+@keyframes shake{
+  0%{transform:translate(0,0)}
+  10%{transform:translate(-6px,3px)}
+  20%{transform:translate(6px,-4px)}
+  30%{transform:translate(-5px,-3px)}
+  40%{transform:translate(5px,4px)}
+  50%{transform:translate(-4px,2px)}
+  60%{transform:translate(4px,-2px)}
+  70%{transform:translate(-3px,2px)}
+  80%{transform:translate(3px,-1px)}
+  90%{transform:translate(-2px,1px)}
+  100%{transform:translate(0,0)}
+}
+
+/* ============================================================
+   SHELL LAYOUT
+   ============================================================ */
+.shell{
+  position:relative;z-index:2;
+  max-width:1200px;margin:0 auto;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border);
+}
+
+/* ---- Top bar ---- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.brand{display:flex;align-items:center;gap:14px;min-width:0;}
+.brand .mark{
+  width:34px;height:34px;flex:none;
+  border:2px solid var(--yellow);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-size:26px;line-height:1;color:var(--yellow);
+}
+.brand .wordmark{font-family:var(--font-head);font-size:30px;font-weight:700;
+  letter-spacing:.05em;color:var(--text);line-height:1;}
+.brand .wordmark span{color:var(--yellow);}
+.brand .sub{font-size:10px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:22px;text-align:right;}
+.topbar-right .kv{display:flex;flex-direction:column;line-height:1.25;}
+.topbar-right .kv b{font-family:var(--font-head);font-size:18px;color:var(--text);letter-spacing:.04em;}
+.topbar-right .kv i{font-style:normal;font-size:9px;letter-spacing:.2em;color:var(--muted);}
+.topbar-right .online{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;color:var(--muted);}
+.pulse-dot{width:8px;height:8px;background:var(--yellow);animation:pulse 2s steps(1) infinite;}
+@keyframes pulse{0%,49%{opacity:1}50%,100%{opacity:.15}}
+
+/* ---- Main 3-column grid ---- */
+.main{
+  flex:1;display:grid;
+  grid-template-columns:200px 1fr 200px;
+  gap:0;
+}
+.rail{padding:16px 14px;}
+.rail-left{border-right:1px solid var(--border);}
+.rail-right{border-left:1px solid var(--border);}
+.rail-title{
+  font-family:var(--font-head);font-size:15px;letter-spacing:.12em;
+  color:var(--muted);text-transform:uppercase;
+  padding-bottom:8px;margin-bottom:12px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:baseline;
+}
+.rail-title em{font-style:normal;font-size:9px;color:var(--yellow);letter-spacing:.15em;}
+
+/* ---- Telemetry readouts ---- */
+.telem{margin-bottom:20px;}
+.telem:last-child{margin-bottom:0;}
+.telem .t-label{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:2px;}
+.telem .t-val{
+  font-family:var(--font-head);font-size:40px;line-height:1;letter-spacing:.02em;
+  color:var(--text);display:flex;align-items:baseline;gap:4px;
+}
+.telem .t-val .unit{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.1em;}
+.telem .t-val.flicker{animation:flick .18s steps(1);}
+@keyframes flick{0%{opacity:.35}100%{opacity:1}}
+.telem .t-sub{font-size:9px;letter-spacing:.14em;color:var(--muted);margin-top:4px;}
+
+/* ---- Phase meters ---- */
+.phase{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11px;}
+.phase .ph{width:14px;color:var(--muted);letter-spacing:.1em;}
+.phase .bar{flex:1;height:8px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.phase .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--yellow);}
+.phase .pval{width:52px;text-align:right;color:var(--text);}
+
+/* ---- Event log ---- */
+.log{display:flex;flex-direction:column;gap:6px;font-size:11px;overflow:hidden;}
+.log .entry{
+  display:flex;gap:8px;line-height:1.4;color:var(--log);
+  animation:slidein .25s steps(3);
+}
+.log .entry .ts{color:var(--muted);flex:none;}
+.log .entry .msg{color:var(--log);word-break:break-word;}
+.log .entry.warn .msg{color:var(--yellow);}
+.log .entry.err .msg{color:var(--red);}
+.log .entry.ok .msg{color:var(--text);}
+@keyframes slidein{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+
+/* ============================================================
+   CONTROL PANEL
+   ============================================================ */
+.panel{
+  position:relative;
+  padding:36px 40px 40px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+}
+/* hazard band at very top of panel */
+.panel .cap{
+  position:absolute;top:0;left:0;right:0;height:14px;
+  background-image:repeating-linear-gradient(45deg,var(--yellow) 0 14px,#111111 14px 28px);
+}
+
+/* ---- Brand / task header ---- */
+.panel-head{width:100%;text-align:center;margin-top:6px;}
+.panel-head .eyebrow{font-size:10px;letter-spacing:.34em;color:var(--muted);text-transform:uppercase;}
+.panel-head h1{
+  font-family:var(--font-head);font-weight:700;font-size:46px;line-height:.95;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--text);margin:6px 0 4px;
+}
+.panel-head h1 span{color:var(--yellow);}
+.panel-head .meta{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;}
+
+/* ---- LED ---- */
+.led-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:4px;}
+.led{
+  width:34px;height:34px;border-radius:0;
+  border:2px solid var(--border);background:#1a1a1a;
+  transition:background .1s linear,border-color .1s linear;
+}
+.led.idle{background:var(--yellow);border-color:#5a4800;animation:blink1 1s steps(1) infinite;}
+.led.arming{background:var(--yellow);border-color:#5a4800;animation:blink4 .25s steps(1) infinite;}
+.led.armed{background:var(--yellow);border-color:var(--yellow);animation:none;}
+.led.tripped{background:var(--red);border-color:var(--red);animation:none;}
+.led.error{background:var(--red);border-color:var(--red);animation:blink2 .5s steps(1) infinite;}
+@keyframes blink1{0%,49%{opacity:1}50%,100%{opacity:.12}}
+@keyframes blink4{0%,49%{opacity:1}50%,100%{opacity:.12}}
+@keyframes blink2{0%,49%{opacity:1}50%,100%{opacity:.12}}
+.led-status{
+  font-family:var(--font-head);font-size:22px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text);
+}
+.led-status.idle{color:var(--yellow);}
+.led-status.arming,.led-status.armed{color:var(--yellow);}
+.led-status.tripped,.led-status.error{color:var(--red);}
+
+/* ---- The toggle switch ---- */
+.toggle{
+  width:200px;height:80px;
+  border:2px solid var(--border);background:#181818;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;cursor:pointer;user-select:none;touch-action:none;
+  position:relative;overflow:hidden;
+  transition:border-color .08s linear;
+  outline:none;
+}
+.toggle:focus-visible{border-color:var(--yellow);}
+.toggle .thumb{
+  width:82px;height:56px;background:#2a2a2a;border:2px solid var(--border);
+  position:relative;z-index:2;flex:none;
+  transition:transform .12s cubic-bezier(.34,1.56,.64,1),background .1s linear,border-color .1s linear;
+}
+.toggle .thumb::before{
+  content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:36px;height:2px;background:var(--muted);
+}
+.toggle .thumb::after{
+  content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:2px;height:36px;background:var(--muted);
+}
+.toggle .t-labels{
+  display:flex;justify-content:space-between;width:100%;
+  font-family:var(--font-head);font-size:16px;letter-spacing:.1em;z-index:1;
+  color:var(--muted);pointer-events:none;
+}
+.toggle .t-labels .on{color:#444;}
+/* pressed / held */
+.toggle.pressed{border-color:var(--yellow);transform:translateY(4px);}
+.toggle.pressed .thumb{transform:translateX(62px);background:#3a3a3a;border-color:var(--yellow);}
+.toggle.pressed .t-labels .off{color:#444;}
+.toggle.pressed .t-labels .on{color:var(--yellow);}
+/* armed (locked) */
+.toggle.armed{border-color:var(--yellow);transform:translateY(4px);}
+.toggle.armed .thumb{transform:translateX(62px);background:var(--yellow);border-color:var(--yellow);}
+.toggle.armed .thumb::before,.toggle.armed .thumb::after{background:#111;}
+.toggle.armed .t-labels .on{color:#111;}
+.toggle.armed .t-labels .off{color:#444;}
+.toggle.armed::after{
+  content:"ARMED";position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  font-family:var(--font-head);font-size:14px;letter-spacing:.1em;color:#111;z-index:3;
+}
+/* tripped */
+.toggle.tripped{border-color:var(--red);}
+.toggle.tripped .thumb{background:#181818;border-color:var(--red);}
+.toggle.tripped .t-labels .off{color:var(--red);}
+
+/* ---- Progress bar (10 segments) ---- */
+.progress{display:flex;gap:4px;width:200px;height:18px;}
+.progress .seg{
+  flex:1;border:1px solid var(--border);background:#161616;
+  transition:background .05s linear,border-color .05s linear;
+}
+.progress .seg.on{background:var(--yellow);border-color:var(--yellow);}
+.progress .seg.on.late{background:var(--red);border-color:var(--red);}
+
+/* ---- Instruction / message ---- */
+.instruction{
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  text-align:center;min-height:18px;
+}
+.instruction b{color:var(--yellow);font-weight:600;}
+.instruction .err{color:var(--red);}
+
+/* ---- Reset button ---- */
+.reset{
+  display:none;width:200px;height:48px;
+  border:2px solid var(--red);background:transparent;color:var(--red);
+  font-family:var(--font-head);font-size:20px;letter-spacing:.12em;text-transform:uppercase;
+  cursor:pointer;
+}
+.reset.show{display:block;animation:slidein .2s steps(3);}
+.reset:hover{background:var(--red);color:#111;}
+.reset:active{transform:translateY(3px);}
+
+/* ---- Panel border states ---- */
+.panel.flash{animation:flashborder .5s steps(1);}
+@keyframes flashborder{
+  0%,49%{border-color:var(--red)}
+  50%,100%{border-color:var(--border)}
+}
+.panel.armed-border{
+  border-color:var(--yellow);
+  animation:armedflash .25s steps(1) infinite;
+}
+@keyframes armedflash{0%,49%{border-color:var(--yellow)}50%,100%{border-color:var(--border)}}
+
+/* ============================================================
+   STATUS FOOTER
+   ============================================================ */
+.statusbar{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;border-top:1px solid var(--border);
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+}
+.statusbar .chip{display:flex;align-items:center;gap:7px;}
+.statusbar .chip b{color:var(--text);font-weight:600;}
+.statusbar .sep{width:1px;height:12px;background:var(--border);}
+.statusbar .dot{width:7px;height:7px;background:var(--yellow);}
+.statusbar .dot.red{background:var(--red);}
+.statusbar .spacer{flex:1;}
+
+/* ============================================================
+   MOBILE TICKER (hidden on desktop)
+   ============================================================ */
+.ticker{display:none;}
+.telem-strip{display:none;}
+
+/* ============================================================
+   RESPONSIVE — < 768px
+   ============================================================ */
+@media (max-width:768px){
+  .shell{border-left:none;border-right:none;}
+  .topbar{padding:12px 14px;}
+  .brand .wordmark{font-size:24px;}
+  .topbar-right .kv{display:none;}
+  .topbar-right .online{font-size:10px;}
+
+  .main{grid-template-columns:1fr;}
+  .rail{display:none;}
+
+  /* condensed telemetry line */
+  .telem-strip{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:8px 14px;border-bottom:1px solid var(--border);
+    font-size:12px;letter-spacing:.08em;color:var(--text);
+  }
+  .telem-strip .ts-item b{font-family:var(--font-head);font-size:16px;}
+  .telem-strip .ts-item span{color:var(--muted);font-size:9px;letter-spacing:.15em;}
+
+  .panel{padding:26px 16px 28px;width:90%;margin:0 auto;gap:18px;}
+  .panel .cap{height:10px;}
+  .panel-head h1{font-size:30px;}
+  .panel-head .eyebrow{font-size:9px;}
+  .led{width:26px;height:26px;}
+  .led-status{font-size:18px;}
+  .toggle{width:150px;height:80px;}
+  .toggle .thumb{width:64px;height:56px;}
+  .toggle.pressed .thumb,.toggle.armed .thumb{transform:translateX(38px);}
+  .progress{width:150px;}
+  .reset{width:150px;}
+  .instruction{font-size:11px;}
+
+  /* horizontal scrolling log ticker */
+  .ticker{
+    display:flex;gap:22px;align-items:center;
+    height:40px;overflow-x:auto;overflow-y:hidden;
+    padding:0 14px;border-top:1px solid var(--border);
+    white-space:nowrap;scrollbar-width:none;
+  }
+  .ticker::-webkit-scrollbar{display:none;}
+  .ticker .entry{font-size:11px;display:flex;gap:6px;color:var(--log);}
+  .ticker .entry .ts{color:var(--muted);}
+  .ticker .entry.warn .msg{color:var(--yellow);}
+  .ticker .entry.err .msg{color:var(--red);}
+  .ticker .entry.ok .msg{color:var(--text);}
+
+  .statusbar{font-size:9px;padding:8px 14px;gap:10px;}
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  .led.idle,.led.arming{animation:none;opacity:1;}
+  .panel.armed-border{animation:none;border-color:var(--yellow);}
+}
+</style>
+</head>
+<body>
+
+<!-- Atmosphere -->
+<div class="atmos" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<div class="shell" id="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">I</div>
+      <div>
+        <div class="wordmark">ISOLATOR<span>OS</span></div>
+        <div class="sub">Substation Relay Lockout Protocol</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="kv"><b id="topState">IDLE</b><i>SYSTEM STATE</i></div>
+      <div class="online"><span class="pulse-dot"></span> LINK ACTIVE</div>
+    </div>
+  </header>
+
+  <!-- CONDENSED TELEMETRY (mobile) -->
+  <div class="telem-strip" id="telemStrip">
+    <div class="ts-item"><span>VOLTAGE</span> <b id="mVolt">132.4</b> kV</div>
+    <div class="ts-item"><span>CURRENT</span> <b id="mCur">418</b> A</div>
+    <div class="ts-item"><span>FREQ</span> <b id="mFreq">60.00</b> Hz</div>
+  </div>
+
+  <!-- MAIN 3-COL -->
+  <div class="main">
+
+    <!-- LEFT RAIL: telemetry -->
+    <aside class="rail rail-left">
+      <div class="rail-title">TELEMETRY <em>LIVE</em></div>
+
+      <div class="telem">
+        <div class="t-label">Line Voltage</div>
+        <div class="t-val" id="voltVal">132.4<span class="unit">kV</span></div>
+        <div class="t-sub">PH-PH · NOMINAL 132.0</div>
+      </div>
+
+      <div class="telem">
+        <div class="t-label">Line Current</div>
+        <div class="t-val" id="curVal">418<span class="unit">A</span></div>
+        <div class="t-sub">LOAD SIDE · RATED 500</div>
+      </div>
+
+      <div class="telem">
+        <div class="t-label">Frequency</div>
+        <div class="t-val" id="freqVal">60.00<span class="unit">Hz</span></div>
+        <div class="t-sub">GRID SYNC · LOCKED</div>
+      </div>
+
+      <div class="telem">
+        <div class="t-label">Phase Balance</div>
+        <div class="phase"><span class="ph">A</span><span class="bar"><i id="phA"></i></span><span class="pval" id="phAv">132.4</span></div>
+        <div class="phase"><span class="ph">B</span><span class="bar"><i id="phB"></i></span><span class="pval" id="phBv">132.1</span></div>
+        <div class="phase"><span class="ph">C</span><span class="bar"><i id="phC"></i></span><span class="pval" id="phCv">132.3</span></div>
+      </div>
+    </aside>
+
+    <!-- CENTER: control panel -->
+    <section class="panel" id="panel">
+      <div class="cap" aria-hidden="true"></div>
+
+      <div class="panel-head">
+        <div class="eyebrow">Circuit Breaker · Bay 07 · Feeder R-14</div>
+        <h1>ISOLATOR<span>OS</span></h1>
+        <div class="meta">Hold to Arm · Release to Trip</div>
+      </div>
+
+      <div class="led-wrap">
+        <div class="led idle" id="led" role="img" aria-label="Status indicator"></div>
+        <div class="led-status idle" id="ledStatus">IDLE</div>
+      </div>
+
+      <div class="toggle" id="toggle" role="button" tabindex="0"
+           aria-label="Circuit breaker toggle. Hold to arm, release to trip."
+           aria-pressed="false">
+        <span class="t-labels"><span class="off">OFF</span><span class="on">ON</span></span>
+        <span class="thumb" aria-hidden="true"></span>
+      </div>
+
+      <div class="progress" id="progress" aria-hidden="true"></div>
+
+      <div class="instruction" id="instruction">
+        HOLD SWITCH TO <b>ARM</b> · RELEASE TO <b>TRIP</b>
+      </div>
+
+      <button class="reset" id="resetBtn" type="button">RESET SYSTEM</button>
+    </section>
+
+    <!-- RIGHT RAIL: event log -->
+    <aside class="rail rail-right">
+      <div class="rail-title">EVENT LOG <em>REC</em></div>
+      <div class="log" id="log"></div>
+    </aside>
+
+  </div>
+
+  <!-- MOBILE TICKER -->
+  <div class="ticker" id="ticker"></div>
+
+  <!-- STATUS FOOTER -->
+  <footer class="statusbar">
+    <div class="chip"><span class="dot" id="footDot"></span> STATE <b id="footState">IDLE</b></div>
+    <div class="sep"></div>
+    <div class="chip">BAY <b>07</b></div>
+    <div class="sep"></div>
+    <div class="chip">FEEDER <b>R-14</b></div>
+    <div class="sep"></div>
+    <div class="chip">PROTOCOL <b>LOCKOUT-2STEP</b></div>
+    <div class="spacer"></div>
+    <div class="chip">UPTIME <b id="uptime">00:00:00</b></div>
+    <div class="sep"></div>
+    <div class="chip">CLK <b id="clock">--:--:--</b></div>
+  </footer>
+
+</div>
+
+<script>
+/* ============================================================
+   ISOLATOROS — application logic
+   Modules:  (1) StateMachine  (2) UI renderers  (3) Input  (4) Telemetry  (5) Log  (6) Audio
+   State machine is intentionally decoupled from rendering: it emits state
+   changes; renderers subscribe and repaint.
+   ============================================================ */
+(function(){
+  "use strict";
+
+  /* ---------- Constants ---------- */
+  var HOLD_MS = 3000;          // required hold to reach ARMED
+  var SEGMENTS = 10;           // progress blocks
+  var TICK_MS = 500;           // telemetry refresh
+  var TRIP_DELAY = 120;        // small delay after arm before trip fires
+
+  /* ---------- State machine ---------- */
+  var SM = {
+    state: 'IDLE',             // IDLE | ARMING | ARMED | TRIPPED | ERROR
+    holdStart: 0,
+    listeners: [],
+    onChange: function(fn){ this.listeners.push(fn); },
+    emit: function(prev){
+      for(var i=0;i<this.listeners.length;i++){ this.listeners[i](this.state, prev); }
+    },
+    set: function(s){
+      var prev = this.state;
+      if(prev === s) return;
+      this.state = s;
+      this.emit(prev);
+    }
+  };
+
+  /* ---------- DOM refs ---------- */
+  var $ = function(id){ return document.getElementById(id); };
+  var el = {
+    shell:$('shell'), panel:$('panel'), led:$('led'), ledStatus:$('ledStatus'),
+    toggle:$('toggle'), progress:$('progress'), instruction:$('instruction'),
+    resetBtn:$('resetBtn'), log:$('log'), ticker:$('ticker'),
+    topState:$('topState'), footState:$('footState'), footDot:$('footDot'),
+    clock:$('clock'), uptime:$('uptime'),
+    voltVal:$('voltVal'), curVal:$('curVal'), freqVal:$('freqVal'),
+    mVolt:$('mVolt'), mCur:$('mCur'), mFreq:$('mFreq'),
+    phA:$('phA'), phB:$('phB'), phC:$('phC'),
+    phAv:$('phAv'), phBv:$('phBv'), phCv:$('phCv')
+  };
+
+  /* ---------- Build progress segments ---------- */
+  var segEls = [];
+  for(var i=0;i<SEGMENTS;i++){
+    var s = document.createElement('span');
+    s.className = 'seg';
+    el.progress.appendChild(s);
+    segEls.push(s);
+  }
+
+  /* ============================================================
+     LOG MODULE
+     ============================================================ */
+  var logTimer = null;
+  function nowStamp(){
+    var d = new Date();
+    var p = function(n){ return (n<10?'0':'')+n; };
+    return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  function addLog(msg, cls){
+    var entry = document.createElement('div');
+    entry.className = 'entry' + (cls?(' '+cls):'');
+    var ts = document.createElement('span'); ts.className='ts'; ts.textContent = nowStamp();
+    var m  = document.createElement('span'); m.className='msg'; m.textContent = msg;
+    entry.appendChild(ts); entry.appendChild(m);
+
+    // desktop rail log (cap length)
+    el.log.insertBefore(entry, el.log.firstChild);
+    while(el.log.children.length > 12){ el.log.removeChild(el.log.lastChild); }
+
+    // mobile ticker (keep last 5, append at end for scroll)
+    var t = entry.cloneNode(true);
+    el.ticker.appendChild(t);
+    while(el.ticker.children.length > 5){ el.ticker.removeChild(el.ticker.firstChild); }
+    el.ticker.scrollLeft = el.ticker.scrollWidth;
+  }
+
+  /* ============================================================
+     AUDIO MODULE — synthesized mechanical clicks (Web Audio)
+     ============================================================ */
+  var actx = null;
+  function audio(){
+    if(!actx){
+      try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx = null; }
+    }
+    return actx;
+  }
+  function click(freq, dur, vol, type){
+    var a = audio(); if(!a) return;
+    var o = a.createOscillator(), g = a.createGain();
+    o.type = type||'square'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(); o.stop(a.currentTime + dur);
+  }
+
+  /* ============================================================
+     UI RENDERERS
+     ============================================================ */
+  function setInstruction(html){ el.instruction.innerHTML = html; }
+
+  function renderState(state, prev){
+    // LED + status text
+    el.led.className = 'led ' + state.toLowerCase();
+    el.ledStatus.className = 'led-status ' + state.toLowerCase();
+    el.ledStatus.textContent = state;
+    el.topState.textContent = state;
+    el.footState.textContent = state;
+    el.footDot.className = (state==='TRIPPED'||state==='ERROR') ? 'dot red' : 'dot';
+
+    // panel border
+    el.panel.classList.remove('armed-border');
+    if(state==='ARMING' || state==='ARMED'){ el.panel.classList.add('armed-border'); }
+
+    // toggle classes
+    el.toggle.classList.remove('pressed','armed','tripped');
+    if(state==='ARMING'){ el.toggle.classList.add('pressed'); el.toggle.setAttribute('aria-pressed','true'); }
+    else if(state==='ARMED'){ el.toggle.classList.add('armed'); el.toggle.setAttribute('aria-pressed','true'); }
+    else if(state==='TRIPPED'){ el.toggle.classList.add('tripped'); el.toggle.setAttribute('aria-pressed','false'); }
+    else { el.toggle.setAttribute('aria-pressed','false'); }
+
+    // reset button visibility
+    el.resetBtn.classList.toggle('show', state==='TRIPPED');
+
+    // progress bar reset on non-arming states
+    if(state!=='ARMING'){ setProgress(0); }
+
+    // instruction text
+    switch(state){
+      case 'IDLE':    setInstruction('HOLD SWITCH TO <b>ARM</b> · RELEASE TO <b>TRIP</b>'); break;
+      case 'ARMING':  setInstruction('HOLDING… KEEP PRESSING TO REACH <b>ARMED</b>'); break;
+      case 'ARMED':   setInstruction('SYSTEM <b>ARMED</b> · RELEASE SWITCH TO <b>TRIP</b> BREAKER'); break;
+      case 'TRIPPED': setInstruction('<span class="err">CIRCUIT OPEN · BREAKER TRIPPED</span>'); break;
+      case 'ERROR':   setInstruction('<span class="err">ERROR: HOLD TOO SHORT</span>'); break;
+    }
+  }
+
+  function setProgress(pct){
+    var lit = Math.round(pct * SEGMENTS);
+    for(var i=0;i<SEGMENTS;i++){
+      var on = i < lit;
+      segEls[i].classList.toggle('on', on);
+      // last segments glow red as a "critical" cue near full
+      segEls[i].classList.toggle('late', on && i >= SEGMENTS-2 && pct >= 0.8);
+    }
+  }
+
+  function screenShake(){
+    el.shell.classList.remove('screen-shake');
+    // force reflow to restart animation
+    void el.shell.offsetWidth;
+    el.shell.classList.add('screen-shake');
+    setTimeout(function(){ el.shell.classList.remove('screen-shake'); }, 320);
+  }
+
+  function panelFlash(){
+    el.panel.classList.remove('flash');
+    void el.panel.offsetWidth;
+    el.panel.classList.add('flash');
+    setTimeout(function(){ el.panel.classList.remove('flash'); }, 520);
+  }
+
+  /* ---------- Subscribe renderer to state machine ---------- */
+  SM.onChange(function(state, prev){
+    renderState(state, prev);
+
+    // side effects per transition
+    if(state==='ARMED'){
+      addLog('ARM SEQUENCE COMPLETE', 'warn');
+      click(880,0.08,0.15);
+    } else if(state==='TRIPPED'){
+      addLog('BREAKER OPENED', 'err');
+      screenShake();
+      click(140,0.22,0.22,'sawtooth');
+      setTelemetryZeroed();
+    } else if(state==='ERROR'){
+      addLog('ERROR: HOLD TOO SHORT', 'err');
+      panelFlash();
+      click(220,0.12,0.18,'square');
+    }
+  });
+
+  /* ============================================================
+     INPUT HANDLING — unified pointer + keyboard
+     ============================================================ */
+  var holdRAF = null;
+  var armedTimer = null;
+
+  function startHold(){
+    if(SM.state==='TRIPPED' || SM.state==='ARMED' || SM.state==='ERROR') return;
+    if(SM.state==='ARMING') return; // already holding
+
+    SM.set('ARMING');
+    SM.holdStart = performance.now();
+    addLog('ARM SEQUENCE STARTED', 'warn');
+    click(660,0.05,0.1);
+
+    function loop(){
+      if(SM.state!=='ARMING') return;
+      var held = performance.now() - SM.holdStart;
+      var pct = Math.min(held / HOLD_MS, 1);
+      setProgress(pct);
+      if(pct >= 1){
+        SM.set('ARMED');
+        // brief lock delay so release is a distinct action
+        armedTimer = setTimeout(function(){ /* stays ARMED until release */ }, TRIP_DELAY);
+        return;
+      }
+      holdRAF = requestAnimationFrame(loop);
+    }
+    holdRAF = requestAnimationFrame(loop);
+  }
+
+  function endHold(){
+    if(SM.state==='ARMING'){
+      // released before armed -> error
+      cancelAnimationFrame(holdRAF);
+      SM.set('ERROR');
+      setTimeout(function(){
+        if(SM.state==='ERROR'){ SM.set('IDLE'); }
+      }, 2000);
+      return;
+    }
+    if(SM.state==='ARMED'){
+      // deliberate release -> trip
+      SM.set('TRIPPED');
+    }
+  }
+
+  // Pointer events cover mouse + touch uniformly
+  function onDown(e){
+    e.preventDefault();
+    if(audio()){ /* resume on user gesture */ var a=audio(); if(a.state==='suspended') a.resume(); }
+    startHold();
+  }
+  function onUp(e){
+    if(e) e.preventDefault();
+    endHold();
+  }
+
+  el.toggle.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointerup', function(e){
+    // only end if a hold was in progress (covers pointer leaving the element)
+    if(SM.state==='ARMING' || SM.state==='ARMED'){ endHold(); }
+  });
+  el.toggle.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+
+  // Keyboard: Space / Enter to hold
+  var keyHeld = false;
+  el.toggle.addEventListener('keydown', function(e){
+    if((e.code==='Space'||e.code==='Enter'||e.key===' ') && !keyHeld){
+      e.preventDefault(); keyHeld = true;
+      if(audio()){ var a=audio(); if(a.state==='suspended') a.resume(); }
+      startHold();
+    }
+  });
+  el.toggle.addEventListener('keyup', function(e){
+    if(e.code==='Space'||e.code==='Enter'||e.key===' '){
+      e.preventDefault(); keyHeld = false; endHold();
+    }
+  });
+  // safety: if window loses focus mid-hold, cancel
+  window.addEventListener('blur', function(){
+    keyHeld = false;
+    if(SM.state==='ARMING') endHold();
+  });
+
+  // Reset button
+  el.resetBtn.addEventListener('click', function(){
+    if(SM.state!=='TRIPPED') return;
+    SM.set('IDLE');
+    addLog('SYSTEM RESET · BREAKER RECLOSED', 'ok');
+    click(520,0.06,0.12);
+    setProgress(0);
+  });
+
+  /* ============================================================
+     TELEMETRY MODULE — simulated live sensor data
+     ============================================================ */
+  var telem = { volt:132.4, cur:418, freq:60.00, ph:[132.4,132.1,132.3] };
+  var tripped = false;
+
+  function setTelemetryZeroed(){ tripped = true; }
+
+  function flicker(node){
+    node.classList.remove('flicker');
+    void node.offsetWidth;
+    node.classList.add('flicker');
+  }
+
+  function updateTelemetry(){
+    if(!tripped){
+      telem.volt = 132.4 + (Math.random()-0.5)*0.6;
+      telem.cur  = Math.round(418 + (Math.random()-0.5)*24);
+      telem.freq = 60.00 + (Math.random()-0.5)*0.04;
+      telem.ph[0] = telem.volt + (Math.random()-0.5)*0.3;
+      telem.ph[1] = telem.volt + (Math.random()-0.5)*0.5;
+      telem.ph[2] = telem.volt + (Math.random()-0.5)*0.4;
+    } else {
+      telem.volt = 0; telem.cur = 0; telem.freq = 0;
+      telem.ph = [0,0,0];
+    }
+
+    var v = telem.volt.toFixed(1);
+    var c = tripped ? '0' : String(telem.cur);
+    var f = telem.freq.toFixed(2);
+
+    el.voltVal.innerHTML = v + '<span class="unit">kV</span>';
+    el.curVal.innerHTML  = c + '<span class="unit">A</span>';
+    el.freqVal.innerHTML = f + '<span class="unit">Hz</span>';
+    flicker(el.voltVal); flicker(el.curVal); flicker(el.freqVal);
+
+    el.mVolt.textContent = v;
+    el.mCur.textContent  = c;
+    el.mFreq.textContent = f;
+
+    // phase meters
+    var maxV = 133;
+    el.phA.style.width = (telem.ph[0]/maxV*100)+'%';
+    el.phB.style.width = (telem.ph[1]/maxV*100)+'%';
+    el.phC.style.width = (telem.ph[2]/maxV*100)+'%';
+    el.phAv.textContent = telem.ph[0].toFixed(1);
+    el.phBv.textContent = telem.ph[1].toFixed(1);
+    el.phCv.textContent = telem.ph[2].toFixed(1);
+  }
+
+  /* ============================================================
+     CLOCK / UPTIME
+     ============================================================ */
+  var boot = Date.now();
+  function updateClock(){
+    el.clock.textContent = nowStamp();
+    var s = Math.floor((Date.now()-boot)/1000);
+    var p = function(n){ return (n<10?'0':'')+n; };
+    el.uptime.textContent = p(Math.floor(s/3600))+':'+p(Math.floor(s/60)%60)+':'+p(s%60);
+  }
+
+  /* ============================================================
+     INIT
+     ============================================================ */
+  function init(){
+    addLog('SYSTEM INIT', 'ok');
+    addLog('LOCKOUT PROTOCOL ENGAGED');
+    addLog('BAY 07 / FEEDER R-14 ONLINE');
+    renderState('IDLE', null);
+    updateTelemetry();
+    updateClock();
+    setInterval(updateTelemetry, TICK_MS);
+    setInterval(updateClock, 1000);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else { init(); }
+
+})();
+</script>
+</body>
+</html>

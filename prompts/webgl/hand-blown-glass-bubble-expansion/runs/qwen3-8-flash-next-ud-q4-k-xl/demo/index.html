@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitreous Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#1A1A1A;
+    --cyan:#88CCEE;
+    --warm:#F4F1EA;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;overflow:hidden;background:var(--void);}
+  body{
+    font-family:'Lato',system-ui,sans-serif;
+    color:var(--warm);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  #scene{
+    position:fixed;inset:0;
+    display:block;
+    touch-action:none;
+    cursor:grab;
+  }
+  #scene.grabbing{cursor:grabbing;}
+  .ui{
+    position:fixed;
+    z-index:5;
+    pointer-events:none;
+    user-select:none;
+    opacity:0;
+    transform:translateY(8px);
+    animation:ui-in 1.1s cubic-bezier(.2,.7,.2,1) .5s forwards;
+  }
+  .brand{
+    top:clamp(20px,3.4vh,40px);
+    left:clamp(20px,3.6vw,44px);
+  }
+  .brand .mark{
+    font-family:'Playfair Display',Georgia,serif;
+    font-weight:500;
+    font-size:clamp(1.15rem,2.4vw,1.5rem);
+    letter-spacing:.05em;
+    color:var(--warm);
+    line-height:1;
+    white-space:nowrap;
+  }
+  .brand .rule{
+    width:34px;height:1px;margin-top:.85em;
+    background:linear-gradient(90deg,rgba(136,204,238,.75),rgba(136,204,238,0));
+  }
+  .brand .tag{
+    margin-top:.9em;
+    font-size:.62rem;
+    letter-spacing:.34em;
+    text-transform:uppercase;
+    color:rgba(136,204,238,.55);
+    font-weight:400;
+  }
+  .hint{
+    bottom:clamp(22px,4vh,42px);
+    left:50%;
+    transform:translate(-50%,14px);
+    text-align:center;
+    font-size:.9rem;
+    font-weight:300;
+    letter-spacing:.22em;
+    color:var(--cyan);
+    opacity:.6;
+    white-space:nowrap;
+    animation:hint-in 1.2s ease .9s forwards;
+  }
+  .hint .dot{
+    display:inline-block;width:5px;height:5px;border-radius:50%;
+    background:var(--cyan);margin-right:.9em;vertical-align:middle;
+    animation:pulse 2.6s ease-in-out infinite;
+  }
+  .hint.gone{opacity:0;transition:opacity 1.2s ease;animation:none;}
+  .grain{
+    position:fixed;inset:0;z-index:4;pointer-events:none;
+    opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  @keyframes ui-in{to{opacity:1;transform:translateY(0);}}
+  @keyframes hint-in{to{opacity:.6;transform:translate(-50%,0);}}
+  @keyframes pulse{0%,100%{opacity:.25;transform:scale(.8);}50%{opacity:1;transform:scale(1.15);}}
+  @media (prefers-reduced-motion:reduce){
+    .ui,.hint{animation:none;opacity:1;transform:translate(0,0);}
+    .hint{transform:translate(-50%,0);}
+    .hint .dot{animation:none;opacity:.7;}
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div class="grain"></div>
+  <div class="ui brand">
+    <div class="mark">Vitreous Studio</div>
+    <div class="rule"></div>
+    <div class="tag">Material Study · No.01</div>
+  </div>
+  <div class="ui hint" id="hint"><span class="dot"></span>Drag to stretch</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Renderer / Scene ---------- */
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x1A1A1A, 1);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1A1A1A);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(0, 0, 5);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.enableZoom = false;
+controls.rotateSpeed = 0.5;
+controls.minPolarAngle = 0.55;
+controls.maxPolarAngle = 2.6;
+controls.target.set(0, 0, 0);
+
+/* ---------- Lighting ---------- */
+const key = new THREE.DirectionalLight(0xF4F1EA, 2.0);
+key.position.set(4, 6, 3);
+scene.add(key);
+
+const fill = new THREE.AmbientLight(0x88CCEE, 0.2);
+scene.add(fill);
+
+/* ---------- Procedural environment (no external HDRI) ---------- */
+function buildEnvTexture(){
+  const c = document.createElement('canvas'); c.width = 256; c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#1A1A1A'; g.fillRect(0,0,256,256);
+  const add = (x,y,r,col,a)=>{ const rg=g.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,`rgba(${col},${a})`); rg.addColorStop(1,`rgba(${col},0)`); g.fillStyle=rg; g.fillRect(0,0,256,256); };
+  add(78,52,120,'244,241,234',1.0);   // warm key
+  add(196,176,150,'136,204,238',0.5); // cool accent
+  add(40,210,90,'120,150,190',0.28);  // low cool bounce
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromEquirectangular(buildEnvTexture()).texture;
+pmrem.dispose();
+
+/* ---------- Glass bubble ---------- */
+const R = 1.35;
+const geo = new THREE.SphereGeometry(R, 64, 48); // 3249 vertices (<10k)
+const basePos = geo.attributes.position.array.slice(); // rest positions
+
+const mat = new THREE.MeshPhysicalMaterial({
+  color: 0x88CCEE,
+  transmission: 1.0,
+  roughness: 0.1,
+  metalness: 0.0,
+  ior: 1.5,
+  thickness: 1.5,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.1,
+  envMapIntensity: 1.0,
+  attenuationColor: new THREE.Color(0x88CCEE),
+  attenuationDistance: 3.5,
+  transparent: true,
+  side: THREE.DoubleSide
+});
+const glass = new THREE.Mesh(geo, mat);
+scene.add(glass);
+
+/* ---------- Caustics floor (additive, procedural ripple) ---------- */
+const causticUniforms = {
+  uTime: { value: 0 },
+  uLight: { value: new THREE.Vector2(0.5, 0.78) },
+  uColor: { value: new THREE.Color(0x9fd8ef) }
+};
+const causticMat = new THREE.ShaderMaterial({
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  uniforms: causticUniforms,
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `
+    precision highp float;
+    varying vec2 vUv;
+    uniform float uTime; uniform vec2 uLight; uniform vec3 uColor;
+    void main(){
+      vec2 p = vUv - uLight;
+      float d = length(p);
+      float t = uTime * 0.35;
+      float w = sin(d*22.0 - t*2.0) + sin((p.x+p.y)*17.0 + t*1.5) + sin((p.x-p.y)*13.0 - t);
+      w = w/3.0;
+      float rings = smoothstep(0.42,0.0,abs(w));
+      float glow = exp(-d*d*5.0);
+      float a = rings*0.45 + glow*0.5;
+      a *= smoothstep(0.62,0.0,d);
+      gl_FragColor = vec4(uColor, a*0.55);
+    }`
+});
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(16,16), causticMat);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -2;
+scene.add(floor);
+
+/* ---------- Interaction state ---------- */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+const tmpV = new THREE.Vector3();
+const localPoint = new THREE.Vector3();
+const localDir = new THREE.Vector3();
+
+const RADIUS = 0.85;
+const RADIUS2 = RADIUS*RADIUS;
+const STIFF = 7.0, DAMP = 4.0, MAX_DISP = 1.1;
+const RELAX_K = 3.0, RELAX_D = 2.4;
+const MEM_FADE = 0.45;
+
+let dragging = false;
+let active = false;
+let anchor = new THREE.Vector3();
+let lastWorld = new THREE.Vector3();
+let curDisp = 0;
+const pos = geo.attributes.position;
+const count = pos.count;
+const cur = new Float32Array(count);
+const vel = new Float32Array(count);
+const mem = new Float32Array(count);
+
+function updateNDC(e){
+  const r = canvas.getBoundingClientRect();
+  ndc.x = ((e.clientX - r.left)/r.width)*2 - 1;
+  ndc.y = -((e.clientY - r.top)/r.height)*2 + 1;
+}
+function intersectGlass(){
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObject(glass);
+  if(hits.length){
+    lastWorld.copy(hits[0].point);
+    glass.worldToLocal(localPoint.copy(hits[0].point));
+    return true;
+  }
+  return false;
+}
+function computeDisp(){
+  tmpV.copy(camera.position).sub(lastWorld);
+  tmpV.normalize();
+  glass.worldToLocal(localDir.copy(tmpV));
+  curDisp = THREE.MathUtils.clamp(localDir.length() * 1.6, 0.2, 0.9);
+}
+
+function onDown(e){
+  updateNDC(e);
+  if(!intersectGlass()) return;
+  dragging = true; active = true;
+  anchor.copy(localPoint);
+  computeDisp();
+  controls.enabled = false;
+  canvas.classList.add('grabbing');
+  document.getElementById('hint').classList.add('gone');
+}
+function onMove(e){
+  updateNDC(e);
+  if(!dragging){ active = intersectGlass(); return; }
+  raycaster.setFromCamera(ndc, camera);
+  const plane = new THREE.Plane();
+  plane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(tmpV).clone().negate(), lastWorld);
+  const hit = new THREE.Vector3();
+  if(raycaster.ray.intersectPlane(plane, hit)){ lastWorld.copy(hit); computeDisp(); }
+}
+function onUp(){
+  if(!dragging) return;
+  dragging = false; active = false;
+  controls.enabled = true;
+  canvas.classList.remove('grabbing');
+}
+canvas.addEventListener('pointerdown', onDown);
+window.addEventListener('pointermove', onMove);
+window.addEventListener('pointerup', onUp);
+window.addEventListener('pointercancel', onUp);
+
+/* ---------- Physics step ---------- */
+function stepPhysics(dt){
+  const p = pos.array;
+  const inv = 1/R;
+  for(let i=0;i<count;i++){
+    const ix=i*3;
+    const nx = basePos[ix]*inv, ny = basePos[ix+1]*inv, nz = basePos[ix+2]*inv;
+    const dx = nx-anchor.x, dy = ny-anchor.y, dz = nz-anchor.z;
+    const d2 = dx*dx+dy*dy+dz*dz;
+    if(d2 < RADIUS2){
+      const fall = Math.exp(-d2/(RADIUS2*0.28));
+      const target = curDisp * fall;
+      vel[i] += (-STIFF*(cur[i]-target) - DAMP*vel[i]) * dt;
+      mem[i] = Math.max(mem[i], cur[i]);
+    } else {
+      const rest = mem[i];
+      vel[i] += (-RELAX_K*(cur[i]-rest) - RELAX_D*vel[i]) * dt;
+    }
+    cur[i] += vel[i]*dt;
+    if(cur[i] > MAX_DISP){ cur[i]=MAX_DISP; vel[i]=0; }
+    if(cur[i] < -0.15){ cur[i]=-0.15; vel[i]=0; }
+    mem[i] *= (1 - MEM_FADE*dt);
+    if(mem[i] < 0.0005) mem[i] = 0;
+  }
+  for(let i=0;i<count;i++){
+    const ix=i*3;
+    const nx=basePos[ix]*inv, ny=basePos[ix+1]*inv, nz=basePos[ix+2]*inv;
+    const s = 1 + cur[i];
+    p[ix]   = basePos[ix]   + nx*cur[i];
+    p[ix+1] = basePos[ix+1] + ny*cur[i];
+    p[ix+2] = basePos[ix+2] + nz*cur[i];
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+}
+
+/* ---------- Entrance scale (elastic) ---------- */
+let startScale = 0, scaleT = 0;
+const S_DUR = reduceMotion ? 0 : 1.7;
+function easeElasticOut(x){
+  if(x<=0) return 0; if(x>=1) return 1;
+  const c4 = (2*Math.PI)/3;
+  return Math.pow(2,-10*x)*Math.sin((x*10-0.75)*c4)+1;
+}
+
+/* ---------- Loop ---------- */
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.033);
+  const t = clock.elapsedTime;
+
+  scaleT = Math.min(scaleT + dt/S_DUR, 1);
+  startScale = easeElasticOut(scaleT);
+  glass.scale.setScalar(startScale);
+
+  if(!reduceMotion) glass.rotation.y += dt * (Math.PI*2/360) * 0.5; // 0.5 deg/s
+
+  stepPhysics(dt);
+
+  let maxD = 0;
+  for(let i=0;i<count;i++) if(cur[i]>maxD) maxD=cur[i];
+  mat.thickness = 1.5 * (1 - Math.min(maxD,1)*0.6); // thin walls as it stretches
+
+  causticUniforms.uTime.value = t;
+
+  // subtle heat shimmer on key light (±5%)
+  key.intensity = reduceMotion ? 2.0 : 2.0 + Math.sin(t*1.3)*0.1;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ---------- Resize ---------- */
+function onResize(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onResize);
+</script>
+</body>
+</html>
