@@ -1,0 +1,26 @@
+id: magnetic-levitation-core
+title: "Magnetic Levitation Core"
+category: assets
+tags:
+  - 3d
+  - gltf
+  - sci-fi
+  - levitation
+  - animated
+  - energy
+  - assets
+status: polished
+summary: "Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-fi pack with 4 levitating artifacts, animated field lines, and GLB export."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

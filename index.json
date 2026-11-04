@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T12:53:33.633Z",
+  "generated_at": "2026-11-04T13:49:46.156Z",
   "schema": "schema/entry.schema.json",
-  "count": 269,
+  "count": 270,
   "categories": [
     "landing-pages",
     "animations",
@@ -13614,6 +13614,38 @@
           "review_summary": "A highly polished, atmospheric interface that perfectly captures the 'Dark Abyssal Glow' aesthetic with a clean, functional layout."
         }
       ]
+    },
+    {
+      "id": "magnetic-levitation-core",
+      "title": "Magnetic Levitation Core",
+      "category": "assets",
+      "tags": [
+        "3d",
+        "gltf",
+        "sci-fi",
+        "levitation",
+        "animated",
+        "energy",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-fi pack with 4 levitating artifacts, animated field lines, and GLB export.",
+      "path": "prompts/assets/magnetic-levitation-core",
+      "preview": null,
+      "prompt": "prompts/assets/magnetic-levitation-core/prompt.md",
+      "extended": "prompts/assets/magnetic-levitation-core/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "orbital-relay-module",

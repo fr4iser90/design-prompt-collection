@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 269 | 269 | 228 | 41 |
+| 270 | 269 | 229 | 41 |
 
 ## Quick start
 
@@ -3550,6 +3550,20 @@ High-fidelity single-file Asset Studio for 'Abyssal Trench Kit', featuring proce
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/deep-ocean-abyss-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 33s | 320s | 8 | [open](prompts/assets/deep-ocean-abyss-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Magnetic Levitation Core
+
+Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-fi pack with 4 levitating artifacts, animated field lines, and GLB export.
+
+**Status:** polished · `3d` `gltf` `sci-fi` `levitation` `animated` `energy` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/magnetic-levitation-core/prompt.md) · [extended](prompts/assets/magnetic-levitation-core/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
