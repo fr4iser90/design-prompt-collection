@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 283 | 278 | 242 | 41 |
+| 287 | 283 | 246 | 41 |
 
 ## Quick start
 
@@ -3487,6 +3487,20 @@ A rhythm-timing game where players drop data packets from orbiting satellites in
 
 ---
 
+### Sawblade Kerf Lock
+
+Industrial rhythm game: sync sawblade teeth to guide marks. Manage RPM and wobble to cut 10 boards. Single-file HTML/CSS/JS.
+
+**Status:** polished · `rhythm-timing` `industrial` `precision` `canvas2d` `woodworking` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/sawblade-kerf-lock/prompt.md) · [extended](prompts/games/sawblade-kerf-lock/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Seismograph Pulse Filter
 
 A precision timing game where players filter seismic noise to isolate earthquake pulses using a single-click mechanic on a dark oscilloscope interface.
@@ -3641,6 +3655,22 @@ ABYSS LURE: A high-fidelity 2D bioluminescent asset studio. Features cursor-driv
 
 [prompt](prompts/assets/deep-sea-angler/prompt.md) · [extended](prompts/assets/deep-sea-angler/prompt.full.md)
 
+#### Model runs
+
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/deep-sea-angler/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.9s | 321s | 8 | [open](prompts/assets/deep-sea-angler/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Lithium Cathode Plate
+
+Industrial battery sprite studio: procedural brushed aluminum plates, voltage-driven lithium glow, Canvas 2D rendering, real-time slider interaction, and atlas downloads.
+
+**Status:** polished · `2d` `sprites` `atlas` `sci-fi` `energy` `assets` `canvas2d` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/lithium-cathode-plate/prompt.md) · [extended](prompts/assets/lithium-cathode-plate/prompt.full.md)
+
 _No shot preview yet._
 
 _No model runs yet — `npm run ai:build` then `npm run shots`._
@@ -3703,9 +3733,11 @@ AIR DRIVE: A high-fidelity 2D industrial machinery asset studio. Features piston
 
 [prompt](prompts/assets/pneumatic-piston/prompt.md) · [extended](prompts/assets/pneumatic-piston/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/pneumatic-piston/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 16s | 367s | 2 | [open](prompts/assets/pneumatic-piston/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3751,9 +3783,11 @@ A single curved titanium plate under studio lighting. Scrubbing temperature (200
 
 [prompt](prompts/webgl/annealed-titanium-iridescence/prompt.md) · [extended](prompts/webgl/annealed-titanium-iridescence/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/annealed-titanium-iridescence/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 11s | 86s | 3 | [open](prompts/webgl/annealed-titanium-iridescence/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3882,6 +3916,20 @@ GPU-accelerated Navier-Stokes fluid simulation. Drag mouse to inject sumi ink in
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 5.4s | 324s | 1 | [open](prompts/webgl/ink-in-water-shader-simulation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Karst Sinkhole Collapse
+
+A brutalist geotechnical simulation where voxel-based limestone collapses into a void, revealing internal cavern networks through honest geometry and stark lighting.
+
+**Status:** polished · `three-js` `voxel-removal` `csg` `procedural-terrain` `geotechnical` `camera-orbit` `pbr-stone` `ambient-occlusion` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/karst-sinkhole-formation/prompt.md) · [extended](prompts/webgl/karst-sinkhole-formation/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -4015,6 +4063,20 @@ Real-time hydraulic erosion on a 128x128 voxel grid. Click to spawn rain; comput
 
 ## Editorial
 
+### Bluebook Ink Transfer
+
+A cyanotype architectural folio where scroll velocity controls ink transfer physics. Fast scroll smudges text; slow scroll causes bleed. Find the perfect transfer zone for crisp legibility.
+
+**Status:** polished · `bluebook` `cyanotype` `architecture` `ink-transfer` `scroll-velocity` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/bluebook-ink-transfer/prompt.md) · [extended](prompts/editorial/bluebook-ink-transfer/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### The Molting Cycle
 
 Carapace Press: A nocturnal entomological journal where scroll velocity physically shatters the dark chitinous top layer to reveal the pale, bioluminescent substrate beneath.
@@ -4119,9 +4181,11 @@ Scroll-driven microfilm reader where text blurs at edges and snaps sharp in a ce
 
 [prompt](prompts/editorial/microfilm-reel-focus-scan/prompt.md) · [extended](prompts/editorial/microfilm-reel-focus-scan/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/microfilm-reel-focus-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 31s | 148s | 6 | [open](prompts/editorial/microfilm-reel-focus-scan/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4343,9 +4407,11 @@ A textile revision tool interface for 'Cinnabar & Co.' featuring a vertical spli
 
 [prompt](prompts/interfaces/crimson-dye-bath-revision/prompt.md) · [extended](prompts/interfaces/crimson-dye-bath-revision/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/crimson-dye-bath-revision/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.7s | 128s | 2 | [open](prompts/interfaces/crimson-dye-bath-revision/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

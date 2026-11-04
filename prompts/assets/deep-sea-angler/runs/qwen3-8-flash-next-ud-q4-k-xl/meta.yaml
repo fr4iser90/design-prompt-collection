@@ -1,0 +1,28 @@
+model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+model_slug: qwen3-8-flash-next-ud-q4-k-xl
+model_api: "chat"
+provider: "custom"
+engine: "gufo"
+engine_link: "https://github.com/gufo-org/gufo/commit/fee9d2a"
+engine_rev: "fee9d2a"
+built_at: "2026-11-04"
+updated: "2026-11-04"
+demo: demo/index.html
+preview: preview.png
+status: ok
+build_attempts: 0
+thinking_enabled: false
+stream: true
+temperature: 0.65
+context_tokens: 262144
+duration_ms: 321103
+gen_ms: 321103
+ttft_ms: 2942
+queue_wait_ms: 82
+wall_ms: 324127
+review_score: 8
+review_summary: "Excellent adherence to the 'Light as Subject' thesis with a clean, functional UI and correct palette usage."
+reviewed_at: "2026-11-04T20:15:31.099Z"
+review_issues:
+  - "Main canvas appears empty in static screenshot (expected due to cursor-light mechanic, but lacks initial state)"
+  - "Filmstrip thumbnails are very dark, making silhouette readability difficult at small scale"

@@ -1,0 +1,24 @@
+id: bluebook-ink-transfer
+title: "Bluebook Ink Transfer"
+category: editorial
+tags:
+  - bluebook
+  - cyanotype
+  - architecture
+  - ink-transfer
+  - scroll-velocity
+status: polished
+summary: "A cyanotype architectural folio where scroll velocity controls ink transfer physics. Fast scroll smudges text; slow scroll causes bleed. Find the perfect transfer zone for crisp legibility."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

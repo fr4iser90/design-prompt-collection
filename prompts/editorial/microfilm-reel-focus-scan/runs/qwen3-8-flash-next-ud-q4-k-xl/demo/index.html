@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARCHIVUM — Microfilm Reel Focus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A;
+    --ink:#F5F5F0;
+    --accent:#88CCEE;
+    --accent-dim:rgba(136,204,238,.32);
+    --accent-faint:rgba(136,204,238,.14);
+    --gate-h:22vh;
+    --sprocket-w:38px;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Courier Prime',ui-monospace,monospace;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    cursor:default;
+  }
+
+  ::selection{background:var(--accent);color:#0A0A0A;}
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:60;
+    height:60px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(14px,3vw,34px);
+    background:var(--bg);
+    border-bottom:1px solid var(--accent);
+    font-family:'Space Grotesk',sans-serif;
+    text-transform:uppercase;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .brand .mark{
+    font-weight:700;font-size:clamp(18px,2.4vw,26px);
+    letter-spacing:.34em;color:var(--ink);line-height:1;
+  }
+  .brand .sub{
+    font-size:10px;letter-spacing:.28em;color:var(--accent);
+    font-weight:500;
+  }
+  .status{
+    display:flex;align-items:center;gap:16px;
+    font-size:clamp(9px,1.1vw,11px);letter-spacing:.24em;
+    color:var(--accent);font-weight:500;
+  }
+  .status .rec{
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .status .dot{
+    width:7px;height:7px;background:var(--accent);
+    animation:pulse 1.6s steps(2,end) infinite;
+  }
+  @keyframes pulse{0%,49%{opacity:1;}50%,100%{opacity:.15;}}
+  .status .sep{opacity:.4;}
+  .status .val{color:var(--ink);}
+
+  /* ---------- READER ---------- */
+  #reader{
+    position:fixed;inset:60px 0 0 0;
+    overflow-y:auto;overflow-x:hidden;
+    scroll-behavior:auto;
+    scrollbar-width:none;
+  }
+  #reader::-webkit-scrollbar{display:none;}
+
+  /* ---------- FILM STRIP ---------- */
+  #film{
+    position:relative;
+    max-width:920px;
+    margin:0 auto;
+    padding:42vh 0 46vh;
+    will-change:transform;
+  }
+
+  /* Sprocket rails */
+  .rail{
+    position:absolute;top:0;bottom:0;width:var(--sprocket-w);
+    background-image:
+      linear-gradient(to bottom,transparent 0,transparent calc(50% - 8px),var(--ink) calc(50% - 8px),var(--ink) calc(50% + 8px),transparent calc(50% + 8px)),
+      linear-gradient(to right,transparent 0,transparent calc(50% - 8px),var(--ink) calc(50% - 8px),var(--ink) calc(50% + 8px),transparent calc(50% + 8px));
+    background-size:var(--sprocket-w) 48px;
+    background-repeat:repeat-y;
+    z-index:3;pointer-events:none;
+  }
+  .rail::before{
+    content:"";position:absolute;top:0;bottom:0;
+    width:1px;background:var(--accent-dim);
+  }
+  .rail-left{left:0;}
+  .rail-left::before{right:0;}
+  .rail-right{right:0;}
+  .rail-right::before{left:0;}
+
+  /* ---------- CONTENT ---------- */
+  .content{
+    padding:0 clamp(46px,6vw,72px);
+  }
+
+  .frame{
+    will-change:filter,opacity;
+    transition:filter .1s linear,opacity .1s linear;
+    filter:blur(11px) contrast(.62) brightness(.5);
+    opacity:.42;
+  }
+
+  .break{
+    border-top:1px solid var(--accent);
+    margin:0 0 clamp(34px,5vw,52px);
+    position:relative;
+  }
+  .break::after{
+    content:"◄";
+    position:absolute;top:-9px;left:0;
+    color:var(--accent);font-size:11px;
+    background:var(--bg);padding-right:8px;
+  }
+
+  .eyebrow{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:11px;font-weight:700;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--accent);
+    margin-bottom:14px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow .idx{opacity:.55;}
+
+  h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;text-transform:uppercase;
+    font-size:clamp(20px,3vw,30px);
+    letter-spacing:.06em;line-height:1.1;
+    color:var(--ink);margin-bottom:22px;
+  }
+  h2 .q{color:var(--accent);}
+
+  .frame p{
+    font-size:clamp(15px,1.9vw,18px);
+    line-height:1.85;color:var(--ink);
+    margin-bottom:1.15em;max-width:64ch;
+  }
+  .frame p .drop{
+    color:var(--accent);font-weight:700;
+  }
+
+  .ledger{
+    list-style:none;
+    font-size:clamp(13px,1.6vw,15px);
+    line-height:1.9;
+    margin:6px 0 4px;
+    border-left:1px solid var(--accent-dim);
+    padding-left:18px;
+  }
+  .ledger li{display:flex;justify-content:space-between;gap:16px;}
+  .ledger li span:first-child{color:var(--ink);}
+  .ledger li span:last-child{color:var(--accent);white-space:nowrap;}
+
+  .spec{
+    font-size:clamp(12px,1.4vw,14px);
+    line-height:2;color:var(--ink);
+  }
+  .spec b{color:var(--accent);font-weight:700;letter-spacing:.05em;}
+
+  /* ---------- FOCUS GATE ---------- */
+  #gate{
+    position:fixed;left:0;right:0;z-index:50;
+    height:var(--gate-h);
+    top:calc(60px + (100vh - 60px)/2 - var(--gate-h)/2);
+    pointer-events:none;
+    border-top:1px solid var(--accent);
+    border-bottom:1px solid var(--accent);
+    box-shadow:inset 0 0 12px var(--accent-faint);
+    background:rgba(136,204,238,.02);
+  }
+  #gate::before,#gate::after{
+    content:"";position:absolute;top:0;bottom:0;width:1px;
+    background:var(--accent);opacity:.55;
+  }
+  #gate::before{left:clamp(14px,3vw,34px);}
+  #gate::after{right:clamp(14px,3vw,34px);}
+
+  .gate-label{
+    position:absolute;top:6px;right:clamp(16px,3vw,36px);
+    font-family:'Space Grotesk',sans-serif;
+    font-size:9px;letter-spacing:.3em;color:var(--accent);
+    text-transform:uppercase;font-weight:500;
+  }
+  .gate-tick{
+    position:absolute;left:clamp(14px,3vw,34px);top:50%;
+    transform:translateY(-50%);
+    width:0;height:0;
+    border-top:5px solid transparent;
+    border-bottom:5px solid transparent;
+    border-left:8px solid var(--accent);
+  }
+
+  /* Scanline */
+  #scan{
+    position:absolute;left:0;right:0;top:0;height:1px;
+    background:var(--accent);opacity:.3;
+    will-change:transform;
+    animation:scan 3.4s linear infinite;
+  }
+  @keyframes scan{
+    0%{transform:translateY(0);}
+    100%{transform:translateY(var(--gate-h));}
+  }
+
+  /* ---------- GRAIN ---------- */
+  #grain{
+    position:fixed;inset:-40%;z-index:55;
+    pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:160px 160px;
+    will-change:transform;
+  }
+
+  /* ---------- CONTROLS ---------- */
+  #controls{
+    position:fixed;bottom:16px;left:0;right:0;z-index:70;
+    display:flex;justify-content:center;
+    padding:0 14px;
+  }
+  .ctrl{
+    font-family:'Space Grotesk',sans-serif;
+    background:var(--bg);
+    border:1px solid var(--accent);
+    color:var(--accent);
+    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+    font-weight:700;padding:9px 16px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:9px;
+    transition:background .15s linear,color .15s linear;
+  }
+  .ctrl:hover{background:var(--accent);color:#0A0A0A;}
+  .ctrl .k{
+    display:inline-block;border:1px solid currentColor;
+    padding:1px 5px;font-size:9px;letter-spacing:.1em;
+  }
+  .ctrl .led{width:6px;height:6px;background:var(--accent);}
+  .ctrl.off .led{background:transparent;border:1px solid currentColor;}
+
+  /* ---------- HINT ---------- */
+  #hint{
+    position:fixed;bottom:64px;left:50%;transform:translateX(-50%);
+    z-index:58;pointer-events:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--accent);text-align:center;
+    transition:opacity .5s linear;
+  }
+  #hint .arrows{
+    display:block;font-size:14px;margin-top:6px;
+    animation:bob 1.4s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(-3px);opacity:.4;}50%{transform:translateY(3px);opacity:1;}}
+
+  /* ---------- STATIC MODE ---------- */
+  body.static #film{transform:none!important;}
+  body.static .frame{
+    filter:none!important;opacity:1!important;
+    transition:none;
+  }
+  body.static #grain{display:none;}
+  body.static #scan{display:none;}
+
+  /* ---------- ENTRANCE ---------- */
+  @keyframes entrance{
+    0%{transform:translateX(90px);opacity:0;filter:blur(20px);}
+    100%{transform:translateX(0);opacity:1;filter:blur(0);}
+  }
+  #film.enter{animation:entrance 1s cubic-bezier(.2,.7,.2,1) both;}
+
+  /* ---------- REDUCED MOTION ---------- */
+  @media (prefers-reduced-motion:reduce){
+    #scan,#grain,.status .dot,#hint .arrows{animation:none!important;}
+    #film.enter{animation:none;}
+    .frame{transition:none;}
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:640px){
+    :root{--sprocket-w:22px;}
+    .content{padding:0 clamp(30px,8vw,44px);}
+    .brand .sub{display:none;}
+    .status .sep,.status .val{display:none;}
+    .rail::before{display:none;}
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="mark">ARCHIVUM</span>
+      <span class="sub">Microfilm Reel Focus</span>
+    </div>
+    <div class="status">
+      <span class="rec"><span class="dot"></span>REEL 01</span>
+      <span class="sep">//</span>
+      <span>STATUS: <span class="val">ACTIVE</span></span>
+      <span class="sep">//</span>
+      <span>FOCUS <span class="val" id="fval">0%</span></span>
+    </div>
+  </header>
+
+  <div id="reader">
+    <div id="film" class="enter">
+      <div class="rail rail-left" id="railL"></div>
+      <div class="rail rail-right" id="railR"></div>
+
+      <div class="content">
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">01</span> THE HISTORY OF ANALOG STORAGE</div>
+          <h2>Everything We Kept <span class="q">Was a Promise</span></h2>
+          <p><span class="drop">▸</span> Long before the first transistor switched on, memory was a physical thing. A groove. A punch-hole. A line of silver halide, darkened by light. We did not store the past so much as we <em>pressed</em> it into matter and trusted the matter to hold.</p>
+          <p>The archive, in its oldest form, was an act of faith — a wager that the object would outlast the hand that made it, and the century that remembered why.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">02</span> THE 16MM STANDARD</div>
+          <h2>Halving the World</h2>
+          <p><span class="drop">▸</span> In the 1930s, engineers settled on 16mm film for archival reproduction. It was the compromise that let a nation shrink its libraries: a single reel could swallow a thousand pages, each frame a compressed ghost of a document once spread across a desk.</p>
+          <p>What you are reading now is rendered the same way a reader's lamp once rendered it — through a lens, through a gate, through a narrow window of focus. Move the reel. Bring the text to the light.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">03</span> THE READER'S LAMP</div>
+          <h2>Focus Is a <span class="q">Choice</span></h2>
+          <p><span class="drop">▸</span> A microfilm reader gives you no comfort of the whole. You see one band of text at a time, sharp and legible; above and below it, the rest dissolves into a smear of grey. Depth of field is not a flaw here — it is the discipline.</p>
+          <p>The machine asks you to commit. To advance the frame. To accept that clarity is local, and that to read everything at once is to read nothing at all.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">04</span> DEPTH OF FIELD</div>
+          <h2>The Blur Is the Point</h2>
+          <p><span class="drop">▸</span> Peripheral text is not hidden from you. It is present — you can sense its shape, count its lines — but it refuses to resolve until you bring it into the gate. This is the honest physics of optics, and of memory itself.</p>
+          <p>We remember the focal band of an afternoon. The rest of the day exists only as a soft, unsharpened context. The reader knows this. It simply refuses to lie about it.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">05</span> THE EMULSION</div>
+          <h2>Grain as Evidence</h2>
+          <p><span class="drop">▸</span> Film is not smooth. It is a field of tiny silver crystals, and where light struck them, they changed forever. The noise you see is not interference — it is the material's signature, the fingerprint of the process.</p>
+          <p>A clean scan is a lie of convenience. The grain is proof that something happened here, that photons were counted, that the record was made of real events and not of nothing.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">06</span> INDEX OF LOST DATA</div>
+          <h2>Things That <span class="q">Did Not Survive</span></h2>
+          <p><span class="drop">▸</span> Every archive is defined as much by its gaps as by its holdings. The following are catalogued as unrecoverable — present in the ledger, absent from the reel.</p>
+          <ul class="ledger">
+            <li><span>Reel 01 // Frame 0042</span><span>EMULSION LOSS</span></li>
+            <li><span>Reel 01 // Frame 0117</span><span>UNEXPOSED</span></li>
+            <li><span>Reel 01 // Frame 0233</span><span>SCRATCH / ILLEGIBLE</span></li>
+            <li><span>Reel 01 // Frame 0309</span><span>MISSING</span></li>
+            <li><span>Reel 01 // Frame 0418</span><span>FADED BEYOND RECOVERY</span></li>
+            <li><span>Reel 01 // Frame 0500</span><span>OVEREXPOSED</span></li>
+          </ul>
+          <p>They are listed here so that their absence is at least recorded. A void, named, is a void we can no longer pretend was never a page.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">07</span> THE MECHANICS OF RECALL</div>
+          <h2>Advance. Focus. <span class="q">Read.</span></h2>
+          <p><span class="drop">▸</span> There is no search bar in this machine. No jump-to-line, no scroll-to-top shortcut, no infinite feed. Recall here is manual: you drive the reel forward, you wait for the band to settle into the gate, you let the lens find its focus.</p>
+          <p>It is slower than memory should be. That slowness is the archive's argument — that some things deserve the effort of being found.</p>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">08</span> SPECIMEN NOTES</div>
+          <h2>Reading the Reel</h2>
+          <div class="spec">
+            <b>FORMAT</b> — 16mm archival microfilm, silver halide emulsion.<br>
+            <b>GATE</b> — Fixed central window, 22% viewport height, cyan-framed.<br>
+            <b>FOCUS</b> — Scroll-driven. Text resolves only within the gate band.<br>
+            <b>GRAIN</b> — Live film-emulsion simulation, 5% opacity, flickering.<br>
+            <b>JITTER</b> — Mechanical reel advance, applied at random intervals.<br>
+            <b>SCAN</b> — Cyan beam, continuous vertical sweep across the gate.<br>
+            <b>MODE</b> — Toggle STATIC VIEW to disable all motion &amp; focus blur.
+          </div>
+        </section>
+
+        <div class="break"></div>
+
+        <section class="frame">
+          <div class="eyebrow"><span class="idx">09</span> END OF REEL</div>
+          <h2>The Reel <span class="q">Rewinds</span></h2>
+          <p><span class="drop">▸</span> You have reached the tail. The sprockets have run out of holes to catch. Somewhere above you, the frames you passed are already blurred again — the machine keeps nothing sharp that you are no longer looking at.</p>
+          <p>Scroll back up and the gate will find them again, one frame at a time. That is all an archive has ever promised: not that you will remember, but that you can always come back to the light.</p>
+          <p style="color:var(--accent);letter-spacing:.2em;font-size:12px;">— END REEL 01 —</p>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="gate">
+    <span class="gate-tick"></span>
+    <span class="gate-label">FOCUS GATE // OPTICAL WINDOW</span>
+    <div id="scan"></div>
+  </div>
+
+  <div id="grain"></div>
+
+  <div id="hint">Scroll to advance the reel<span class="arrows">▲ ▼</span></div>
+
+  <div id="controls">
+    <button class="ctrl" id="staticToggle" aria-pressed="false">
+      <span class="led"></span> STATIC VIEW <span class="k">S</span>
+    </button>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  var reader = document.getElementById('reader');
+  var film   = document.getElementById('film');
+  var railL  = document.getElementById('railL');
+  var railR  = document.getElementById('railR');
+  var grain  = document.getElementById('grain');
+  var hint   = document.getElementById('hint');
+  var fval   = document.getElementById('fval');
+  var toggle = document.getElementById('staticToggle');
+  var frames = Array.prototype.slice.call(document.querySelectorAll('.frame'));
+
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var staticMode = reduce;
+
+  /* ---------- ENTRANCE ---------- */
+  film.addEventListener('animationend', function(){
+    film.classList.remove('enter');
+  }, {once:true});
+
+  /* ---------- FOCUS CALC ---------- */
+  var rafPending = false;
+  function computeFocus(){
+    rafPending = false;
+    if(staticMode){
+      for(var i=0;i<frames.length;i++){
+        frames[i].style.filter='';
+        frames[i].style.opacity='';
+      }
+      fval.textContent='—';
+      return;
+    }
+    var vh = window.innerHeight;
+    var center = 60 + (vh - 60)/2;   // gate center within viewport
+    var halfGate = (vh*0.22)/2;
+    var maxDist = (vh - 60)/2;
+
+    var best = 0;
+    for(var i=0;i<frames.length;i++){
+      var r = frames[i].getBoundingClientRect();
+      var fc = r.top + r.height/2;
+      var d = Math.abs(fc - center);
+      var t = Math.min(d / (maxDist*0.85), 1);
+
+      var blur = 11 * t;
+      var contrast = 1.2 - 0.6*t;
+      var bright = 1.1 - 0.6*t;
+      var op = 1 - 0.6*t;
+
+      frames[i].style.filter = 'blur('+blur.toFixed(2)+'px) contrast('+contrast.toFixed(2)+') brightness('+bright.toFixed(2)+')';
+      frames[i].style.opacity = op.toFixed(3);
+
+      var clarity = Math.max(0, 1 - Math.min(d/(halfGate*2.4), 1));
+      if(clarity > best) best = clarity;
+    }
+    fval.textContent = Math.round(best*100)+'%';
+  }
+  function requestFocus(){
+    if(!rafPending){ rafPending = true; requestAnimationFrame(computeFocus); }
+  }
+
+  reader.addEventListener('scroll', function(){
+    requestFocus();
+    if(hint){
+      hint.style.opacity = (reader.scrollTop > 60) ? '0' : '1';
+    }
+  }, {passive:true});
+
+  window.addEventListener('resize', requestFocus);
+
+  /* ---------- GRAIN FLICKER ---------- */
+  var grainTimer = null;
+  function startGrain(){
+    if(grainTimer) return;
+    grainTimer = setInterval(function(){
+      if(staticMode) return;
+      var x = Math.floor(Math.random()*160);
+      var y = Math.floor(Math.random()*160);
+      grain.style.transform = 'translate('+x+'px,'+y+'px)';
+    }, 100);
+  }
+  function stopGrain(){
+    if(grainTimer){ clearInterval(grainTimer); grainTimer=null; }
+    grain.style.transform='';
+  }
+
+  /* ---------- MECHANICAL JITTER ---------- */
+  var jitterTimer = null;
+  function scheduleJitter(){
+    if(jitterTimer) clearTimeout(jitterTimer);
+    var wait = 3000 + Math.random()*2000;
+    jitterTimer = setTimeout(function(){
+      if(!staticMode){
+        var dx = (Math.random()<0.5?-1:1)*2;
+        var dy = (Math.random()<0.5?-1:1)*1;
+        film.style.transform = 'translate('+dx+'px,'+dy+'px)';
+        setTimeout(function(){ film.style.transform=''; }, 100);
+      }
+      scheduleJitter();
+    }, wait);
+  }
+
+  function startAmbient(){
+    if(reduce) return;           // respect OS reduced-motion unless toggled on
+    startGrain();
+    scheduleJitter();
+  }
+  function stopAmbient(){
+    stopGrain();
+    if(jitterTimer){ clearTimeout(jitterTimer); jitterTimer=null; }
+    film.style.transform='';
+  }
+
+  /* ---------- STATIC TOGGLE ---------- */
+  function applyMode(){
+    document.body.classList.toggle('static', staticMode);
+    toggle.classList.toggle('off', staticMode);
+    toggle.setAttribute('aria-pressed', String(staticMode));
+    toggle.innerHTML = staticMode
+      ? '<span class="led"></span> FOCUS MODE <span class="k">S</span>'
+      : '<span class="led"></span> STATIC VIEW <span class="k">S</span>';
+    if(staticMode){ stopAmbient(); } else { startAmbient(); }
+    requestFocus();
+  }
+  toggle.addEventListener('click', function(){
+    staticMode = !staticMode;
+    applyMode();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key==='s' || e.key==='S'){ staticMode=!staticMode; applyMode(); }
+  });
+
+  /* ---------- INIT ---------- */
+  applyMode();
+  if(!reduce){ startAmbient(); }
+  requestFocus();
+  setTimeout(function(){ if(reader.scrollTop<60) hint.style.opacity='1'; }, 200);
+})();
+</script>
+</body>
+</html>
