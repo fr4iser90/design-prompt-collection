@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 270 | 269 | 229 | 41 |
+| 270 | 270 | 229 | 41 |
 
 ## Quick start
 
@@ -3561,9 +3561,11 @@ Build a single-file HTML asset studio for 'Magnetic Levitation Core', a 3D sci-f
 
 [prompt](prompts/assets/magnetic-levitation-core/prompt.md) · [extended](prompts/assets/magnetic-levitation-core/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/magnetic-levitation-core/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.6s | 313s | 2 | [open](prompts/assets/magnetic-levitation-core/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
