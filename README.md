@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 287 | 283 | 246 | 41 |
+| 289 | 287 | 248 | 41 |
 
 ## Quick start
 
@@ -3495,9 +3495,11 @@ Industrial rhythm game: sync sawblade teeth to guide marks. Manage RPM and wobbl
 
 [prompt](prompts/games/sawblade-kerf-lock/prompt.md) · [extended](prompts/games/sawblade-kerf-lock/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/sawblade-kerf-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.5s | 243s | 8 | [open](prompts/games/sawblade-kerf-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3671,9 +3673,11 @@ Industrial battery sprite studio: procedural brushed aluminum plates, voltage-dr
 
 [prompt](prompts/assets/lithium-cathode-plate/prompt.md) · [extended](prompts/assets/lithium-cathode-plate/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/lithium-cathode-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 18s | 315s | 7 | [open](prompts/assets/lithium-cathode-plate/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3927,9 +3931,11 @@ A brutalist geotechnical simulation where voxel-based limestone collapses into a
 
 [prompt](prompts/webgl/karst-sinkhole-formation/prompt.md) · [extended](prompts/webgl/karst-sinkhole-formation/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/karst-sinkhole-formation/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.6s | 137s | 2 | [open](prompts/webgl/karst-sinkhole-formation/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4071,9 +4077,11 @@ A cyanotype architectural folio where scroll velocity controls ink transfer phys
 
 [prompt](prompts/editorial/bluebook-ink-transfer/prompt.md) · [extended](prompts/editorial/bluebook-ink-transfer/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/bluebook-ink-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 20s | 276s | 6 | [open](prompts/editorial/bluebook-ink-transfer/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4495,6 +4503,20 @@ A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 
 
 ---
 
+### Linen Ferment Tracker
+
+Artisan cheese rind logger with procedural noise texture evolving from sparse white to dense grey based on humidity/salt data. Single-file HTML/CSS/JS.
+
+**Status:** polished · `timeline` `procedural-noise` `logging` `organic` `aging` `data-entry` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/linen-fermentation-log/prompt.md) · [extended](prompts/interfaces/linen-fermentation-log/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Print Shop Ink Calculator
 
 Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split layout. Features CMYK sliders, real-time canvas simulation with ink bleed physics, and industrial styling.
@@ -4604,6 +4626,20 @@ IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate actio
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/substation-relay-lockout/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.9s | 202s | 9 | [open](prompts/interfaces/substation-relay-lockout/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Vacuum Plunge Timer
+
+A cryo-blast timer interface where a circular gauge visually compresses as air is evacuated, using sterile blue/cyan aesthetics and industrial typography.
+
+**Status:** polished · `canvas2d` `depth-simulation` `compression` `industrial` `cold` `timer` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/vacuum-chamber-plunge/prompt.md) · [extended](prompts/interfaces/vacuum-chamber-plunge/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

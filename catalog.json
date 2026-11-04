@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-04T21:11:15.520Z",
-  "count": 287,
+  "generated_at": "2026-11-04T22:22:45.278Z",
+  "count": 289,
   "ids": [
     "abyssal-pressure-depth-scale",
     "acoustic-panel-attenuation",
@@ -144,6 +144,7 @@
     "letterpress-emboss-deform",
     "letterpress-ink-bite-tactility",
     "letterpress-mono-drop",
+    "linen-fermentation-log",
     "linen-fold-accordion",
     "linen-fold-typography",
     "linen-press-tension",
@@ -273,6 +274,7 @@
     "tunnel-ventilation-baffle",
     "turbine-blade-cutoff",
     "typographic-tidal-lock",
+    "vacuum-chamber-plunge",
     "vacuum-form-plastic-blister",
     "vault-archive-stamp",
     "vellum-fold-mechanism",
@@ -581,8 +583,8 @@
     "Wiring"
   ],
   "tag_frequency": {
-    "industrial": 30,
-    "canvas2d": 29,
+    "industrial": 31,
+    "canvas2d": 30,
     "physics": 29,
     "precision": 20,
     "tactile": 20,
@@ -597,12 +599,12 @@
     "assets": 13,
     "craft": 13,
     "infrastructure": 13,
+    "organic": 12,
+    "timeline": 12,
     "grid": 11,
     "mechanical": 11,
     "monochrome": 11,
-    "organic": 11,
     "rhythm-timing": 11,
-    "timeline": 11,
     "webgl": 11,
     "2d": 10,
     "geometry": 10,
@@ -705,6 +707,7 @@
     "ceramics": 3,
     "chemistry": 3,
     "clarity": 3,
+    "compression": 3,
     "copper": 3,
     "cyan": 3,
     "dark": 3,
@@ -777,7 +780,6 @@
     "cloth-sim": 2,
     "color-picker": 2,
     "color-theory": 2,
-    "compression": 2,
     "cyanotype": 2,
     "dark-ui": 2,
     "deboss": 2,
@@ -872,6 +874,7 @@
     "thermal-expansion": 2,
     "thermal-simulation": 2,
     "thermodynamics": 2,
+    "timer": 2,
     "topography": 2,
     "transit": 2,
     "transparency": 2,
@@ -907,6 +910,7 @@
     "adobe": 1,
     "agency": 1,
     "aggregate": 1,
+    "aging": 1,
     "agriculture": 1,
     "air-refraction": 1,
     "aluminum": 1,
@@ -986,6 +990,7 @@
     "cocktails": 1,
     "code": 1,
     "coin": 1,
+    "cold": 1,
     "cold-brew": 1,
     "cold-chain": 1,
     "collaboration": 1,
@@ -1027,6 +1032,7 @@
     "dada": 1,
     "darkroom": 1,
     "dashboard": 1,
+    "data-entry": 1,
     "data-feed": 1,
     "data-flow": 1,
     "data-layer": 1,
@@ -1035,6 +1041,7 @@
     "density-stratification": 1,
     "dents": 1,
     "depth-of-field": 1,
+    "depth-simulation": 1,
     "desaturated": 1,
     "desert-varnish": 1,
     "developer": 1,
@@ -1211,6 +1218,7 @@
     "linguistics": 1,
     "liquid-motion": 1,
     "locking": 1,
+    "logging": 1,
     "logo-motion": 1,
     "long-form": 1,
     "lower-third": 1,
@@ -1346,6 +1354,7 @@
     "print-shop": 1,
     "privacy": 1,
     "procedural-generation": 1,
+    "procedural-noise": 1,
     "process": 1,
     "progress": 1,
     "prussian-blue": 1,
@@ -1490,7 +1499,6 @@
     "threejs": 1,
     "tide": 1,
     "tileable": 1,
-    "timer": 1,
     "tin": 1,
     "titanium": 1,
     "title-sequence": 1,
@@ -1832,6 +1840,7 @@
     "interfaces: Gasket Compression Logic — Build a single-file mechanical seal configurator with drag-and-drop gasket stacking, real-time compression physics, and tolerance validation.",
     "interfaces: HazMat Cargo Manifest Verifier — Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verification, and brutalist utility design.",
     "interfaces: Kintsugi Joinery Scheduler — A drag-and-drop scheduler where filling timeline gaps requires 2px precision to 'set' a gold joinery line, turning logistics into a restorative craft.",
+    "interfaces: Linen Ferment Tracker — Artisan cheese rind logger with procedural noise texture evolving from sparse white to dense grey based on humidity/salt data. Single-file HTML/CSS/JS.",
     "interfaces: Print Shop Ink Calculator — Build 'Plate & Press', a utilitarian print estimation tool with a 60/40 split layout. Features CMYK sliders, real-time canvas simulation with ink bleed physics, and industrial styling.",
     "interfaces: Mon no B Groceries — A conceptual grocery interface using physical ledger metaphors: items hang as paper tags on a central wire. Cutting tags triggers snappy animations, while cart weight influences the wire's ambient sway.",
     "interfaces: Air Pressure Task Queue — A physical task queue where priority is pressure. Drag bubbles to inflate; high-pressure tasks pulse, vibrate, and push adjacent tasks away, enforcing spatial hierarchy.",
@@ -1839,6 +1848,7 @@
     "interfaces: Shoji Screen Privacy — A team collaboration interface where presence is communicated through the opacity of shoji paper panels and the movement of shadows behind them, replacing status dots with architectural light.",
     "interfaces: Thermal Equilibrium Simulator — CoreTemp: A single-file HTML/CSS/JS dashboard simulating 1D heat diffusion for sous-vide cooking. Features real-time Canvas visualization, elastic UI feedback on pasteurization threshold crossing, and precise thermal…",
     "interfaces: Substation Relay Lockout Protocol — IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate action via hold-to-arm/release-to-trip mechanics. Strict industrial aesthetic with hazard colors, DIN/IBM Plex fonts, and physical simulation.",
+    "interfaces: Vacuum Plunge Timer — A cryo-blast timer interface where a circular gauge visually compresses as air is evacuated, using sterile blue/cyan aesthetics and industrial typography.",
     "interfaces: Mono no Aware: Erosive Weather Station — A meteorological interface where data degrades the UI. Rain erodes wood-grain textures, sun bleaches ink, and humidity causes paper to curl and stain. The visual state is a direct physical consequence of the weather…"
   ],
   "by_category": {
@@ -6517,6 +6527,20 @@
         "brands": []
       },
       {
+        "id": "linen-fermentation-log",
+        "title": "Linen Ferment Tracker",
+        "tags": [
+          "timeline",
+          "procedural-noise",
+          "logging",
+          "organic",
+          "aging",
+          "data-entry"
+        ],
+        "summary": "Artisan cheese rind logger with procedural noise texture evolving from sparse white to dense grey based on humidity/salt data. Single-file HTML/CSS/JS.",
+        "brands": []
+      },
+      {
         "id": "lithography-ink-coverage",
         "title": "Print Shop Ink Calculator",
         "tags": [
@@ -6656,6 +6680,20 @@
           "warning"
         ],
         "summary": "IsolatorOS: A high-voltage grid maintenance interface enforcing deliberate action via hold-to-arm/release-to-trip mechanics. Strict industrial aesthetic with hazard colors, DIN/IBM Plex fonts, and physical simulation.",
+        "brands": []
+      },
+      {
+        "id": "vacuum-chamber-plunge",
+        "title": "Vacuum Plunge Timer",
+        "tags": [
+          "canvas2d",
+          "depth-simulation",
+          "compression",
+          "industrial",
+          "cold",
+          "timer"
+        ],
+        "summary": "A cryo-blast timer interface where a circular gauge visually compresses as air is evacuated, using sterile blue/cyan aesthetics and industrial typography.",
         "brands": []
       },
       {

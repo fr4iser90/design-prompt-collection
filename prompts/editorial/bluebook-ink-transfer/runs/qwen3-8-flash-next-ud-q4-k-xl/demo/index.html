@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueprint Quarterly — Cyanotype Folio</title>
+<meta name="description" content="A digital reconstruction of a cyanotype architectural folio where scroll velocity governs the chemical ink transfer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================ TOKENS ============================ */
+:root{
+  --blue:#002F5F;
+  --ink:#F0F4F8;
+  --blue2:#1E3A5F;
+  --rail:200px;
+  --col:720px;
+  --pad:24px;
+  --ink-soft:rgba(240,244,248,.62);
+  --ink-faint:rgba(240,244,248,.34);
+  --line:rgba(240,244,248,.14);
+  --line2:rgba(240,244,248,.075);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:auto}
+body{
+  background:var(--blue);
+  color:var(--ink);
+  font-family:"Space Mono",ui-monospace,monospace;
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  cursor:crosshair;
+}
+::selection{background:var(--ink);color:var(--blue)}
+
+/* ============================ ATMOSPHERE ============================ */
+.vignette{
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(125% 100% at 50% 42%, transparent 46%, rgba(0,10,24,.62) 100%);
+}
+.grain{
+  position:fixed;inset:-26%;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity:.09;mix-blend-mode:soft-light;will-change:transform;
+}
+
+/* ============================ REGISTRATION MARKS ============================ */
+.reg{position:fixed;z-index:40;pointer-events:none;width:26px;height:26px;opacity:.5}
+.reg svg{width:100%;height:100%;display:block;transform-origin:center;transition:transform .1s linear}
+.reg.tl{top:18px;left:18px}
+.reg.tr{top:18px;right:18px}
+.reg.bl{bottom:18px;left:18px}
+.reg.br{bottom:18px;right:18px}
+.reg .tick{stroke:var(--ink);stroke-width:1.4;fill:none}
+.reg .dot{fill:var(--ink)}
+
+/* ============================ TOP RAIL (mobile) ============================ */
+.toprail{
+  position:fixed;top:0;left:0;right:0;height:44px;z-index:50;display:none;
+  align-items:center;justify-content:space-between;
+  padding:0 var(--pad);background:var(--blue);border-bottom:1px solid var(--line);
+}
+.toprail .brand{font-family:"Architects Daughter";font-size:1rem;letter-spacing:.02em}
+.toprail .marks{display:flex;gap:16px}
+.toprail .marks a{display:flex;align-items:center;gap:5px;text-decoration:none;color:var(--ink-faint);font-family:"Space Mono";font-size:10px;letter-spacing:.14em}
+.toprail .marks a .m{width:12px;height:12px}
+.toprail .marks a.active{color:var(--ink)}
+.toprail .marks a.active .m .tick{stroke:var(--ink)}
+.toprail .marks a .m .tick{stroke:var(--ink-faint);stroke-width:1.6;fill:none}
+
+/* ============================ LEFT RAIL ============================ */
+.rail{
+  position:fixed;top:0;left:0;bottom:0;width:var(--rail);z-index:45;
+  display:flex;flex-direction:column;justify-content:center;gap:2px;
+  padding-left:26px;border-right:1px solid var(--line2);
+}
+.rail .rail-top{position:absolute;top:26px;left:26px;right:26px;font-family:"Space Mono";font-size:9px;letter-spacing:.24em;color:var(--ink-faint)}
+.rail .rail-bottom{position:absolute;bottom:26px;left:26px;right:26px;font-family:"Space Mono";font-size:9px;letter-spacing:.16em;color:var(--ink-faint);line-height:1.9}
+.rail .rail-bottom b{color:var(--ink-soft);font-weight:400}
+.railnav{display:flex;flex-direction:column;gap:14px}
+.railnav a{
+  display:flex;align-items:center;gap:12px;text-decoration:none;
+  color:var(--ink-faint);font-family:"Space Mono";font-size:10px;letter-spacing:.18em;
+  padding:3px 0;transition:color .4s var(--ease);
+}
+.railnav a .mark{width:20px;height:20px;flex:none;transition:transform .5s var(--ease)}
+.railnav a .mark .tick{stroke:var(--ink-faint);stroke-width:1.5;fill:none;transition:stroke .4s}
+.railnav a:hover{color:var(--ink-soft)}
+.railnav a.active{color:var(--ink)}
+.railnav a.active .mark{transform:rotate(45deg)}
+.railnav a.active .mark .tick{stroke:var(--ink)}
+
+/* ============================ LAYOUT ============================ */
+.wrap{margin-left:var(--rail)}
+main{max-width:var(--col);margin:0 auto;padding:0 40px;position:relative;z-index:5}
+.plate{position:relative;min-height:88vh;padding:clamp(70px,12vh,150px) 0;border-bottom:1px dashed var(--line2);scroll-margin-top:80px}
+.plate:last-child{border-bottom:none}
+
+/* ============================ CONTENT TYPE ============================ */
+.kicker{font-family:"Space Mono";font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:26px}
+.kicker .sep{color:var(--ink);opacity:.5;margin:0 8px}
+h2.plate-title{font-family:"Architects Daughter";font-size:clamp(2.1rem,5.4vw,3.4rem);line-height:1.02;font-weight:400;letter-spacing:.005em;margin-bottom:14px}
+.plate-meta{font-family:"Space Mono";font-size:11px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:44px}
+.lede{font-size:clamp(1.05rem,1.9vw,1.28rem);line-height:1.85;margin-bottom:34px;max-width:56ch}
+p{margin-bottom:22px;max-width:64ch;color:var(--ink-soft)}
+p strong{color:var(--ink);font-weight:700}
+.plate-body{max-width:64ch}
+
+.pullquote{
+  font-family:"Architects Daughter";font-size:clamp(1.5rem,3.4vw,2.15rem);line-height:1.35;
+  color:var(--ink);margin:52px 0;padding-left:26px;border-left:2px solid var(--ink);max-width:22ch;
+}
+.pullquote cite{display:block;margin-top:16px;font-family:"Space Mono";font-size:11px;letter-spacing:.14em;color:var(--ink-faint);font-style:normal;text-transform:uppercase}
+
+/* ============================ FIGURES / DRAWINGS ============================ */
+figure{margin:44px 0}
+figure .frame{border:1px solid var(--line);padding:22px;position:relative}
+figure .frame::before{content:"";position:absolute;top:6px;left:6px;width:9px;height:9px;border-top:1px solid var(--ink-faint);border-left:1px solid var(--ink-faint)}
+figure .frame::after{content:"";position:absolute;bottom:6px;right:6px;width:9px;height:9px;border-bottom:1px solid var(--ink-faint);border-right:1px solid var(--ink-faint)}
+.drawing{display:block;width:100%;height:auto}
+.drawing *{fill:none;stroke:var(--ink);stroke-width:1.4;vector-effect:non-scaling-stroke}
+.drawing .hatch{stroke:var(--blue2);stroke-width:1}
+.drawing .fine{stroke:var(--ink-faint);stroke-width:.8}
+.drawing text{fill:var(--ink);stroke:none;font-family:"Architects Daughter";font-size:12px}
+.drawing text.spec{fill:var(--ink-soft);font-family:"Space Mono";font-size:8.5px;letter-spacing:.08em}
+figcaption{font-family:"Architects Daughter";font-size:13px;color:var(--ink-soft);margin-top:16px;letter-spacing:.01em}
+figcaption b{font-family:"Space Mono";font-size:10px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* ============================ SPEC TABLE ============================ */
+.specs{width:100%;border-collapse:collapse;margin:40px 0;font-family:"Space Mono";font-size:12.5px}
+.specs caption{font-family:"Architects Daughter";font-size:13px;color:var(--ink-soft);text-align:left;margin-bottom:14px}
+.specs th,.specs td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+.specs thead th{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);border-bottom:1px solid var(--ink-faint)}
+.specs td:first-child{color:var(--ink)}
+.specs td:nth-child(2){color:var(--ink-soft)}
+.specs td:last-child{color:var(--ink-faint);text-align:right;white-space:nowrap}
+.specs tbody tr:hover td{color:var(--ink)}
+
+/* ============================ MARGINALIA ============================ */
+.marginalia{
+  position:absolute;right:calc(-1 * (var(--rail) + 20px));top:170px;width:196px;
+  font-family:"Architects Daughter";font-size:13.5px;line-height:1.5;color:var(--ink-soft);
+}
+.marginalia::before{content:"";position:absolute;top:-14px;left:0;width:34px;height:1px;background:var(--ink-faint)}
+.marginalia .num{font-family:"Space Mono";font-size:9px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:8px;display:block}
+.marginalia .sketch{width:120px;height:74px;margin:12px 0;display:block}
+.marginalia .sketch *{fill:none;stroke:var(--ink-faint);stroke-width:1;vector-effect:non-scaling-stroke}
+
+/* ============================ COVER / HERO ============================ */
+.cover{
+  min-height:100vh;position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:clamp(40px,7vh,90px) 40px;max-width:var(--col);margin:0 auto;
+}
+.cover-eyebrow{font-family:"Space Mono";font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:auto}
+.cover-eyebrow b{color:var(--ink);font-weight:400}
+.cover h1{
+  font-family:"Architects Daughter";font-weight:400;
+  font-size:clamp(2.9rem,9.5vw,7.2rem);line-height:.94;letter-spacing:.005em;
+  margin-bottom:20px;
+}
+.cover h1 .l2{display:block;color:var(--ink)}
+.cover h1 .l1{display:block;color:var(--ink);opacity:.92}
+.cover-sub{font-family:"Space Mono";font-size:12px;letter-spacing:.16em;color:var(--ink-soft);max-width:44ch;line-height:1.9;margin-bottom:46px}
+.cover-spec{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);font-family:"Space Mono";
+}
+.cover-spec div{background:var(--blue);padding:14px 16px}
+.cover-spec span{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px}
+.cover-spec b{font-size:13px;font-weight:400;color:var(--ink);letter-spacing:.02em}
+.cover-scroll{position:absolute;bottom:26px;right:40px;font-family:"Space Mono";font-size:10px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.cover-scroll .bar{width:1px;height:34px;background:var(--ink-faint);position:relative;overflow:hidden}
+.cover-scroll .bar::after{content:"";position:absolute;top:0;left:0;width:100%;height:10px;background:var(--ink);animation:drop 2.4s var(--ease) infinite}
+@keyframes drop{0%{transform:translateY(-12px)}100%{transform:translateY(34px)}}
+
+/* ============================ VELOCITY HUD ============================ */
+.hud{
+  position:fixed;right:26px;bottom:26px;z-index:46;width:214px;
+  border:1px solid var(--line);background:rgba(0,20,42,.55);backdrop-filter:blur(2px);
+  padding:13px 15px;font-family:"Space Mono";
+}
+.hud .hud-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:11px}
+.hud .hud-label{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-faint)}
+.hud .hud-state{font-family:"Architects Daughter";font-size:15px;color:var(--ink)}
+.hud .hud-readout{font-size:11px;color:var(--ink-soft);margin-bottom:12px;letter-spacing:.06em}
+.hud .hud-readout b{color:var(--ink);font-weight:400}
+.hud .gauge{height:5px;background:var(--blue2);position:relative;overflow:hidden}
+.hud .gauge-fill{position:absolute;top:0;left:0;bottom:0;width:0%;background:var(--ink);transition:width .12s linear}
+.hud .gauge-zone{position:absolute;top:-3px;bottom:-3px;background:var(--ink-faint);opacity:.5}
+.hud .gauge-scale{display:flex;justify-content:space-between;font-size:8px;color:var(--ink-faint);margin-top:5px;letter-spacing:.05em}
+.hud .hud-hint{font-size:9px;letter-spacing:.1em;color:var(--ink-faint);margin-top:9px;line-height:1.5}
+
+/* ============================ COLOPHON ============================ */
+.colophon{padding:clamp(60px,10vh,110px) 0 60px;font-family:"Space Mono";font-size:11px;color:var(--ink-faint);letter-spacing:.08em;line-height:2}
+.colophon .c-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+.colophon h3{font-family:"Architects Daughter";font-size:1.6rem;color:var(--ink);font-weight:400;margin-bottom:18px}
+
+/* ============================ REVEAL ============================ */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============================ RESPONSIVE ============================ */
+@media (max-width:1180px){
+  :root{--rail:150px}
+  main{padding:0 32px}
+  .marginalia{right:calc(-1 * (var(--rail) + 12px));width:150px}
+}
+@media (max-width:900px){
+  :root{--rail:0px}
+  .rail{display:none}
+  .toprail{display:flex}
+  .wrap{margin-left:0;padding-top:44px}
+  main{padding:0 var(--pad);max-width:none}
+  .cover{padding:120px var(--pad) 40px}
+  .cover-scroll{right:var(--pad)}
+  .marginalia{position:static;width:auto;margin:34px 0 0;padding:20px 0 0;border-top:1px solid var(--line);right:auto;top:auto}
+  .marginalia::before{display:none}
+  .plate{padding:70px 0}
+  .cover-spec{grid-template-columns:repeat(2,1fr)}
+  .hud{right:14px;bottom:14px;width:172px;padding:11px 12px}
+}
+@media (max-width:420px){
+  .cover-spec{grid-template-columns:1fr 1fr}
+  .cover-spec div{padding:11px 12px}
+  .hud{width:150px}
+  .specs{font-size:11.5px}
+  .specs th,.specs td{padding:9px 7px}
+}
+
+/* ============================ REDUCED MOTION ============================ */
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1!important;transform:none!important;transition:none!important}
+  .drawing *{stroke-dasharray:none!important;stroke-dashoffset:0!important;transition:none!important}
+  .cover-scroll .bar::after{animation:none}
+  .grain{transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ATMOSPHERE -->
+<div class="grain" id="grain"></div>
+<div class="vignette"></div>
+
+<!-- CORNER REGISTRATION MARKS -->
+<div class="reg tl"><svg viewBox="0 0 26 26"><circle class="tick" cx="13" cy="13" r="7"/><line class="tick" x1="13" y1="0" x2="13" y2="26"/><line class="tick" x1="0" y1="13" x2="26" y2="13"/><circle class="dot" cx="13" cy="13" r="1.4"/></svg></div>
+<div class="reg tr"><svg viewBox="0 0 26 26"><circle class="tick" cx="13" cy="13" r="7"/><line class="tick" x1="13" y1="0" x2="13" y2="26"/><line class="tick" x1="0" y1="13" x2="26" y2="13"/><circle class="dot" cx="13" cy="13" r="1.4"/></svg></div>
+<div class="reg bl"><svg viewBox="0 0 26 26"><circle class="tick" cx="13" cy="13" r="7"/><line class="tick" x1="13" y1="0" x2="13" y2="26"/><line class="tick" x1="0" y1="13" x2="26" y2="13"/><circle class="dot" cx="13" cy="13" r="1.4"/></svg></div>
+<div class="reg br"><svg viewBox="0 0 26 26"><circle class="tick" cx="13" cy="13" r="7"/><line class="tick" x1="13" y1="0" x2="13" y2="26"/><line class="tick" x1="0" y1="13" x2="26" y2="13"/><circle class="dot" cx="13" cy="13" r="1.4"/></svg></div>
+
+<!-- MOBILE TOP RAIL -->
+<nav class="toprail" aria-label="Plates">
+  <span class="brand">Blueprint Quarterly</span>
+  <div class="marks">
+    <a href="#p1"><svg class="m" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/></svg>01</a>
+    <a href="#p2"><svg class="m" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/></svg>02</a>
+    <a href="#p3"><svg class="m" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/></svg>03</a>
+    <a href="#p4"><svg class="m" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/></svg>04</a>
+  </div>
+</nav>
+
+<!-- LEFT RAIL -->
+<aside class="rail">
+  <div class="rail-top">BPQ · FOLIO No. 04</div>
+  <nav class="railnav" aria-label="Plates">
+    <a href="#p1"><svg class="mark" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/><circle class="tick" cx="10" cy="10" r="4.5"/></svg>PLATE 01</a>
+    <a href="#p2"><svg class="mark" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/><circle class="tick" cx="10" cy="10" r="4.5"/></svg>PLATE 02</a>
+    <a href="#p3"><svg class="mark" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/><circle class="tick" cx="10" cy="10" r="4.5"/></svg>PLATE 03</a>
+    <a href="#p4"><svg class="mark" viewBox="0 0 20 20"><line class="tick" x1="10" y1="0" x2="10" y2="20"/><line class="tick" x1="0" y1="10" x2="20" y2="10"/><circle class="tick" cx="10" cy="10" r="4.5"/></svg>PLATE 04</a>
+  </nav>
+  <div class="rail-bottom">
+    SUBSTRATE · <b>#002F5F</b><br>
+    INK · <b>#F0F4F8</b><br>
+    SECONDARY · <b>#1E3A5F</b><br>
+    PROCESS · <b>CYANOTYPE</b>
+  </div>
+</aside>
+
+<div class="wrap">
+<main>
+
+  <!-- ================= COVER ================= -->
+  <header class="cover">
+    <div class="cover-eyebrow"><b>BLUEPRINT QUARTERLY</b> · VOL. IV · WINTER MMXXIV</div>
+    <h1>
+      <span class="l1">Blueprint</span>
+      <span class="l2">Quarterly</span>
+    </h1>
+    <p class="cover-sub">A cyanotype folio on the reading of buildings — where the speed of your eye is the speed of the ink, and legibility is a chemical accident you can steer.</p>
+    <div class="cover-spec">
+      <div><span>Process</span><b>Cyanotype</b></div>
+      <div><span>Substrate</span><b>Iron · Blue</b></div>
+      <div><span>Exposure</span><b>18 sec / plate</b></div>
+      <div><span>Transfer</span><b>40–80 px/s</b></div>
+    </div>
+    <div class="cover-scroll"><span>Scroll to expose</span><span class="bar"></span></div>
+  </header>
+
+  <!-- ================= PLATE 01 ================= -->
+  <section class="plate" id="p1">
+    <div class="reveal">
+      <div class="kicker">Plate 01 <span class="sep">/</span> The Chemistry</div>
+      <h2 class="plate-title">The Chemistry of Reading</h2>
+      <div class="plate-meta">Cyanotype transfer · Iron(III) · Reaction time</div>
+      <div class="plate-body">
+        <p class="lede">Cyanotype is a photographic process in which the image is not captured by a camera but <strong>coaxed out of light</strong> by a solution of iron salts. Read slowly and the paper drinks the pigment evenly. Read fast and the ink smears across the grain. The folio you are holding is calibrated to your pace.</p>
+        <p>Between the emulsion and the fibre sits a narrow band of velocity — the <strong>perfect transfer zone</strong>. Inside it, the drawing resolves into sharp, high-contrast lines. Step outside it in either direction and the medium turns against you: too quick and the image drags; too still and it blooms.</p>
+        <p>The gauge in the lower right reads your scroll velocity in real time. It is not decoration. It is the readout of a process that is, for the duration of this page, genuinely running.</p>
+      </div>
+    </div>
+
+    <figure class="reveal">
+      <div class="frame">
+        <svg class="drawing" viewBox="0 0 640 400" role="img" aria-label="Diagram of the cyanotype transfer process">
+          <rect x="40" y="40" width="560" height="320"/>
+          <line class="fine" x1="40" y1="120" x2="600" y2="120"/>
+          <line class="fine" x1="40" y1="280" x2="600" y2="280"/>
+          <line class="hatch" x1="60" y1="120" x2="100" y2="280"/>
+          <line class="hatch" x1="100" y1="120" x2="140" y2="280"/>
+          <line class="hatch" x1="140" y1="120" x2="180" y2="280"/>
+          <line class="hatch" x1="180" y1="120" x2="220" y2="280"/>
+          <line class="hatch" x1="220" y1="120" x2="260" y2="280"/>
+          <line class="hatch" x1="260" y1="120" x2="300" y2="280"/>
+          <line class="hatch" x1="300" y1="120" x2="340" y2="280"/>
+          <line class="hatch" x1="340" y1="120" x2="380" y2="280"/>
+          <line class="hatch" x1="380" y1="120" x2="420" y2="280"/>
+          <line class="hatch" x1="420" y1="120" x2="460" y2="280"/>
+          <line class="hatch" x1="460" y1="120" x2="500" y2="280"/>
+          <line class="hatch" x1="500" y1="120" x2="540" y2="280"/>
+          <line class="hatch" x1="540" y1="120" x2="580" y2="280"/>
+          <text x="60" y="70">SUBSTRATE</text>
+          <text x="60" y="345">EMULSION · Fe(III)</text>
+          <text class="spec" x="440" y="112">PERFECT TRANSFER</text>
+          <text class="spec" x="440" y="296">BLEED / POROUS</text>
+          <line x1="320" y1="30" x2="320" y2="370" class="fine"/>
+        </svg>
+      </div>
+      <figcaption><b>Fig. 1.1 — Transfer gradient</b>The band between smudge and bleed where pigment sits at the fibre surface.</figcaption>
+    </figure>
+
+    <aside class="marginalia reveal">
+      <span class="num">Marginal note — 01</span>
+      Sir John Herschel, 1842. The first cyanotypes were botanical, not architectural. The medium was always about <em>contact</em>.
+      <svg class="sketch" viewBox="0 0 120 74"><path d="M10 60 Q40 10 60 40 T110 20"/><circle cx="60" cy="40" r="3"/><line x1="10" y1="60" x2="110" y2="60"/></svg>
+    </aside>
+  </section>
+
+  <!-- ================= PLATE 02 ================= -->
+  <section class="plate" id="p2">
+    <div class="reveal">
+      <div class="kicker">Plate 02 <span class="sep">/</span> The Mechanism</div>
+      <h2 class="plate-title">Velocity as a Variable</h2>
+      <div class="plate-meta">Scroll physics · Smudge · Bleed · Recovery</div>
+      <div class="plate-body">
+        <p class="lede">The reading of a building is a transfer of information from surface to memory. This folio treats that transfer as literal: your scroll rate drives a simulated chemical reaction, and the page rewards a steady hand.</p>
+        <p>When velocity exceeds the drag threshold, the emulsion is pulled sideways faster than it can set. The result is a horizontal smear — <strong>smudge</strong>. When it falls below the soak threshold, pigment creeps outward into the fibre and the edges soften into a halo — <strong>bleed</strong>.</p>
+        <p>Neither state is a failure. Both are recoverable. Ease back to the ideal band and the drawing snaps into focus, exactly as a plate lifted from the wash reveals a clean line.</p>
+      </div>
+
+      <blockquote class="pullquote reveal">
+        You are not scrolling a document. You are holding a plate under running water.
+        <cite>— On the mechanics of transfer</cite>
+      </blockquote>
+
+      <table class="specs reveal">
+        <caption>Transfer state thresholds</caption>
+        <thead>
+          <tr><th>State</th><th>Velocity band</th><th>Effect</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Bleed</td><td>Under 20 px/s</td><td>Soak</td></tr>
+          <tr><td>Recovery</td><td>20–40 px/s</td><td>Settle</td></tr>
+          <tr><td>Perfect transfer</td><td>40–80 px/s</td><td>Crisp</td></tr>
+          <tr><td>Coarse</td><td>80–120 px/s</td><td>Drag</td></tr>
+          <tr><td>Smudge</td><td>Over 120 px/s</td><td>Smear</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="reveal">
+      <div class="frame">
+        <svg class="drawing" viewBox="0 0 640 400" role="img" aria-label="Velocity response curve">
+          <line x1="70" y1="60" x2="70" y2="340"/>
+          <line x1="70" y1="340" x2="600" y2="340"/>
+          <line class="fine" x1="70" y1="200" x2="600" y2="200"/>
+          <line class="fine" x1="70" y1="130" x2="600" y2="130"/>
+          <line class="fine" x1="70" y1="270" x2="600" y2="270"/>
+          <line class="hatch" x1="230" y1="60" x2="230" y2="340"/>
+          <line class="hatch" x1="360" y1="60" x2="360" y2="340"/>
+          <path d="M70 330 C 160 320 200 90 295 90 S 430 320 520 330"/>
+          <circle cx="295" cy="90" r="4"/>
+          <text x="120" y="360">BLEED</text>
+          <text x="255" y="360">PERFECT</text>
+          <text x="470" y="360">SMUDGE</text>
+          <text class="spec" x="305" y="80">MAX RESOLUTION</text>
+          <text x="30" y="55">V</text>
+        </svg>
+      </div>
+      <figcaption><b>Fig. 2.1 — Response curve</b>Legibility peaks in the ideal band and decays toward both extremes.</figcaption>
+    </figure>
+
+    <aside class="marginalia reveal">
+      <span class="num">Marginal note — 02</span>
+      Thresholds are tuned twice: once for the wheel, once for the finger. A swipe is faster than a notch.
+      <svg class="sketch" viewBox="0 0 120 74"><path d="M20 20 L100 20 L100 54 L20 54 Z"/><line x1="60" y1="20" x2="60" y2="54"/><line x1="20" y1="37" x2="100" y2="37"/></svg>
+    </aside>
+  </section>
+
+  <!-- ================= PLATE 03 ================= -->
+  <section class="plate" id="p3">
+    <div class="reveal">
+      <div class="kicker">Plate 03 <span class="sep">/</span> The Structure</div>
+      <h2 class="plate-title">The Truss, Transferred</h2>
+      <div class="plate-meta">Steel · Warren configuration · 24 m span</div>
+      <div class="plate-body">
+        <p class="lede">A Warren truss distributes load along a lattice of equilateral triangles — the most economical form of carrying weight across a span. Drawn in iron salts, its members read as pure line: tension and compression reduced to a single stroke.</p>
+        <p>Watch the members resolve as you scroll. In the ideal band each node is a clean intersection. In smudge the diagonals run together into a grey field; in bleed the joints swell and merge.</p>
+      </div>
+    </div>
+
+    <figure class="reveal">
+      <div class="frame">
+        <svg class="drawing" viewBox="0 0 640 300" role="img" aria-label="Warren truss elevation">
+          <line x1="40" y1="230" x2="600" y2="230"/>
+          <line x1="40" y1="70" x2="600" y2="70"/>
+          <path d="M40 230 L110 70 L180 230 L250 70 L320 230 L390 70 L460 230 L530 70 L600 230"/>
+          <line x1="110" y1="70" x2="110" y2="230"/>
+          <line x1="250" y1="70" x2="250" y2="230"/>
+          <line x1="390" y1="70" x2="390" y2="230"/>
+          <line x1="530" y1="70" x2="530" y2="230"/>
+          <circle cx="40" cy="230" r="4"/><circle cx="600" cy="230" r="4"/>
+          <text class="spec" x="300" y="255">SPAN 24.0 m</text>
+          <text class="spec" x="300" y="55">DEPTH 2.4 m</text>
+          <text x="44" y="270">PIN</text>
+          <text x="576" y="270">ROLL</text>
+        </svg>
+      </div>
+      <figcaption><b>Fig. 3.1 — Warren truss, elevation</b>Equilateral web. Eight panels, uniform geometry.</figcaption>
+    </figure>
+
+    <aside class="marginalia reveal">
+      <span class="num">Marginal note — 03</span>
+      The diagonal carries both. Reversing the load reverses the member. Nothing here is fixed.
+      <svg class="sketch" viewBox="0 0 120 74"><path d="M10 60 L40 20 L70 60 L100 20"/><line x1="10" y1="60" x2="100" y2="60"/></svg>
+    </aside>
+  </section>
+
+  <!-- ================= PLATE 04 ================= -->
+  <section class="plate" id="p4">
+    <div class="reveal">
+      <div class="kicker">Plate 04 <span class="sep">/</span> The Facade</div>
+      <h2 class="plate-title">Reading a Facade</h2>
+      <div class="plate-meta">Section · Fenestration · Threshold</div>
+      <div class="plate-body">
+        <p class="lede">A facade is a boundary written twice — once in structure, once in light. The section below cuts through a glazed elevation: a rhythm of mullions, a bracketed canopy, and the quiet register of a floor line.</p>
+        <p>Read it at the pace the ink wants. Let the lines set. When the gauge holds in the ideal band, the whole elevation stands crisp against the blue, and the building is legible.</p>
+      </div>
+    </div>
+
+    <figure class="reveal">
+      <div class="frame">
+        <svg class="drawing" viewBox="0 0 640 420" role="img" aria-label="Facade section with canopy and fenestration">
+          <line x1="120" y1="40" x2="120" y2="360"/>
+          <line x1="520" y1="40" x2="520" y2="360"/>
+          <line x1="120" y1="40" x2="520" y2="40"/>
+          <line x1="90" y1="360" x2="550" y2="360"/>
+          <line x1="120" y1="120" x2="520" y2="120"/>
+          <line x1="120" y1="200" x2="520" y2="200"/>
+          <line x1="120" y1="280" x2="520" y2="280"/>
+          <line x1="200" y1="40" x2="200" y2="360"/>
+          <line x1="280" y1="40" x2="280" y2="360"/>
+          <line x1="360" y1="40" x2="360" y2="360"/>
+          <line x1="440" y1="40" x2="440" y2="360"/>
+          <rect x="150" y="300" width="70" height="60"/>
+          <path d="M90 120 L120 100 L520 100 L550 120"/>
+          <line x1="120" y1="120" x2="520" y2="120"/>
+          <line class="hatch" x1="120" y1="100" x2="140" y2="120"/>
+          <line class="hatch" x1="160" y1="100" x2="180" y2="120"/>
+          <line class="hatch" x1="200" y1="100" x2="220" y2="120"/>
+          <line class="hatch" x1="240" y1="100" x2="260" y2="120"/>
+          <line class="hatch" x1="280" y1="100" x2="300" y2="120"/>
+          <line class="hatch" x1="320" y1="100" x2="340" y2="120"/>
+          <line class="hatch" x1="360" y1="100" x2="380" y2="120"/>
+          <line class="hatch" x1="400" y1="100" x2="420" y2="120"/>
+          <line class="hatch" x1="440" y1="100" x2="460" y2="120"/>
+          <line class="hatch" x1="480" y1="100" x2="500" y2="120"/>
+          <text x="150" y="392">ENTRANCE</text>
+          <text class="spec" x="530" y="112">CANOPY</text>
+          <text class="spec" x="530" y="204">FLOOR</text>
+        </svg>
+      </div>
+      <figcaption><b>Fig. 4.1 — Elevation section</b>Glazed bay rhythm. Cantilevered canopy at first floor.</figcaption>
+    </figure>
+
+    <aside class="marginalia reveal">
+      <span class="num">Marginal note — 04</span>
+      A threshold is a decision the building makes on your behalf. Cross it slowly.
+      <svg class="sketch" viewBox="0 0 120 74"><rect x="30" y="14" width="60" height="56"/><line x1="30" y1="14" x2="90" y2="70"/></svg>
+    </aside>
+  </section>
+
+  <!-- ================= COLOPHON ================= -->
+  <footer class="colophon reveal">
+    <h3>Colophon</h3>
+    <div class="c-row"><span>Blueprint Quarterly — Issue No. 04</span><span>Cyanotype reconstruction</span></div>
+    <div class="c-row"><span>Type · Architects Daughter / Space Mono</span><span>Palette · #002F5F · #F0F4F8 · #1E3A5F</span></div>
+    <div class="c-row"><span>Process · Iron(III) ferrocyanotype</span><span>Exposure · 18 sec · wash in water</span></div>
+    <div class="c-row"><span>Transfer governed by scroll velocity</span><span>© MMXXIV</span></div>
+  </footer>
+
+</main>
+</div>
+
+<!-- VELOCITY HUD -->
+<div class="hud" aria-hidden="true">
+  <div class="hud-top">
+    <span class="hud-label">Transfer state</span>
+    <span class="hud-state" id="hudState">SETTLING</span>
+  </div>
+  <div class="hud-readout">Velocity <b id="hudVel">0</b> px/s</div>
+  <div class="gauge">
+    <div class="gauge-zone" style="left:25%;width:25%"></div>
+    <div class="gauge-fill" id="hudFill"></div>
+  </div>
+  <div class="gauge-scale"><span>0</span><span>40</span><span>80</span><span>120</span><span>160+</span></div>
+  <div class="hud-hint">Ease to the shaded band for a crisp transfer.</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var content = document.querySelector('main');
+  var grain = document.getElementById('grain');
+  var hudState = document.getElementById('hudState');
+  var hudVel = document.getElementById('hudVel');
+  var hudFill = document.getElementById('hudFill');
+  var regs = document.querySelectorAll('.reg svg');
+
+  var isMobile = window.matchMedia('(max-width:900px)').matches;
+  window.addEventListener('resize', function(){
+    isMobile = window.matchMedia('(max-width:900px)').matches;
+  });
+
+  /* ---------- thresholds ---------- */
+  var T = isMobile
+    ? { bleed:15, idealLo:40, idealHi:80, coarse:150, maxBlur:9 }
+    : { bleed:20, idealLo:40, idealHi:80, coarse:120, maxBlur:6 };
+
+  /* ---------- state ---------- */
+  var lastY = window.scrollY, lastT = performance.now();
+  var rawVel = 0, smoothVel = 0, bleedAmt = 0;
+  var curX = 0, curY = 0, tgtX = 0, tgtY = 0;
+  var regRot = 0, regRotTarget = 0;
+  var lastState = '';
+
+  function setState(name){
+    if(name === lastState) return;
+    lastState = name;
+    hudState.textContent = name;
+  }
+
+  function tick(now){
+    var dt = (now - lastT) || 16;
+    var y = window.scrollY;
+    var inst = Math.abs(y - lastY) / (dt/1000);
+    if(isFinite(inst)) rawVel = inst;
+    lastY = y; lastT = now;
+
+    // smooth velocity (ease toward raw)
+    smoothVel += (rawVel - smoothVel) * 0.22;
+    var v = smoothVel;
+
+    // bleed accumulates while slow, relaxes otherwise
+    if(v < T.bleed) bleedAmt = Math.min(1, bleedAmt + 0.02);
+    else bleedAmt = Math.max(0, bleedAmt - 0.045);
+
+    var smudge = Math.max(0, v - T.coarse);
+    var blur = Math.min(T.maxBlur, smudge * 0.05);
+
+    var state, cls;
+    if(v < T.bleed){ state='BLEED'; cls='is-bleed'; }
+    else if(v < T.idealLo){ state='SETTLING'; cls='is-settle'; }
+    else if(v <= T.idealHi){ state='PERFECT'; cls='is-perfect'; }
+    else if(v <= T.coarse){ state='COARSE'; cls='is-coarse'; }
+    else { state='SMUDGE'; cls='is-smudge'; }
+
+    content.style.filter = 'blur(' + blur.toFixed(2) + 'px)';
+    content.classList.toggle('is-bleed', bleedAmt > 0.04);
+    content.style.setProperty('--bleed', bleedAmt.toFixed(3));
+    setState(state);
+
+    // HUD
+    hudVel.textContent = Math.round(v);
+    var pct = Math.min(100, (v / 160) * 100);
+    hudFill.style.width = pct + '%';
+
+    // ambient grain parallax
+    curX += (tgtX - curX) * 0.06;
+    curY += (tgtY - curY) * 0.06;
+    if(!reduced){
+      grain.style.transform = 'translate3d(' + (-curX).toFixed(2) + 'px,' + (-curY).toFixed(2) + 'px,0)';
+    }
+
+    // registration marks drift with scroll
+    regRotTarget = (y * 0.02) % 360;
+    regRot += (regRotTarget - regRot) * 0.08;
+    for(var i=0;i<regs.length;i++){
+      regs[i].style.transform = 'rotate(' + (regRot * (i%2===0?1:-1)).toFixed(2) + 'deg)';
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- pointer ---------- */
+  window.addEventListener('mousemove', function(e){
+    tgtX = (e.clientX / window.innerWidth - 0.5) * 46;
+    tgtY = (e.clientY / window.innerHeight - 0.5) * 46;
+  }, {passive:true});
+
+  /* ---------- reveal on scroll ---------- */
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          en.target.classList.add('in');
+          if(en.target.querySelector && en.target.querySelector('.drawing')){
+            drawIn(en.target.querySelector('.drawing'));
+          }
+          io.unobserve(en.target);
+        }
+      });
+    }, {threshold:0.18, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- SVG draw-in ---------- */
+  function drawIn(svg){
+    if(reduced || svg.dataset.drawn) return;
+    svg.dataset.drawn = '1';
+    var kids = svg.querySelectorAll('line, path, rect, circle, polyline');
+    kids.forEach(function(el, i){
+      var len = 0;
+      try { len = el.getTotalLength ? el.getTotalLength() : 400; } catch(e){ len = 400; }
+      if(!len || !isFinite(len)) len = 400;
+      el.style.transition = 'none';
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+      // force reflow
+      void el.getBoundingClientRect();
+      el.style.transition = 'stroke-dashoffset ' + (1.1 + (i%6)*0.12) + 's cubic-bezier(.4,.1,.2,1) ' + (i*0.025) + 's';
+      el.style.strokeDashoffset = '0';
+    });
+  }
+
+  /* ---------- cover chemical reaction ---------- */
+  function runCover(){
+    if(reduced){
+      document.querySelector('.cover').classList.add('in');
+      return;
+    }
+    var cover = document.querySelector('.cover');
+    var h1 = cover.querySelector('h1');
+    var sub = cover.querySelector('.cover-sub');
+    var eyebrow = cover.querySelector('.cover-eyebrow');
+    var spec = cover.querySelector('.cover-spec');
+    var scroll = cover.querySelector('.cover-scroll');
+    [eyebrow, h1, sub, spec, scroll].forEach(function(el){
+      el.style.opacity = '0';
+      el.style.filter = 'blur(14px)';
+      el.style.transition = 'none';
+    });
+    void cover.getBoundingClientRect();
+    var seq = [
+      [eyebrow, 0],
+      [h1, 150],
+      [sub, 650],
+      [spec, 850],
+      [scroll, 1200]
+    ];
+    seq.forEach(function(pair){
+      var el = pair[0], d = pair[1];
+      el.style.transition = 'opacity 1.5s ease ' + d + 'ms, filter 1.5s ease ' + d + 'ms';
+      el.style.opacity = '1';
+      el.style.filter = 'blur(0px)';
+    });
+  }
+
+  /* ---------- boot ---------- */
+  if(document.readyState === 'complete' || document.readyState === 'interactive'){
+    setTimeout(runCover, 60);
+  } else {
+    window.addEventListener('DOMContentLoaded', function(){ setTimeout(runCover, 60); });
+  }
+
+  requestAnimationFrame(tick);
+})();
+</script>
+
+<!-- bleed halo applied via class (kept out of inline filter for performance) -->
+<style>
+main.is-bleed .plate,
+main.is-bleed .cover,
+main.is-bleed .colophon{
+  text-shadow:
+    0 0 calc(2px + var(--bleed,0) * 10px) rgba(240,244,248,calc(var(--bleed,0) * 0.5)),
+    0 0 calc(6px + var(--bleed,0) * 22px) rgba(240,244,248,calc(var(--bleed,0) * 0.28));
+}
+main.is-bleed .drawing *{
+  filter:drop-shadow(0 0 calc(var(--bleed,0) * 7px) rgba(240,244,248,calc(var(--bleed,0) * 0.55)));
+}
+</style>
+</body>
+</html>

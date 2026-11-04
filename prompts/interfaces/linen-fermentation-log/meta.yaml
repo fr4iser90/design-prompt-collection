@@ -1,0 +1,25 @@
+id: linen-fermentation-log
+title: "Linen Ferment Tracker"
+category: interfaces
+tags:
+  - timeline
+  - procedural-noise
+  - logging
+  - organic
+  - aging
+  - data-entry
+status: polished
+summary: "Artisan cheese rind logger with procedural noise texture evolving from sparse white to dense grey based on humidity/salt data. Single-file HTML/CSS/JS."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
