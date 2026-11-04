@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowCore — The Honeycomb Reduction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#121212;
+    --green:#00FF9D;
+    --red:#FF3366;
+    --white:#FFFFFF;
+    --grey:#888888;
+    --disp:'Syne', sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:#000;overflow:hidden;}
+  body{
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);color:var(--white);
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{
+    position:relative;
+    width:100vw;height:100vh;
+    background:radial-gradient(120% 120% at 50% 46%, #181818 0%, #0c0c0c 62%, #000 100%);
+    overflow:hidden;
+  }
+  canvas{position:absolute;inset:0;display:block;}
+
+  /* ---- HUD overlay ---- */
+  .hud{position:absolute;inset:0;z-index:5;pointer-events:none;}
+  .hud::after{ /* vignette */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(135% 105% at 50% 46%, transparent 52%, rgba(0,0,0,.62) 100%);
+  }
+
+  .brand{
+    position:absolute;top:clamp(16px,3.4vh,34px);left:clamp(18px,3.4vw,46px);
+    display:flex;align-items:center;gap:10px;z-index:6;
+  }
+  .brand .mark{
+    width:14px;height:14px;background:var(--green);
+    clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+    box-shadow:0 0 12px rgba(0,255,157,.55);
+  }
+  .brand .word{
+    font-family:var(--disp);font-weight:800;
+    font-size:clamp(15px,1.7vw,23px);letter-spacing:.14em;
+    color:var(--white);text-transform:uppercase;
+  }
+  .brand .word b{color:var(--green);font-weight:800;}
+
+  .phase{
+    position:absolute;top:clamp(16px,3.4vh,34px);right:clamp(18px,3.4vw,46px);
+    display:flex;align-items:center;gap:12px;z-index:6;
+    font-size:clamp(9px,1vw,12px);letter-spacing:.28em;color:var(--grey);
+    text-transform:uppercase;
+  }
+  .phase .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--red);box-shadow:0 0 10px currentColor;
+    transition:background .25s ease;
+  }
+  .phase .time{color:var(--white);font-weight:500;letter-spacing:.12em;}
+
+  .titlecard{
+    position:absolute;bottom:clamp(18px,4.2vh,44px);
+    max-width:62vw;z-index:6;opacity:0;
+    will-change:transform,opacity;
+  }
+  .titlecard .eyebrow{
+    font-size:clamp(9px,1vw,12px);letter-spacing:.34em;
+    color:var(--grey);text-transform:uppercase;margin-bottom:10px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .titlecard .eyebrow .swatch{
+    width:16px;height:3px;display:inline-block;
+  }
+  .titlecard .big{
+    font-family:var(--disp);font-weight:800;
+    font-size:clamp(26px,5.6vw,74px);line-height:.94;
+    letter-spacing:-.01em;text-transform:uppercase;
+    color:var(--white);
+  }
+  .titlecard .formula{
+    margin-top:12px;font-size:clamp(11px,1.5vw,17px);
+    letter-spacing:.22em;color:var(--grey);font-weight:500;
+  }
+  .titlecard .formula b{font-weight:600;}
+  .titlecard .rule{
+    height:3px;width:clamp(60px,10vw,120px);margin-bottom:16px;
+  }
+  #cardToxic{left:clamp(18px,3.4vw,46px);}
+  #cardClean{right:clamp(18px,3.4vw,46px);text-align:right;}
+  #cardClean .eyebrow{justify-content:flex-end;}
+  #cardClean .rule{margin-left:auto;}
+
+  .centerlabel{
+    position:absolute;top:clamp(16px,3.4vh,34px);left:50%;transform:translateX(-50%);
+    z-index:6;font-size:clamp(10px,1.2vw,14px);letter-spacing:.42em;
+    color:var(--grey);text-transform:uppercase;opacity:0;white-space:nowrap;
+    display:flex;align-items:center;gap:12px;
+  }
+  .centerlabel .cnode{
+    width:7px;height:7px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 12px var(--green);
+  }
+
+  /* ---- Timeline scrubber ---- */
+  .timeline{
+    position:absolute;left:50%;bottom:clamp(14px,2.4vh,22px);transform:translateX(-50%);
+    width:min(520px,74vw);height:2px;background:rgba(255,255,255,.10);z-index:7;
+    cursor:pointer;
+  }
+  .timeline .fill{
+    position:absolute;left:0;top:0;height:100%;width:0%;
+    background:var(--white);
+  }
+  .timeline .head{
+    position:absolute;top:50%;width:9px;height:9px;border-radius:50%;
+    background:var(--white);transform:translate(-50%,-50%);
+    box-shadow:0 0 10px rgba(255,255,255,.6);
+  }
+  .timeline .beat{
+    position:absolute;top:50%;width:1px;height:9px;background:rgba(255,255,255,.35);
+    transform:translate(-50%,-50%);
+  }
+  .timeline .beatlab{
+    position:absolute;top:-15px;transform:translateX(-50%);
+    font-size:8px;letter-spacing:.14em;color:var(--grey);white-space:nowrap;
+  }
+  .hint{
+    position:absolute;left:50%;bottom:clamp(28px,4.6vh,40px);transform:translateX(-50%);
+    z-index:7;font-size:9px;letter-spacing:.24em;color:#5a5a5a;text-transform:uppercase;
+  }
+
+  @media (max-width:640px){
+    .centerlabel{display:none;}
+    .hint{display:none;}
+    .phase .beatlab{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="scene"></canvas>
+
+  <div class="hud">
+    <div class="brand">
+      <span class="mark"></span>
+      <span class="word">Flow<b>Core</b></span>
+    </div>
+
+    <div class="phase">
+      <span class="dot" id="phaseDot"></span>
+      <span id="phaseName">STANDBY</span>
+      <span class="time" id="timeRead">00.0 / 08.0s</span>
+    </div>
+
+    <div class="centerlabel" id="centerLabel">
+      <span class="cnode"></span> Catalytic Reduction
+    </div>
+
+    <div class="titlecard" id="cardToxic">
+      <div class="eyebrow"><span class="swatch" style="background:var(--red)"></span> Phase 01 · Input</div>
+      <div class="rule" style="background:var(--red)"></div>
+      <div class="big">Toxic<br>Input</div>
+      <div class="formula"><b style="color:var(--red)">NOx</b> / <b style="color:var(--red)">CO</b></div>
+    </div>
+
+    <div class="titlecard" id="cardClean">
+      <div class="eyebrow">Output · Phase 03 <span class="swatch" style="background:var(--green)"></span></div>
+      <div class="rule" style="background:var(--green)"></div>
+      <div class="big">Clean<br>Output</div>
+      <div class="formula"><b style="color:var(--green)">N2</b> / <b style="color:var(--green)">CO2</b></div>
+    </div>
+
+    <div class="hint" id="hint">Space / Click · Restart &nbsp;·&nbsp; Drag · Scrub</div>
+
+    <div class="timeline" id="timeline">
+      <div class="fill" id="tlFill"></div>
+      <div class="head" id="tlHead"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const DUR = 8.0;                 // seconds, exact loop
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+
+  const RED   = '#FF3366';
+  const GREEN = '#00FF9D';
+  const WHITE = '#FFFFFF';
+
+  // ---- DOM refs ----
+  const cardToxic   = document.getElementById('cardToxic');
+  const cardClean   = document.getElementById('cardClean');
+  const centerLabel = document.getElementById('centerLabel');
+  const phaseDot    = document.getElementById('phaseDot');
+  const phaseName   = document.getElementById('phaseName');
+  const timeRead    = document.getElementById('timeRead');
+  const tlFill      = document.getElementById('tlFill');
+  const tlHead      = document.getElementById('tlHead');
+  const timeline    = document.getElementById('timeline');
+
+  // ---- layout ----
+  let W=0,H=0,cx=0,cy=0,cellW=60,cellH=52,cols=0,rows=0,frontScale=1;
+  const hexPts = [[0,-1],[0.866,-0.5],[0.866,0.5],[0,1],[-0.866,0.5],[-0.866,-0.5]];
+
+  const nodes = [];
+  let cells = [];
+
+  function buildGrid(){
+    nodes.length = 0; cells.length = 0;
+    const spacing = Math.max(44, Math.min(W*0.042, 62));
+    cellW = spacing;
+    cellH = spacing * Math.sqrt(3) / 2;
+    const half = Math.min(W*0.225, H*0.36);
+    cols = Math.max(3, Math.floor(half / cellW) * 2);
+    rows = Math.max(3, Math.floor(half / cellH));
+
+    let idx = 0;
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const x = cx + (c - (cols-1)/2) * cellW;
+        const y = cy + (r - (rows-1)/2) * cellH;
+        const dx = (x-cx)/(half*1.05);
+        const dy = (y-cy)/(half*1.05);
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist > 1) continue;
+        nodes.push({x,y,dist,idx:idx++});
+      }
+    }
+    // cells (polygons) for ambient glow
+    for(const n of nodes){
+      const p = [];
+      for(const [ux,uy] of hexPts) p.push([n.x + ux*cellW/2, n.y + uy*cellH/2]);
+      cells.push(p);
+    }
+  }
+
+  function hexPath(x,y,s){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const [ux,uy]=hexPts[i];
+      const px=x+ux*s, py=y+uy*s;
+      i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+    }
+    ctx.closePath();
+  }
+
+  // ---- particles ----
+  let particles = [];
+  function spawn(p){
+    p.spawned = true;
+    p.phase = 'enter';
+    p.active = true;
+    p.color = RED;
+    p.y = p.rowY + (Math.random()-0.5)*6;
+    p.x = -70;
+    p.tOx = -1;
+    p.ox = {active:false,x:0,y:0,t:0};
+    p.pulse = 0;
+    p.sx = 0; p.sy = 0;
+  }
+  function resetParticles(){
+    for(const p of particles){ p.spawned=false; p.active=false; }
+  }
+  function buildParticles(){
+    particles = [];
+    const count = 18;
+    for(let i=0;i<count;i++){
+      const rowY = cy + (Math.random()*2-1) * H*0.27;
+      const node = nodes[(Math.random()*nodes.length)|0];
+      const isNOx = Math.random()<0.5;
+      particles.push({
+        rowY, node, isNOx,
+        spawnTime: 0.05 + (i/count)*1.7 + Math.random()*0.12,
+        label: isNOx ? 'NOx' : 'CO',
+        outLabel: isNOx ? 'N2' : 'CO2',
+        jitterAmp: 4 + Math.random()*7,
+        jitterFreq: 5 + Math.random()*5,
+        jitterPhase: Math.random()*Math.PI*2,
+        size: 6 + Math.random()*3,
+        spawned:false, active:false, phase:'idle', color:RED,
+        tOx:-1, ox:{active:false,x:0,y:0,t:0}, pulse:0,
+        x:-70, y:rowY, sx:0, sy:0
+      });
+    }
+  }
+
+  // ---- timing helpers ----
+  const clamp01 = t => t<0?0:t>1?1:t;
+  function smooth(a,b,x){ let t=clamp01((x-a)/(b-a)); return t*t*(3-2*t); }
+  function pulse(x,a,b){ const t=clamp01((x-a)/(b-a)); return Math.sin(Math.PI*t); }
+  function rgb(hex){ const n=parseInt(hex.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+  const RED_RGB=rgb(RED), GREEN_RGB=rgb(GREEN);
+  function mix(a,b,t){ return `rgb(${Math.round(a[0]+(b[0]-a[0])*t)},${Math.round(a[1]+(b[1]-a[1])*t)},${Math.round(a[2]+(b[2]-a[2])*t)})`; }
+  function rgba(hex,a){ const [r,g,b]=rgb(hex); return `rgba(${r},${g},${b},${a})`; }
+
+  function updateNode(n,t){
+    let act=0, snap=0;
+    if(t>=2.0 && t<=5.0){
+      const local = t - 2.0;
+      const wave = (local/3.0) * 1.9;
+      const d = Math.abs(wave - n.dist);
+      act = Math.max(0, 1 - d/0.4);
+      snap = Math.max(0, 1 - d/0.09);
+    } else if(t>5.0){
+      act = 0.18 + 0.06*Math.sin(t*2.4 + n.dist*6);
+    }
+    n.act = act; n.snap = snap;
+  }
+
+  function updateParticle(p,t){
+    if(!p.spawned && t >= p.spawnTime) spawn(p);
+    if(!p.spawned) return;
+    const nx=p.node.x, ny=p.node.y;
+    if(p.phase==='enter'){
+      const t0=p.spawnTime, t1=t0+0.9;
+      const pr=clamp01((t-t0)/(t1-t0));
+      p.x = -70 + (nx+70)*pr;
+      p.y = p.rowY + (ny-p.rowY)*pr + Math.sin(t*p.jitterFreq+p.jitterPhase)*p.jitterAmp*(1-pr*0.5);
+      if(t>=t1){ p.phase='react'; p.tOx=t; }
+    } else if(p.phase==='react'){
+      const pr=clamp01((t-p.tOx)/0.4);
+      p.x = nx;
+      p.y = ny + Math.sin(t*10)*2*(1-pr);
+      p.pulse = pulse(pr,0,1);
+      if(t>=p.tOx+0.2){
+        p.color=GREEN;
+        if(!p.ox.active){ p.ox.active=true; p.ox.t=p.tOx+0.2; p.ox.x=nx; p.ox.y=ny; }
+      }
+      if(t>=p.tOx+0.4){ p.phase='exit'; }
+    } else if(p.phase==='exit'){
+      const t0=p.tOx+0.4, t1=t0+0.95;
+      const pr=clamp01((t-t0)/(t1-t0));
+      const e = pr<0.5 ? 2*pr*pr : 1-Math.pow(-2*pr+2,2)/2;
+      p.x = nx + (W+70-nx)*e;
+      p.y = ny + (p.rowY-ny)*e + Math.sin(t*p.jitterFreq+p.jitterPhase)*p.jitterAmp*e;
+      if(t>=t1){ p.active=false; p.spawned=false; p.phase='idle'; p.ox.active=false; }
+    }
+    if(p.ox.active){
+      const d=clamp01((t-p.ox.t)/0.35);
+      p.ox.x = nx - 32*d;
+      p.ox.y = ny - 26*d;
+      if(t>p.ox.t+0.35) p.ox.active=false;
+    }
+  }
+
+  // ---- draw ----
+  function drawBackplate(){
+    if(!cells.length) return;
+    ctx.save();
+    ctx.translate(cx, cy + H*0.02);
+    ctx.scale(1.06, 0.94);
+    ctx.translate(-cx, -cy);
+    ctx.beginPath();
+    for(const c of cells){
+      ctx.moveTo(c[0][0],c[0][1]);
+      for(let i=1;i<c.length;i++) ctx.lineTo(c[i][0],c[i][1]);
+      ctx.closePath();
+    }
+    ctx.fillStyle='#0a0a0a';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawHoneycomb(t){
+    const ambient = smooth(5.0,7.2,t);
+    ctx.save();
+    ctx.translate(cx, cy + H*0.02);
+    ctx.scale(1.06, 0.94);
+    ctx.translate(-cx, -cy);
+
+    // ambient glow fill
+    if(ambient>0.01){
+      ctx.beginPath();
+      for(const c of cells){ ctx.moveTo(c[0][0],c[0][1]); for(let i=1;i<c.length;i++) ctx.lineTo(c[i][0],c[i][1]); ctx.closePath(); }
+      ctx.fillStyle = rgba(GREEN, 0.05*ambient);
+      ctx.fill();
+    }
+
+    // edges
+    for(const n of nodes){
+      const a = n.act||0;
+      hexPath(n.x,n.y,cellW/2);
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = a>0.02 ? rgba(GREEN, 0.25 + 0.5*a) : 'rgba(255,255,255,0.11)';
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // catalyst nodes
+    for(const n of nodes){
+      const a = n.act||0, snap = n.snap||0;
+      if(a<=0.01 && snap<=0.01) continue;
+      const r = 3 + snap*6;
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      ctx.fillStyle = rgba(WHITE, 0.55*snap);
+      ctx.beginPath(); ctx.arc(n.x,n.y,r*1.7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = rgba(GREEN, 0.45*a + 0.55*snap);
+      ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawParticle(p){
+    if(!p.active) return;
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    const col = p.color;
+    const s = p.size * (p.phase==='react' ? 1 + p.pulse*0.5 : 1);
+    const glow = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,s*4.2);
+    glow.addColorStop(0, rgba(col,0.9));
+    glow.addColorStop(0.35, rgba(col,0.35));
+    glow.addColorStop(1, rgba(col,0));
+    ctx.fillStyle=glow;
+    ctx.beginPath(); ctx.arc(p.x,p.y,s*4.2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=col;
+    ctx.beginPath(); ctx.arc(p.x,p.y,s,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.beginPath(); ctx.arc(p.x-s*0.28,p.y-s*0.28,s*0.34,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    if(p.ox.active){
+      const d=clamp01((t0ref - p.ox.t)/0.35);
+      ctx.save();
+      ctx.globalCompositeOperation='lighter';
+      ctx.globalAlpha=1-d;
+      const r=3.2*(1-d*0.4);
+      const g=ctx.createRadialGradient(p.ox.x,p.ox.y,0,p.ox.x,p.ox.y,r*3);
+      g.addColorStop(0, rgba(RED,0.8)); g.addColorStop(1, rgba(RED,0));
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.ox.x,p.ox.y,r*3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=RED; ctx.beginPath(); ctx.arc(p.ox.x,p.ox.y,r,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+  let t0ref=0;
+
+  function drawLabels(t){
+    ctx.save();
+    ctx.font='600 12px "IBM Plex Mono", monospace';
+    ctx.textBaseline='middle';
+    for(const p of particles){
+      if(!p.active) continue;
+      const lab = p.phase==='exit' ? p.outLabel : p.label;
+      const col = p.color;
+      ctx.globalCompositeOperation='source-over';
+      const w = ctx.measureText(lab).width;
+      const lx = p.x - w/2 - 6, ly = p.y - p.size - 20;
+      ctx.fillStyle='rgba(9,9,9,0.72)';
+      ctx.fillRect(lx, ly-9, w+12, 18);
+      ctx.fillStyle = col;
+      ctx.fillRect(lx, ly-9, 2.5, 18);
+      ctx.fillStyle='#e9e9e9';
+      ctx.fillText(lab, lx+8, ly);
+    }
+    ctx.restore();
+  }
+
+  // ---- render a single frame at time t ----
+  function render(t){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='source-over';
+    t0ref = t;
+
+    for(const n of nodes) updateNode(n,t);
+    for(const p of particles) updateParticle(p,t);
+
+    drawBackplate();
+    drawHoneycomb(t);
+    for(const p of particles) drawParticle(p);
+    drawLabels(t);
+
+    // ---- HUD ----
+    let phase, col;
+    if(t<2.0){ phase='TOXIC INPUT'; col=RED; }
+    else if(t<5.0){ phase='CATALYTIC REDUCTION'; col=GREEN; }
+    else { phase='CLEAN OUTPUT'; col=GREEN; }
+    phaseName.textContent = phase;
+    phaseDot.style.background = col;
+    phaseDot.style.color = col;
+    timeRead.textContent = t.toFixed(1).padStart(4,'0') + ' / 08.0s';
+
+    cardToxic.style.opacity = (1 - smooth(1.7,2.2,t)).toFixed(3);
+    cardToxic.style.transform = 'translateY(' + ((1-smooth(0.15,0.7,t))*16).toFixed(1) + 'px)';
+    cardClean.style.opacity = smooth(5.0,5.7,t).toFixed(3);
+    cardClean.style.transform = 'translateY(' + ((1-smooth(5.0,5.7,t))*16).toFixed(1) + 'px)';
+    centerLabel.style.opacity = (smooth(2.0,2.4,t) * (1-smooth(4.7,5.1,t))).toFixed(3);
+
+    const pct = (t/DUR*100);
+    tlFill.style.width = pct + '%';
+    tlHead.style.left = pct + '%';
+  }
+
+  // ---- loop ----
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let startTime=null, manual=false, manualT=0;
+
+  function frame(now){
+    if(startTime==null) startTime=now;
+    let t;
+    if(manual){ t = manualT; }
+    else { t = ((now-startTime)/1000) % DUR; }
+    render(t);
+    if(!reduced) requestAnimationFrame(frame);
+  }
+
+  // ---- resize ----
+  let DPR=1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio||1, 2);
+    const r = canvas.getBoundingClientRect();
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    cx = W/2; cy = H*0.46;
+    frontScale = 1;
+    buildGrid();
+    buildParticles();
+    if(reduced){ manual=true; manualT=4.0; render(4.0); }
+  }
+
+  // ---- beat markers on timeline ----
+  function buildBeats(){
+    [2.0,5.0].forEach(b=>{
+      const el=document.createElement('div');
+      el.className='beat'; el.style.left=(b/DUR*100)+'%';
+      const lab=document.createElement('div');
+      lab.className='beatlab'; lab.style.left=(b/DUR*100)+'%';
+      lab.textContent = b.toFixed(0)+'s';
+      timeline.appendChild(el); timeline.appendChild(lab);
+    });
+  }
+
+  // ---- interaction ----
+  function restart(){
+    if(reduced) return;
+    resetParticles();
+    startTime = performance.now();
+  }
+  function seekFromEvent(e){
+    const rect = timeline.getBoundingClientRect();
+    const x = (e.touches?e.touches[0].clientX:e.clientX) - rect.left;
+    let p = x/rect.width; p = Math.max(0,Math.min(1,p));
+    manual = true; manualT = p*DUR;
+    resetParticles();
+    render(manualT);
+  }
+  let dragging=false;
+  timeline.addEventListener('pointerdown', e=>{ dragging=true; seekFromEvent(e); timeline.setPointerCapture(e.pointerId); });
+  timeline.addEventListener('pointermove', e=>{ if(dragging) seekFromEvent(e); });
+  timeline.addEventListener('pointerup', ()=>{ dragging=false; });
+  timeline.addEventListener('pointercancel', ()=>{ dragging=false; });
+
+  window.addEventListener('keydown', e=>{
+    if(e.code==='Space'){ e.preventDefault(); if(reduced) return; restart(); }
+  });
+  document.getElementById('stage').addEventListener('click', e=>{
+    if(e.target.closest('.timeline')) return;
+    if(reduced) return;
+    restart();
+  });
+
+  window.addEventListener('resize', resize);
+
+  // ---- init ----
+  buildBeats();
+  resize();
+  if(reduced){
+    manual=true; manualT=4.0; render(4.0);
+    document.getElementById('hint').textContent='Reduced motion · static frame at 4.0s';
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

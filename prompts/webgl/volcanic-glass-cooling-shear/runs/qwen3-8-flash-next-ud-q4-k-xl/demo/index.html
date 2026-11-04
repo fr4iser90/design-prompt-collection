@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Obsidian Shear & Chill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#050505;
+    --molten:#ff4500;
+    --cool:#2b2b2b;
+    --ink:#eae6df;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;background:var(--void);overflow:hidden;}
+  body{font-family:'Fira Mono',ui-monospace,monospace;color:var(--ink);-webkit-font-smoothing:antialiased;}
+
+  #gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;}
+
+  /* ---- Brand watermark ---- */
+  .brand{
+    position:fixed;top:clamp(18px,3vw,36px);left:clamp(18px,3vw,40px);
+    z-index:10;pointer-events:none;opacity:0;transform:translateY(-8px);
+    animation:fadeDown 1.1s .35s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .brand h1{
+    font-family:'Oswald',sans-serif;font-weight:700;
+    font-size:clamp(1.35rem,3.2vw,2.5rem);line-height:.92;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--ink);
+    text-shadow:0 2px 26px rgba(0,0,0,.75);
+  }
+  .brand h1 .amp{color:var(--molten);font-weight:500;}
+  .brand p{
+    margin-top:.55em;font-size:.62rem;letter-spacing:.42em;text-transform:uppercase;
+    color:rgba(234,230,223,.42);font-weight:400;
+  }
+
+  /* ---- Control panel ---- */
+  .panel{
+    position:fixed;left:clamp(18px,3vw,40px);bottom:clamp(22px,4vw,44px);
+    z-index:10;opacity:0;transform:translateY(14px);
+    animation:fadeUp 1s .5s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .label{
+    display:flex;align-items:center;gap:.7em;
+    font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;
+    font-size:clamp(1.1rem,2.6vw,1.7rem);letter-spacing:.05em;color:var(--ink);
+    text-shadow:0 2px 22px rgba(0,0,0,.85);
+  }
+  .label .tick{
+    width:16px;height:2px;background:var(--molten);display:inline-block;
+    box-shadow:0 0 12px var(--molten);
+  }
+  .readout{
+    display:flex;align-items:baseline;gap:.6em;margin:.5em 0 .85em;
+    text-shadow:0 2px 20px rgba(0,0,0,.85);
+  }
+  .readout .val{font-size:clamp(1.7rem,4.6vw,2.9rem);font-weight:500;letter-spacing:.02em;color:var(--ink);}
+  .readout .unit{font-size:.78rem;color:rgba(234,230,223,.5);letter-spacing:.12em;}
+
+  .slider-row{display:flex;align-items:center;gap:14px;}
+  .rail{position:relative;width:clamp(180px,32vw,240px);height:26px;display:flex;align-items:center;}
+  .track{
+    position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+    height:2px;background:rgba(255,255,255,.13);
+  }
+  .fill{
+    position:absolute;left:0;top:50%;transform:translateY(-50%);height:2px;width:0;
+    background:linear-gradient(90deg,#5a2400,var(--molten));
+    box-shadow:0 0 10px rgba(255,69,0,.55);
+    transition:width .12s linear;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;position:relative;z-index:2;
+    width:100%;height:26px;background:transparent;cursor:pointer;margin:0;
+  }
+  input[type=range]:focus{outline:none;}
+  input[type=range]::-webkit-slider-runnable-track{height:26px;background:transparent;}
+  input[type=range]::-moz-range-track{height:26px;background:transparent;}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;margin-top:6px;border-radius:50%;
+    background:var(--molten);border:2px solid #1a0a02;
+    box-shadow:0 0 0 4px rgba(255,69,0,.16),0 0 16px rgba(255,69,0,.75);
+    transition:transform .15s ease,box-shadow .15s ease;
+  }
+  input[type=range]:hover::-webkit-slider-thumb,
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.22);box-shadow:0 0 0 6px rgba(255,69,0,.2),0 0 22px rgba(255,69,0,.95);}
+  input[type=range]::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--molten);border:2px solid #1a0a02;
+    box-shadow:0 0 0 4px rgba(255,69,0,.16),0 0 16px rgba(255,69,0,.75);
+  }
+  .hint{
+    margin-top:1em;font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;
+    color:rgba(234,230,223,.34);
+  }
+
+  @keyframes fadeDown{to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+
+  @media (max-width:640px){
+    .hint{display:none;}
+    .brand p{letter-spacing:.3em;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .brand,.panel{animation:none;opacity:1;transform:none;}
+    .fill{transition:none;}
+  }
+</style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+
+  <div class="brand">
+    <h1>Obsidian<br>Shear <span class="amp">&amp;</span> Chill</h1>
+    <p>Volcanic&nbsp;Glass&nbsp;—&nbsp;Thermal&nbsp;Fracture</p>
+  </div>
+
+  <div class="panel">
+    <div class="label"><span class="tick"></span>Tensile Stress</div>
+    <div class="readout">
+      <span class="val" id="val">000</span>
+      <span class="unit">MPa</span>
+    </div>
+    <div class="slider-row">
+      <div class="rail">
+        <div class="track"></div>
+        <div class="fill" id="fill"></div>
+        <input type="range" id="slider" min="0" max="100" value="10" step="1" aria-label="Tensile stress in megapascals">
+      </div>
+    </div>
+    <div class="hint">Drag to fracture the core</div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl2', { antialias:false, alpha:false, powerPreference:'high-performance' });
+  if(!gl){ document.body.innerHTML = '<p style="position:fixed;inset:0;display:grid;place-items:center;color:#eae6df;font-family:monospace">WebGL2 is required for this scene.</p>'; return; }
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Vertex: fullscreen triangle ---------- */
+  const VS = `#version 300 es
+  in vec2 aPos;
+  void main(){ gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
+  /* ---------- Fragment: raymarched obsidian ---------- */
+  const FS = `#version 300 es
+  precision highp float;
+  uniform vec2  uRes;
+  uniform float uTime;
+  uniform float uStress;
+  uniform float uMelt;
+  out vec4 fragColor;
+
+  #define FAR 40.0
+  #define MAXSTEPS 72
+
+  const vec3 VOID    = vec3(0.0196);
+  const vec3 MOLTEN  = vec3(1.0, 0.2706, 0.0);
+  const vec3 COOL    = vec3(0.1686);
+  const vec3 BASE    = vec3(0.0196);
+
+  mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
+
+  float hash13(vec3 p){
+    p = fract(p*0.1031);
+    p += dot(p, p.yzx + 33.33);
+    return fract((p.x + p.y) * p.z);
+  }
+  float noise3(vec3 x){
+    vec3 i = floor(x); vec3 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    float a = hash13(i + vec3(0,0,0));
+    float b = hash13(i + vec3(1,0,0));
+    float c = hash13(i + vec3(0,1,0));
+    float d = hash13(i + vec3(1,1,0));
+    float e = hash13(i + vec3(0,0,1));
+    float f2= hash13(i + vec3(1,0,1));
+    float g = hash13(i + vec3(0,1,1));
+    float h = hash13(i + vec3(1,1,1));
+    return mix(mix(mix(a,b,f.x), mix(c,d,f.x), f.y),
+               mix(mix(e,f2,f.x), mix(g,h,f.x), f.y), f.z);
+  }
+  float fbm(vec3 p){
+    float v=0.0, a=0.5;
+    for(int i=0;i<3;i++){ v += a*noise3(p); p = p*2.03 + 17.0; a *= 0.5; }
+    return v;
+  }
+
+  // 3D Voronoi (F1) + edge distance (F2 - F1)
+  vec2 voronoi(vec3 p){
+    vec3 pi = floor(p), pf = fract(p);
+    float d1 = 8.0, d2 = 8.0;
+    for(int k=-1;k<=1;k++)
+    for(int j=-1;j<=1;j++)
+    for(int i=-1;i<=1;i++){
+      vec3 g = vec3(float(i),float(j),float(k));
+      vec3 o = vec3(hash13(pi+g), hash13(pi+g+11.3), hash13(pi+g+23.7));
+      vec3 r = g + o - pf;
+      float d = dot(r,r);
+      if(d < d1){ d2 = d1; d1 = d; }
+      else if(d < d2){ d2 = d; }
+    }
+    return vec2(sqrt(d1), sqrt(d2)-sqrt(d1));
+  }
+
+  float boxSDF(vec3 p, vec3 b){
+    vec3 q = abs(p) - b;
+    return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+  }
+
+  // Jagged volcanic shard: several rotated boxes + noise displacement
+  float shard(vec3 p){
+    float d = boxSDF(p, vec3(0.55,1.15,0.55));
+    d = max(d, boxSDF(p*rot(0.7), vec3(0.5,0.9,0.5)));
+    d = max(d, boxSDF(p*rot(2.1), vec3(0.45,0.75,0.6)));
+    d = max(d, boxSDF(p*rot(-1.3), vec3(0.6,0.5,0.45)));
+    float disp = (fbm(p*1.6) - 0.5) * 0.20;
+    return d + disp;
+  }
+
+  // Inward displacement along Voronoi cell boundaries (cracks)
+  float crackDisp(vec3 p, float stress){
+    vec3 cp = p*2.3;
+    vec2 v = voronoi(cp);
+    float edge = v.y;
+    float thr = mix(0.16, 0.02, stress);
+    float width = 0.028 + stress*0.085;
+    float mask = 1.0 - smoothstep(thr, thr+width, edge);
+    return mask;
+  }
+
+  vec3 calcNormal(vec3 p){
+    vec2 e = vec2(0.0012, 0.0);
+    return normalize(vec3(
+      shard(p+e.xyy)-shard(p-e.xyy),
+      shard(p+e.yxy)-shard(p-e.yxy),
+      shard(p+e.yyx)-shard(p-e.yyx)));
+  }
+
+  float softShadow(vec3 ro, vec3 rd){
+    float res = 1.0, t = 0.03;
+    for(int i=0;i<26;i++){
+      float h = shard(ro + rd*t);
+      if(h < 0.001) return 0.0;
+      res = min(res, 10.0*h/t);
+      t += clamp(h, 0.015, 0.28);
+      if(t > 7.0) break;
+    }
+    return clamp(res, 0.0, 1.0);
+  }
+
+  float calcAO(vec3 p, vec3 n){
+    float occ = 0.0, sca = 1.0;
+    for(int i=0;i<5;i++){
+      float h = 0.012 + 0.11*float(i);
+      float d = shard(p + n*h);
+      occ += (h - d) * sca;
+      sca *= 0.72;
+    }
+    return clamp(1.0 - 1.8*occ, 0.0, 1.0);
+  }
+
+  vec3 shade(vec3 p, vec3 rd, float stress){
+    vec3 n = calcNormal(p);
+    vec3 v = -rd;
+    vec3 L = normalize(vec3(-0.55, 0.85, 0.45));
+
+    float fres = pow(1.0 - max(dot(n,v),0.0), 5.0);
+    float ndl  = max(dot(n,L), 0.0);
+    float sh   = softShadow(p + n*0.02, L);
+    float ao   = calcAO(p, n);
+
+    vec3 H = normalize(L + v);
+    float spec = pow(max(dot(n,H),0.0), 140.0) * sh;
+
+    vec3 col = BASE * ao;
+    col += vec3(0.05,0.05,0.06) * ndl * sh * ao;
+    col += vec3(0.85,0.85,0.92) * spec * 1.4;
+    col += vec3(0.14,0.15,0.18) * fres * ao;
+
+    // Molten core visible through cracks
+    float mask = crackDisp(p, stress);
+    float glow = mask * (0.55 + 0.45*stress);
+    float pulse = 0.85 + 0.15*sin(uTime*3.1416);
+    glow *= pulse;
+    col += MOLTEN * glow * 1.55;
+
+    // Cooling: crack edges darken toward grey while deep center stays bright
+    float cool = mask * (1.0 - glow*0.5);
+    col = mix(col, COOL, cool*0.55);
+
+    // Entrance melt: fully molten, blurred state
+    col = mix(col, MOLTEN*(1.0 + 0.7*fbm(p*3.0 + uTime*0.6)), uMelt);
+    return col;
+  }
+
+  void main(){
+    vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / uRes.y;
+
+    // Camera: slight right offset, gentle drift
+    float camZ = mix(5.0, 3.5, uStress);
+    vec3 ro = vec3(0.65, 0.15 + 0.05*sin(uTime*0.3), camZ);
+    vec3 ta = vec3(0.0, -0.05, 0.0);
+    vec3 fw = normalize(ta - ro);
+    vec3 rt = normalize(cross(vec3(0.0,1.0,0.0), fw));
+    vec3 up = cross(fw, rt);
+    vec3 rd = normalize(uv.x*rt + uv.y*up + 1.6*fw);
+
+    vec3 col = VOID;
+
+    // Bounding sphere for the shard -> skip empty space
+    float bs = 1.7;
+    float b = dot(rd, ro);
+    float c = dot(ro,ro) - bs*bs;
+    float disc = b*b - c;
+    float t = 0.0;
+    bool hit = false;
+
+    if(disc > 0.0){
+      t = max(-b - sqrt(disc), 0.0);
+      for(int i=0;i<MAXSTEPS;i++){
+        vec3 pos = ro + rd*t;
+        float d = shard(pos);
+        if(d < 0.0012){ hit = true; break; }
+        t += d;
+        if(t > FAR) break;
+      }
+    }
+
+    if(hit){
+      vec3 p = ro + rd*t;
+      col = shade(p, rd, uStress);
+
+      // Atmospheric depth toward void
+      col = mix(col, VOID, smoothstep(4.0, 10.0, t));
+    }
+
+    // Faint heat-haze gradient on the void background
+    float haze = fbm(vec3(uv*3.0, uTime*0.12));
+    col += VOID * 0.0 + MOLTEN * haze * 0.010 * (1.0 - smoothstep(0.0, 1.1, length(uv)));
+
+    // Bloom / emissive accumulation for molten glow
+    float lum = dot(col, vec3(0.2126,0.7152,0.0722));
+    col += MOLTEN * smoothstep(0.45, 1.6, lum) * 0.28;
+
+    // Vignette
+    float vig = smoothstep(1.35, 0.25, length(uv));
+    col *= mix(0.55, 1.0, vig);
+
+    // Film grain
+    float grain = hash13(vec3(gl_FragCoord.xy, uTime));
+    col += (grain - 0.5) * 0.018;
+
+    // Gentle tone curve
+    col = pow(clamp(col, 0.0, 1.0), vec3(0.92));
+
+    fragColor = vec4(col, 1.0);
+  }`;
+
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){
+    console.error(gl.getProgramInfoLog(prog));
+  }
+  gl.useProgram(prog);
+
+  // Fullscreen triangle
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'aPos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes    = gl.getUniformLocation(prog, 'uRes');
+  const uTime   = gl.getUniformLocation(prog, 'uTime');
+  const uStress = gl.getUniformLocation(prog, 'uStress');
+  const uMelt   = gl.getUniformLocation(prog, 'uMelt');
+
+  let dpr = 1, W = 0, H = 0;
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = Math.floor(canvas.clientWidth  * dpr);
+    H = Math.floor(canvas.clientHeight * dpr);
+    if(canvas.width !== W || canvas.height !== H){
+      canvas.width = W; canvas.height = H;
+    }
+    gl.viewport(0, 0, W, H);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ---------- State ---------- */
+  const slider = document.getElementById('slider');
+  const valEl  = document.getElementById('val');
+  const fillEl = document.getElementById('fill');
+  const MAX_MPA = 240;
+
+  let stress = 0.0, melt = 1.0, targetStress = 0.0;
+  let introStart = null;
+
+  function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+
+  function setSlider(v){
+    slider.value = v;
+    const pct = v / 100;
+    fillEl.style.width = (pct * 100) + '%';
+    valEl.textContent = String(Math.round(pct * MAX_MPA)).padStart(3, '0');
+  }
+  slider.addEventListener('input', function(){
+    targetStress = slider.value / 100;
+    fillEl.style.width = slider.value + '%';
+    valEl.textContent = String(Math.round((slider.value/100) * MAX_MPA)).padStart(3, '0');
+  });
+
+  if(reduced){
+    targetStress = 0.1; stress = 0.1; melt = 0.0;
+    setSlider(10);
+  } else {
+    setSlider(0);
+  }
+
+  /* ---------- Render loop ---------- */
+  function frame(now){
+    if(introStart === null) introStart = now;
+    const t = (now - introStart) / 1000;
+
+    if(!reduced){
+      const k = Math.min(t / 1.5, 1.0);
+      const e = easeOutCubic(k);
+      if(k < 1.0){
+        stress = 0.1 * e;
+        melt   = 1.0 - e;
+        const sv = Math.round(stress * 100);
+        setSlider(sv);
+      } else {
+        stress += (targetStress - stress) * 0.08;
+      }
+    } else {
+      stress = targetStress;
+    }
+
+    gl.uniform2f(uRes, W, H);
+    gl.uniform1f(uTime, t);
+    gl.uniform1f(uStress, stress);
+    gl.uniform1f(uMelt, reduced ? 0.0 : melt);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

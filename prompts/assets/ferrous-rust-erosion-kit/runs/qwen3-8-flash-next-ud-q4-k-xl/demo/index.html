@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2B2D2F">
+<title>OXIDE YIELD — Rust & Corrosion Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --metal:#5C5C5C; --rust:#B25D25; --rust-hi:#D48A52; --dust:#E6CBAF;
+  --bg:#2B2D2F; --panel:#212325; --panel-2:#191A1C; --line:#3a3d40;
+  --accent:#FF5722; --text:#ECEAE6; --muted:#9a9d9f;
+  --header-h:80px; --slider-h:80px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'IBM Plex Sans',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; min-height:100vh;
+}
+/* ---- atmospheric background ---- */
+.bg-atmos{
+  position:fixed; inset:0; z-index:-3;
+  background:
+    radial-gradient(1200px 640px at 50% -12%, rgba(178,93,37,.12), transparent 62%),
+    radial-gradient(900px 520px at 88% 112%, rgba(255,87,34,.06), transparent 60%),
+    var(--bg);
+}
+.bg-grid{
+  position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask-image:radial-gradient(circle at 50% 38%, #000, transparent 88%);
+  mask-image:radial-gradient(circle at 50% 38%, #000, transparent 88%);
+}
+.bg-glow{
+  position:fixed; left:50%; top:-18%; width:820px; height:520px; transform:translateX(-50%);
+  background:radial-gradient(closest-side, rgba(178,93,37,.16), transparent 70%);
+  filter:blur(34px); z-index:-1; pointer-events:none; animation:glowPulse 12s ease-in-out infinite;
+}
+@keyframes glowPulse{0%,100%{opacity:.55;transform:translateX(-50%) scale(1)}50%{opacity:.9;transform:translateX(-50%) scale(1.08)}}
+#dust{position:fixed; inset:0; z-index:0; pointer-events:none}
+
+/* ---- rust wipe overlay ---- */
+.wipe{
+  position:fixed; inset:0; z-index:200; pointer-events:none;
+  background:linear-gradient(100deg,#191A1C,#2B2D2F 42%,#B25D25 74%,#D48A52 100%);
+  -webkit-mask-image:linear-gradient(100deg,#000 0 44%, transparent 66%);
+  mask-image:linear-gradient(100deg,#000 0 44%, transparent 66%);
+  -webkit-mask-size:230% 100%; mask-size:230% 100%;
+  -webkit-mask-position:0 0; mask-position:0 0;
+  -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+  animation:wipeOut 1.2s cubic-bezier(.4,0,.2,1) .12s forwards;
+}
+@keyframes wipeOut{to{-webkit-mask-position:100% 0; mask-position:100% 0; opacity:0}}
+
+/* ---- header ---- */
+header{
+  position:sticky; top:0; z-index:40; height:var(--header-h);
+  display:flex; align-items:center; gap:16px; padding:0 22px;
+  background:rgba(24,25,27,.72); backdrop-filter:blur(12px) saturate(120%);
+  -webkit-backdrop-filter:blur(12px) saturate(120%);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:13px; min-width:0}
+.brand-mark{width:38px; height:38px; flex:none; filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.brand-txt{min-width:0}
+.brand-txt h1{
+  font-family:'Anton',sans-serif; font-weight:400; font-size:clamp(1.35rem,3.4vw,2.15rem);
+  letter-spacing:.03em; margin:0; line-height:1; color:#F2EFEA; text-transform:uppercase;
+}
+.brand-txt h1 span{color:var(--rust-hi)}
+.brand-txt p{margin:3px 0 0; font-size:.66rem; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.toolbar{margin-left:auto; display:flex; gap:10px; align-items:center}
+.btn{
+  font-family:'IBM Plex Sans',sans-serif; font-weight:600; font-size:.8rem; letter-spacing:.02em;
+  padding:10px 15px; border-radius:8px; border:1px solid var(--line);
+  background:linear-gradient(180deg,#35383b,#26282a); color:var(--text); cursor:pointer;
+  display:inline-flex; align-items:center; gap:8px; transition:transform .18s ease, border-color .18s, box-shadow .18s, background .18s;
+}
+.btn:hover{transform:translateY(-1px); border-color:var(--rust); box-shadow:0 6px 18px rgba(0,0,0,.4)}
+.btn:active{transform:translateY(0)}
+.btn svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8}
+.btn.primary{background:linear-gradient(180deg,#C56A2C,#9c4d1d); border-color:#d07a3a; color:#fff}
+.btn.primary:hover{box-shadow:0 6px 22px rgba(178,93,37,.4)}
+.btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ---- main ---- */
+main{position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:26px 22px calc(var(--slider-h) + 30px)}
+.panel{
+  background:linear-gradient(180deg,#242628,#1c1e20);
+  border:1px solid var(--line); border-radius:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+  padding:22px;
+}
+/* style bible */
+.bible{display:flex; align-items:center; gap:26px; flex-wrap:wrap; margin-bottom:20px}
+.bible-title{display:flex; align-items:baseline; gap:12px}
+.bible-title h2{font-family:'Anton',sans-serif; font-weight:400; font-size:1.15rem; letter-spacing:.06em; text-transform:uppercase; margin:0; color:#E9E6E1}
+.bible-title .tag{font-size:.62rem; letter-spacing:.22em; text-transform:uppercase; color:var(--rust-hi); border:1px solid rgba(212,138,82,.4); padding:3px 8px; border-radius:20px}
+.swatches{display:flex; gap:8px; flex-wrap:wrap}
+.sw{display:flex; align-items:center; gap:8px; background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:8px; padding:6px 9px 6px 6px}
+.sw i{width:22px; height:22px; border-radius:5px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), 0 2px 5px rgba(0,0,0,.4)}
+.sw b{font-size:.66rem; font-weight:600; letter-spacing:.04em; color:#cfccc7}
+.sw code{font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:.6rem; color:var(--muted); display:block}
+.bible-meta{margin-left:auto; display:flex; gap:18px; align-items:center; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+.bible-meta b{color:#cfccc7; font-weight:600}
+
+/* filmstrip */
+.strip-head{display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:wrap}
+.strip-head h2{font-family:'Anton',sans-serif; font-weight:400; font-size:1.05rem; letter-spacing:.05em; text-transform:uppercase; margin:0; color:#E9E6E1}
+.strip-head .count{font-size:.66rem; letter-spacing:.2em; text-transform:uppercase; color:var(--muted)}
+.strip-head .spacer{flex:1}
+.legend{display:flex; gap:12px; font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.legend i{width:9px; height:9px; border-radius:2px; display:inline-block}
+
+.grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+.cell{
+  position:relative; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+  background:radial-gradient(120% 120% at 50% 0%, #2b2e31, #1c1e20);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  cursor:pointer; outline:none;
+}
+.cell:hover,.cell:focus-visible{transform:scale(1.05); border-color:rgba(212,138,82,.6); box-shadow:0 12px 30px rgba(0,0,0,.5), 0 0 0 1px rgba(255,87,34,.25); z-index:2}
+.cell.hero{border-color:rgba(212,138,82,.55); box-shadow:0 0 0 1px rgba(212,138,82,.4), 0 12px 34px rgba(178,93,37,.18)}
+.cell.flash{animation:flash .7s ease}
+@keyframes flash{0%{box-shadow:0 0 0 0 rgba(255,87,34,.6)}100%{box-shadow:0 0 0 14px rgba(255,87,34,0)}}
+.sprite{display:block; width:100%; aspect-ratio:1/1; height:auto; background:transparent}
+.cell .label{
+  position:absolute; left:0; right:0; bottom:0; padding:16px 9px 7px;
+  background:linear-gradient(0deg, rgba(15,16,17,.94), rgba(15,16,17,0));
+  display:flex; justify-content:space-between; align-items:flex-end; gap:6px;
+}
+.cell .label b{font-size:.62rem; font-weight:600; letter-spacing:.03em; color:#e6e3de; line-height:1.15}
+.cell .label code{font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:.52rem; color:var(--rust-hi); letter-spacing:.02em; white-space:nowrap}
+.cell .cat{position:absolute; top:8px; left:8px; font-size:.5rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); background:rgba(0,0,0,.4); padding:2px 6px; border-radius:20px}
+
+/* ---- fixed slider ---- */
+.slider-bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:50; height:var(--slider-h);
+  display:flex; align-items:center; gap:18px; padding:0 22px;
+  background:rgba(22,23,25,.86); backdrop-filter:blur(14px) saturate(120%);
+  -webkit-backdrop-filter:blur(14px) saturate(120%);
+  border-top:1px solid var(--line); box-shadow:0 -12px 30px rgba(0,0,0,.4);
+}
+.slider-bar .s-label{display:flex; flex-direction:column; gap:2px; min-width:120px}
+.slider-bar .s-label b{font-family:'Anton',sans-serif; font-weight:400; font-size:.95rem; letter-spacing:.05em; text-transform:uppercase}
+.slider-bar .s-label span{font-size:.58rem; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+.slider-wrap{flex:1; display:flex; align-items:center; gap:16px; min-width:0}
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:44px; background:transparent; cursor:pointer; margin:0;
+}
+input[type=range]:focus-visible{outline:2px solid var(--accent); outline-offset:6px; border-radius:8px}
+input[type=range]::-webkit-slider-runnable-track{
+  height:10px; border-radius:6px; border:1px solid #000;
+  background:linear-gradient(90deg,#5C5C5C 0%,#8a6a4c 46%,#B25D25 72%,#D48A52 100%);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.6);
+}
+input[type=range]::-moz-range-track{
+  height:10px; border-radius:6px; border:1px solid #000;
+  background:linear-gradient(90deg,#5C5C5C 0%,#8a6a4c 46%,#B25D25 72%,#D48A52 100%);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.6);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:26px; height:26px; margin-top:-9px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f0f0f0, #b9b9b9 55%, #6f6f6f);
+  border:2px solid #1b1c1e; box-shadow:0 3px 8px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.4);
+  transition:box-shadow .15s;
+}
+input[type=range]::-moz-range-thumb{
+  width:26px; height:26px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f0f0f0, #b9b9b9 55%, #6f6f6f);
+  border:2px solid #1b1c1e; box-shadow:0 3px 8px rgba(0,0,0,.6);
+}
+input[type=range]:active::-webkit-slider-thumb{box-shadow:0 0 0 6px rgba(255,87,34,.22), 0 3px 8px rgba(0,0,0,.6)}
+.ox-read{min-width:132px; text-align:right}
+.ox-read .big{font-family:'Anton',sans-serif; font-weight:400; font-size:1.5rem; line-height:1; color:#F2EFEA}
+.ox-read .big em{font-style:normal; color:var(--rust-hi); font-size:.9rem}
+.ox-read .st{font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:3px}
+.ox-read .st b{color:var(--rust-hi)}
+
+footer{position:relative; z-index:1; text-align:center; padding:6px 22px 20px; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:#6d7072}
+
+/* toast */
+.toast{
+  position:fixed; left:50%; bottom:calc(var(--slider-h) + 18px); transform:translate(-50%,20px);
+  background:#1b1c1e; border:1px solid var(--rust); color:#f0ede8; padding:11px 18px; border-radius:10px;
+  font-size:.75rem; letter-spacing:.04em; box-shadow:0 12px 30px rgba(0,0,0,.5); z-index:60;
+  opacity:0; pointer-events:none; transition:opacity .3s, transform .3s;
+}
+.toast.show{opacity:1; transform:translate(-50%,0)}
+
+/* responsive */
+@media (max-width:820px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .bible{gap:16px}
+  .bible-meta{margin-left:0; width:100%; justify-content:space-between}
+  .toolbar .btn span{display:none}
+  .toolbar .btn{padding:10px}
+  header{padding:0 14px; gap:10px}
+}
+@media (max-width:520px){
+  .brand-txt p{display:none}
+  .slider-bar{gap:10px; padding:0 12px}
+  .slider-bar .s-label{min-width:78px}
+  .slider-bar .s-label b{font-size:.8rem}
+  .ox-read{min-width:96px}
+  .ox-read .big{font-size:1.2rem}
+  main{padding-left:14px; padding-right:14px}
+  .panel{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .wipe{animation:none; display:none}
+  .bg-glow{animation:none}
+  *{transition:none !important}
+  .cell.flash{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="bg-atmos"></div>
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+<canvas id="dust"></canvas>
+<div class="wipe" aria-hidden="true"></div>
+
+<header>
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <defs>
+        <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#D48A52"/><stop offset=".55" stop-color="#B25D25"/><stop offset="1" stop-color="#5C5C5C"/>
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="32" height="32" rx="7" fill="url(#bm)" stroke="#1b1c1e" stroke-width="1.5"/>
+      <path d="M12 26c2-8 6-3 8-10s6 3 8-4" fill="none" stroke="#2B2D2F" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="13" cy="14" r="1.6" fill="#E6CBAF"/>
+      <circle cx="27" cy="27" r="1.4" fill="#E6CBAF"/>
+    </svg>
+    <div class="brand-txt">
+      <h1>Oxide <span>Yield</span></h1>
+      <p>Rust &amp; Corrosion Kit</p>
+    </div>
+  </div>
+  <div class="toolbar">
+    <button class="btn" id="btnPoster" title="Reveal poster frame">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 4v16"/></svg><span>Poster</span>
+    </button>
+    <button class="btn" id="btnSvg" title="Download SVG UI">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg><span>SVG UI</span>
+    </button>
+    <button class="btn primary" id="btnPng" title="Download PNG Atlas">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg><span>PNG Atlas</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="bible">
+      <div class="bible-title">
+        <h2>Style Bible</h2>
+        <span class="tag">Material Honesty</span>
+      </div>
+      <div class="swatches" id="swatches"></div>
+      <div class="bible-meta">
+        <span>Grid <b>4×4</b></span>
+        <span>Sprite <b>64px</b></span>
+        <span>Layers <b>Bevel · Oxide · Flake · Dust</b></span>
+      </div>
+    </div>
+
+    <div class="strip-head">
+      <h2>Inventory</h2>
+      <span class="count" id="countLabel">16 assets</span>
+      <span class="spacer"></span>
+      <div class="legend">
+        <span><i style="background:#5C5C5C"></i>Steel</span>
+        <span><i style="background:#B25D25"></i>Oxide</span>
+        <span><i style="background:#D48A52"></i>Flake</span>
+        <span><i style="background:#E6CBAF"></i>Dust</span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+</main>
+
+<footer>Procedural oxidation · Canvas2D · OXIDE YIELD game kit</footer>
+
+<div class="slider-bar">
+  <div class="s-label">
+    <b>Oxidation Level</b>
+    <span>0 — Clean · 100 — Corroded</span>
+  </div>
+  <div class="slider-wrap">
+    <input type="range" id="ox" min="0" max="100" step="1" value="0"
+      aria-label="Oxidation Level" aria-valuetext="0 percent, Clean">
+  </div>
+  <div class="ox-read">
+    <div class="big"><span id="oxVal">0</span><em>%</em></div>
+    <div class="st" id="oxStage">Stage · <b>Clean</b></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============ palette + utils ============ */
+const C = { metal:'#5C5C5C', rust:'#B25D25', rustHi:'#D48A52', dust:'#E6CBAF', bg:'#2B2D2F', accent:'#FF5722' };
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t*t*(3-2*t);
+function hexRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function mix(a,b,t){const A=hexRgb(a),B=hexRgb(b);return `rgb(${Math.round(lerp(A[0],B[0],t))},${Math.round(lerp(A[1],B[1],t))},${Math.round(lerp(A[2],B[2],t))})`;}
+function shade(hex,amt){const c=hexRgb(hex);const f=amt<0?0:255,t=Math.abs(amt);return `rgb(${Math.round(lerp(c[0],f,t))},${Math.round(lerp(c[1],f,t))},${Math.round(lerp(c[2],f,t))})`;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+
+/* ============ procedural rust ============ */
+function rustColor(t){
+  t=clamp(t,0,1);
+  if(t<0.35){const k=t/0.35;return mix(C.metal,C.rust,k);}
+  const k=(t-0.35)/0.65;return mix(C.rust,C.rustHi,k);
+}
+function rustPatch(ctx,x,y,r,seed,t){
+  const rnd=mulberry32(seed),n=8+(seed%3),pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const rr=r*(0.55+rnd()*0.6);pts.push([x+Math.cos(a)*rr,y+Math.sin(a)*rr]);}
+  ctx.beginPath();ctx.moveTo((pts[0][0]+pts[n-1][0])/2,(pts[0][1]+pts[n-1][1])/2);
+  for(let i=0;i<n;i++){const p=pts[i],q=pts[(i+1)%n];ctx.quadraticCurveTo(p[0],p[1],(p[0]+q[0])/2,(p[1]+q[1])/2);}
+  ctx.closePath();
+  const g=ctx.createRadialGradient(x-r*0.25,y-r*0.25,r*0.1,x,y,r);
+  g.addColorStop(0,rustColor(t));g.addColorStop(0.7,rustColor(t*0.9));g.addColorStop(1,rustColor(t*0.7));
+  ctx.fillStyle=g;ctx.fill();
+  if(t>0.45){
+    ctx.save();ctx.clip();ctx.strokeStyle='rgba(43,45,47,0.5)';ctx.lineWidth=0.6;
+    for(let i=0;i<3;i++){const a=rnd()*Math.PI*2;ctx.beginPath();ctx.moveTo(x,y);
+      ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);ctx.stroke();}
+    ctx.restore();
+  }
+}
+function rustLayer(ctx,shapeFn,ox,seed,t){
+  if(ox<=0.001)return;
+  ctx.save();shapeFn(ctx);ctx.clip();
+  const rnd=mulberry32(seed);
+  const count=Math.round(3+ox*9);
+  for(let i=0;i<count;i++){
+    const x=rnd()*64,y=rnd()*64,r=2.5+rnd()*(3+ox*6);
+    const lt=clamp(ox*(0.55+rnd()*0.65),0,1);
+    rustPatch(ctx,x,y,r,(seed*131+i*977)|0,lt);
+  }
+  if(ox>0.5){
+    const dc=Math.round((ox-0.5)*14);
+    for(let i=0;i<dc;i++){
+      const x=rnd()*64,y=rnd()*64,r=0.6+rnd()*1.4;
+      ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=`rgba(230,203,175,${0.35+rnd()*0.4})`;ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function bevel(ctx,shapeFn,ox){
+  ctx.save();shapeFn(ctx);ctx.clip();
+  ctx.lineWidth=1.6;ctx.strokeStyle='rgba(255,255,255,0.16)';ctx.stroke();
+  ctx.translate(0,1.2);ctx.strokeStyle='rgba(0,0,0,0.35)';ctx.stroke();
+  ctx.restore();
+}
+function rivet(ctx,x,y,ox){
+  ctx.beginPath();ctx.arc(x,y,2.1,0,7);
+  const g=ctx.createRadialGradient(x-0.6,y-0.6,0.2,x,y,2.1);
+  g.addColorStop(0,shade(C.metal,0.5));g.addColorStop(1,mix(C.metal,C.rust,ox));
+  ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();ctx.arc(x,y,2.1,0,7);ctx.strokeStyle='rgba(0,0,0,0.45)';ctx.lineWidth=0.6;ctx.stroke();
+}
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function plate(ctx,x,y,w,h,ox,seed){
+  const shp=c=>rr(c,x,y,w,h,3);
+  const g=ctx.createLinearGradient(x,y,x,y+h);
+  g.addColorStop(0,shade(C.metal,0.2));g.addColorStop(0.5,C.metal);g.addColorStop(1,shade(C.metal,-0.25));
+  ctx.fillStyle=g;shp(ctx);ctx.fill();
+  rustLayer(ctx,shp,ox,seed);
+  bevel(ctx,shp,ox);
+}
+function bolt(ctx,x,y,r){
+  const g=ctx.createRadialGradient(x-r*0.3,y-r*0.3,0.2,x,y,r);
+  g.addColorStop(0,'#7a7a7a');g.addColorStop(1,'#3a3a3a');
+  ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.lineWidth=0.6;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x-r*0.5,y);ctx.lineTo(x+r*0.5,y);ctx.strokeStyle='rgba(0,0,0,0.4)';ctx.lineWidth=0.8;ctx.stroke();
+}
+function hazardMark(ctx,cx,cy,s){
+  ctx.beginPath();ctx.moveTo(cx,cy-s);ctx.lineTo(cx+s,cy+s*0.85);ctx.lineTo(cx-s,cy+s*0.85);ctx.closePath();
+  ctx.fillStyle='rgba(255,87,34,0.16)';ctx.fill();
+  ctx.strokeStyle='rgba(255,87,34,0.85)';ctx.lineWidth=1.6;ctx.stroke();
+  ctx.fillStyle='#FF5722';ctx.font='bold 9px "IBM Plex Sans"';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('!',cx,cy+s*0.2);
+}
+
+/* ============ sprite renderers (64x64) ============ */
+function drawCrate(ctx,ox,seed){
+  plate(ctx,8,10,48,44,ox,seed);
+  ctx.strokeStyle='rgba(0,0,0,0.28)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(8,25);ctx.lineTo(56,25);ctx.moveTo(8,39);ctx.lineTo(56,39);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.beginPath();ctx.moveTo(8,26);ctx.lineTo(56,26);ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,0.22)';ctx.fillRect(22,10,6,44);
+  ctx.fillStyle='rgba(255,255,255,0.06)';ctx.fillRect(22,10,2,44);
+  rivet(ctx,14,16,ox);rivet(ctx,50,16,ox);rivet(ctx,14,48,ox);rivet(ctx,50,48,ox);
+  if(ox>0.55){ctx.save();ctx.globalAlpha=0.5;ctx.fillStyle=C.rustHi;ctx.fillRect(8,50,48,4);ctx.restore();}
+}
+function drawPipe(ctx,ox,seed){
+  const shp=c=>rr(c,6,24,52,16,8);
+  const g=ctx.createLinearGradient(0,24,0,40);
+  g.addColorStop(0,shade(C.metal,0.35));g.addColorStop(0.45,C.metal);g.addColorStop(1,shade(C.metal,-0.3));
+  ctx.fillStyle=g;shp(ctx);ctx.fill();
+  rustLayer(ctx,shp,ox,seed);bevel(ctx,shp,ox);
+  ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(20,24);ctx.lineTo(20,40);ctx.moveTo(44,24);ctx.lineTo(44,40);ctx.stroke();
+  ctx.fillStyle=shade(C.metal,-0.1);ctx.fillRect(17,22,6,20);ctx.fillRect(41,22,6,20);
+  bolt(ctx,20,32,2.4);bolt(ctx,44,32,2.4);
+  if(ox>0.4){ctx.fillStyle=`rgba(178,93,37,${0.4+ox*0.4})`;ctx.fillRect(30,40,3,10+ox*6);ctx.fillRect(35,40,2,6+ox*5);}
+}
+function drawSteamVent(ctx,ox,seed){
+  plate(ctx,12,16,40,36,ox,seed);
+  ctx.fillStyle='rgba(0,0,0,0.4)';ctx.fillRect(16,20,32,6);
+  ctx.fillStyle='rgba(255,255,255,0.08)';ctx.fillRect(16,26,32,1);
+  ctx.fillStyle='rgba(0,0,0,0.4)';ctx.fillRect(16,30,32,6);
+  ctx.fillStyle='rgba(255,255,255,0.08)';ctx.fillRect(16,36,32,1);
+  ctx.fillStyle='rgba(0,0,0,0.4)';ctx.fillRect(16,40,32,6);
+  ctx.fillStyle='rgba(255,255,255,0.08)';ctx.fillRect(16,46,32,1);
+  ctx.fillStyle='rgba(230,203,175,0.5)';
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(20+i*12,12-i*2,2.4+i*0.6,0,7);ctx.fill();}
+  rivet(ctx,16,19,ox);rivet(ctx,48,19,ox);rivet(ctx,16,49,ox);rivet(ctx,48,49,ox);
+  if(ox>0.5)hazardMark(ctx,50,50,6);
+}
+function drawSpike(ctx,ox,seed,variant){
+  plate(ctx,6,42,52,14,ox,seed);
+  const baseY=44;
+  const xs=variant?[12,22,32,42,52]:[10,20,30,40,50,58];
+  for(const x of xs){
+    const h=16+((x*7)%9);
+    const g=ctx.createLinearGradient(x-4,baseY-h,x+4,baseY);
+    g.addColorStop(0,shade(C.metal,0.3));g.addColorStop(0.5,C.metal);g.addColorStop(1,shade(C.metal,-0.2));
+    ctx.beginPath();ctx.moveTo(x,baseY-h);ctx.lineTo(x+4.5,baseY);ctx.lineTo(x-4.5,baseY);ctx.closePath();
+    ctx.fillStyle=g;ctx.fill();
+    ctx.beginPath();ctx.moveTo(x,baseY-h);ctx.lineTo(x+4.5,baseY);ctx.lineTo(x-4.5,baseY);ctx.closePath();
+    ctx.strokeStyle='rgba(0,0,0,0.4)';ctx.lineWidth=0.8;ctx.stroke();
+    if(ox>0.25){ctx.save();ctx.beginPath();ctx.moveTo(x,baseY-h);ctx.lineTo(x+4.5,baseY);ctx.lineTo(x-4.5,baseY);ctx.closePath();ctx.clip();
+      ctx.fillStyle=rustColor(ox);ctx.fillRect(x-4,baseY-h*0.5,9,h*0.5);ctx.restore();}
+    ctx.beginPath();ctx.arc(x,baseY-h,1.4,0,7);ctx.fillStyle=shade(C.metal,0.5);ctx.fill();
+  }
+  if(ox>0.5)hazardMark(ctx,32,20,7);
+}
+function drawHealth(ctx,ox,seed,corroded){
+  const shp=c=>rr(c,6,24,52,16,4);
+  ctx.fillStyle='#141517';shp(ctx);ctx.fill();
+  const inner=corroded?mix(C.rust,C.rustHi,0.3):C.metal;
+  ctx.strokeStyle=inner;ctx.lineWidth=2;shp(ctx);ctx.stroke();
+  ctx.save();rr(ctx,9,27,46,10,2);ctx.clip();
+  ctx.fillStyle='#0e0f10';ctx.fillRect(9,27,46,10);
+  const barW=corroded?20:38;
+  const bg=ctx.createLinearGradient(0,27,0,37);
+  if(corroded){bg.addColorStop(0,C.rustHi);bg.addColorStop(1,C.rust);}
+  else{bg.addColorStop(0,shade(C.metal,0.4));bg.addColorStop(1,C.metal);}
+  ctx.fillStyle=bg;ctx.fillRect(9,27,barW,10);
+  if(!corroded){ctx.fillStyle='rgba(255,255,255,0.18)';ctx.fillRect(9,27,barW,2);}
+  ctx.restore();
+  ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.lineWidth=1;ctx.beginPath();
+  for(let x=15;x<55;x+=6){ctx.moveTo(x,27);ctx.lineTo(x,37);}ctx.stroke();
+  if(corroded)rustLayer(ctx,shp,0.8,seed);
+  else rustLayer(ctx,shp,ox*0.4,seed);
+}
+function drawSlot(ctx,ox,seed){
+  const shp=c=>rr(c,8,8,48,48,6);
+  const g=ctx.createLinearGradient(0,8,0,56);
+  g.addColorStop(0,shade(C.metal,0.25));g.addColorStop(1,shade(C.metal,-0.2));
+  ctx.fillStyle=g;shp(ctx);ctx.fill();
+  ctx.save();rr(ctx,14,14,36,36,4);ctx.fillStyle='#141517';ctx.fill();ctx.restore();
+  ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=1.4;rr(ctx,14,14,36,36,4);ctx.stroke();
+  rivet(ctx,12,12,ox);rivet(ctx,52,12,ox);rivet(ctx,12,52,ox);rivet(ctx,52,52,ox);
+  ctx.strokeStyle='rgba(255,255,255,0.05)';ctx.lineWidth=1;ctx.beginPath();
+  ctx.moveTo(24,14);ctx.lineTo(24,50);ctx.moveTo(34,14);ctx.lineTo(34,50);ctx.moveTo(44,14);ctx.lineTo(44,50);ctx.stroke();
+  rustLayer(ctx,shp,ox,seed);
+}
+function drawDustPuff(ctx,ox,seed){
+  const rnd=mulberry32(seed);
+  for(let i=0;i<7;i++){
+    const x=32+(rnd()-0.5)*30,y=34+(rnd()-0.5)*24,r=5+rnd()*7;
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    g.addColorStop(0,`rgba(230,203,175,${0.5-ox*0.2})`);g.addColorStop(1,'rgba(230,203,175,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+  }
+  const n=Math.round(4+ox*8);
+  for(let i=0;i<n;i++){const x=rnd()*64,y=rnd()*64,r=0.6+rnd()*1.2;
+    ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=i%2?C.dust:C.rustHi;ctx.globalAlpha=0.6;ctx.fill();ctx.globalAlpha=1;}
+}
+function drawFlake(ctx,ox,seed){
+  const rnd=mulberry32(seed);
+  const n=Math.round(6+ox*10);
+  for(let i=0;i<n;i++){
+    const x=rnd()*64,y=rnd()*64,s=1.5+rnd()*3,a=rnd()*7;
+    ctx.save();ctx.translate(x,y);ctx.rotate(a);
+    ctx.beginPath();ctx.moveTo(0,-s);ctx.lineTo(s*0.7,0);ctx.lineTo(0,s);ctx.lineTo(-s*0.7,0);ctx.closePath();
+    ctx.fillStyle=i%3?C.rust:C.rustHi;ctx.fill();ctx.restore();
+  }
+  const g=ctx.createLinearGradient(0,0,0,64);
+  g.addColorStop(0,'rgba(178,93,37,0)');g.addColorStop(1,`rgba(178,93,37,${0.15+ox*0.3})`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+}
+
+/* ============ character ============ */
+function limb(ctx,x1,y1,x2,y2,w,ox){
+  ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=shade(C.metal,-0.15);ctx.lineWidth=w;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=shade(C.metal,0.12);ctx.lineWidth=w-1.6;ctx.stroke();
+  if(ox>0.3){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=rustColor(ox);ctx.lineWidth=w-1.6;ctx.globalAlpha=0.55;ctx.stroke();ctx.globalAlpha=1;}
+}
+function drawCharacter(ctx,ox,seed,pose){
+  const bob=pose.bob||0;
+  ctx.save();ctx.translate(0,bob);
+  limb(ctx,32,40,26,52,6,ox);limb(ctx,32,40,38,52,6,ox);
+  ctx.fillStyle='#141517';
+  ctx.beginPath();ctx.ellipse(25,53,4.5,2.6,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.ellipse(39,53,4.5,2.6,0,0,7);ctx.fill();
+  const bodyShp=c=>rr(c,21,22,22,20,5);
+  const g=ctx.createLinearGradient(0,22,0,42);
+  g.addColorStop(0,shade(C.metal,0.3));g.addColorStop(0.5,C.metal);g.addColorStop(1,shade(C.metal,-0.2));
+  ctx.fillStyle=g;bodyShp(ctx);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.25)';ctx.fillRect(21,33,22,2);
+  rustLayer(ctx,bodyShp,ox,seed);bevel(ctx,bodyShp,ox);
+  const armY=26+(pose.armSwing||0);
+  limb(ctx,23,26,23,34,5,ox);limb(ctx,41,26,41,34,5,ox);
+  const headShp=c=>rr(c,23,6,18,16,6);
+  const hg=ctx.createLinearGradient(0,6,0,22);
+  hg.addColorStop(0,shade(C.metal,0.4));hg.addColorStop(1,C.metal);
+  ctx.fillStyle=hg;headShp(ctx);ctx.fill();
+  ctx.fillStyle='#141517';rr(ctx,25,12,14,5,2);ctx.fill();
+  ctx.fillStyle=pose.visor||'#7fd7ff';ctx.fillRect(27,13,10,3);
+  ctx.fillStyle='rgba(255,255,255,0.25)';ctx.fillRect(27,13,10,1);
+  rustLayer(ctx,headShp,ox,seed+11);bevel(ctx,headShp,ox);
+  ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fillRect(23,7,18,2);
+  rivet(ctx,24,24,ox);rivet(ctx,40,24,ox);
+  ctx.restore();
+}
+function drawIdle(ctx,ox,seed){drawCharacter(ctx,ox,seed,{bob:0,visor:'#7fd7ff'});}
+function drawWalk(ctx,ox,seed,f){
+  const swings=[-4,0,4,0],bobs=[1,0,1,0];
+  drawCharacter(ctx,ox,seed,{armSwing:swings[f],bob:bobs[f],visor:'#7fd7ff'});
+}
+function drawHazardReact(ctx,ox,seed){
+  drawCharacter(ctx,ox,seed,{bob:-3,visor:'#FF5722'});
+  ctx.save();
+  const rnd=mulberry32(seed);
+  for(let i=0;i<8;i++){const x=rnd()*64,y=rnd()*40,s=1.5+rnd()*2.5;
+    ctx.save();ctx.translate(x,y);ctx.rotate(rnd()*7);
+    ctx.beginPath();ctx.moveTo(0,-s);ctx.lineTo(s*0.7,0);ctx.lineTo(0,s);ctx.lineTo(-s*0.7,0);ctx.closePath();
+    ctx.fillStyle=C.rustHi;ctx.globalAlpha=0.85;ctx.fill();ctx.restore();}
+  ctx.restore();
+  ctx.strokeStyle='rgba(255,87,34,0.8)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(32,14,11,Math.PI*0.15,Math.PI*0.85);ctx.stroke();
+  ctx.beginPath();ctx.arc(32,14,15,Math.PI*0.25,Math.PI*0.75);ctx.stroke();
+}
+
+/* ============ atlas definitions ============ */
+const ATLAS=[
+ {id:'player_idle',cat:'PLAYER',label:'Idle',code:'P-01',fn:drawIdle,hero:true},
+ {id:'walk_1',cat:'PLAYER',label:'Walk 1',code:'P-02',fn:c=>drawWalk(c,0,0,0)},
+ {id:'walk_2',cat:'PLAYER',label:'Walk 2',code:'P-03',fn:c=>drawWalk(c,0,0,1)},
+ {id:'walk_3',cat:'PLAYER',label:'Walk 3',code:'P-04',fn:c=>drawWalk(c,0,0,2)},
+ {id:'walk_4',cat:'PLAYER',label:'Walk 4',code:'P-05',fn:c=>drawWalk(c,0,0,3)},
+ {id:'hazard_react',cat:'PLAYER',label:'Hazard React',code:'P-06',fn:drawHazardReact},
+ {id:'spike_a',cat:'HAZARD',label:'Spike Trap A',code:'H-01',fn:(c,o,s)=>drawSpike(c,o,s,false)},
+ {id:'spike_b',cat:'HAZARD',label:'Spike Trap B',code:'H-02',fn:(c,o,s)=>drawSpike(c,o,s,true)},
+ {id:'steam_vent',cat:'HAZARD',label:'Steam Vent',code:'H-03',fn:drawSteamVent},
+ {id:'crate_1',cat:'PROP',label:'Crate · Low',code:'R-01',fn:(c,o,s)=>drawCrate(c,o,s)},
+ {id:'crate_2',cat:'PROP',label:'Crate · Mid',code:'R-02',fn:(c,o,s)=>drawCrate(c,o,s)},
+ {id:'crate_3',cat:'PROP',label:'Crate · High',code:'R-03',fn:(c,o,s)=>drawCrate(c,o,s)},
+ {id:'crate_4',cat:'PROP',label:'Crate · Deep',code:'R-04',fn:(c,o,s)=>drawCrate(c,o,s)},
+ {id:'pipe_1',cat:'PROP',label:'Broken Pipe',code:'R-05',fn:drawPipe},
+ {id:'pipe_2',cat:'PROP',label:'Ruptured Pipe',code:'R-06',fn:drawPipe},
+ {id:'ui_health',cat:'UI',label:'Health Bars',code:'U-01',fn:(c,o,s)=>{drawHealth(c,o,s,false);drawHealth(c,o,s+7,true);}},
+ {id:'ui_slot',cat:'UI',label:'Inventory Slot',code:'U-02',fn:drawSlot},
+ {id:'vfx_puff',cat:'VFX',label:'Dust Puff',code:'V-01',fn:drawDustPuff},
+ {id:'vfx_puff2',cat:'VFX',label:'Dust Puff II',code:'V-02',fn:drawDustPuff},
+ {id:'vfx_shower',cat:'VFX',label:'Rust Flake Shower',code:'V-03',fn:drawFlake}
+];
+const SEEDS=ATLAS.map((_,i)=>1013+i*7919);
+const SHIMMER_IDS=new Set(['player_idle','walk_1','walk_2','walk_3','walk_4','hazard_react','crate_1','crate_2','pipe_1','ui_slot']);
+
+/* ============ state ============ */
+let ox=0, dragging=false, shimmerPhase=0;
+const grid=document.getElementById('grid');
+const cells=[];
+ATLAS.forEach((a,i)=>{
+  const cell=document.createElement('div');
+  cell.className='cell'+(a.hero?' hero':'');
+  cell.tabIndex=0;
+  cell.setAttribute('role','img');
+  cell.setAttribute('aria-label',`${a.label} sprite, ${a.cat} category`);
+  const cv=document.createElement('canvas');cv.width=64;cv.height=64;cv.className='sprite';
+  const cat=document.createElement('span');cat.className='cat';cat.textContent=a.cat;
+  const lab=document.createElement('div');lab.className='label';
+  lab.innerHTML=`<b>${a.label}</b><code>${a.code}</code>`;
+  cell.append(cv,cat,lab);grid.append(cell);
+  cells.push({cell,cv,ctx:cv.getContext('2d'),a,seed:SEEDS[i]});
+});
+document.getElementById('countLabel').textContent=ATLAS.length+' assets';
+
+function stageName(v){return v<15?'Clean':v<40?'Tarnish':v<70?'Oxidizing':v<90?'Corroded':'Advanced';}
+
+function renderCell(el){
+  const {ctx,a,seed}=el;
+  ctx.clearRect(0,0,64,64);
+  a.fn(ctx,ox/100,seed);
+  if(ox<20 && dragging && SHIMMER_IDS.has(a.id)){
+    ctx.save();
+    const x=((shimmerPhase*1.6+seed)%90)-15;
+    const g=ctx.createLinearGradient(x-8,0,x+8,64);
+    g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(0.5,'rgba(255,255,255,0.28)');g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.fillRect(0,0,64,64);
+    ctx.restore();
+  }
+}
+function renderAll(){for(const el of cells)renderCell(el);}
+
+/* ============ dust particles ============ */
+const dustCanvas=document.getElementById('dust');
+const dctx=dustCanvas.getContext('2d');
+let particles=[];
+const reduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+function sizeDust(){dustCanvas.width=innerWidth;dustCanvas.height=innerHeight;}
+sizeDust();addEventListener('resize',sizeDust);
+function makeParticle(){return {x:Math.random()*innerWidth,y:-10-Math.random()*innerHeight*0.5,vy:0.4+Math.random()*0.4,
+  amp:1+Math.random()*2,ph:Math.random()*7,spd:0.01+Math.random()*0.02,r:0.6+Math.random()*1.4,
+  a:0.15+Math.random()*0.35,c:Math.random()<0.5?C.dust:C.rustHi};}
+function drawDust(){
+  dctx.clearRect(0,0,dustCanvas.width,dustCanvas.height);
+  for(const p of particles){
+    p.y+=p.vy;p.ph+=p.spd;
+    const x=p.x+Math.sin(p.ph)*p.amp;
+    dctx.globalAlpha=p.a;dctx.fillStyle=p.c;
+    dctx.beginPath();dctx.arc(x,p.y,p.r,0,7);dctx.fill();
+  }
+  dctx.globalAlpha=1;
+  const grad=dctx.createLinearGradient(0,innerHeight-40,0,innerHeight);
+  grad.addColorStop(0,'rgba(230,203,175,0)');grad.addColorStop(1,'rgba(230,203,175,0.12)');
+  dctx.fillStyle=grad;dctx.fillRect(0,innerHeight-40,innerWidth,40);
+}
+function tickDust(){
+  if(reduced)return;
+  while(particles.length<50){particles.push(makeParticle());}
+  for(let i=particles.length-1;i>=0;i--){
+    if(particles[i].y>innerHeight+8)particles[i]=makeParticle();
+  }
+}
+
+/* ============ main loop ============ */
+function loop(){
+  shimmerPhase++;
+  tickDust();
+  drawDust();
+  renderAll();
+  requestAnimationFrame(loop);
+}
+if(reduced){renderAll();drawDust();}
+else requestAnimationFrame(loop);
+
+/* ============ slider ============ */
+const slider=document.getElementById('ox');
+const oxVal=document.getElementById('oxVal');
+const oxStage=document.getElementById('oxStage');
+function setOx(v){
+  ox=clamp(Math.round(v),0,100);
+  oxVal.textContent=ox;
+  oxStage.innerHTML='Stage · <b>'+stageName(ox)+'</b>';
+  slider.setAttribute('aria-valuetext',ox+' percent, '+stageName(ox));
+  if(reduced)renderAll();
+}
+slider.addEventListener('input',e=>{dragging=true;setOx(e.target.value);});
+slider.addEventListener('change',()=>{dragging=false;});
+slider.addEventListener('pointerdown',()=>dragging=true);
+addEventListener('pointerup',()=>dragging=false);
+
+/* ============ swatches ============ */
+const SW=[['Base Metal',C.metal],['Rust Primary',C.rust],['Rust Highlight',C.rustHi],['Dust',C.dust],['Background',C.bg],['Accent',C.accent]];
+const swWrap=document.getElementById('swatches');
+SW.forEach(([n,c])=>{
+  const d=document.createElement('div');d.className='sw';
+  d.innerHTML=`<i style="background:${c}"></i><span><b>${n}</b><code>${c}</code></span>`;
+  swWrap.append(d);
+});
+
+/* ============ toast ============ */
+const toast=document.getElementById('toast');
+let toastT;
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>toast.classList.remove('show'),2600);}
+
+/* ============ downloads ============ */
+function downloadBlob(blob,name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1500);
+}
+function renderAtlas(){
+  const cv=document.createElement('canvas');cv.width=256;cv.height=256;
+  const ctx=cv.getContext('2d');
+  ATLAS.forEach((a,i)=>{
+    const col=i%4,row=(i/4)|0;
+    ctx.save();ctx.translate(col*64,row*64);
+    a.fn(ctx,ox/100,SEEDS[i]);
+    ctx.restore();
+  });
+  return cv;
+}
+function downloadPNG(){
+  const cv=renderAtlas();
+  cv.toBlob(b=>{if(b){downloadBlob(b,`oxide_yield_atlas_${ox}.png`);showToast('PNG atlas exported · '+ox+'%');}},'image/png');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function buildSVG(){
+  const t=ox/100;
+  const metal=rustColor(t*0.5), rust=rustColor(t), rustHi=rustColor(Math.min(1,t*1.2));
+  const parts=[];
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">`);
+  parts.push(`<title>OXIDE YIELD — UI Kit @ ${ox}% oxidation</title>`);
+  parts.push(`<desc>Rust and corrosion kit UI elements generated at oxidation level ${ox} percent.</desc>`);
+  parts.push(`<defs>`);
+  parts.push(`<linearGradient id="metalGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(C.metal,0.3)}"/><stop offset="1" stop-color="${shade(C.metal,-0.2)}"/></linearGradient>`);
+  parts.push(`<linearGradient id="healthGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${rustHi}"/><stop offset="1" stop-color="${rust}"/></linearGradient>`);
+  parts.push(`<pattern id="rust" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M2 4 L7 2 L9 7 L4 9 Z" fill="${rust}" opacity="0.7"/><path d="M13 12 L18 11 L17 17 L12 16 Z" fill="${rustHi}" opacity="0.6"/><path d="M6 14 L9 15 L7 18 Z" fill="${rust}" opacity="0.5"/></pattern>`);
+  parts.push(`</defs>`);
+  parts.push(`<rect width="400" height="300" fill="${C.bg}"/>`);
+  parts.push(`<text x="20" y="34" font-family="Anton, sans-serif" font-size="26" fill="#ECEAE6" letter-spacing="2">OXIDE YIELD · UI</text>`);
+  parts.push(`<text x="20" y="52" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#9a9d9f" letter-spacing="2">OXIDATION ${ox}% · ${esc(stageName(ox))}</text>`);
+  // Health bar clean
+  parts.push(`<g transform="translate(20,80)">`);
+  parts.push(`<rect x="0" y="0" width="170" height="26" rx="5" fill="#141517" stroke="${metal}" stroke-width="2"/>`);
+  parts.push(`<rect x="4" y="4" width="120" height="18" rx="2" fill="url(#metalGrad)"/>`);
+  parts.push(`<rect x="4" y="4" width="120" height="4" fill="#ffffff" opacity="0.15"/>`);
+  parts.push(`<rect x="0" y="0" width="170" height="26" rx="5" fill="url(#rust)" opacity="${(t*0.35).toFixed(2)}"/>`);
+  parts.push(`<text x="0" y="-6" font-family="IBM Plex Sans" font-size="9" fill="#9a9d9f" letter-spacing="1">HEALTH · CLEAN</text>`);
+  parts.push(`</g>`);
+  // Health bar corroded
+  parts.push(`<g transform="translate(20,150)">`);
+  parts.push(`<rect x="0" y="0" width="170" height="26" rx="5" fill="#141517" stroke="${rust}" stroke-width="2"/>`);
+  parts.push(`<rect x="4" y="4" width="60" height="18" rx="2" fill="url(#healthGrad)"/>`);
+  parts.push(`<rect x="0" y="0" width="170" height="26" rx="5" fill="url(#rust)" opacity="0.55"/>`);
+  parts.push(`<text x="0" y="-6" font-family="IBM Plex Sans" font-size="9" fill="#9a9d9f" letter-spacing="1">HEALTH · CORRODED</text>`);
+  parts.push(`</g>`);
+  // Inventory slot
+  parts.push(`<g transform="translate(230,80)">`);
+  parts.push(`<rect x="0" y="0" width="150" height="150" rx="10" fill="url(#metalGrad)" stroke="#000" stroke-width="1"/>`);
+  parts.push(`<rect x="18" y="18" width="114" height="114" rx="6" fill="#141517" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5"/>`);
+  parts.push(`<circle cx="10" cy="10" r="5" fill="${shade(C.metal,0.4)}" stroke="#000" stroke-width="1"/>`);
+  parts.push(`<circle cx="140" cy="10" r="5" fill="${shade(C.metal,0.4)}" stroke="#000" stroke-width="1"/>`);
+  parts.push(`<circle cx="10" cy="140" r="5" fill="${shade(C.metal,0.4)}" stroke="#000" stroke-width="1"/>`);
+  parts.push(`<circle cx="140" cy="140" r="5" fill="${shade(C.metal,0.4)}" stroke="#000" stroke-width="1"/>`);
+  parts.push(`<rect x="0" y="0" width="150" height="150" rx="10" fill="url(#rust)" opacity="${(t*0.4).toFixed(2)}"/>`);
+  parts.push(`<text x="0" y="-6" font-family="IBM Plex Sans" font-size="9" fill="#9a9d9f" letter-spacing="1">INVENTORY SLOT</text>`);
+  parts.push(`</g>`);
+  // Hazard outline
+  parts.push(`<g transform="translate(20,220)">`);
+  parts.push(`<path d="M0 40 L14 8 L28 40 Z" fill="rgba(255,87,34,0.12)" stroke="#FF5722" stroke-width="2"/>`);
+  parts.push(`<path d="M40 40 L54 8 L68 40 Z" fill="rgba(255,87,34,0.12)" stroke="#FF5722" stroke-width="2"/>`);
+  parts.push(`<text x="80" y="34" font-family="IBM Plex Sans" font-size="9" fill="#9a9d9f" letter-spacing="1">HAZARD OUTLINE</text>`);
+  parts.push(`</g>`);
+  parts.push(`</svg>`);
+  return parts.join('\n');
+}
+function downloadSVG(){
+  const svg=buildSVG();
+  const blob=new Blob([svg],{type:'image/svg+xml;charset=utf-8'});
+  downloadBlob(blob,`oxide_yield_ui_${ox}.svg`);
+  showToast('SVG UI exported · '+ox+'%');
+}
+document.getElementById('btnPng').addEventListener('click',downloadPNG);
+document.getElementById('btnSvg').addEventListener('click',downloadSVG);
+
+/* ============ poster reveal ============ */
+function showPoster(){
+  document.getElementById('ox').value=60;setOx(60);
+  const hero=cells.find(c=>c.a.hero);
+  if(hero){
+    hero.cell.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+    hero.cell.classList.remove('flash');void hero.cell.offsetWidth;hero.cell.classList.add('flash');
+  }
+}
+document.getElementById('btnPoster').addEventListener('click',showPoster);
+
+/* init */
+setOx(0);
+setTimeout(showPoster,1500);
+</script>
+</body>
+</html>

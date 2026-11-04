@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 294 | 289 | 253 | 41 |
+| 294 | 294 | 253 | 41 |
 
 ## Quick start
 
@@ -2227,9 +2227,11 @@ A 3D honeycomb lattice where precious-metal catalysts strip oxygen atoms from NO
 
 [prompt](prompts/motion-graphics/catalytic-converter-reduction/prompt.md) · [extended](prompts/motion-graphics/catalytic-converter-reduction/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/catalytic-converter-reduction/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.5s | 154s | 4 | [open](prompts/motion-graphics/catalytic-converter-reduction/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2321,9 +2323,11 @@ A single vertical bar grows physically from dark soil into a wheat stalk, hittin
 
 [prompt](prompts/motion-graphics/hydraulic-press-reservoir/prompt.md) · [extended](prompts/motion-graphics/hydraulic-press-reservoir/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 30s | 136s | — | — |
 
 ---
 
@@ -3347,9 +3351,11 @@ Tactile medieval siege: drag to tension a sling, release to launch stone. Over-t
 
 [prompt](prompts/games/catapult-kinetic-launch/prompt.md) · [extended](prompts/games/catapult-kinetic-launch/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/catapult-kinetic-launch/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 20s | 206s | 2 | [open](prompts/games/catapult-kinetic-launch/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3715,9 +3721,11 @@ OXIDE YIELD: A 2D game asset studio with a real-time oxidation slider morphing 1
 
 [prompt](prompts/assets/ferrous-rust-erosion-kit/prompt.md) · [extended](prompts/assets/ferrous-rust-erosion-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/ferrous-rust-erosion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 31s | 333s | 1 | [open](prompts/assets/ferrous-rust-erosion-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4115,9 +4123,11 @@ Raymarched SDF volcanic glass shard where a tensile stress slider drives Voronoi
 
 [prompt](prompts/webgl/volcanic-glass-cooling-shear/prompt.md) · [extended](prompts/webgl/volcanic-glass-cooling-shear/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/volcanic-glass-cooling-shear/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 1.9s | 121s | 1 | [open](prompts/webgl/volcanic-glass-cooling-shear/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
