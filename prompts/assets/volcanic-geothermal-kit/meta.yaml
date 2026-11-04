@@ -1,0 +1,25 @@
+id: volcanic-geothermal-kit
+title: "Volcanic Geothermal Kit"
+category: assets
+tags:
+  - 2d
+  - game-kit
+  - volcanic
+  - lava
+  - destruction
+  - assets
+status: polished
+summary: "Build a single-file HTML asset studio for the 'Volcanic Geothermal Kit' (MAGMA CORE). This is a 2D game kit, not a landing page. The interface must display a cohesive production set: 3 animated lava flow tiles…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-04"
+updated: "2026-11-04"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

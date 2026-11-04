@@ -1,0 +1,18 @@
+Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D game kit. The studio must display a cohesive set of 16 production-grade assets including player sprites, hazard tiles, UI plates, and VFX overlays, all unified by a CRT/neon aesthetic. Use Canvas/SVG for rendering. The viewer should feature a filmstrip interface for navigating asset categories (Player, Environment, UI, VFX) and a main preview area that applies real-time CRT post-processing (scanlines, curvature, chromatic aberration) to the selected asset. Implement a 'Glitch' interaction button that triggers a pixel-sort animation on the preview. Provide functional download buttons for PNG Atlas and SVG Sprite Sheet. The visual style must strictly adhere to the palette: Deep Black (#000000) background, Magenta (#FF00FF) and Cyan (#00FFFF) accents. Typography must use 'Press Start 2P' for headers and 'VT323' for body text. Ensure assets are rendered at high fidelity (64px+ base) with visible pixel structure, avoiding blurry scaling. The layout should feel like an arcade cabinet interface: dark, high-contrast, with glowing borders. Do not use external image CDNs; generate all assets procedurally or via embedded SVG data URIs. The code must be self-contained, responsive, and performant.
+
+**Layout & Responsiveness:**
+On desktop, the layout is a fixed 'Cabinet' frame centered in the viewport. The header occupies the top 10%, featuring the 'PIXEL PULSE' logo in glowing Magenta Press Start 2P font, aligned left, with download buttons aligned right. The main stage occupies the central 60% of the vertical space, displaying the active asset with a CRT curvature effect. The filmstrip occupies the bottom 20%, scrolling horizontally. A left sidebar (15% width) lists categories. On mobile, the sidebar collapses into a top dropdown menu. The filmstrip becomes a horizontal scrollable bar at the bottom with larger touch targets. The main stage adjusts to maintain aspect ratio, ensuring the sprite remains centered and legible. The footer status bar remains visible at the very bottom, showing system status in VT323.
+
+**Motion & Interaction:**
+Upon load, trigger a 'CRT Power-On' sequence: a white flash collapses to a horizontal line, then expands vertically to reveal the interface. Scanlines fade in over 500ms. Hovering over filmstrip thumbnails causes a 1.1x scale and a Cyan box-shadow glow. Clicking a thumbnail initiates a 'glitch' transition: the current asset tears horizontally and swaps with the new asset within 300ms. The 'Glitch' button triggers a pixel-sort effect on the main canvas, displacing pixels based on brightness, lasting exactly 800ms before resetting. Ambient motion includes a subtle RGB split oscillation on the main preview and a blinking cursor in the footer. All animations must use requestAnimationFrame for smoothness.
+
+**Constraints & Acceptance Criteria:**
+1. **Single File**: All CSS, JS, and SVG data URIs must be embedded in one HTML file. No external dependencies except Google Fonts.
+2. **Procedural Generation**: All 16 assets must be drawn via Canvas API or SVG paths. No external images.
+3. **Performance**: Maintain 60fps during animations. Limit particle effects to under 100 elements.
+4. **Accessibility**: Use aria-labels for all interactive buttons. Ensure text contrast ratios exceed 4.5:1.
+5. **Download Functionality**: 'Download PNG' must generate a 512x512 sprite sheet via Canvas.toDataURL. 'Download SVG' must compile SVG groups into a single file blob.
+6. **Visual Fidelity**: Use `image-rendering: pixelated` for all sprite displays. Base resolution 64x64px.
+7. **Code Quality**: Clean, commented code. Modular JS functions for asset generation and UI updates.
+
+Deliverable: single-file HTML/CSS/JS.

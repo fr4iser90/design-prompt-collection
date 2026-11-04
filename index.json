@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T18:15:06.781Z",
+  "generated_at": "2026-11-04T18:58:59.759Z",
   "schema": "schema/entry.schema.json",
-  "count": 275,
+  "count": 278,
   "categories": [
     "landing-pages",
     "animations",
@@ -9160,11 +9160,11 @@
       "status": "polished",
       "summary": "Scroll-driven optical simulation for Vitreous Labs. Light refraction, caustic patterns, and water level manipulation via SVG filters and Snell's law approximation. Quiet luxury aesthetic, no glassmorphism.",
       "path": "prompts/motion-graphics/saline-glass-caustics",
-      "preview": null,
+      "preview": "prompts/motion-graphics/saline-glass-caustics/preview.png",
       "prompt": "prompts/motion-graphics/saline-glass-caustics/prompt.md",
       "extended": "prompts/motion-graphics/saline-glass-caustics/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/saline-glass-caustics/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-04",
@@ -9174,7 +9174,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-04",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 157570,
+          "gen_ms": 157570,
+          "ttft_ms": 3145,
+          "queue_wait_ms": 71,
+          "wall_ms": 160786,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/saline-glass-caustics/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/saline-glass-caustics/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong, atmospheric poster frame with excellent caustic simulation and clear brand hierarchy, though the display type is a generic sans-serif rather than the requested Didot."
+        }
+      ]
     },
     {
       "id": "seismic-event-marker",
@@ -12852,6 +12882,38 @@
       ]
     },
     {
+      "id": "glass-marble-rail-drag",
+      "title": "Marble Run Architect",
+      "category": "games",
+      "tags": [
+        "physics",
+        "canvas2d",
+        "state-stack",
+        "game",
+        "drawing",
+        "toybox",
+        "tactile"
+      ],
+      "status": "polished",
+      "summary": "Draw smooth white tracks to guide glass marbles into swaying collection cups. Avoid red shatter obstacles and moving blockers. Fail if marbles fall off-screen or shatter.",
+      "path": "prompts/games/glass-marble-rail-drag",
+      "preview": null,
+      "prompt": "prompts/games/glass-marble-rail-drag/prompt.md",
+      "extended": "prompts/games/glass-marble-rail-drag/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "gyroscopic-precession",
       "title": "Gimbal Lock",
       "category": "games",
@@ -14014,6 +14076,68 @@
           "review_summary": "The screenshot shows only a loading state with no 3D content, violating the core requirement for a hero mesh pack."
         }
       ]
+    },
+    {
+      "id": "retro-futuristic-arcade-kit",
+      "title": "Retro-Futuristic Arcade Kit",
+      "category": "assets",
+      "tags": [
+        "2d",
+        "game-kit",
+        "retro",
+        "arcade",
+        "pixel-art",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D game kit with 16 procedural assets, CRT effects, and download functionality.",
+      "path": "prompts/assets/retro-futuristic-arcade-kit",
+      "preview": null,
+      "prompt": "prompts/assets/retro-futuristic-arcade-kit/prompt.md",
+      "extended": "prompts/assets/retro-futuristic-arcade-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
+      "id": "volcanic-geothermal-kit",
+      "title": "Volcanic Geothermal Kit",
+      "category": "assets",
+      "tags": [
+        "2d",
+        "game-kit",
+        "volcanic",
+        "lava",
+        "destruction",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "Build a single-file HTML asset studio for the 'Volcanic Geothermal Kit' (MAGMA CORE). This is a 2D game kit, not a landing page. The interface must display a cohesive production set: 3 animated lava flow tiles…",
+      "path": "prompts/assets/volcanic-geothermal-kit",
+      "preview": null,
+      "prompt": "prompts/assets/volcanic-geothermal-kit/prompt.md",
+      "extended": "prompts/assets/volcanic-geothermal-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-04",
+      "updated": "2026-11-04",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "aurora-borealis-shader-veil",

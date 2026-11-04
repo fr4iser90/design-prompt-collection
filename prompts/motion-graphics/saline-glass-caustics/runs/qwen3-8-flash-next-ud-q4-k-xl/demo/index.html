@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vitreous Labs — Caustic Refraction Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Work+Sans:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --air:#F4F6F8;
+    --mid:#8C9EA0;
+    --deep:#0A1C28;
+    --caustic:#E0F7FA;
+    --white:#FFFFFF;
+    --serif:'Playfair Display','Didot','Bodoni MT','Bodoni 72','Hoefler Text',Georgia,'Times New Roman',serif;
+    --sans:'Work Sans','IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    --water:50%;
+    --ray-clip:0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  html{background:var(--deep);}
+  body{
+    background:var(--deep);
+    color:var(--air);
+    font-family:var(--sans);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    cursor:crosshair;
+  }
+  ::selection{background:var(--caustic);color:var(--deep);}
+
+  /* ---- scroll spacer ---- */
+  .spacer{height:300vh;}
+
+  /* ---- sticky stage ---- */
+  .stage{
+    position:sticky;top:0;
+    height:100vh;width:100%;
+    overflow:hidden;
+    background:var(--deep);
+    isolation:isolate;
+  }
+
+  /* ---- layers ---- */
+  .layer{position:absolute;inset:0;pointer-events:none;}
+
+  .bg{
+    background:
+      radial-gradient(120% 90% at 50% 0%, #0d2432 0%, #0A1C28 60%, #07141d 100%);
+    z-index:0;
+  }
+  .grain{
+    z-index:1;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:170px 170px;
+    opacity:.05;mix-blend-mode:soft-light;
+  }
+
+  /* ---- water body (below surface) ---- */
+  .water{
+    position:absolute;left:0;right:0;bottom:0;
+    height:calc(100% - var(--water));
+    z-index:2;
+    background:linear-gradient(180deg,
+      rgba(224,247,250,.16) 0%,
+      rgba(140,158,160,.34) 26%,
+      rgba(10,28,40,.82) 100%);
+    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 2.4%, #000 100%);
+            mask-image:linear-gradient(180deg, transparent 0, #000 2.4%, #000 100%);
+    transition:none;
+  }
+
+  /* ---- caustics (below surface) ---- */
+  .caustics{
+    position:absolute;left:0;right:0;bottom:0;
+    height:calc(100% - var(--water));
+    z-index:3;
+    opacity:0;
+    mix-blend-mode:screen;
+    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 9%, #000 100%);
+            mask-image:linear-gradient(180deg, transparent 0, #000 9%, #000 100%);
+    will-change:opacity,transform;
+  }
+  .caustics svg{width:100%;height:100%;display:block;}
+
+  /* ---- surface line ---- */
+  .surface{
+    position:absolute;left:0;right:0;top:var(--water);
+    height:2px;z-index:5;
+    background:linear-gradient(90deg,
+      transparent 0,
+      rgba(224,247,250,.15) 12%,
+      rgba(244,246,248,.9) 50%,
+      rgba(224,247,250,.15) 88%,
+      transparent 100%);
+    box-shadow:0 0 16px rgba(224,247,250,.45), 0 0 42px rgba(224,247,250,.16);
+  }
+  .surface::after{
+    content:'';position:absolute;left:0;right:0;top:-1px;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  }
+
+  /* ---- brand ---- */
+  .brand{
+    position:absolute;left:0;right:0;top:50%;
+    transform:translateY(-50%);
+    text-align:center;z-index:4;
+    mix-blend-mode:screen;
+    will-change:opacity,transform;
+  }
+  .brand .word{
+    font-family:var(--serif);
+    font-weight:500;
+    font-size:clamp(2.6rem,8vw,8.2rem);
+    letter-spacing:.04em;
+    line-height:.9;
+    color:var(--air);
+    text-shadow:0 0 34px rgba(224,247,250,.28);
+  }
+  .brand .word .dot{color:var(--caustic);}
+  .brand .tagline{
+    margin-top:1.4rem;
+    font-size:clamp(.58rem,1.1vw,.82rem);
+    letter-spacing:.52em;
+    text-transform:uppercase;
+    color:rgba(244,246,248,.55);
+    font-weight:300;
+  }
+
+  /* ---- light rays ---- */
+  .rays{z-index:6;}
+  .rays svg{width:100%;height:100%;display:block;overflow:visible;}
+  .ray{fill:none;stroke-linecap:round;transition:none;}
+  .ray-inc{stroke:var(--white);stroke-width:2;filter:url(#glow);}
+  .ray-refl{stroke:rgba(244,246,248,.55);stroke-width:1.2;filter:url(#glow);}
+  .ray-refr{stroke:var(--caustic);stroke-width:3.4;filter:url(#glowStrong);}
+
+  .glow{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(224,247,250,.5) 30%, transparent 68%);
+    z-index:6;transform:translate(-50%,-50%);
+    will-change:left,top,width,height,opacity;
+  }
+  .glow.entry{width:120px;height:120px;filter:blur(2px);}
+  .glow.hit{width:150px;height:150px;filter:blur(3px);}
+
+  /* ---- depth gauge ---- */
+  .gauge{
+    position:fixed;right:clamp(16px,3vw,40px);bottom:clamp(16px,3vw,34px);
+    z-index:20;
+    border:1px solid rgba(224,247,250,.28);
+    background:rgba(7,20,29,.72);
+    padding:16px 18px;
+    min-width:210px;
+    font-family:var(--sans);
+    opacity:0;transform:translateY(10px);
+    transition:opacity .45s ease, transform .45s ease;
+    pointer-events:none;
+  }
+  .gauge.show{opacity:1;transform:translateY(0);}
+  .gauge .g-head{
+    font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+    color:rgba(244,246,248,.5);font-weight:400;margin-bottom:12px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .gauge .g-head::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:var(--caustic);box-shadow:0 0 8px var(--caustic);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  .gauge .g-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12px;margin:7px 0;letter-spacing:.06em;
+  }
+  .gauge .g-row .k{color:rgba(244,246,248,.55);font-weight:300;text-transform:uppercase;font-size:10px;letter-spacing:.16em;}
+  .gauge .g-row .v{color:var(--caustic);font-weight:500;font-variant-numeric:tabular-nums;}
+  .gauge .g-bar{margin-top:12px;height:2px;background:rgba(244,246,248,.14);position:relative;overflow:hidden;}
+  .gauge .g-bar i{position:absolute;left:0;top:0;bottom:0;width:50%;background:linear-gradient(90deg,var(--mid),var(--caustic));transition:width .12s linear;}
+
+  /* ---- corner UI ---- */
+  .mark{
+    position:fixed;top:clamp(16px,3vw,32px);left:clamp(16px,3vw,34px);
+    z-index:20;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+    color:rgba(244,246,248,.72);font-weight:400;
+  }
+  .mark b{font-family:var(--serif);letter-spacing:.14em;font-weight:500;color:var(--air);}
+  .mark .sub{display:block;margin-top:6px;font-size:9px;letter-spacing:.28em;color:rgba(244,246,248,.42);}
+
+  .phase{
+    position:fixed;top:clamp(16px,3vw,32px);right:clamp(16px,3vw,34px);
+    z-index:20;text-align:right;
+    font-size:10px;letter-spacing:.3em;text-transform:uppercase;
+    color:rgba(244,246,248,.55);font-weight:300;
+  }
+  .phase .num{display:block;font-family:var(--serif);font-size:15px;letter-spacing:.1em;color:var(--caustic);margin-top:4px;}
+
+  .hint{
+    position:fixed;left:50%;bottom:clamp(16px,3vw,30px);transform:translateX(-50%);
+    z-index:20;display:flex;flex-direction:column;align-items:center;gap:10px;
+    font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:rgba(244,246,248,.5);
+    transition:opacity .6s ease;
+  }
+  .hint .line{width:1px;height:34px;background:linear-gradient(180deg,transparent,var(--caustic));position:relative;overflow:hidden;}
+  .hint .line::after{content:'';position:absolute;left:0;top:-40%;width:100%;height:40%;background:var(--air);animation:trickle 1.8s ease-in-out infinite;}
+
+  /* ---- keyframes ---- */
+  @keyframes trickle{0%{top:-40%;}60%,100%{top:110%;}}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  @keyframes draw{to{stroke-dashoffset:0;}}
+  @keyframes fadein{to{opacity:1;}}
+
+  .reveal .ray{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
+  .reveal .ray-inc{animation:draw .9s cubic-bezier(.4,0,.2,1) forwards;}
+  .reveal .ray-refl{animation:draw .7s cubic-bezier(.4,0,.2,1) .75s forwards, fadein .6s ease .75s forwards;}
+  .reveal .ray-refr{animation:draw 1s cubic-bezier(.4,0,.2,1) .85s forwards, fadein .7s ease .85s forwards;}
+  .reveal .brand{opacity:0;animation:fadein 1.1s ease 1s forwards;}
+  .reveal .surface{opacity:0;animation:fadein .8s ease .55s forwards;}
+  .reveal .water{opacity:0;animation:fadein .9s ease .4s forwards;}
+  .reveal .caustics{opacity:0;animation:fadein 1.2s ease 1.15s forwards;}
+  .reveal .glow{opacity:0;animation:fadein .7s ease .7s forwards;}
+
+  /* ---- reduced motion: static poster ---- */
+  @media (prefers-reduced-motion: reduce){
+    .reveal .ray{stroke-dashoffset:0 !important;animation:none !important;}
+    .reveal .brand,.reveal .surface,.reveal .water,.reveal .caustics,.reveal .glow{opacity:1 !important;animation:none !important;}
+    .hint .line::after{animation:none;}
+    .gauge .g-head::before{animation:none;}
+  }
+
+  /* ---- mobile ---- */
+  @media (max-width:640px){
+    .brand .word{font-size:12vw;letter-spacing:.02em;}
+    .brand .tagline{letter-spacing:.34em;margin-top:1rem;}
+    .gauge{min-width:0;right:12px;bottom:12px;padding:12px 13px;}
+    .gauge .g-row{font-size:11px;}
+    .phase{font-size:9px;}
+    .mark{font-size:10px;}
+  }
+</style>
+</head>
+<body>
+  <!-- corner UI -->
+  <div class="mark"><b>VITREOUS</b> LABS<span class="sub">Optical Systems · Refraction Studies</span></div>
+  <div class="phase">Phase<span class="num" id="phaseNum">01 — Low Tide</span></div>
+
+  <div class="stage" id="stage">
+    <div class="layer bg"></div>
+    <div class="layer grain"></div>
+    <div class="water" id="water"></div>
+    <div class="caustics" id="caustics">
+      <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <defs>
+          <filter id="causticFilter" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+            <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="2" seed="7" stitchTiles="stitch" result="n"/>
+            <feColorMatrix in="n" type="matrix"
+              values="0 0 0 0 0.878
+                      0 0 0 0 0.969
+                      0 0 0 0 0.980
+                      0 0 0 -1.6 0.82" result="web"/>
+            <feGaussianBlur in="web" id="blur" stdDeviation="0.7" result="soft"/>
+            <feComponentTransfer in="soft" result="lit">
+              <feFuncA type="gamma" amplitude="1.7" exponent="0.55"/>
+            </feComponentTransfer>
+            <feDisplacementMap in="lit" in2="n" scale="16" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <radialGradient id="spot" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#E0F7FA" stop-opacity="1"/>
+            <stop offset="55%" stop-color="#E0F7FA" stop-opacity="0.45"/>
+            <stop offset="100%" stop-color="#E0F7FA" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="1200" height="800" fill="#0A1C28" filter="url(#causticFilter)"/>
+        <ellipse id="spot" cx="600" cy="400" rx="430" ry="300" fill="url(#spot)" opacity="0.5" style="mix-blend-mode:screen"/>
+      </svg>
+    </div>
+    <div class="surface" id="surface"></div>
+
+    <div class="brand" id="brand">
+      <div class="word">VITREOUS<span class="dot">.</span></div>
+      <div class="tagline">Architectural Light &amp; Glass</div>
+    </div>
+
+    <div class="layer rays">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="0.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glowStrong" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="1.1" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path class="ray ray-refl" id="refl" d=""/>
+        <path class="ray ray-inc" id="inc" d=""/>
+        <path class="ray ray-refr" id="refr" d=""/>
+      </svg>
+    </div>
+
+    <div class="glow entry" id="glowEntry"></div>
+    <div class="glow hit" id="glowHit"></div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- depth gauge -->
+  <div class="gauge" id="gauge">
+    <div class="g-head">Depth Gauge</div>
+    <div class="g-row"><span class="k">Depth</span><span class="v" id="gDepth">0.0%</span></div>
+    <div class="g-row"><span class="k">Refractive Index</span><span class="v" id="gN">1.000</span></div>
+    <div class="g-row"><span class="k">Beam Angle</span><span class="v" id="gAngle">0.0&deg;</span></div>
+    <div class="g-bar"><i id="gBar"></i></div>
+  </div>
+
+  <div class="hint" id="hint">
+    <span>Scroll to raise the tide</span>
+    <span class="line"></span>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var stage = document.getElementById('stage');
+  var inc = document.getElementById('inc');
+  var refl = document.getElementById('refl');
+  var refr = document.getElementById('refr');
+  var glowEntry = document.getElementById('glowEntry');
+  var glowHit = document.getElementById('glowHit');
+  var caustics = document.getElementById('caustics');
+  var turb = document.getElementById('turb');
+  var blur = document.getElementById('blur');
+  var spot = document.getElementById('spot');
+  var brand = document.getElementById('brand');
+  var gauge = document.getElementById('gauge');
+  var hint = document.getElementById('hint');
+  var phaseNum = document.getElementById('phaseNum');
+  var gDepth = document.getElementById('gDepth');
+  var gN = document.getElementById('gN');
+  var gAngle = document.getElementById('gAngle');
+  var gBar = document.getElementById('gBar');
+
+  // fixed geometry in viewBox units (100x100, preserveAspectRatio none)
+  var ENTRY = {x:12, y:0};
+  var HITX = 50;
+  var n = 1.333;
+
+  function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function smooth(t){ return t*t*(3-2*t); }
+  function len(p,q){ return Math.hypot(q.x-p.x, q.y-p.y); }
+  function fmt(v,d){ return (Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d); }
+
+  // path length helper for draw animation
+  function setLen(el, p, q){
+    var l = len(p,q);
+    el.style.setProperty('--len', l);
+  }
+
+  // compute ray geometry from progress
+  function compute(p){
+    var waterY = lerp(92, 8, smooth(p)); // water surface Y in viewBox
+    var surfX = HITX;
+
+    // incidence vector (normalized)
+    var dxi = surfX - ENTRY.x, dyi = waterY - ENTRY.y;
+    var li = Math.hypot(dxi, dyi) || 1;
+    var ux = dxi/li, uy = dyi/li;
+    var sinI = Math.abs(uy);
+    var reflX = surfX + (surfX - ENTRY.x);
+    var reflY = ENTRY.y;
+    var refl = {x:reflX, y:reflY};
+
+    // refracted (Snell), bend toward normal (down)
+    var sinT = clamp(sinI/n, 0, 1);
+    var cosT = Math.sqrt(1 - sinT*sinT);
+    var tanT = sinT/cosT;
+    var dir = (ux >= 0) ? 1 : -1;
+    var refr = {x: surfX + dir*tanT*(100 - waterY), y: 100};
+
+    var angleDeg = Math.atan2(refr.x - surfX, 100 - waterY) * 180/Math.PI;
+
+    return {waterY:waterY, surfX:surfX, refl:refl, refr:refr, angleDeg:angleDeg};
+  }
+
+  function apply(p, t){
+    var g = compute(p);
+
+    // rays
+    inc.setAttribute('d', 'M '+ENTRY.x+' '+ENTRY.y+' L '+g.surfX+' '+g.waterY);
+    refl.setAttribute('d', 'M '+g.surfX+' '+g.waterY+' L '+g.refl.x+' '+g.refl.y);
+    refr.setAttribute('d', 'M '+g.surfX+' '+g.waterY+' L '+g.refr.x+' '+g.refr.y);
+
+    // organic shimmer on refracted beam (skip if reduced motion)
+    if(!reduce){
+      var amp = 0.35 + p*1.1;
+      var w = Math.sin(t*0.0016)*amp;
+      var w2 = Math.sin(t*0.0026 + 1.3)*amp*0.6;
+      refr.setAttribute('d', 'M '+g.surfX+' '+g.waterY+
+        ' Q '+(g.surfX + w)+' '+((g.waterY+g.refr.y)/2)+' '+
+        (g.refr.x + w2)+' '+g.refr.y);
+    }
+
+    // water level CSS var (drives water body, caustics, surface)
+    var waterPct = (g.waterY/100)*100;
+    document.documentElement.style.setProperty('--water', waterPct.toFixed(2)+'%');
+
+    // glows
+    glowEntry.style.left = ENTRY.x+'%';
+    glowEntry.style.top = '0%';
+    glowHit.style.left = g.surfX+'%';
+    glowHit.style.top = waterPct.toFixed(2)+'%';
+
+    // caustics intensity + movement
+    var causticOpacity = 0.18 + p*0.62;
+    if(!reduce){
+      var bf = (0.011 + p*0.016) + Math.sin(t*0.0006)*0.0022;
+      turb.setAttribute('baseFrequency', bf.toFixed(4)+' '+ (bf*2.4).toFixed(4));
+      turb.setAttribute('seed', String(Math.floor(t/900) % 100));
+      blur.setAttribute('stdDeviation', (0.4 + p*1.6).toFixed(2));
+      caustics.style.transform = 'translateX('+ (Math.sin(t*0.0005)*1.2).toFixed(2) +'%)';
+    } else {
+      turb.setAttribute('baseFrequency','0.014 0.034');
+      blur.setAttribute('stdDeviation','1.1');
+    }
+    caustics.style.opacity = causticOpacity.toFixed(3);
+
+    // caustic spotlight follows refracted beam at floor
+    var spotX = clamp(g.refr.x, 8, 92);
+    spot.setAttribute('cx', spotX);
+    spot.setAttribute('rx', (360 + p*140));
+    spot.setAttribute('ry', (240 + p*120));
+    spot.setAttribute('opacity', (0.35 + p*0.4).toFixed(2));
+
+    // brand refraction (submersion)
+    var sub = clamp((50 - g.waterY)/40, 0, 1); // >0 when surface above text center
+    if(!reduce){
+      var blurAmt = sub*3.2;
+      var skew = Math.sin(t*0.001)*sub*1.6;
+      var scale = 1 + sub*0.012;
+      brand.style.filter = 'blur('+blurAmt.toFixed(2)+'px)';
+      brand.style.transform = 'translateY(-50%) skewX('+skew.toFixed(2)+'deg) scale('+scale.toFixed(3)+')';
+      brand.style.opacity = (0.92 + (1-sub)*0.08).toFixed(2);
+    } else {
+      brand.style.filter = 'none';
+      brand.style.transform = 'translateY(-50%)';
+    }
+
+    // gauge + phase
+    var depth = p*100;
+    gDepth.textContent = fmt(depth,1)+'%';
+    gN.textContent = fmt(n,3);
+    gAngle.textContent = fmt(g.angleDeg,1)+'\u00B0';
+    gBar.style.width = depth.toFixed(1)+'%';
+
+    var ph = p < 0.2 ? '01 \u2014 Low Tide' : (p < 0.8 ? '02 \u2014 Rising Tide' : '03 \u2014 Submersion');
+    if(phaseNum.textContent !== ph) phaseNum.textContent = ph;
+  }
+
+  // measure path lengths once for draw animation
+  function measure(){
+    var g = compute(0.5);
+    setLen(inc, ENTRY, {x:g.surfX, y:g.waterY});
+    setLen(refl, {x:g.surfX,y:g.waterY}, g.refl);
+    setLen(refr, {x:g.surfX,y:g.waterY}, g.refr);
+  }
+
+  // scroll -> progress
+  var target = 0, current = 0, ticking = false;
+  function readScroll(){
+    var max = (document.documentElement.scrollHeight - window.innerHeight) || 1;
+    target = clamp(window.scrollY / max, 0, 1);
+    if(!ticking && !reduce){ ticking = true; requestAnimationFrame(loop); }
+    if(reduce){ current = target; apply(target, 0); }
+  }
+
+  function loop(t){
+    current += (target - current)*0.12;
+    if(Math.abs(target-current) < 0.0004) current = target;
+    apply(current, t);
+    if(current !== target){ requestAnimationFrame(loop); } else { ticking = false; }
+  }
+
+  // init
+  measure();
+  window.addEventListener('resize', measure, {passive:true});
+  window.addEventListener('scroll', readScroll, {passive:true});
+  document.addEventListener('mousemove', function(){
+    gauge.classList.add('show');
+    if(hint) hint.style.opacity = '0';
+  });
+  document.addEventListener('mouseleave', function(){ gauge.classList.remove('show'); });
+  document.addEventListener('touchstart', function(){
+    gauge.classList.add('show');
+    if(hint) hint.style.opacity = '0';
+  }, {passive:true});
+
+  // entrance
+  stage.classList.add('reveal');
+
+  if(reduce){
+    // static poster: water at 50%, everything visible
+    current = 0.5; target = 0.5;
+    apply(0.5, 0);
+    gauge.classList.add('show');
+    if(hint) hint.style.opacity = '0';
+  } else {
+    // hold poster at 50% during entrance, then reveal
+    current = 0.5; target = 0.5;
+    apply(0.5, performance.now());
+    requestAnimationFrame(function start(t){
+      apply(current, t);
+      if(current !== target || ticking){ requestAnimationFrame(start); }
+    });
+    setTimeout(function(){
+      target = 0; // settle to true scroll position (top) after entrance
+      current = 0.5;
+      ticking = true;
+      requestAnimationFrame(loop);
+      window.scrollTo(0,0);
+    }, 1500);
+  }
+})();
+</script>
+</body>
+</html>

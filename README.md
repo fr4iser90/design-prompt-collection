@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 275 | 274 | 234 | 41 |
+| 278 | 275 | 237 | 41 |
 
 ## Quick start
 
@@ -2403,9 +2403,11 @@ Scroll-driven optical simulation for Vitreous Labs. Light refraction, caustic pa
 
 [prompt](prompts/motion-graphics/saline-glass-caustics/prompt.md) · [extended](prompts/motion-graphics/saline-glass-caustics/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/saline-glass-caustics/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.1s | 158s | 8 | [open](prompts/motion-graphics/saline-glass-caustics/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3357,6 +3359,20 @@ Engage a sliding gear exactly when teeth align with rotating drivers. Misalignme
 
 ---
 
+### Marble Run Architect
+
+Draw smooth white tracks to guide glass marbles into swaying collection cups. Avoid red shatter obstacles and moving blockers. Fail if marbles fall off-screen or shatter.
+
+**Status:** polished · `physics` `canvas2d` `state-stack` `game` `drawing` `toybox` `tactile` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/glass-marble-rail-drag/prompt.md) · [extended](prompts/games/glass-marble-rail-drag/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Gimbal Lock
 
 Rotate gimbals to align a laser with a moving target; fight precession and RPM decay to keep the beam steady.
@@ -3660,6 +3676,34 @@ Filmic low/mid-poly orbital relay GLB family with PBR materials, orbit studio vi
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/orbital-relay-module/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 1.2s | 227s | 2 | [open](prompts/assets/orbital-relay-module/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Retro-Futuristic Arcade Kit
+
+Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D game kit with 16 procedural assets, CRT effects, and download functionality.
+
+**Status:** polished · `2d` `game-kit` `retro` `arcade` `pixel-art` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/retro-futuristic-arcade-kit/prompt.md) · [extended](prompts/assets/retro-futuristic-arcade-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
+### Volcanic Geothermal Kit
+
+Build a single-file HTML asset studio for the 'Volcanic Geothermal Kit' (MAGMA CORE). This is a 2D game kit, not a landing page. The interface must display a cohesive production set: 3 animated lava flow tiles…
+
+**Status:** polished · `2d` `game-kit` `volcanic` `lava` `destruction` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/volcanic-geothermal-kit/prompt.md) · [extended](prompts/assets/volcanic-geothermal-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
