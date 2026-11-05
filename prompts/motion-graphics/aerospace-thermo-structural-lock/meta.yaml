@@ -1,0 +1,25 @@
+id: aerospace-thermo-structural-lock
+title: "The Thermal Lockup"
+category: motion-graphics
+tags:
+  - timeline
+  - explainer
+  - aerospace
+  - hard-geometry
+  - precision
+  - motion
+status: polished
+summary: "A 6-second technical loop visualizing thermal expansion locking in aerospace joints. Minimalist CAD-style aesthetic with cyan heat accents, strict geometry, and precise typography."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

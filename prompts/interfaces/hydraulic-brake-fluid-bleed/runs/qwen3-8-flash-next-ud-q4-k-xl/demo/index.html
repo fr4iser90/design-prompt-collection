@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caliper — Hydraulic Brake Bleed Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111111;
+    --ink:#F0F0F0;
+    --accent:#FF4400;
+    --border:#333333;
+    --error:#FF3333;
+    --success:#00FF00;
+    --muted:#6a6a6a;
+    --muted2:#9a9a9a;
+    --tubeA:#1a1a1a;
+    --tubeB:#222222;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --disp:'Space Grotesk', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:12px;
+    line-height:1.2;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    height:100vh;
+    overflow:hidden;
+  }
+
+  .app{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    grid-template-rows:48px 1fr 26px;
+    grid-template-areas:
+      "header header"
+      "sidebar canvas"
+      "status status";
+    height:100vh;
+    width:100%;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header{
+    grid-area:header;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg);
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:var(--disp);
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+  .brand .mark{
+    width:14px;height:14px;
+    border:1px solid var(--accent);
+    display:inline-block;
+    position:relative;
+  }
+  .brand .mark::after{
+    content:"";position:absolute;inset:3px;background:var(--accent);
+  }
+  .brand .sub{
+    font-family:var(--mono);
+    font-weight:400;
+    font-size:10px;
+    letter-spacing:.12em;
+    color:var(--muted);
+    text-transform:none;
+    border-left:1px solid var(--border);
+    padding-left:10px;
+    margin-left:2px;
+  }
+  .head-right{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    font-family:var(--mono);
+    font-size:10.5px;
+    letter-spacing:.1em;
+    color:var(--muted);
+  }
+  .head-right .live{
+    display:flex;align-items:center;gap:7px;color:var(--muted2);
+  }
+  .head-right .dot{
+    width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 8px var(--accent);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    grid-area:sidebar;
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    overflow:hidden;
+  }
+  .panel{
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .panel.grow{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+  .panel-title{
+    font-family:var(--disp);
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--muted2);
+    margin:0 0 12px 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .panel-title::before{
+    content:"";width:4px;height:11px;background:var(--accent);display:inline-block;
+  }
+
+  .status-row{
+    display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  }
+  .status-dot{
+    width:10px;height:10px;border-radius:50%;background:var(--muted);
+    border:1px solid var(--border);flex:none;transition:background .2s, box-shadow .2s;
+  }
+  .status-dot.sealed{background:var(--muted);border-color:var(--muted2);}
+  .status-dot.bleeding{background:var(--accent);box-shadow:0 0 10px var(--accent);animation:pulse 1s infinite;}
+  .status-dot.clear{background:var(--success);box-shadow:0 0 12px var(--success);}
+  .status-dot.error{background:var(--error);box-shadow:0 0 12px var(--error);}
+  .status-text{
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.14em;
+    color:var(--ink);
+    text-transform:uppercase;
+  }
+
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);}
+  .metric{background:var(--bg);padding:11px 12px;}
+  .metric .lbl{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:6px;
+  }
+  .metric .val{
+    font-family:var(--mono);font-size:20px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;line-height:1;
+  }
+  .metric .val .unit{font-size:10px;color:var(--muted);font-weight:400;margin-left:3px;}
+
+  .valve-ctrl{margin-top:16px;}
+  .valve-ctrl .lbl{
+    display:flex;justify-content:space-between;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:9px;
+  }
+  .track{
+    position:relative;height:6px;background:var(--tubeB);border:1px solid var(--border);
+  }
+  .track .fill{
+    position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--accent);
+    transition:width .05s linear;
+  }
+  .track .fill.err{background:var(--error);}
+  .track .ticks{position:absolute;inset:0;display:flex;justify-content:space-between;padding:0 1px;pointer-events:none;}
+  .track .ticks i{width:1px;background:var(--border);}
+  .hint{
+    font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:12px;
+    letter-spacing:.06em;line-height:1.5;
+  }
+  .hint kbd{
+    font-family:var(--mono);background:var(--tubeB);border:1px solid var(--border);
+    padding:1px 4px;color:var(--muted2);font-size:9px;
+  }
+
+  .log{
+    flex:1;min-height:0;overflow-y:auto;
+    font-family:var(--mono);font-size:10.5px;line-height:1.7;
+    border:1px solid var(--border);padding:8px 10px;
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .log::-webkit-scrollbar{width:6px;}
+  .log::-webkit-scrollbar-thumb{background:var(--border);}
+  .log-line{display:flex;gap:8px;color:var(--muted2);white-space:nowrap;}
+  .log-line .t{color:var(--muted);}
+  .log-line.err{color:var(--error);}
+  .log-line.ok{color:var(--success);}
+  .log-line.act{color:var(--accent);}
+  .log-line .msg{overflow:hidden;text-overflow:ellipsis;}
+
+  .reset-wrap{padding:12px 16px;border-top:1px solid var(--border);display:none;}
+  .reset-wrap.show{display:block;}
+  .btn-reset{
+    width:100%;background:var(--bg);color:var(--ink);
+    border:1px solid var(--accent);padding:10px;
+    font-family:var(--disp);font-weight:600;font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;cursor:pointer;
+    transition:background .15s,color .15s;
+  }
+  .btn-reset:hover{background:var(--accent);color:#111;}
+  .btn-reset:active{transform:translateY(1px);}
+
+  /* ---------- CANVAS ---------- */
+  .canvas{
+    grid-area:canvas;
+    position:relative;
+    background:
+      linear-gradient(var(--border) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--border) 1px, transparent 1px) 0 0/28px 28px,
+      radial-gradient(circle at 50% 45%, #161616 0%, #111111 70%);
+    background-blend-mode:normal;
+    overflow:hidden;
+  }
+  .canvas::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(255,255,255,.02), transparent 60%);
+  }
+  .canvas svg{width:100%;height:100%;display:block;touch-action:none;}
+
+  .corner{
+    position:absolute;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+    color:var(--muted);pointer-events:none;text-transform:uppercase;
+  }
+  .corner.tl{top:12px;left:14px;}
+  .corner.tr{top:12px;right:14px;text-align:right;}
+  .corner.bl{bottom:12px;left:14px;}
+  .corner.br{bottom:12px;right:14px;text-align:right;}
+  .corner .v{color:var(--muted2);}
+
+  /* ---------- SVG SCHEMATIC ---------- */
+  .draw{
+    stroke-dasharray:1600;stroke-dashoffset:1600;
+    animation:draw 1.5s ease forwards;
+  }
+  @keyframes draw{to{stroke-dashoffset:0;}}
+
+  .stroke-ink{stroke:var(--ink);}
+  .comp{fill:#151515;stroke:var(--ink);stroke-width:1;}
+  .comp-line{stroke:var(--ink);stroke-width:1;fill:none;}
+  .comp-accent{stroke:var(--accent);stroke-width:1;fill:none;}
+  .label{
+    font-family:var(--mono);font-size:9px;letter-spacing:.1em;fill:var(--muted2);
+    text-transform:uppercase;
+  }
+  .label.dim{fill:var(--muted);}
+  .bubble{fill:var(--ink);opacity:.8;}
+  .bubble.pop{transform-box:fill-box;transform-origin:center;animation:pop .22s ease-out forwards;}
+  @keyframes pop{
+    0%{transform:scale(1);opacity:.8;}
+    100%{transform:scale(1.9);opacity:0;}
+  }
+  .valve-handle{
+    cursor:grab;outline:none;
+  }
+  .valve-handle:focus .handle-ring{stroke-width:2.4;}
+  .valve-handle.grab{cursor:grabbing;}
+  .handle-ring{stroke:var(--accent);stroke-width:1.6;fill:transparent;}
+  .valve-handle.err .handle-ring{stroke:var(--error);}
+  .handle-notch{stroke:var(--accent);stroke-width:1.4;fill:none;}
+  .valve-handle.err .handle-notch{stroke:var(--error);}
+  .flow{opacity:0;}
+  .flow.on{opacity:1;}
+
+  /* ---------- STATUS BAR ---------- */
+  .statusbar{
+    grid-area:status;
+    display:flex;align-items:center;justify-content:space-between;
+    border-top:1px solid var(--border);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+    color:var(--muted);padding:0 16px;text-transform:uppercase;
+  }
+  .statusbar .grp{display:flex;gap:18px;align-items:center;}
+  .statusbar .grp span b{color:var(--muted2);font-weight:400;}
+  .statusbar .sep{color:var(--border);}
+
+  @media (prefers-reduced-motion: reduce){
+    .draw{animation:none;stroke-dashoffset:0;}
+    .head-right .dot,.status-dot.bleeding{animation:none;}
+    .bubble.pop{animation:none;}
+  }
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width:820px){
+    body{height:auto;overflow:auto;}
+    .app{
+      grid-template-columns:1fr;
+      grid-template-rows:auto auto 62vh auto;
+      grid-template-areas:
+        "header"
+        "canvas"
+        "sidebar"
+        "status";
+      height:auto;min-height:100vh;
+    }
+    .sidebar{border-right:none;border-top:1px solid var(--border);}
+    .panel.grow{max-height:220px;}
+    .brand .sub{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <span class="mark"></span>CALIPER
+      <span class="sub">Hydraulic Bleed Simulator · v2.4</span>
+    </div>
+    <div class="head-right">
+      <span class="live"><span class="dot"></span>SYS ONLINE</span>
+      <span>CH-01</span>
+      <span id="clock">--:--:--</span>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="panel">
+      <h2 class="panel-title">System Status</h2>
+      <div class="status-row">
+        <span class="status-dot sealed" id="statusDot"></span>
+        <span class="status-text" id="statusText">SYSTEM SEALED</span>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="lbl">Air Bubbles</div>
+          <div class="val"><span id="bubbleCount">0</span><span class="unit">/ 12</span></div>
+        </div>
+        <div class="metric">
+          <div class="lbl">Line Press.</div>
+          <div class="val"><span id="pressure">120</span><span class="unit">bar</span></div>
+        </div>
+      </div>
+      <div class="valve-ctrl">
+        <div class="lbl"><span>Bleed Valve</span><span id="valvePct">0%</span></div>
+        <div class="track">
+          <div class="fill" id="trackFill"></div>
+          <div class="ticks"><i></i><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="hint">Drag the <span style="color:var(--accent)">orange</span> handle on the schematic, or focus it and use <kbd>←</kbd><kbd>→</kbd> to open the valve.</div>
+      </div>
+    </div>
+
+    <div class="panel grow">
+      <h2 class="panel-title">Status Log</h2>
+      <div class="log" id="log" role="log" aria-live="polite"></div>
+    </div>
+
+    <div class="reset-wrap" id="resetWrap">
+      <button class="btn-reset" id="resetBtn">Reset System</button>
+    </div>
+  </aside>
+
+  <!-- CANVAS -->
+  <main class="canvas">
+    <div class="corner tl">HYDRAULIC SCHEMATIC<br><span class="v">FRONT AXLE · LEFT</span></div>
+    <div class="corner tr">SCALE 1:4<br><span class="v">DOT 4 · 500 mL</span></div>
+    <div class="corner bl">NODE MAP<br><span class="v">MC → LINE → CAL</span></div>
+    <div class="corner br">SESSION <span class="v">#A7F3</span></div>
+
+    <svg id="schematic" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Brake hydraulic schematic with draggable bleed valve">
+      <defs>
+        <linearGradient id="fluidGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#1a1a1a"/>
+          <stop offset="100%" stop-color="#222222"/>
+        </linearGradient>
+        <linearGradient id="flowGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#FF4400" stop-opacity="0"/>
+          <stop offset="45%" stop-color="#FF4400" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#FF4400" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+
+      <!-- ================= TUBING (drawn) ================= -->
+      <g class="draw" stroke-linecap="round" stroke-linejoin="round">
+        <!-- inner fluid fill -->
+        <polyline points="300,285 430,285 470,180 560,180 600,300 700,300"
+                  fill="none" stroke="url(#fluidGrad)" stroke-width="13"/>
+        <!-- outer schematic line -->
+        <polyline points="300,285 430,285 470,180 560,180 600,300 700,300"
+                  fill="none" class="stroke-ink" stroke-width="1"/>
+        <!-- outlet to cup -->
+        <line x1="700" y1="300" x2="770" y2="300" class="stroke-ink" stroke-width="1"/>
+        <line x1="700" y1="300" x2="770" y2="300" fill="none" stroke="url(#fluidGrad)" stroke-width="13"/>
+      </g>
+
+      <!-- flow wave -->
+      <rect class="flow" id="flowWave" x="300" y="278" width="120" height="14" fill="url(#flowGrad)"/>
+
+      <!-- ================= COMPONENTS ================= -->
+      <!-- Reservoir -->
+      <g class="draw">
+        <rect class="comp" x="110" y="196" width="110" height="52"/>
+        <line class="comp-line" x1="110" y1="214" x2="220" y2="214"/>
+        <line class="comp-line" x1="110" y1="232" x2="220" y2="232"/>
+        <line class="comp-line" x1="150" y1="214" x2="150" y2="248"/>
+        <line class="comp-line" x1="180" y1="214" x2="180" y2="248"/>
+        <line class="comp-line" x1="150" y1="214" x2="180" y2="248"/>
+        <line class="comp-line" x1="180" y1="214" x2="150" y2="248"/>
+        <line class="comp-line" x1="220" y1="222" x2="245" y2="222"/>
+        <line class="comp-line" x1="245" y1="222" x2="245" y2="285"/>
+        <text class="label" x="110" y="188">Reservoir</text>
+        <text class="label dim" x="110" y="262">DOT 4 · 500mL</text>
+      </g>
+
+      <!-- Master cylinder -->
+      <g class="draw">
+        <rect class="comp" x="245" y="262" width="55" height="46"/>
+        <line class="comp-line" x1="258" y1="262" x2="258" y2="308"/>
+        <line class="comp-line" x1="285" y1="262" x2="285" y2="308"/>
+        <line class="comp-line" x1="245" y1="285" x2="230" y2="285"/>
+        <text class="label" x="232" y="326">Master Cyl.</text>
+      </g>
+
+      <!-- Caliper -->
+      <g class="draw">
+        <rect class="comp" x="545" y="158" width="105" height="70"/>
+        <line class="comp-line" x1="560" y1="158" x2="560" y2="228"/>
+        <line class="comp-line" x1="635" y1="158" x2="635" y2="228"/>
+        <circle class="comp-line" cx="580" cy="193" r="14"/>
+        <circle class="comp-line" cx="615" cy="193" r="14"/>
+        <line class="comp-line" x1="566" y1="178" x2="594" y2="208"/>
+        <line class="comp-line" x1="594" y1="178" x2="566" y2="208"/>
+        <line class="comp-line" x1="601" y1="178" x2="629" y2="208"/>
+        <line class="comp-line" x1="629" y1="178" x2="601" y2="208"/>
+        <text class="label" x="545" y="150">Caliper</text>
+        <text class="label dim" x="545" y="244">PISTON Ø 54mm</text>
+      </g>
+
+      <!-- Bleed valve stem -->
+      <g class="draw">
+        <line class="comp-line" x1="600" y1="228" x2="600" y2="300"/>
+        <circle class="comp-line" cx="600" cy="300" r="3.5" fill="#111"/>
+        <text class="label" x="608" y="252" id="valveLabel">Bleed Valve</text>
+      </g>
+
+      <!-- Catch cup -->
+      <g class="draw">
+        <path class="comp" d="M770,266 L770,352 L832,352 L832,266" fill="#151515"/>
+        <line class="comp-line" x1="770" y1="266" x2="832" y2="266"/>
+        <line class="comp-line" x1="770" y1="330" x2="832" y2="330" id="cupFluid" stroke="#2a2a2a" stroke-width="2"/>
+        <text class="label" x="770" y="366">Catch Cup</text>
+      </g>
+
+      <!-- ================= BUBBLES ================= -->
+      <g id="bubbles"></g>
+
+      <!-- ================= VALVE HANDLE ================= -->
+      <g id="valveHandle" class="valve-handle" tabindex="0"
+         role="slider" aria-label="Bleed valve opening" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <line class="handle-notch" id="handleNotch" x1="600" y1="300" x2="600" y2="335"/>
+        <circle class="handle-ring" id="handleRing" cx="600" cy="335" r="8"/>
+        <circle id="handleHit" cx="600" cy="335" r="20" fill="transparent"/>
+      </g>
+    </svg>
+  </main>
+
+  <!-- STATUS BAR -->
+  <footer class="statusbar">
+    <div class="grp">
+      <span><b>MODE:</b> DIAGNOSTIC</span>
+      <span class="sep">|</span>
+      <span><b>UNIT:</b> BAR</span>
+      <span class="sep">|</span>
+      <span><b>FLUID:</b> DOT 4</span>
+    </div>
+    <div class="grp">
+      <span id="barStatus">READY</span>
+      <span class="sep">|</span>
+      <span><b>REV</b> 2.4.1</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- refs ----------
+  const svg = document.getElementById('schematic');
+  const bubblesLayer = document.getElementById('bubbles');
+  const handle = document.getElementById('valveHandle');
+  const handleRing = document.getElementById('handleRing');
+  const handleNotch = document.getElementById('handleNotch');
+  const flowWave = document.getElementById('flowWave');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const bubbleCountEl = document.getElementById('bubbleCount');
+  const pressureEl = document.getElementById('pressure');
+  const valvePctEl = document.getElementById('valvePct');
+  const trackFill = document.getElementById('trackFill');
+  const logEl = document.getElementById('log');
+  const resetWrap = document.getElementById('resetWrap');
+  const resetBtn = document.getElementById('resetBtn');
+  const clockEl = document.getElementById('clock');
+  const barStatus = document.getElementById('barStatus');
+
+  // ---------- tube geometry ----------
+  const pts = [[300,285],[430,285],[470,180],[560,180],[600,300],[700,300],[770,300]];
+  const segs = [];
+  let totalLen = 0;
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i], b=pts[i+1];
+    const len=Math.hypot(b[0]-a[0], b[1]-a[1]);
+    segs.push({a,b,len,start:totalLen});
+    totalLen+=len;
+  }
+  function posAt(d){
+    if(d<=0) return {x:pts[0][0],y:pts[0][1]};
+    if(d>=totalLen) return {x:pts[pts.length-1][0],y:pts[pts.length-1][1]};
+    for(const s of segs){
+      if(d<=s.start+s.len){
+        const t=(d-s.start)/s.len;
+        return {x:s.a[0]+(s.b[0]-s.a[0])*t, y:s.a[1]+(s.b[1]-s.a[1])*t};
+      }
+    }
+    return {x:pts[pts.length-1][0],y:pts[pts.length-1][1]};
+  }
+  const CUP_X = 772;
+
+  // ---------- valve ----------
+  const VALVE_Y_MIN=300, VALVE_Y_MAX=360;
+  const valve={y:VALVE_Y_MIN, dragging:false, error:false};
+  function valveOpen(){ return (valve.y-VALVE_Y_MIN)/(VALVE_Y_MAX-VALVE_Y_MIN); }
+
+  // ---------- bubbles ----------
+  let bubbles=[];
+  const TOTAL=12;
+  function spawnBubbles(){
+    bubblesLayer.innerHTML='';
+    bubbles=[];
+    for(let i=0;i<TOTAL;i++){
+      const dist = 30 + Math.random()*(totalLen-90);
+      const el=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      el.setAttribute('r', (3.4+Math.random()*1.6).toFixed(2));
+      el.setAttribute('class','bubble');
+      bubblesLayer.appendChild(el);
+      bubbles.push({
+        el, dist,
+        vy:(-6-Math.random()*8),          // buoyancy px/s (negative = up/left)
+        phase:Math.random()*Math.PI*2,
+        wob:0.5+Math.random()*0.9,
+        alive:true
+      });
+    }
+    updateBubbleCount();
+  }
+
+  function updateBubbleCount(){
+    const n=bubbles.filter(b=>b.alive).length;
+    bubbleCountEl.textContent=n;
+    return n;
+  }
+
+  // ---------- state ----------
+  let state='sealed'; // sealed | bleeding | clear | error
+  const STATE_MAP={
+    sealed:{txt:'SYSTEM SEALED', dot:'sealed', bar:'READY'},
+    bleeding:{txt:'BLEEDING ACTIVE', dot:'bleeding', bar:'FLOW'},
+    clear:{txt:'SYSTEM CLEAR', dot:'clear', bar:'COMPLETE'},
+    error:{txt:'VALVE MISALIGNED', dot:'error', bar:'FAULT'}
+  };
+  function setState(s){
+    state=s;
+    const m=STATE_MAP[s];
+    statusText.textContent=m.txt;
+    statusDot.className='status-dot '+m.dot;
+    barStatus.textContent=m.bar;
+    statusText.style.color = s==='clear' ? 'var(--success)' : (s==='error'?'var(--error)':'var(--ink)');
+    handle.classList.toggle('err', s==='error');
+    trackFill.classList.toggle('err', s==='error');
+    flowWave.classList.toggle('on', s==='bleeding');
+  }
+
+  // ---------- log ----------
+  function stamp(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  function log(msg, cls){
+    const line=document.createElement('div');
+    line.className='log-line'+(cls?(' '+cls):'');
+    line.innerHTML='<span class="t">'+stamp()+'</span><span class="msg">'+msg+'</span>';
+    logEl.appendChild(line);
+    logEl.scrollTop=logEl.scrollHeight;
+    while(logEl.children.length>40) logEl.removeChild(logEl.firstChild);
+  }
+
+  // ---------- valve ui ----------
+  function updateValveUI(){
+    const pct=Math.round(valveOpen()*100);
+    handleRing.setAttribute('cy', valve.y);
+    handleNotch.setAttribute('y2', valve.y);
+    handle.setAttribute('aria-valuenow', pct);
+    valvePctEl.textContent=pct+'%';
+    trackFill.style.width=pct+'%';
+  }
+
+  // ---------- drag ----------
+  function toSvg(evt){
+    const pt=svg.createSVGPoint();
+    pt.x=evt.clientX; pt.y=evt.clientY;
+    const ctm=svg.getScreenCTM();
+    return ctm ? pt.matrixTransform(ctm.inverse()) : {x:0,y:0};
+  }
+  function setValveFromPoint(p){
+    let y=p.y;
+    if(y<VALVE_Y_MIN-16 || y>VALVE_Y_MAX+16){
+      if(!valve.error){
+        valve.error=true;
+        setState('error');
+        log('VALVE MISALIGNED — out of track bounds','err');
+      }
+      // clamp so it snaps back visually
+      valve.y=Math.max(VALVE_Y_MIN, Math.min(VALVE_Y_MAX, y));
+    } else {
+      if(valve.error){
+        valve.error=false;
+        setState(valveOpen()>0.02 ? 'bleeding' : 'sealed');
+        log('Alignment restored','act');
+      }
+      valve.y=Math.max(VALVE_Y_MIN, Math.min(VALVE_Y_MAX, y));
+    }
+    updateValveUI();
+  }
+
+  handle.addEventListener('pointerdown', e=>{
+    if(state==='clear') return;
+    handle.setPointerCapture(e.pointerId);
+    valve.dragging=true;
+    handle.classList.add('grab');
+    if(valveOpen()<=0.02 && !valve.error){
+      setState('bleeding');
+      log('Bleed valve opened — flow engaged','act');
+    }
+    e.preventDefault();
+  });
+  handle.addEventListener('pointermove', e=>{
+    if(!valve.dragging) return;
+    const p=toSvg(e);
+    setValveFromPoint(p);
+  });
+  function endDrag(e){
+    if(!valve.dragging) return;
+    valve.dragging=false;
+    handle.classList.remove('grab');
+    if(valve.error) return; // stay in error until corrected
+    if(valveOpen()<=0.02){
+      setState('sealed');
+      log('Bleed valve closed','');
+    }
+  }
+  handle.addEventListener('pointerup', endDrag);
+  handle.addEventListener('pointercancel', endDrag);
+
+  // keyboard
+  handle.addEventListener('keydown', e=>{
+    if(state==='clear') return;
+    const step=6;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){
+      valve.y=Math.min(VALVE_Y_MAX, valve.y+step); valve.error=false;
+      if(valveOpen()>0.02 && state!=='bleeding'){setState('bleeding');log('Bleed valve opened','act');}
+      updateValveUI(); e.preventDefault();
+    } else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){
+      valve.y=Math.max(VALVE_Y_MIN, valve.y-step); valve.error=false;
+      if(valveOpen()<=0.02 && state!=='sealed'){setState('sealed');log('Bleed valve closed','');}
+      updateValveUI(); e.preventDefault();
+    }
+  });
+
+  // ---------- flow wave ----------
+  let flowPos=0;
+  function updateFlow(dt){
+    if(state==='bleeding' && !reduce){
+      flowPos=(flowPos+dt*220)%(totalLen+160)-160;
+      const p=posAt(Math.max(0,flowPos));
+      flowWave.setAttribute('x', p.x-60);
+      flowWave.setAttribute('y', p.y-7);
+    }
+  }
+
+  // ---------- main loop ----------
+  let last=performance.now();
+  let popAccum=0;
+  function frame(now){
+    let dt=(now-last)/1000; last=now;
+    if(dt>0.05) dt=0.05;
+
+    const open = state==='bleeding' ? valveOpen() : 0;
+    const push = open*open*260; // px/s toward outlet
+
+    if(state==='bleeding' && !reduce){
+      updateFlow(dt);
+    } else {
+      flowWave.classList.remove('on');
+    }
+
+    // pressure readout
+    const target = 120 - open*95 + (open>0? (Math.sin(now/90)*4):0);
+    pressureEl.textContent = Math.max(0, Math.round(target));
+
+    // bubbles
+    let alive=0;
+    for(const b of bubbles){
+      if(!b.alive) continue;
+      alive++;
+      if(reduce){
+        // static positions
+        const p=posAt(b.dist);
+        b.el.setAttribute('cx',p.x);
+        b.el.setAttribute('cy',p.y);
+      } else {
+        b.dist += (push + b.vy) * dt;
+        if(b.dist<4){ b.dist=4; b.vy=Math.abs(b.vy); } // don't push past reservoir
+        if(b.dist>totalLen) b.dist=totalLen;
+        b.phase += dt*2.2;
+        const p=posAt(b.dist);
+        // wobble perpendicular-ish (visual)
+        const wob = Math.sin(b.phase)*b.wob*2.4;
+        b.el.setAttribute('cx', (p.x+wob).toFixed(2));
+        b.el.setAttribute('cy', (p.y+wob*0.6).toFixed(2));
+
+        // pop at cup
+        if(p.x>=CUP_X && b.dist>=totalLen-2){
+          b.alive=false;
+          b.el.classList.add('pop');
+          const el=b.el;
+          setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); },240);
+          popAccum++;
+          if(popAccum>=1){ popAccum=0; log('Bubble purged → catch cup','ok'); }
+          updateBubbleCount();
+        }
+      }
+    }
+
+    if(state!=='clear' && state!=='error'){
+      const remaining=bubbles.filter(b=>b.alive).length;
+      if(remaining===0){
+        setState('clear');
+        valve.y=VALVE_Y_MIN; updateValveUI();
+        resetWrap.classList.add('show');
+        log('ALL AIR PURGED — SYSTEM CLEAR','ok');
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- reset ----------
+  resetBtn.addEventListener('click', ()=>{
+    valve.y=VALVE_Y_MIN; valve.error=false; valve.dragging=false;
+    handle.classList.remove('err');
+    updateValveUI();
+    spawnBubbles();
+    resetWrap.classList.remove('show');
+    setState('sealed');
+    log('System reset — reservoir refilled','act');
+  });
+
+  // ---------- clock ----------
+  function tick(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    clockEl.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  tick(); setInterval(tick,1000);
+
+  // ---------- boot ----------
+  updateValveUI();
+  spawnBubbles();
+  setState('sealed');
+  log('Diagnostic session initialised','act');
+  log('Master cylinder primed · 120 bar','');
+  log('12 air pockets detected in circuit','');
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

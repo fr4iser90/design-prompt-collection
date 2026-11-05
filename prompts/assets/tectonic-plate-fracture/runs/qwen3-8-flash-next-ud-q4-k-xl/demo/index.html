@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO-SHIFT — Tectonic Plate Fracture · Asset Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   GEO-SHIFT · Tectonic Plate Fracture — Geological Survey Terminal
+   Palette: Rock #5D4037 · Magma #FF5722 · Shadow #3E2723 · Highlight #D7CCC8
+   ============================================================ */
+:root{
+  --bg:#0f0a08; --panel:#1a1210; --panel2:#221815; --panel3:#2b1f1a;
+  --line:#3a2b24; --line-soft:#2a1e19;
+  --ink:#e9dcd0; --ink-dim:#a08a7c; --ink-mute:#6f5b50;
+  --rock:#5D4037; --magma:#FF5722; --magma-bright:#FFB74D; --shadow:#3E2723; --hi:#D7CCC8;
+  --mono:'Source Code Pro',ui-monospace,monospace;
+  --disp:'Oswald',system-ui,sans-serif;
+  --hd-h:60px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--mono); font-size:13px;
+  min-height:100vh; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* atmospheric strata + grain */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(120% 80% at 15% -10%, rgba(255,87,34,.10), transparent 55%),
+    radial-gradient(90% 70% at 100% 110%, rgba(255,87,34,.06), transparent 60%),
+    repeating-linear-gradient(180deg, rgba(255,255,255,.014) 0 1px, transparent 1px 4px);
+}
+body::after{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/></svg>");
+}
+::-webkit-scrollbar{height:10px;width:10px}
+::-webkit-scrollbar-track{background:#160f0c}
+::-webkit-scrollbar-thumb{background:#3a2b24;border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--magma)}
+
+/* ---------- HEADER ---------- */
+header{
+  position:sticky; top:0; z-index:50; height:var(--hd-h);
+  display:flex; align-items:center; gap:18px; padding:0 16px;
+  background:linear-gradient(180deg,#1c1310,#150e0b);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 6px 24px rgba(0,0,0,.5);
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand .mark{width:34px;height:34px;flex:none}
+.brand h1{
+  font-family:var(--disp); font-weight:700; font-size:22px; letter-spacing:.5px;
+  margin:0; line-height:1; color:var(--ink); white-space:nowrap;
+}
+.brand h1 span{color:var(--magma)}
+.brand .sub{font-size:9.5px;letter-spacing:2.5px;color:var(--ink-mute);text-transform:uppercase;margin-top:3px}
+.hd-spacer{flex:1}
+.hd-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hbtn{
+  font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.5px;
+  color:var(--ink); background:var(--panel2); border:1px solid var(--line);
+  padding:9px 13px; border-radius:4px; cursor:pointer; min-height:40px;
+  display:inline-flex;align-items:center;gap:7px; transition:.15s;
+  text-transform:uppercase; white-space:nowrap;
+}
+.hbtn:hover{border-color:var(--magma);color:#fff;background:#2c1c16}
+.hbtn.accent{background:var(--magma);border-color:var(--magma);color:#1a0d08}
+.hbtn.accent:hover{background:var(--magma-bright);border-color:var(--magma-bright)}
+.hbtn .dot{width:7px;height:7px;border-radius:50%;background:var(--magma);box-shadow:0 0 8px var(--magma)}
+.hamburger{display:none}
+
+/* ---------- LAYOUT GRID ---------- */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:250px 1fr 300px;min-height:calc(100vh - var(--hd-h))}
+.sidebar{border-right:1px solid var(--line);background:linear-gradient(180deg,#160f0c,#130c0a);display:flex;flex-direction:column;min-width:0}
+.inspector{border-left:1px solid var(--line);background:linear-gradient(180deg,#160f0c,#130c0a);display:flex;flex-direction:column;min-width:0}
+.viewport{display:flex;flex-direction:column;min-width:0;min-height:0}
+
+/* ---------- SIDEBAR / INVENTORY ---------- */
+.side-head{padding:16px 16px 10px}
+.side-head .kicker{font-size:9px;letter-spacing:3px;color:var(--magma);font-weight:600}
+.side-head h2{font-family:var(--disp);font-weight:600;font-size:16px;margin:4px 0 0;letter-spacing:.5px}
+.side-head p{font-size:10px;color:var(--ink-mute);margin:4px 0 0;letter-spacing:.5px}
+.inv{flex:1;overflow-y:auto;padding:6px 10px 20px}
+.cat{margin:14px 0 0}
+.cat-head{display:flex;align-items:center;justify-content:space-between;padding:8px 6px;border-bottom:1px solid var(--line-soft);cursor:pointer;user-select:none}
+.cat-head .cn{font-family:var(--disp);font-weight:500;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-dim)}
+.cat-head .cc{font-size:10px;color:var(--ink-mute);background:var(--panel2);border:1px solid var(--line);padding:1px 7px;border-radius:10px}
+.cat.collapsed .cat-body{display:none}
+.cat-head .chev{transition:.2s;color:var(--ink-mute);font-size:10px}
+.cat.collapsed .chev{transform:rotate(-90deg)}
+.cat-body{padding:8px 0}
+.inv-item{
+  display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:6px;cursor:pointer;
+  border:1px solid transparent;transition:.12s;min-height:44px;position:relative;
+}
+.inv-item:hover{background:var(--panel2);border-color:var(--line)}
+.inv-item.active{background:#2a1a13;border-color:var(--magma)}
+.inv-item.active::before{content:"";position:absolute;left:-1px;top:6px;bottom:6px;width:3px;background:var(--magma);border-radius:3px}
+.inv-thumb{width:40px;height:40px;flex:none;border-radius:4px;background:#0b0705;border:1px solid var(--line);image-rendering:pixelated}
+.inv-meta{min-width:0;flex:1}
+.inv-meta .nm{font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-meta .id{font-size:9px;color:var(--ink-mute);letter-spacing:.5px;margin-top:2px}
+
+/* ---------- VIEWPORT ---------- */
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;gap:14px;min-height:0;position:relative;overflow:hidden}
+.canvas-wrap{
+  position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,87,34,.05);
+  background:#0b0705;
+}
+.canvas-wrap.flash{animation:flash .12s ease}
+@keyframes flash{0%{filter:brightness(2.2)}100%{filter:brightness(1)}}
+#mainCanvas{display:block;max-width:100%;height:auto;cursor:crosshair}
+.stage-hud{
+  position:absolute;top:12px;left:12px;display:flex;gap:8px;align-items:center;
+  font-size:10px;letter-spacing:1px;color:var(--ink-dim);
+  background:rgba(11,7,5,.7);border:1px solid var(--line);padding:5px 10px;border-radius:4px;
+  backdrop-filter:blur(2px);
+}
+.stage-hud b{color:var(--magma);font-weight:600}
+.stage-tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.tool{
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--ink-dim);background:var(--panel2);border:1px solid var(--line);
+  padding:8px 12px;border-radius:4px;cursor:pointer;min-height:40px;transition:.15s;
+}
+.tool:hover{color:var(--ink);border-color:#4a362c}
+.tool.on{color:#1a0d08;background:var(--magma);border-color:var(--magma)}
+.tool .k{opacity:.6;margin-left:4px}
+
+/* filmstrip */
+.strip-wrap{border-top:1px solid var(--line);background:#130c0a;padding:12px 0 14px}
+.strip-head{display:flex;align-items:center;justify-content:space-between;padding:0 18px 8px}
+.strip-head .t{font-family:var(--disp);font-weight:500;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.strip-head .t span{color:var(--magma)}
+.filmstrip{display:flex;gap:10px;overflow-x:auto;padding:4px 18px 10px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.film{
+  flex:none;width:96px;padding:8px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
+  cursor:pointer;transition:transform .12s cubic-bezier(.25,1,.5,1),border-color .12s;position:relative;
+  opacity:0;transform:translateX(26px);
+}
+.film.in{opacity:1;transform:translateX(0)}
+.film:hover{border-color:var(--magma)}
+.film.sel{border-color:var(--magma);box-shadow:0 0 0 1px var(--magma),0 6px 18px rgba(255,87,34,.18)}
+.film canvas{width:100%;height:auto;display:block;border-radius:3px;background:#0b0705;image-rendering:pixelated}
+.film .fl{font-size:9px;color:var(--ink-dim);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.3px}
+.film .fid{font-size:8px;color:var(--ink-mute)}
+.film .badge{position:absolute;top:-6px;right:-6px;font-size:8px;font-weight:600;background:var(--magma);color:#1a0d08;padding:2px 5px;border-radius:8px;letter-spacing:.5px}
+
+/* ---------- INSPECTOR ---------- */
+.insp-head{padding:16px;border-bottom:1px solid var(--line)}
+.insp-head .kicker{font-size:9px;letter-spacing:3px;color:var(--magma);font-weight:600}
+.insp-head h2{font-family:var(--disp);font-weight:600;font-size:22px;margin:6px 0 0;letter-spacing:.5px;line-height:1.05}
+.insp-body{flex:1;overflow-y:auto;padding:16px}
+.blk{margin-bottom:20px}
+.blk h3{font-family:var(--disp);font-weight:500;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.blk h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line-soft);font-size:11px}
+.kv .k{color:var(--ink-mute);letter-spacing:.5px}
+.kv .v{color:var(--ink);text-align:right;font-weight:500}
+.kv .v.mag{color:var(--magma)}
+.swatches{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.sw{display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px}
+.sw .chip{width:26px;height:26px;border-radius:3px;border:1px solid rgba(255,255,255,.12);flex:none}
+.sw .lbl{font-size:9px;line-height:1.3}
+.sw .lbl b{display:block;font-size:9.5px;color:var(--ink);font-weight:600}
+.sw .lbl span{color:var(--ink-mute);letter-spacing:.5px}
+.export-btns{display:flex;flex-direction:column;gap:9px}
+.ebtn{
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--ink);background:var(--panel2);border:1px solid var(--line);padding:12px;border-radius:5px;
+  cursor:pointer;min-height:44px;display:flex;align-items:center;gap:10px;transition:.15s;
+}
+.ebtn:hover{border-color:var(--magma);color:#fff;background:#2c1c16}
+.ebtn .ic{color:var(--magma);font-size:14px}
+.ebtn.primary{background:var(--magma);border-color:var(--magma);color:#1a0d08}
+.ebtn.primary:hover{background:var(--magma-bright)}
+.ebtn.primary .ic{color:#1a0d08}
+
+/* ---------- FOOTER ---------- */
+.statusbar{
+  position:sticky;bottom:0;z-index:40;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:8px 16px;background:linear-gradient(180deg,#150e0b,#100a08);border-top:1px solid var(--line);
+  font-size:10px;letter-spacing:.6px;color:var(--ink-mute);
+}
+.statusbar .live{display:flex;align-items:center;gap:7px;color:var(--ink-dim)}
+.statusbar .live .d{width:7px;height:7px;border-radius:50%;background:var(--magma);box-shadow:0 0 8px var(--magma);animation:blink 1.6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.statusbar b{color:var(--ink)}
+.statusbar .fps{margin-left:auto;color:var(--magma)}
+#toast{
+  position:fixed;bottom:52px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--magma);color:#1a0d08;font-weight:600;font-size:11px;letter-spacing:.6px;
+  padding:11px 18px;border-radius:5px;opacity:0;pointer-events:none;transition:.25s;z-index:100;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);text-transform:uppercase;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- MODALS ---------- */
+.modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(8,5,4,.82);backdrop-filter:blur(3px);padding:20px}
+.modal.open{display:flex}
+.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;max-width:640px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+.modal-head h3{font-family:var(--disp);font-weight:600;font-size:16px;margin:0;letter-spacing:1px}
+.modal-head .x{background:none;border:1px solid var(--line);color:var(--ink-dim);width:34px;height:34px;border-radius:5px;cursor:pointer;font-size:16px}
+.modal-head .x:hover{border-color:var(--magma);color:var(--magma)}
+.modal-body{padding:20px}
+.poster-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.poster-grid .pf{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#0b0705}
+.poster-grid .pf canvas{width:100%;display:block;image-rendering:pixelated}
+.poster-grid .pf .t{position:absolute;top:3px;left:4px;font-size:8px;color:var(--magma);background:rgba(11,7,5,.7);padding:1px 4px;border-radius:3px}
+.gallery-empty{color:var(--ink-mute);text-align:center;padding:30px;font-size:12px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line-soft);gap:14px}
+.set-row .lab{font-size:12px}
+.set-row .lab small{display:block;color:var(--ink-mute);font-size:10px;margin-top:2px}
+.switch{position:relative;width:46px;height:26px;flex:none;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.switch .track{position:absolute;inset:0;background:var(--panel3);border:1px solid var(--line);border-radius:20px;transition:.2s}
+.switch .track::before{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;background:var(--ink-dim);border-radius:50%;transition:.2s}
+.switch input:checked + .track{background:var(--magma);border-color:var(--magma)}
+.switch input:checked + .track::before{transform:translateX(20px);background:#1a0d08}
+.seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.seg button{background:var(--panel2);color:var(--ink-dim);border:none;padding:8px 12px;font-family:var(--mono);font-size:10px;cursor:pointer;min-height:38px;letter-spacing:.5px}
+.seg button.on{background:var(--magma);color:#1a0d08;font-weight:600}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:1024px){
+  .app{grid-template-columns:230px 1fr}
+  .inspector{position:fixed;top:var(--hd-h);right:0;bottom:0;width:320px;transform:translateX(100%);transition:transform .25s ease;z-index:60;box-shadow:-20px 0 50px rgba(0,0,0,.5)}
+  .inspector.open{transform:translateX(0)}
+  .insp-toggle{display:inline-flex!important}
+}
+.insp-toggle{display:none}
+@media (max-width:768px){
+  :root{--hd-h:56px}
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none;border-right:none}
+  .sidebar.open{display:flex;position:fixed;top:var(--hd-h);left:0;bottom:0;width:min(85vw,300px);z-index:70;box-shadow:20px 0 50px rgba(0,0,0,.5)}
+  .hamburger{display:inline-flex}
+  .brand h1{font-size:18px}
+  .brand .sub{display:none}
+  .hd-actions .lbl{display:none}
+  .hbtn{padding:9px 10px}
+  .stage{padding:14px}
+  .poster-grid{grid-template-columns:repeat(3,1fr)}
+  .tabs{display:flex!important}
+}
+.tabs{display:none;position:sticky;bottom:34px;z-index:45;background:#130c0a;border-top:1px solid var(--line)}
+.tabs button{flex:1;background:none;border:none;border-top:2px solid transparent;color:var(--ink-dim);font-family:var(--disp);font-weight:500;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:13px;cursor:pointer;min-height:44px}
+.tabs button.on{color:var(--magma);border-top-color:var(--magma)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .film{opacity:1!important;transform:none!important}
+  #mainCanvas{transform:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header>
+  <button class="hamburger hbtn" id="menuBtn" aria-label="Inventory"><span>☰</span></button>
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 34 34" aria-hidden="true">
+      <rect x="1" y="1" width="32" height="32" rx="4" fill="#1a1210" stroke="#3a2b24"/>
+      <path d="M4 22 L11 16 L15 20 L22 11 L30 18" fill="none" stroke="#5D4037" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M4 22 L11 16 L15 20 L22 11 L30 18" fill="none" stroke="#FF5722" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M15 20 L13 30 M22 11 L24 3 M26 15 L31 26" stroke="#3E2723" stroke-width="1.6"/>
+    </svg>
+    <div>
+      <h1>GEO<span>·</span>SHIFT</h1>
+      <div class="sub">Tectonic Plate Fracture · Asset Pack</div>
+    </div>
+  </div>
+  <div class="hd-spacer"></div>
+  <div class="hd-actions">
+    <button class="hbtn" id="posterBtn"><span class="dot"></span><span class="lbl">Poster Frame</span></button>
+    <button class="hbtn insp-toggle" id="inspBtn"><span class="lbl">Inspector</span></button>
+    <button class="hbtn" id="setBtn"><span class="lbl">Settings</span></button>
+    <button class="hbtn accent" id="atlasBtn"><span class="lbl">Download Atlas</span></button>
+  </div>
+</header>
+
+<!-- ================= APP GRID ================= -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-head">
+      <div class="kicker">SURVEY MANIFEST</div>
+      <h2>Asset Inventory</h2>
+      <p id="invCount">— assets · procedural</p>
+    </div>
+    <div class="inv" id="inv"></div>
+  </aside>
+
+  <!-- VIEWPORT -->
+  <section class="viewport">
+    <div class="stage">
+      <div class="stage-hud"><span>ZOOM <b id="hudZoom">4×</b></span><span id="hudSize">—</span><span id="hudMode">TRANSPARENT</span></div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="mainCanvas" width="256" height="256"></canvas>
+      </div>
+      <div class="stage-tools">
+        <button class="tool on" id="gridBtn">Pixel Grid</button>
+        <button class="tool" id="bgBtn">Checkerboard</button>
+        <button class="tool" id="pulseBtn">Magma Pulse</button>
+        <button class="tool" id="shakeBtn">Stress Test</button>
+      </div>
+    </div>
+    <div class="strip-wrap">
+      <div class="strip-head">
+        <div class="t">Filmstrip · <span id="stripCount">0</span> frames</div>
+        <div class="t" style="letter-spacing:.5px;text-transform:none;color:var(--ink-mute)">hover = micro-quake · click = select</div>
+      </div>
+      <div class="filmstrip" id="filmstrip"></div>
+    </div>
+  </section>
+
+  <!-- INSPECTOR -->
+  <aside class="inspector" id="inspector">
+    <div class="insp-head">
+      <div class="kicker">SELECTED ASSET</div>
+      <h2 id="inspName">—</h2>
+    </div>
+    <div class="insp-body">
+      <div class="blk">
+        <h3>Specs</h3>
+        <div class="kv"><span class="k">ID</span><span class="v" id="specId">—</span></div>
+        <div class="kv"><span class="k">Category</span><span class="v" id="specCat">—</span></div>
+        <div class="kv"><span class="k">Dimensions</span><span class="v" id="specDim">—</span></div>
+        <div class="kv"><span class="k">Format</span><span class="v">Canvas · PNG / SVG</span></div>
+        <div class="kv"><span class="k">Severity</span><span class="v mag" id="specSev">—</span></div>
+        <div class="kv"><span class="k">Palette</span><span class="v" id="specPal">4 colors</span></div>
+      </div>
+      <div class="blk">
+        <h3>Palette</h3>
+        <div class="swatches">
+          <div class="sw"><span class="chip" style="background:#5D4037"></span><span class="lbl"><b>Base Rock</b><span>#5D4037</span></span></div>
+          <div class="sw"><span class="chip" style="background:#FF5722"></span><span class="lbl"><b>Magma Core</b><span>#FF5722</span></span></div>
+          <div class="sw"><span class="chip" style="background:#3E2723"></span><span class="lbl"><b>Deep Shadow</b><span>#3E2723</span></span></div>
+          <div class="sw"><span class="chip" style="background:#D7CCC8"></span><span class="lbl"><b>Highlight</b><span>#D7CCC8</span></span></div>
+        </div>
+      </div>
+      <div class="blk">
+        <h3>Export</h3>
+        <div class="export-btns">
+          <button class="ebtn primary" id="pngBtn"><span class="ic">▣</span> Download PNG · transparent</button>
+          <button class="ebtn" id="svgBtn"><span class="ic">◈</span> Download SVG · vector cracks</button>
+          <button class="ebtn" id="atlasBtn2"><span class="ic">▦</span> Download Full Atlas</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- MOBILE TABS -->
+<div class="tabs" id="tabs">
+  <button class="on" data-tab="viewport">Viewport</button>
+  <button data-tab="inv">Inventory</button>
+  <button data-tab="insp">Inspector</button>
+</div>
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <span class="live"><span class="d"></span>SURVEY ACTIVE</span>
+  <span>SEL: <b id="stSel">—</b></span>
+  <span>EXPORT: <b id="stExport">idle</b></span>
+  <span class="fps"><b id="fps">60</b> FPS</span>
+</div>
+
+<div id="toast"></div>
+
+<!-- POSTER MODAL -->
+<div class="modal" id="posterModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>Poster Frame Buffer</h3><button class="x" data-close>×</button></div>
+    <div class="modal-body">
+      <div class="poster-grid" id="posterGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="setModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>Studio Settings</h3><button class="x" data-close>×</button></div>
+    <div class="modal-body">
+      <div class="set-row"><span class="lab">Pixel Grid Overlay<small>Aligns to native canvas pixels</small></span>
+        <label class="switch"><input type="checkbox" id="setGrid" checked><span class="track"></span></label></div>
+      <div class="set-row"><span class="lab">Canvas Background</span>
+        <div class="seg" id="setBg"><button data-bg="transparent" class="on">Transparent</button><button data-bg="checker">Checkerboard</button></div></div>
+      <div class="set-row"><span class="lab">Magma Pulse<small>Sine-wave emissive modulation</small></span>
+        <label class="switch"><input type="checkbox" id="setPulse" checked><span class="track"></span></label></div>
+      <div class="set-row"><span class="lab">Ambient Studio Light<small>Thermal glow behind viewport</small></span>
+        <label class="switch"><input type="checkbox" id="setAmb" checked><span class="track"></span></label></div>
+      <div class="set-row"><span class="lab">Poster Capture Interval</span>
+        <div class="seg" id="setInt"><button data-int="1500" class="on">1.5s</button><button data-int="1000">1.0s</button></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   GEO-SHIFT — Tectonic Plate Fracture
+   Single-file asset studio. All graphics procedurally drawn on Canvas.
+   No external images. Modular: generation / UI / events.
+   ================================================================== */
+(function(){
+"use strict";
+
+/* ---------- Config & Palette ---------- */
+const PAL = { rock:'#5D4037', magma:'#FF5722', shadow:'#3E2723', hi:'#D7CCC8' };
+const MAGMA_STOPS = ['#FF5722','#FF7043','#FFB74D']; // realistic thermal gradient (no cartoon)
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TILE = 64;
+
+/* ---------- Seeded PRNG (mulberry32) for reproducible procedural art ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---------- Vector crack path generator ----------
+   Produces a jagged polyline from p0 -> p1 with perpendicular jitter.
+   Returns array of points; used both for canvas drawing and SVG export. */
+function crackPath(rng,p0,p1,segments,amp){
+  const pts=[p0.slice()];
+  const dx=p1[0]-p0[0], dy=p1[1]-p0[1];
+  const len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len, ny=dx/len; // perpendicular unit
+  for(let i=1;i<segments;i++){
+    const t=i/segments;
+    const off=(rng()*2-1)*amp*(0.4+0.6*Math.sin(t*Math.PI)); // taper ends
+    pts.push([p0[0]+dx*t+nx*off, p0[1]+dy*t+ny*off]);
+  }
+  pts.push(p1.slice());
+  return pts;
+}
+function branchFrom(pts,rng){
+  // branch off a mid point of a crack
+  const i=1+Math.floor(rng()*(pts.length-2));
+  const base=pts[i];
+  const dir=(rng()<0.5?-1:1);
+  const len=10+rng()*16;
+  const ang=Math.atan2(pts[i+1][1]-pts[i][1],pts[i+1][0]-pts[i][0])+dir*(0.6+rng()*0.6);
+  const end=[base[0]+Math.cos(ang)*len, base[1]+Math.sin(ang)*len];
+  return crackPath(rng,base,end,3,4);
+}
+
+/* ---------- Shared drawing helpers ---------- */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+/* Draw a rock slab with hard bevel: light top-left, dark bottom-right. */
+function drawSlab(ctx,x,y,w,h,rng,sev){
+  const inset=Math.min(w,h)*0.06;
+  roundRect(ctx,x+inset,y+inset,w-inset*2,h-inset*2,4);
+  ctx.fillStyle=PAL.rock; ctx.fill();
+  // top-left highlight bevel
+  ctx.save(); ctx.clip();
+  ctx.fillStyle='rgba(215,204,200,0.16)';
+  ctx.beginPath(); ctx.moveTo(x+inset,y+inset); ctx.lineTo(x+w-inset,y+inset); ctx.lineTo(x+w-inset,y+inset+3); ctx.lineTo(x+inset,y+inset+3); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x+inset,y+inset); ctx.lineTo(x+inset+3,y+inset); ctx.lineTo(x+inset+3,y+h-inset); ctx.lineTo(x+inset,y+h-inset); ctx.closePath(); ctx.fill();
+  // bottom-right shadow bevel
+  ctx.fillStyle='rgba(30,17,12,0.45)';
+  ctx.beginPath(); ctx.moveTo(x+w-inset,y+h-inset); ctx.lineTo(x+w-inset,y+inset); ctx.lineTo(x+w-inset-3,y+inset); ctx.lineTo(x+w-inset-3,y+h-inset); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x+w-inset,y+h-inset); ctx.lineTo(x+inset,y+h-inset); ctx.lineTo(x+inset,y+h-inset-3); ctx.lineTo(x+w-inset,y+h-inset-3); ctx.closePath(); ctx.fill();
+  // matte speckle
+  const n=Math.floor(6+sev*10);
+  for(let i=0;i<n;i++){
+    const sx=x+inset+rng()*(w-inset*2), sy=y+inset+rng()*(h-inset*2);
+    ctx.fillStyle=rng()<0.5?'rgba(30,17,12,0.35)':'rgba(215,204,200,0.10)';
+    ctx.fillRect(Math.floor(sx),Math.floor(sy),1,1);
+  }
+  ctx.restore();
+}
+/* Draw a single crack: dark depth core + emissive magma core (thermal gradient). */
+function drawCrack(ctx,pts,sev,phase,crackW){
+  const w=crackW*(0.5+sev*0.9);
+  // outer dark depth (shadow)
+  ctx.lineJoin='miter'; ctx.lineCap='butt';
+  ctx.strokeStyle=PAL.shadow; ctx.lineWidth=w+2.4;
+  ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]); ctx.stroke();
+  // emissive magma core
+  const g=ctx.createLinearGradient(pts[0][0],pts[0][1],pts[pts.length-1][0],pts[pts.length-1][1]);
+  const pulse=REDUCED?1:(0.7+0.3*Math.sin(phase));
+  g.addColorStop(0,MAGMA_STOPS[0]); g.addColorStop(0.5,MAGMA_STOPS[1]); g.addColorStop(1,MAGMA_STOPS[2]);
+  ctx.strokeStyle=g; ctx.lineWidth=Math.max(0.8,w); ctx.globalAlpha=pulse; ctx.stroke(); ctx.globalAlpha=1;
+  // hot filament
+  ctx.strokeStyle='rgba(255,224,178,'+(0.5*pulse)+')'; ctx.lineWidth=Math.max(0.5,w*0.35); ctx.stroke();
+}
+
+/* ---------- TILE: cracked earth (severity 0..3) ---------- */
+function drawTile(ctx,size,rng,sev,phase,crackW){
+  // base plate
+  ctx.fillStyle=PAL.shadow; roundRect(ctx,1,1,size-2,size-2,3); ctx.fill();
+  drawSlab(ctx,1,1,size,size,rng,sev);
+  // crack count scales with severity
+  const count=1+sev;
+  const cracks=[];
+  for(let i=0;i<count;i++){
+    const p0=[rng()*size*0.4, rng()*size];
+    const p1=[size-rng()*size*0.4, rng()*size];
+    const c=crackPath(rng,p0,p1,5,6+sev*3);
+    cracks.push(c);
+    drawCrack(ctx,c,sev,phase+i,crackW);
+    if(sev>=2){ const b=branchFrom(c,rng); cracks.push(b); drawCrack(ctx,b,sev*0.8,phase+i+1,crackW); }
+    if(sev>=3){ const b2=branchFrom(c,rng); cracks.push(b2); drawCrack(ctx,b2,sev*0.7,phase+i+2,crackW); }
+  }
+  return {cracks};
+}
+
+/* ---------- FISSURE: magma channel (idle/pulse/erupt) ---------- */
+function drawFissure(ctx,size,rng,mode,phase,crackW){
+  ctx.fillStyle=PAL.shadow; roundRect(ctx,1,1,size-2,size-2,3); ctx.fill();
+  drawSlab(ctx,1,1,size,size,rng,3);
+  // central fissure channel
+  const top=[size*0.5,4], bot=[size*0.5,size-4];
+  const main=crackPath(rng,top,bot,7,7);
+  // wide dark chasm
+  ctx.lineJoin='miter'; ctx.lineCap='butt';
+  ctx.strokeStyle='#1c0f0a'; ctx.lineWidth=size*0.22;
+  ctx.beginPath(); ctx.moveTo(main[0][0],main[0][1]); for(let i=1;i<main.length;i++)ctx.lineTo(main[i][0],main[i][1]); ctx.stroke();
+  // emissive magma fill with thermal gradient (vertical)
+  const g=ctx.createLinearGradient(0,0,0,size);
+  g.addColorStop(0,MAGMA_STOPS[2]); g.addColorStop(0.45,MAGMA_STOPS[1]); g.addColorStop(1,MAGMA_STOPS[0]);
+  let amp=0.7;
+  if(mode==='idle') amp=0.72+0.18*Math.sin(phase);
+  else if(mode==='pulse') amp=0.55+0.45*Math.sin(phase*1.6);
+  else amp=0.7+0.3*Math.sin(phase*2.4)+0.15*Math.sin(phase*5.3); // erupt: erratic
+  ctx.globalAlpha=amp;
+  ctx.strokeStyle=g; ctx.lineWidth=size*0.14*(0.8+crackW*0.2); ctx.stroke();
+  ctx.strokeStyle='rgba(255,236,190,'+(0.7*amp)+')'; ctx.lineWidth=size*0.05; ctx.stroke();
+  ctx.globalAlpha=1;
+  // branches
+  for(let i=0;i<2+ (mode==='erupt'?2:0);i++){
+    const b=branchFrom(main,rng);
+    ctx.strokeStyle=PAL.shadow; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(b[0][0],b[0][1]); for(let j=1;j<b.length;j++)ctx.lineTo(b[j][0],b[j][1]); ctx.stroke();
+    ctx.globalAlpha=amp; ctx.strokeStyle=MAGMA_STOPS[0]; ctx.lineWidth=2; ctx.stroke(); ctx.globalAlpha=1;
+  }
+  // erupt: spatter
+  if(mode==='erupt'){
+    const er=mulberry32(Math.floor(phase*3));
+    for(let i=0;i<6;i++){
+      const px=size*0.5+(er()*2-1)*size*0.3, py=er()*size;
+      ctx.fillStyle=MAGMA_STOPS[2]; ctx.globalAlpha=amp; ctx.fillRect(Math.floor(px),Math.floor(py),2,2); ctx.globalAlpha=1;
+    }
+  }
+  return {cracks:[main]};
+}
+
+/* ---------- UI ELEMENTS (procedural, no emoji) ---------- */
+function drawUI(ctx,size,rng,kind,phase,crackW){
+  const cx=size/2;
+  if(kind==='gauge'){
+    // seismic gauge: arc + needle + ticks
+    ctx.fillStyle=PAL.shadow; roundRect(ctx,4,4,size-8,size-8,6); ctx.fill();
+    ctx.strokeStyle=PAL.rock; ctx.lineWidth=2; roundRect(ctx,4,4,size-8,size-8,6); ctx.stroke();
+    ctx.strokeStyle='rgba(215,204,200,0.25)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,size*0.62,size*0.34,Math.PI,2*Math.PI); ctx.stroke();
+    // ticks
+    for(let i=0;i<=8;i++){
+      const a=Math.PI+ (i/8)*Math.PI;
+      const r1=size*0.30, r2=size*0.34;
+      ctx.strokeStyle=i>5?PAL.magma:'rgba(215,204,200,0.4)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*r1,size*0.62+Math.sin(a)*r1); ctx.lineTo(cx+Math.cos(a)*r2,size*0.62+Math.sin(a)*r2); ctx.stroke();
+    }
+    // needle (seismic wobble)
+    const wob=REDUCED?0.7:0.5+0.5*Math.sin(phase*1.3)*Math.sin(phase*0.4);
+    const na=Math.PI+wob*Math.PI;
+    ctx.strokeStyle=PAL.magma; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(cx,size*0.62); ctx.lineTo(cx+Math.cos(na)*size*0.30,size*0.62+Math.sin(na)*size*0.30); ctx.stroke();
+    ctx.fillStyle=PAL.hi; ctx.beginPath(); ctx.arc(cx,size*0.62,3,0,7); ctx.fill();
+    // seismic waveform
+    ctx.strokeStyle=PAL.magma; ctx.lineWidth=1.5; ctx.beginPath();
+    for(let x=8;x<size-8;x+=2){const y=size-10+Math.sin(x*0.6+phase*3)*3*(REDUCED?0.3:1); x===8?ctx.moveTo(x,y):ctx.lineTo(x,y);} ctx.stroke();
+    return {cracks:[]};
+  }
+  if(kind==='crack-ind'){
+    // crack indicator: rock plate with active crack + warning ticks
+    drawSlab(ctx,2,2,size-4,size-4,rng,3);
+    const c=crackPath(rng,[size*0.2,6],[size*0.8,size-6],6,7);
+    drawCrack(ctx,c,3,phase,crackW);
+    ctx.strokeStyle=PAL.hi; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(6,6); ctx.lineTo(14,6); ctx.moveTo(6,6); ctx.lineTo(6,14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(size-6,size-6); ctx.lineTo(size-14,size-6); ctx.moveTo(size-6,size-6); ctx.lineTo(size-6,size-14); ctx.stroke();
+    return {cracks:[c]};
+  }
+  if(kind==='warning'){
+    // warning plate: hazard chevrons + crack
+    ctx.fillStyle=PAL.shadow; roundRect(ctx,3,3,size-6,size-6,4); ctx.fill();
+    ctx.fillStyle=PAL.rock; roundRect(ctx,5,5,size-10,size-10,3); ctx.fill();
+    // hazard chevrons
+    ctx.save(); ctx.beginPath(); roundRect(ctx,5,5,size-10,size-10,3); ctx.clip();
+    for(let i=-size;i<size;i+=10){
+      ctx.fillStyle=(Math.floor(i/10)%2===0)?PAL.magma:PAL.shadow;
+      ctx.beginPath(); ctx.moveTo(i,5); ctx.lineTo(i+6,5); ctx.lineTo(i+6+size,size-5); ctx.lineTo(i+size,size-5); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    // inner dark panel
+    ctx.fillStyle=PAL.shadow; roundRect(ctx,size*0.22,size*0.22,size*0.56,size*0.56,3); ctx.fill();
+    ctx.strokeStyle=PAL.hi; ctx.lineWidth=1.5; roundRect(ctx,size*0.22,size*0.22,size*0.56,size*0.56,3); ctx.stroke();
+    // exclamation glyph
+    ctx.fillStyle=PAL.magma; ctx.fillRect(cx-1.5,size*0.32,3,size*0.22); ctx.fillRect(cx-1.5,size*0.6,3,3);
+    return {cracks:[]};
+  }
+  if(kind==='depth'){
+    // depth meter: vertical scale + magma fill level
+    ctx.fillStyle=PAL.shadow; roundRect(ctx,4,4,size-8,size-8,6); ctx.fill();
+    ctx.strokeStyle=PAL.rock; ctx.lineWidth=2; roundRect(ctx,4,4,size-8,size-8,6); ctx.stroke();
+    // scale ticks
+    for(let i=0;i<=6;i++){const y=8+i*(size-16)/6; ctx.strokeStyle='rgba(215,204,200,0.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(8,y); ctx.lineTo(14,y); ctx.stroke();}
+    // magma column
+    const lvl=(size-12)*(REDUCED?0.5:0.5+0.4*Math.sin(phase*0.8));
+    const g=ctx.createLinearGradient(0,size-8,0,8); g.addColorStop(0,MAGMA_STOPS[0]); g.addColorStop(1,MAGMA_STOPS[2]);
+    ctx.fillStyle=g; ctx.fillRect(size*0.5-4,size-8-lvl,8,lvl);
+    ctx.fillStyle=PAL.hi; ctx.fillRect(size*0.5-4,size-8-lvl,8,2);
+    return {cracks:[]};
+  }
+  // fault indicator: two offset slabs (fault line)
+  ctx.save();
+  ctx.translate(0,-2); drawSlab(ctx,4,4,size*0.5,size-8,rng,2); ctx.restore();
+  ctx.save(); ctx.translate(0,3); drawSlab(ctx,size*0.5,4,size*0.5-4,size-8,rng,2); ctx.restore();
+  const fl=[[size*0.5,4],[size*0.5,size-4]];
+  ctx.strokeStyle=PAL.shadow; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(fl[0][0],fl[0][1]); ctx.lineTo(fl[1][0],fl[1][1]); ctx.stroke();
+  ctx.strokeStyle=PAL.magma; ctx.lineWidth=1.5; ctx.globalAlpha=REDUCED?1:(0.6+0.4*Math.sin(phase)); ctx.stroke(); ctx.globalAlpha=1;
+  return {cracks:[fl]};
+}
+
+/* ---------- Master draw dispatcher ---------- */
+function drawAsset(ctx,def,size,phase,crackW){
+  ctx.clearRect(0,0,size,size);
+  const rng=mulberry32(def.seed);
+  if(def.cat==='tiles') return drawTile(ctx,size,rng,def.sev,phase,crackW);
+  if(def.cat==='fissures') return drawFissure(ctx,size,rng,def.mode,phase,crackW);
+  return drawUI(ctx,size,rng,def.kind,phase,crackW);
+}
+
+/* ---------- Inventory definition ---------- */
+const ASSETS=[];
+const TILE_NAMES=['Fault Line','Rift','Shatter','Cataclysm'];
+for(let i=0;i<4;i++) ASSETS.push({id:'TILE-'+String(i+1).padStart(2,'0'),name:TILE_NAMES[i],cat:'tiles',sev:i,seed:100+i});
+const FISS_MODES=['idle','pulse','erupt'];
+const FISS_NAMES=['Magma Channel','Thermal Pulse','Eruption Vent'];
+for(let i=0;i<3;i++) ASSETS.push({id:'FIS-'+String(i+1).padStart(2,'0'),name:FISS_NAMES[i],cat:'fissures',mode:FISS_MODES[i],seed:200+i});
+const UI_KINDS=['gauge','crack-ind','warning','depth','fault'];
+const UI_NAMES=['Seismic Gauge','Crack Indicator','Warning Plate','Depth Meter','Fault Indicator'];
+for(let i=0;i<5;i++) ASSETS.push({id:'UI-'+String(i+1).padStart(2,'0'),name:UI_NAMES[i],cat:'ui',kind:UI_KINDS[i],seed:300+i});
+
+/* ---------- State ---------- */
+const state={ selected:0, zoom:4, grid:true, bg:'transparent', pulse:!REDUCED, shake:false, amb:true, interval:1500 };
+let phase=0, shakeAmt=0, selFlash=0, fps=60, lastT=performance.now(), frames=0, fAcc=0;
+const posterBuffer=[];
+
+/* ---------- DOM refs ---------- */
+const $=s=>document.querySelector(s);
+const main=$('#mainCanvas'), mctx=main.getContext('2d');
+const wrap=$('#canvasWrap');
+
+/* ---------- Build sidebar inventory ---------- */
+function buildInventory(){
+  const inv=$('#inv'); inv.innerHTML='';
+  const cats=[{k:'tiles',n:'Cracked Tiles'},{k:'fissures',n:'Magma Fissures'},{k:'ui',n:'Seismic UI'}];
+  cats.forEach(c=>{
+    const items=ASSETS.filter(a=>a.cat===c.k);
+    const wrapC=document.createElement('div'); wrapC.className='cat';
+    wrapC.innerHTML='<div class="cat-head"><span class="cn">'+c.n+'</span><span class="cc">'+items.length+'</span><span class="chev">▾</span></div>';
+    const body=document.createElement('div'); body.className='cat-body';
+    items.forEach(a=>{
+      const idx=ASSETS.indexOf(a);
+      const el=document.createElement('div'); el.className='inv-item'; el.dataset.idx=idx;
+      const th=document.createElement('canvas'); th.width=TILE; th.height=TILE; th.className='inv-thumb';
+      const tctx=th.getContext('2d'); drawAsset(tctx,a,TILE,0,0);
+      const meta=document.createElement('div'); meta.className='inv-meta';
+      meta.innerHTML='<div class="nm">'+a.name+'</div><div class="id">'+a.id+' · '+(a.cat==='fissures'?'3f':a.cat==='tiles'?'4×4':'1f')+'</div>';
+      el.appendChild(th); el.appendChild(meta);
+      el.addEventListener('click',()=>select(idx));
+      body.appendChild(el);
+    });
+    wrapC.appendChild(body); inv.appendChild(wrapC);
+    wrapC.querySelector('.cat-head').addEventListener('click',()=>wrapC.classList.toggle('collapsed'));
+  });
+  $('#invCount').textContent=ASSETS.length+' assets · procedural';
+}
+
+/* ---------- Build filmstrip ---------- */
+function buildFilmstrip(){
+  const fs=$('#filmstrip'); fs.innerHTML='';
+  ASSETS.forEach((a,idx)=>{
+    const f=document.createElement('div'); f.className='film'; f.dataset.idx=idx;
+    const c=document.createElement('canvas'); c.width=TILE; c.height=TILE;
+    drawAsset(c.getContext('2d'),a,TILE,0,0);
+    const fl=document.createElement('div'); fl.className='fl'; fl.textContent=a.name;
+    const fid=document.createElement('div'); fid.className='fid'; fid.textContent=a.id;
+    f.appendChild(c); f.appendChild(fl); f.appendChild(fid);
+    if(a.cat==='fissures'){const b=document.createElement('div'); b.className='badge'; b.textContent='3F'; f.appendChild(b);}
+    f.addEventListener('click',()=>select(idx));
+    f.addEventListener('mouseenter',()=>{ if(!REDUCED) shakeAmt=1; });
+    f.addEventListener('mouseleave',()=>{ shakeAmt=0; });
+    fs.appendChild(f);
+    // staggered entrance
+    setTimeout(()=>f.classList.add('in'), REDUCED?0:idx*50);
+  });
+  $('#stripCount').textContent=ASSETS.length;
+}
+
+/* ---------- Select asset ---------- */
+function select(idx){
+  state.selected=idx; selFlash=1;
+  document.querySelectorAll('.film').forEach(f=>f.classList.toggle('sel',+f.dataset.idx===idx));
+  document.querySelectorAll('.inv-item').forEach(f=>f.classList.toggle('active',+f.dataset.idx===idx));
+  wrap.classList.remove('flash'); void wrap.offsetWidth; wrap.classList.add('flash');
+  updateInspector();
+  // scroll film into view
+  const f=document.querySelector('.film[data-idx="'+idx+'"]'); if(f) f.scrollIntoView({behavior:REDUCED?'auto':'smooth',inline:'center',block:'nearest'});
+  $('#stSel').textContent=ASSETS[idx].id;
+}
+
+/* ---------- Inspector update ---------- */
+function updateInspector(){
+  const a=ASSETS[state.selected];
+  $('#inspName').textContent=a.name;
+  $('#specId').textContent=a.id;
+  $('#specCat').textContent=a.cat==='tiles'?'Cracked Tile':a.cat==='fissures'?'Magma Fissure':'Seismic UI';
+  $('#specDim').textContent=TILE+'×'+TILE+' px';
+  $('#specSev').textContent=a.cat==='tiles'?['Minimal','Moderate','Severe','Catastrophic'][a.sev]:a.cat==='fissures'?a.mode.toUpperCase():'Static';
+  $('#specPal').textContent=(a.cat==='fissures'||a.kind==='gauge'||a.kind==='depth')?'4 colors':'4 colors';
+}
+
+/* ---------- Checkerboard helper ---------- */
+function paintChecker(ctx,size){
+  const s=8;
+  for(let y=0;y<size;y+=s)for(let x=0;x<size;x+=s){ctx.fillStyle=((x/s+y/s)%2===0)?'#241a16':'#1a1210';ctx.fillRect(x,y,s,s);}
+}
+
+/* ---------- Main render loop ---------- */
+function render(now){
+  const dt=now-lastT; lastT=now; frames++; fAcc+=dt;
+  if(fAcc>=500){ fps=Math.round(1000*frames/fAcc); frames=0; fAcc=0; $('#fps').textContent=fps; }
+  // ambient phase (sine driver)
+  phase += dt*0.0022;
+  // shake decay
+  let sx=0,sy=0;
+  if(state.shake && !REDUCED){ sx=(Math.random()*2-1)*2; sy=(Math.random()*2-1)*2; }
+  else if(shakeAmt>0 && !REDUCED){ sx=(Math.random()*2-1)*1.5*shakeAmt; sy=(Math.random()*2-1)*1.5*shakeAmt; }
+  // crack expansion from hover/stress
+  const crackW = (state.shake?0.12:0) + shakeAmt*0.10;
+
+  // draw to offscreen native tile
+  const off=render._off||(render._off=document.createElement('canvas')); off.width=TILE; off.height=TILE;
+  const octx=off.getContext('2d');
+  drawAsset(octx,ASSETS[state.selected],TILE, state.pulse?phase:0, crackW);
+
+  // composite to main at zoom
+  mctx.setTransform(1,0,0,1,0,0);
+  mctx.clearRect(0,0,main.width,main.height);
+  if(state.bg==='checker') paintChecker(mctx,main.width);
+  mctx.imageSmoothingEnabled=false;
+  mctx.save();
+  mctx.translate(sx,sy);
+  mctx.drawImage(off,0,0,TILE,TILE,0,0,main.width,main.height);
+  // selection flash
+  if(selFlash>0){ mctx.fillStyle='rgba(255,87,34,'+(selFlash*0.35)+')'; mctx.fillRect(0,0,main.width,main.height); selFlash=Math.max(0,selFlash-dt*0.012); }
+  // pixel grid
+  if(state.grid){
+    const z=main.width/TILE;
+    mctx.strokeStyle='rgba(255,87,34,0.10)'; mctx.lineWidth=1;
+    mctx.beginPath();
+    for(let i=1;i<TILE;i++){ const p=Math.floor(i*z)+0.5; mctx.moveTo(p,0); mctx.lineTo(p,main.height); mctx.moveTo(0,p); mctx.lineTo(main.width,p); }
+    mctx.stroke();
+  }
+  mctx.restore();
+  requestAnimationFrame(render);
+}
+
+/* ---------- Poster capture (1.5s interval) ---------- */
+function capturePoster(){
+  const c=document.createElement('canvas'); c.width=TILE; c.height=TILE;
+  c.getContext('2d').drawImage(main,0,0,TILE,TILE);
+  posterBuffer.unshift({t:Date.now(),canvas:c});
+  if(posterBuffer.length>10) posterBuffer.pop();
+}
+function openPoster(){
+  const g=$('#posterGrid'); g.innerHTML='';
+  if(posterBuffer.length===0){ g.innerHTML='<div class="gallery-empty">No frames captured yet. Frames are grabbed every '+(state.interval/1000)+'s from the live viewport.</div>'; }
+  posterBuffer.forEach((fr,i)=>{
+    const d=document.createElement('div'); d.className='pf';
+    const cc=document.createElement('canvas'); cc.width=TILE; cc.height=TILE; cc.getContext('2d').drawImage(fr.canvas,0,0);
+    const t=document.createElement('div'); t.className='t'; t.textContent='#'+(posterBuffer.length-i);
+    d.appendChild(cc); d.appendChild(t); g.appendChild(d);
+  });
+  $('#posterModal').classList.add('open');
+}
+
+/* ---------- Downloads ---------- */
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),1800); $('#stExport').textContent='done'; setTimeout(()=>$('#stExport').textContent='idle',1800); }
+function dl(blob,name){ const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); }
+
+function downloadPNG(){
+  const a=ASSETS[state.selected];
+  const c=document.createElement('canvas'); c.width=TILE; c.height=TILE;
+  drawAsset(c.getContext('2d'),a,TILE,0,0);
+  c.toBlob(b=>{ dl(b,a.id+'.png'); toast('PNG exported · '+a.id); },'image/png');
+}
+
+/* Build clean SVG (vector paths, no raster) */
+function assetToSVG(a){
+  const rng=mulberry32(a.seed);
+  const parts=[];
+  parts.push('<rect x="1" y="1" width="'+(TILE-2)+'" height="'+(TILE-2)+'" rx="3" fill="'+PAL.shadow+'"/>');
+  parts.push('<rect x="4" y="4" width="'+(TILE-8)+'" height="'+(TILE-8)+'" rx="3" fill="'+PAL.rock+'"/>');
+  const pathStr=pts=>'M '+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L ');
+  if(a.cat==='tiles'||a.cat==='fissures'){
+    const count=a.cat==='tiles'?1+a.sev:1;
+    for(let i=0;i<count;i++){
+      const p0=[rng()*TILE*0.4,rng()*TILE], p1=[TILE-rng()*TILE*0.4,rng()*TILE];
+      const c=crackPath(rng,p0,p1,5,6+(a.sev||2)*3);
+      parts.push('<path d="'+pathStr(c)+'" fill="none" stroke="'+PAL.shadow+'" stroke-width="4" stroke-linejoin="miter"/>');
+      parts.push('<path d="'+pathStr(c)+'" fill="none" stroke="url(#m)" stroke-width="'+(2+(a.sev||2))+'" stroke-linejoin="miter"/>');
+      if(a.sev>=2||a.cat==='fissures'){ const b=branchFrom(c,rng); parts.push('<path d="'+pathStr(b)+'" fill="none" stroke="'+PAL.shadow+'" stroke-width="3"/>'); parts.push('<path d="'+pathStr(b)+'" fill="none" stroke="'+PAL.magma+'" stroke-width="1.5"/>'); }
+    }
+  } else if(a.kind==='gauge'){
+    parts.push('<path d="M 12 '+(TILE*0.62)+' A '+(TILE*0.34)+' '+(TILE*0.34)+' 0 0 1 '+(TILE-12)+' '+(TILE*0.62)+'" fill="none" stroke="'+PAL.rock+'" stroke-width="2"/>');
+    parts.push('<line x1="'+(TILE/2)+'" y1="'+(TILE*0.62)+'" x2="'+(TILE/2+TILE*0.2)+'" y2="'+(TILE*0.4)+'" stroke="'+PAL.magma+'" stroke-width="2.5"/>');
+  } else if(a.kind==='warning'){
+    parts.push('<rect x="5" y="5" width="'+(TILE-10)+'" height="'+(TILE-10)+'" rx="3" fill="'+PAL.rock+'"/>');
+    parts.push('<rect x="'+(TILE*0.22)+'" y="'+(TILE*0.22)+'" width="'+(TILE*0.56)+'" height="'+(TILE*0.56)+'" rx="3" fill="'+PAL.shadow+'" stroke="'+PAL.hi+'"/>');
+    parts.push('<rect x="'+(TILE/2-1.5)+'" y="'+(TILE*0.32)+'" width="3" height="'+(TILE*0.22)+'" fill="'+PAL.magma+'"/>');
+    parts.push('<rect x="'+(TILE/2-1.5)+'" y="'+(TILE*0.6)+'" width="3" height="3" fill="'+PAL.magma+'"/>');
+  } else {
+    // generic crack for remaining UI
+    const c=crackPath(rng,[TILE*0.2,6],[TILE*0.8,TILE-6],6,7);
+    parts.push('<path d="'+pathStr(c)+'" fill="none" stroke="'+PAL.shadow+'" stroke-width="4"/>');
+    parts.push('<path d="'+pathStr(c)+'" fill="none" stroke="url(#m)" stroke-width="2.5"/>');
+  }
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+TILE+'" height="'+TILE+'" viewBox="0 0 '+TILE+' '+TILE+'"><defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+MAGMA_STOPS[0]+'"/><stop offset="0.5" stop-color="'+MAGMA_STOPS[1]+'"/><stop offset="1" stop-color="'+MAGMA_STOPS[2]+'"/></linearGradient></defs>'+parts.join('')+'</svg>';
+  return svg;
+}
+function downloadSVG(){
+  const a=ASSETS[state.selected];
+  const blob=new Blob([assetToSVG(a)],{type:'image/svg+xml'});
+  dl(blob,a.id+'.svg'); toast('SVG exported · '+a.id);
+}
+
+/* Full atlas sprite sheet */
+function downloadAtlas(){
+  const cols=4, rows=Math.ceil(ASSETS.length/cols), cell=TILE;
+  const pad=6;
+  const c=document.createElement('canvas');
+  c.width=cols*(cell+pad)+pad; c.height=rows*(cell+pad)+pad;
+  const cx=c.getContext('2d');
+  cx.fillStyle='#0f0a08'; cx.fillRect(0,0,c.width,c.height);
+  ASSETS.forEach((a,i)=>{
+    const col=i%cols, row=Math.floor(i/cols);
+    const ox=pad+col*(cell+pad), oy=pad+row*(cell+pad);
+    const t=document.createElement('canvas'); t.width=TILE; t.height=TILE;
+    drawAsset(t.getContext('2d'),a,TILE,0,0);
+    cx.drawImage(t,ox,oy);
+    cx.strokeStyle='rgba(255,87,34,0.25)'; cx.lineWidth=1; cx.strokeRect(ox+0.5,oy+0.5,cell,cell);
+  });
+  c.toBlob(b=>{ dl(b,'GEO-SHIFT-atlas.png'); toast('Atlas exported · '+ASSETS.length+' frames'); },'image/png');
+}
+
+/* ---------- Wire events ---------- */
+function bind(){
+  $('#gridBtn').addEventListener('click',e=>{ state.grid=!state.grid; e.currentTarget.classList.toggle('on',state.grid); $('#setGrid').checked=state.grid; });
+  $('#bgBtn').addEventListener('click',e=>{ state.bg=state.bg==='transparent'?'checker':'transparent'; e.currentTarget.classList.toggle('on',state.bg==='checker'); e.currentTarget.textContent=state.bg==='checker'?'Transparent':'Checkerboard'; $('#hudMode').textContent=state.bg.toUpperCase(); syncBgSeg(); });
+  $('#pulseBtn').addEventListener('click',e=>{ state.pulse=!state.pulse; e.currentTarget.classList.toggle('on',state.pulse); $('#setPulse').checked=state.pulse; });
+  $('#shakeBtn').addEventListener('click',e=>{ state.shake=!state.shake; e.currentTarget.classList.toggle('on',state.shake); });
+  $('#pngBtn').addEventListener('click',downloadPNG);
+  $('#svgBtn').addEventListener('click',downloadSVG);
+  $('#atlasBtn').addEventListener('click',downloadAtlas);
+  $('#atlasBtn2').addEventListener('click',downloadAtlas);
+  $('#posterBtn').addEventListener('click',openPoster);
+  $('#setBtn').addEventListener('click',()=>$('#setModal').classList.add('open'));
+  $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
+  $('#inspBtn').addEventListener('click',()=>$('#inspector').classList.toggle('open'));
+  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>b.closest('.modal').classList.remove('open')));
+  document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+  // settings switches
+  $('#setGrid').addEventListener('change',e=>{ state.grid=e.target.checked; $('#gridBtn').classList.toggle('on',state.grid); });
+  $('#setPulse').addEventListener('change',e=>{ state.pulse=e.target.checked; $('#pulseBtn').classList.toggle('on',state.pulse); });
+  $('#setAmb').addEventListener('change',e=>{ state.amb=e.target.checked; document.body.style.setProperty('--amb',e.target.checked?'1':'0'); });
+  document.querySelectorAll('#setBg button').forEach(b=>b.addEventListener('click',()=>{ state.bg=b.dataset.bg; document.querySelectorAll('#setBg button').forEach(x=>x.classList.toggle('on',x===b)); $('#bgBtn').classList.toggle('on',state.bg==='checker'); $('#bgBtn').textContent=state.bg==='checker'?'Transparent':'Checkerboard'; $('#hudMode').textContent=state.bg.toUpperCase(); }));
+  document.querySelectorAll('#setInt button').forEach(b=>b.addEventListener('click',()=>{ state.interval=+b.dataset.int; document.querySelectorAll('#setInt button').forEach(x=>x.classList.toggle('on',x===b)); }));
+  // mobile tabs
+  document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+    const t=b.dataset.tab;
+    $('#sidebar').classList.toggle('open',t==='inv');
+    $('#inspector').classList.toggle('open',t==='insp');
+  }));
+  // main canvas hover = stress test
+  main.addEventListener('mouseenter',()=>{ if(!REDUCED) shakeAmt=1; });
+  main.addEventListener('mouseleave',()=>{ shakeAmt=0; });
+  // keyboard
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') select(Math.min(ASSETS.length-1,state.selected+1));
+    if(e.key==='ArrowLeft') select(Math.max(0,state.selected-1));
+    if(e.key==='g'||e.key==='G') $('#gridBtn').click();
+  });
+}
+function syncBgSeg(){ document.querySelectorAll('#setBg button').forEach(x=>x.classList.toggle('on',x.dataset.bg===state.bg)); }
+
+/* ---------- Init ---------- */
+function init(){
+  // size main canvas responsive-ish (square, capped)
+  function sizeMain(){
+    const stage=document.querySelector('.stage');
+    const avail=Math.min(stage.clientWidth-44, 460);
+    const size=Math.max(220, Math.floor(avail/64)*64);
+    main.style.width=size+'px'; main.style.height=size+'px';
+    main.width=TILE*4; main.height=TILE*4; // native 4x for crisp grid
+    $('#hudZoom').textContent='4×'; $('#hudSize').textContent=TILE+'×'+TILE+' @4×';
+  }
+  sizeMain(); window.addEventListener('resize',sizeMain);
+  buildInventory(); buildFilmstrip(); bind();
+  select(0);
+  requestAnimationFrame(render);
+  // poster capture loop
+  setInterval(capturePoster, state.interval);
+  // ambient light toggle default
+  document.body.style.setProperty('--amb','1');
+}
+document.addEventListener('DOMContentLoaded',init);
+})();
+</script>
+</body>
+</html>

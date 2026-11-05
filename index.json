@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-05T03:52:39.155Z",
+  "generated_at": "2026-11-05T05:00:22.611Z",
   "schema": "schema/entry.schema.json",
-  "count": 305,
+  "count": 307,
   "categories": [
     "landing-pages",
     "animations",
@@ -8424,6 +8424,37 @@
       ]
     },
     {
+      "id": "aerospace-thermo-structural-lock",
+      "title": "The Thermal Lockup",
+      "category": "motion-graphics",
+      "tags": [
+        "timeline",
+        "explainer",
+        "aerospace",
+        "hard-geometry",
+        "precision",
+        "motion"
+      ],
+      "status": "polished",
+      "summary": "A 6-second technical loop visualizing thermal expansion locking in aerospace joints. Minimalist CAD-style aesthetic with cyan heat accents, strict geometry, and precise typography.",
+      "path": "prompts/motion-graphics/aerospace-thermo-structural-lock",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.md",
+      "extended": "prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "carbon-capture-scrubber-efficiency",
       "title": "Flue Gas Scrubbing",
       "category": "motion-graphics",
@@ -13449,11 +13480,11 @@
       "status": "polished",
       "summary": "Ink Bleed Circuit: A Canvas 2D puzzle where wet ink bleeds into procedural paper. Draw paths, time your 'Dry' action to freeze ink before it hits waste zones. Industrial minimalism, single-file HTML/JS.",
       "path": "prompts/games/ink-bleed-maze-circuit",
-      "preview": null,
+      "preview": "prompts/games/ink-bleed-maze-circuit/preview.png",
       "prompt": "prompts/games/ink-bleed-maze-circuit/prompt.md",
       "extended": "prompts/games/ink-bleed-maze-circuit/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/games/ink-bleed-maze-circuit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -13463,7 +13494,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 260440,
+          "gen_ms": 260440,
+          "ttft_ms": 3085,
+          "queue_wait_ms": 75,
+          "wall_ms": 263600,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/games/ink-bleed-maze-circuit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/games/ink-bleed-maze-circuit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 7,
+          "review_summary": "Strong, on-brief landing screen with expressive type and a clever 'bleeding' title effect, but the paper texture is too subtle and the HUD is clipped."
+        }
+      ]
     },
     {
       "id": "laser-alignment-pulse-lock",
@@ -14075,6 +14136,38 @@
           "review_summary": "A polished poster intro with a gilded frame and light sweep, but the frame is simple and the brand name is missing from the first viewport."
         }
       ]
+    },
+    {
+      "id": "botanical-terrarium-kit",
+      "title": "Botanical Terrarium Kit",
+      "category": "assets",
+      "tags": [
+        "3d",
+        "gltf-hero",
+        "nature",
+        "foliage",
+        "procedural",
+        "environment",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "High-fidelity 3D Botanical Terrarium Kit with morphing plants, realistic glass, and procedural textures in a single-file HTML studio.",
+      "path": "prompts/assets/botanical-terrarium-kit",
+      "preview": null,
+      "prompt": "prompts/assets/botanical-terrarium-kit/prompt.md",
+      "extended": "prompts/assets/botanical-terrarium-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "brine-station-kit",
@@ -14889,11 +14982,11 @@
       "status": "polished",
       "summary": "Build a single-file HTML asset studio for 'GEO-SHIFT: Tectonic Plate Fracture', a 2D game-kit pack. The interface must feel like a geological survey terminal. Use Oswald for headers and Source Code Pro for data. The…",
       "path": "prompts/assets/tectonic-plate-fracture",
-      "preview": null,
+      "preview": "prompts/assets/tectonic-plate-fracture/preview.png",
       "prompt": "prompts/assets/tectonic-plate-fracture/prompt.md",
       "extended": "prompts/assets/tectonic-plate-fracture/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/assets/tectonic-plate-fracture/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -14903,7 +14996,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 360718,
+          "gen_ms": 360718,
+          "ttft_ms": 16253,
+          "queue_wait_ms": 120359,
+          "wall_ms": 617652,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/assets/tectonic-plate-fracture/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/assets/tectonic-plate-fracture/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "Strong adherence to the 'geological survey terminal' brief with a cohesive dark UI, correct typography, and functional layout."
+        }
+      ]
     },
     {
       "id": "volcanic-geothermal-kit",
@@ -17786,11 +17909,11 @@
       "status": "polished",
       "summary": "High-fidelity industrial instrument panel for electrolysis simulation. Features canvas-based particle physics, strict brutalist UI, and real-time load balancing feedback.",
       "path": "prompts/interfaces/electrolysis-cell-balance",
-      "preview": null,
+      "preview": "prompts/interfaces/electrolysis-cell-balance/preview.png",
       "prompt": "prompts/interfaces/electrolysis-cell-balance/prompt.md",
       "extended": "prompts/interfaces/electrolysis-cell-balance/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/electrolysis-cell-balance/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -17800,7 +17923,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 172893,
+          "gen_ms": 172893,
+          "ttft_ms": 5911,
+          "queue_wait_ms": 180426,
+          "wall_ms": 539789,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/electrolysis-cell-balance/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/electrolysis-cell-balance/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 3,
+          "review_summary": "Layout structure exists but the canvas is empty (no particles/membrane), the left control zone is completely missing, and the right data zone is blank."
+        }
+      ]
     },
     {
       "id": "ferrous-oxide-bloom-filter",
@@ -18066,11 +18219,11 @@
       "status": "polished",
       "summary": "Interactive SVG schematic of a hydraulic brake line where users drag a bleed valve to displace air bubbles. Bubbles drift via physics simulation and pop into a catch cup upon reaching the outlet. Minimalist…",
       "path": "prompts/interfaces/hydraulic-brake-fluid-bleed",
-      "preview": null,
+      "preview": "prompts/interfaces/hydraulic-brake-fluid-bleed/preview.png",
       "prompt": "prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.md",
       "extended": "prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/interfaces/hydraulic-brake-fluid-bleed/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -18080,7 +18233,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 189223,
+          "gen_ms": 189223,
+          "ttft_ms": 2489,
+          "queue_wait_ms": 90262,
+          "wall_ms": 372236,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/interfaces/hydraulic-brake-fluid-bleed/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/interfaces/hydraulic-brake-fluid-bleed/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 9,
+          "review_summary": "Excellent execution of the 'technical instrument' brief with precise typography, layout, and atmospheric styling."
+        }
+      ]
     },
     {
       "id": "kintsugi-joinery-scheduler",

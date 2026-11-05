@@ -1,0 +1,26 @@
+id: botanical-terrarium-kit
+title: "Botanical Terrarium Kit"
+category: assets
+tags:
+  - 3d
+  - gltf-hero
+  - nature
+  - foliage
+  - procedural
+  - environment
+  - assets
+status: polished
+summary: "High-fidelity 3D Botanical Terrarium Kit with morphing plants, realistic glass, and procedural textures in a single-file HTML studio."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

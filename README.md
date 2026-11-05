@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 305 | 301 | 264 | 41 |
+| 307 | 305 | 266 | 41 |
 
 ## Quick start
 
@@ -2203,6 +2203,20 @@ A macro animation of woven reed strips bending under tension, showcasing the ela
 
 ## Motion Graphics
 
+### The Thermal Lockup
+
+A 6-second technical loop visualizing thermal expansion locking in aerospace joints. Minimalist CAD-style aesthetic with cyan heat accents, strict geometry, and precise typography.
+
+**Status:** polished · `timeline` `explainer` `aerospace` `hard-geometry` `precision` `motion` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.md) · [extended](prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Flue Gas Scrubbing
 
 8-second looping motion graphic for GreenStack illustrating flue gas scrubbing efficiency using hard industrial geometry, responsive layout, and precise CSS/SVG animations.
@@ -3511,9 +3525,11 @@ Ink Bleed Circuit: A Canvas 2D puzzle where wet ink bleeds into procedural paper
 
 [prompt](prompts/games/ink-bleed-maze-circuit/prompt.md) · [extended](prompts/games/ink-bleed-maze-circuit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/ink-bleed-maze-circuit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.1s | 260s | 7 | [open](prompts/games/ink-bleed-maze-circuit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3676,6 +3692,20 @@ Production-grade 2D game kit featuring 16 ornate UI frames with simulated tarnis
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/baroque-gilded-framing-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.7s | 343s | 6 | [open](prompts/assets/baroque-gilded-framing-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Botanical Terrarium Kit
+
+High-fidelity 3D Botanical Terrarium Kit with morphing plants, realistic glass, and procedural textures in a single-file HTML studio.
+
+**Status:** polished · `3d` `gltf-hero` `nature` `foliage` `procedural` `environment` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/botanical-terrarium-kit/prompt.md) · [extended](prompts/assets/botanical-terrarium-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3895,9 +3925,11 @@ Build a single-file HTML asset studio for 'GEO-SHIFT: Tectonic Plate Fracture', 
 
 [prompt](prompts/assets/tectonic-plate-fracture/prompt.md) · [extended](prompts/assets/tectonic-plate-fracture/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/tectonic-plate-fracture/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 16s | 361s | 8 | [open](prompts/assets/tectonic-plate-fracture/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4651,9 +4683,11 @@ High-fidelity industrial instrument panel for electrolysis simulation. Features 
 
 [prompt](prompts/interfaces/electrolysis-cell-balance/prompt.md) · [extended](prompts/interfaces/electrolysis-cell-balance/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/electrolysis-cell-balance/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 5.9s | 173s | 3 | [open](prompts/interfaces/electrolysis-cell-balance/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4729,9 +4763,11 @@ Interactive SVG schematic of a hydraulic brake line where users drag a bleed val
 
 [prompt](prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.md) · [extended](prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/hydraulic-brake-fluid-bleed/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.5s | 189s | 9 | [open](prompts/interfaces/hydraulic-brake-fluid-bleed/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

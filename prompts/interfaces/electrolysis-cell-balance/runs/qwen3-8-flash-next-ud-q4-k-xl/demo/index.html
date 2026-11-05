@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A1A1A">
+<title>Electrolysis Cell — Balance Monitor</title>
+<meta name="description" content="Industrial electrolysis cell simulation — ion flow balance across the semi-permeable membrane.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#1A1A1A; --ink:#FFFFFF; --ink-2:#888888; --ink-3:#555555;
+    --cyan:#00FFFF; --alert:#FF0055; --border:#333333;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;border-radius:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Barlow Condensed',sans-serif;
+    overflow:hidden; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--cyan);color:#000;}
+
+  /* ---- app shell ---- */
+  .app{
+    height:100vh; height:100dvh;
+    display:grid; grid-template-columns:25% 50% 25%;
+    border-top:1px solid var(--border);
+  }
+  .panel{
+    display:flex; flex-direction:column; min-width:0; min-height:0;
+    border-right:1px solid var(--border); padding:18px 18px 20px;
+    transition:background-color .2s linear;
+  }
+  .panel:last-child{border-right:none;}
+
+  /* ---- masthead ---- */
+  .masthead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 18px;border-bottom:1px solid var(--border);background:#161616;flex:none;}
+  .brand{display:flex;align-items:baseline;gap:12px;min-width:0;}
+  .brand-mark{font-family:'Barlow Condensed';font-weight:700;font-size:20px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink);white-space:nowrap;}
+  .brand-mark em{font-style:normal;color:var(--cyan);}
+  .brand-sub{font-family:'Barlow Condensed';font-weight:500;font-size:12px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mast-right{display:flex;align-items:center;gap:18px;font-family:'JetBrains Mono';font-size:11px;
+    color:var(--ink-2);letter-spacing:.06em;white-space:nowrap;}
+  .mast-right b{color:var(--ink);font-weight:500;}
+  .led{display:inline-block;width:8px;height:8px;background:var(--cyan);margin-right:6px;
+    box-shadow:0 0 8px var(--cyan);vertical-align:middle;}
+  .led.err{background:var(--alert);box-shadow:0 0 8px var(--alert);}
+
+  /* ---- section headers ---- */
+  .sec{font-family:'Barlow Condensed';font-weight:600;font-size:12px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-2);display:flex;align-items:center;gap:10px;
+    margin-bottom:14px;}
+  .sec::after{content:"";flex:1;height:1px;background:var(--border);}
+
+  .ctrl{padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:20px;}
+  .ctrl:last-child{border-bottom:none;}
+
+  /* ---- slider ---- */
+  .slider-wrap{position:relative;padding-top:24px;}
+  .slider{
+    -webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;
+    cursor:pointer;outline:none;display:block;
+  }
+  .slider::-webkit-slider-runnable-track{height:6px;background:#242424;border:1px solid var(--border);}
+  .slider::-moz-range-track{height:6px;background:#242424;border:1px solid var(--border);}
+  .slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:28px;
+    background:var(--cyan);margin-top:-12px;border:none;box-shadow:0 0 12px rgba(0,255,255,.4);}
+  .slider::-moz-range-thumb{width:14px;height:28px;background:var(--cyan);border:none;
+    box-shadow:0 0 12px rgba(0,255,255,.4);}
+  .slider:focus-visible{outline:2px solid var(--cyan);outline-offset:4px;}
+  .slider-wrap.crit .slider::-webkit-slider-thumb{background:var(--alert);box-shadow:0 0 12px rgba(255,0,85,.5);}
+  .slider-wrap.crit .slider::-moz-range-thumb{background:var(--alert);box-shadow:0 0 12px rgba(255,0,85,.5);}
+  .slider-wrap.crit .slider:focus-visible{outline-color:var(--alert);}
+
+  .ticks{position:absolute;top:0;left:0;right:0;height:18px;pointer-events:none;}
+  .tick{position:absolute;top:0;transform:translateX(-50%);width:1px;height:8px;background:var(--border);}
+  .tick .lab{position:absolute;top:9px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono';
+    font-size:9px;color:var(--ink-3);}
+  .tick.warn{background:var(--alert);height:11px;}
+  .tick.warn .lab{color:var(--alert);}
+
+  .tooltip{position:absolute;top:0;transform:translateX(-50%);background:#000;border:1px solid var(--cyan);
+    color:var(--cyan);font-family:'JetBrains Mono';font-size:11px;padding:3px 8px;white-space:nowrap;
+    opacity:0;transition:opacity .1s linear;pointer-events:none;}
+  .slider-wrap.show-tip .tooltip{opacity:1;}
+  .slider-wrap.crit.show-tip .tooltip{border-color:var(--alert);color:var(--alert);}
+  .tooltip::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);
+    width:1px;height:5px;background:var(--cyan);}
+  .slider-wrap.crit .tooltip::after{background:var(--alert);}
+
+  .slider-readout{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px;}
+  .slider-readout .val{font-family:'JetBrains Mono';font-size:26px;color:var(--ink);font-weight:500;}
+  .slider-readout .unit{font-family:'JetBrains Mono';font-size:12px;color:var(--ink-2);}
+  .slider-wrap.crit .slider-readout .val{color:var(--alert);}
+
+  /* ---- generic readout ---- */
+  .readout{display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;
+    border-bottom:1px solid #242424;}
+  .readout:last-child{border-bottom:none;}
+  .readout .lab{font-family:'Barlow Condensed';font-weight:500;font-size:13px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-2);}
+  .readout .val{font-family:'JetBrains Mono';font-size:20px;color:var(--ink);font-weight:500;}
+  .readout .val .u{font-size:11px;color:var(--ink-2);margin-left:3px;}
+
+  /* ---- toggle ---- */
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;}
+  .toggle-row .lab{font-family:'Barlow Condensed';font-weight:500;font-size:13px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-2);}
+  .toggle{display:inline-flex;border:1px solid var(--border);}
+  .toggle button{font-family:'Barlow Condensed';font-weight:600;font-size:12px;letter-spacing:.12em;
+    text-transform:uppercase;background:transparent;color:var(--ink-2);border:none;
+    padding:10px 16px;cursor:pointer;outline:none;min-height:44px;transition:background-color .12s,color .12s;}
+  .toggle button + button{border-left:1px solid var(--border);}
+  .toggle button.on{background:var(--cyan);color:#000;}
+  .toggle button:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px;}
+
+  /* ---- data values ---- */
+  .status-val{font-family:'Barlow Condensed';font-weight:700;font-size:24px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--cyan);}
+  .status-val.idle{color:var(--ink-2);}
+  .status-val.crit{color:var(--alert);}
+  .val.crit{color:var(--alert)!important;}
+  .val.warn{color:#FFB020!important;}
+
+  .bar{height:6px;background:#242424;border:1px solid var(--border);margin-top:8px;overflow:hidden;}
+  .bar > i{display:block;height:100%;width:0;background:var(--cyan);transition:width .1s linear;}
+  .bar.crit > i{background:var(--alert);}
+
+  /* ---- canvas ---- */
+  .canvas-wrap{position:relative;flex:1;min-height:0;overflow:hidden;
+    background:radial-gradient(circle at 50% 45%,#1e1e1e 0%,#1a1a1a 60%,#161616 100%);}
+  .canvas-wrap::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 1px,transparent 1px 3px);}
+  .canvas-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;
+    box-shadow:inset 0 0 120px rgba(0,0,0,.55);}
+  canvas{display:block;width:100%;height:100%;position:absolute;inset:0;transition:opacity .2s linear;}
+  .canvas-wrap.paused canvas{opacity:.5;}
+
+  .legend{position:absolute;left:14px;top:12px;z-index:2;display:flex;flex-direction:column;gap:6px;
+    font-family:'JetBrains Mono';font-size:10px;letter-spacing:.06em;color:var(--ink-2);}
+  .legend span{display:flex;align-items:center;gap:7px;}
+  .legend i{width:8px;height:8px;background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
+  .legend .dir{color:var(--ink-3);}
+
+  .corner{position:absolute;z-index:2;width:14px;height:14px;border:1px solid #4a4a4a;pointer-events:none;}
+  .corner.tl{top:10px;left:10px;border-right:none;border-bottom:none;}
+  .corner.tr{top:10px;right:10px;border-left:none;border-bottom:none;}
+  .corner.bl{bottom:10px;left:10px;border-right:none;border-top:none;}
+  .corner.br{bottom:10px;right:10px;border-left:none;border-top:none;}
+
+  .alert{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;align-items:center;
+    justify-content:center;gap:10px;pointer-events:none;
+    background:radial-gradient(circle at 50% 50%,rgba(255,0,85,.10) 0%,transparent 62%);}
+  .canvas-wrap.error .alert{display:flex;}
+  .alert-main{font-family:'Barlow Condensed';font-weight:700;font-size:clamp(28px,6vw,56px);
+    letter-spacing:.16em;text-transform:uppercase;color:var(--alert);text-shadow:0 0 26px rgba(255,0,85,.6);}
+  .alert-sub{font-family:'JetBrains Mono';font-size:12px;letter-spacing:.14em;color:var(--alert);opacity:.85;}
+  .canvas-wrap.error .alert-main{animation:blink .5s steps(1,end) infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+
+  /* ---- alert tint on right panel ---- */
+  .app.is-error .panel-right{background:rgba(255,0,85,.05);}
+  .app.is-error .masthead{border-bottom-color:var(--alert);}
+
+  /* ---- screen shake ---- */
+  @keyframes shake{
+    0%{transform:translate(0,0);}20%{transform:translate(-4px,2px);}40%{transform:translate(4px,-2px);}
+    60%{transform:translate(-3px,-2px);}80%{transform:translate(3px,2px);}100%{transform:translate(0,0);}
+  }
+  .app.shake{animation:shake .2s linear;}
+
+  /* ---- entrance ---- */
+  .fade{opacity:0;transform:translateY(8px);animation:fadein .2s ease-out forwards;}
+  @keyframes fadein{to{opacity:1;transform:none;}}
+
+  /* ---- responsive ---- */
+  @media (max-width:768px){
+    body{overflow:auto;}
+    .app{height:auto;min-height:100dvh;grid-template-columns:1fr;}
+    .panel{border-right:none;border-bottom:1px solid var(--border);}
+    .panel-center{order:2;}
+    .panel-left{order:1;}
+    .panel-right{order:3;}
+    .canvas-wrap{flex:none;height:40vh;min-height:240px;}
+    .flow-rate{display:none;}
+    .brand-sub{display:none;}
+    .mast-right .clock{display:none;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .fade{opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ============ LEFT : CONTROLS ============ -->
+  <section class="panel panel-left" aria-label="Control inputs">
+    <div class="ctrl fade" style="animation-delay:.02s">
+      <div class="sec">Current Load</div>
+      <div class="slider-wrap" id="sliderWrap">
+        <div class="ticks" id="ticks"></div>
+        <input class="slider" id="load" type="range" min="0" max="100" step="1" value="55"
+               aria-label="Current load percentage" aria-describedby="loadAria">
+        <span id="loadAria" class="sr-only" hidden></span>
+        <div class="tooltip" id="tip">0.0 A</div>
+      </div>
+      <div class="slider-readout">
+        <span class="val" id="loadPct">55%</span>
+        <span class="unit">SET-POINT</span>
+      </div>
+    </div>
+
+    <div class="ctrl fade" style="animation-delay:.06s">
+      <div class="sec">Electrode Bias</div>
+      <div class="readout"><span class="lab">Voltage</span><span class="val" id="voltage">1.23<span class="u">V</span></span></div>
+      <div class="readout"><span class="lab">Current</span><span class="val" id="current">110.0<span class="u">A</span></span></div>
+    </div>
+
+    <div class="ctrl fade" style="animation-delay:.10s">
+      <div class="sec">Master Control</div>
+      <div class="toggle-row">
+        <span class="lab">Run Simulation</span>
+        <div class="toggle" role="group" aria-label="Run or pause the simulation">
+          <button id="runBtn" class="on" aria-pressed="true">Run</button>
+          <button id="pauseBtn" aria-pressed="false">Pause</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ctrl fade" style="animation-delay:.14s">
+      <div class="sec">Diagnostics</div>
+      <div class="readout"><span class="lab">Cell ID</span><span class="val" style="font-size:15px">EC-07</span></div>
+      <div class="readout"><span class="lab">Mode</span><span class="val" style="font-size:15px" id="modeVal">AUTO</span></div>
+      <div class="readout"><span class="lab">Uptime</span><span class="val" style="font-size:15px" id="uptime">00:00:00</span></div>
+    </div>
+  </section>
+
+  <!-- ============ CENTER : VISUALIZATION ============ -->
+  <section class="panel panel-center" aria-label="Membrane ion flow visualization">
+    <div class="sec">Ion Flow · Semi-Permeable Membrane</div>
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="cv" role="img" aria-label="Particle simulation of hydrogen and hydroxide ions flowing toward the central membrane"></canvas>
+      <div class="legend">
+        <span><i></i>H⁺ IONS <span class="dir">▸ RIGHTWARD</span></span>
+        <span><i></i>OH⁻ IONS <span class="dir">◂ LEFTWARD</span></span>
+      </div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="alert" aria-hidden="true">
+        <div class="alert-main">Pressure Alert</div>
+        <div class="alert-sub">MEMBRANE OVERLOAD — REDUCE LOAD</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RIGHT : DATA ============ -->
+  <section class="panel panel-right" aria-label="Output data readouts">
+    <div class="sec">Output Data</div>
+
+    <div class="readout fade" style="animation-delay:.04s">
+      <span class="lab">Status</span>
+      <span class="status-val" id="status">NOMINAL</span>
+    </div>
+
+    <div class="readout fade" style="animation-delay:.08s">
+      <span class="lab">Efficiency</span>
+      <span class="val" id="effVal">94.0<span class="u">%</span></span>
+    </div>
+    <div class="bar fade" style="animation-delay:.08s"><i id="effBar"></i></div>
+
+    <div class="readout fade" style="animation-delay:.12s">
+      <span class="lab">Temperature</span>
+      <span class="val" id="tempVal">42.0<span class="u">°C</span></span>
+    </div>
+    <div class="bar fade" style="animation-delay:.12s"><i id="tempBar"></i></div>
+
+    <div class="readout flow-rate fade" style="animation-delay:.16s">
+      <span class="lab">Flow Rate</span>
+      <span class="val" id="flowVal">110.0<span class="u">L/s</span></span>
+    </div>
+
+    <div class="readout flow-rate fade" style="animation-delay:.20s">
+      <span class="lab">Ion Flux</span>
+      <span class="val" id="fluxVal">1100<span class="u">/s</span></span>
+    </div>
+
+    <div class="readout flow-rate fade" style="animation-delay:.24s">
+      <span class="lab">Load Index</span>
+      <span class="val" id="loadVal">55<span class="u">%</span></span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- refs ---------- */
+  var app=document.getElementById('app');
+  var canvas=document.getElementById('cv');
+  var ctx=canvas.getContext('2d');
+  var wrap=document.getElementById('canvasWrap');
+  var slider=document.getElementById('load');
+  var sliderWrap=document.getElementById('sliderWrap');
+  var tip=document.getElementById('tip');
+  var loadPct=document.getElementById('loadPct');
+  var loadAria=document.getElementById('loadAria');
+  var ticksEl=document.getElementById('ticks');
+  var runBtn=document.getElementById('runBtn');
+  var pauseBtn=document.getElementById('pauseBtn');
+  var statusEl=document.getElementById('status');
+  var effVal=document.getElementById('effVal');
+  var effBar=document.getElementById('effBar');
+  var tempVal=document.getElementById('tempVal');
+  var tempBar=document.getElementById('tempBar');
+  var flowVal=document.getElementById('flowVal');
+  var fluxVal=document.getElementById('fluxVal');
+  var loadVal=document.getElementById('loadVal');
+  var voltageEl=document.getElementById('voltage');
+  var currentEl=document.getElementById('current');
+  var uptimeEl=document.getElementById('uptime');
+  var mastLed=document.querySelector('.led');
+  var mastClock=document.querySelector('.clock b');
+
+  /* ---------- constants ---------- */
+  var CYAN='#00FFFF', ALERT='#FF0055';
+  var MAXA=200, MAXT=120, MAXV=320, MAXF=120;
+  var P=200, VBASE=40, VMAX=340;
+
+  /* ---------- state ---------- */
+  var running=true, load=55, temp=42, lastTemp=42, errT=0, lastFrame=performance.now();
+  var W=0, H=0, dpr=1, particles=[];
+
+  /* ---------- helpers ---------- */
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function clamp(v,a,b){return v<a?a:v>b?b:v;}
+  function fmt(v,d){return v.toFixed(d);}
+  function pad(n){return (n<10?'0':'')+n;}
+
+  /* ---------- particles ---------- */
+  function spawn(p,side,init){
+    var x, y=8+Math.random()*(H-16);
+    if(init){ x = side<0 ? Math.random()*W : Math.random()*W; }
+    else    { x = side<0 ? -8 : W+8; }
+    p.side=side; p.x=x; p.y=y; p.baseY=y;
+    p.size=1.4+Math.random()*1.6; p.phase=Math.random()*6.283;
+    p.jitAmp=3+Math.random()*4; p.jitSpd=1+Math.random()*2; p.bob=0;
+  }
+  function initParticles(){
+    particles=[];
+    for(var i=0;i<P;i++){
+      var p={};
+      spawn(p, i%2===0?-1:1, true);
+      particles.push(p);
+    }
+  }
+
+  /* ---------- resize ---------- */
+  function resize(){
+    var r=wrap.getBoundingClientRect();
+    W=Math.max(1,Math.floor(r.width));
+    H=Math.max(1,Math.floor(r.height));
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=Math.floor(W*dpr);
+    canvas.height=Math.floor(H*dpr);
+    canvas.style.width=W+'px';
+    canvas.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    for(var i=0;i<particles.length;i++){
+      var p=particles[i];
+      if(p.baseY>H-8){ p.baseY=8+Math.random()*(H-16); p.y=p.baseY; }
+    }
+  }
+  if(window.ResizeObserver){
+    new ResizeObserver(resize).observe(wrap);
+  } else {
+    window.addEventListener('resize',resize);
+  }
+
+  /* ---------- ticks ---------- */
+  (function buildTicks(){
+    var vals=[0,25,50,75,95,100];
+    for(var i=0;i<vals.length;i++){
+      var v=vals[i];
+      var d=document.createElement('div');
+      d.className='tick'+(v===95?' warn':'');
+      d.style.left=v+'%';
+      d.innerHTML='<span class="lab">'+v+'</span>';
+      ticksEl.appendChild(d);
+    }
+  })();
+
+  /* ---------- physics + draw ---------- */
+  function update(dt){
+    var cx=W/2;
+    var speed=VBASE+load/100*VMAX;
+    var memFlash=Math.sin(errT*22)>0;
+    var memColor=memFlash?ALERT:CYAN;
+    var memW=load>95?2.5:1.5;
+
+    // background
+    ctx.fillStyle='#1a1a1a';
+    ctx.fillRect(0,0,W,H);
+
+    // membrane glow
+    var g=ctx.createLinearGradient(cx-34,0,cx+34,0);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(.5, memFlash?'rgba(255,0,85,.16)':'rgba(0,255,255,.10)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.fillRect(cx-34,0,68,H);
+
+    // membrane line
+    ctx.strokeStyle=memColor;
+    ctx.lineWidth=memW;
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+
+    // membrane ticks
+    ctx.strokeStyle=memFlash?'rgba(255,0,85,.5)':'rgba(0,255,255,.35)';
+    ctx.lineWidth=1;
+    for(var ty=12; ty<H; ty+=26){
+      ctx.beginPath(); ctx.moveTo(cx-6,ty); ctx.lineTo(cx+6,ty); ctx.stroke();
+    }
+
+    // particles
+    ctx.fillStyle=memFlash?ALERT:CYAN;
+    var i,p,vx,px;
+    for(i=0;i<particles.length;i++){
+      p=particles[i];
+      vx=speed*(0.85+p.size*0.12);
+      px=p.x;
+      p.x+=vx*p.side*dt;
+      p.bob=Math.sin(errT*0+p.phase+performance.now()*0.001*p.jitSpd)*p.jitAmp;
+      p.y=p.baseY+p.bob;
+
+      var crossed = (p.side<0 && p.x>=cx) || (p.side>0 && p.x<=cx);
+      if(crossed){
+        var pass = Math.random() < (load>95?0.06:0.28);
+        if(pass){
+          p.side*=-1;
+          p.baseY=8+Math.random()*(H-16);
+          p.y=p.baseY;
+        } else {
+          p.side*=-1;
+          p.x=px;
+          p.baseY=8+Math.random()*(H-16);
+          p.y=p.baseY;
+        }
+      }
+      if(p.x<-12) spawn(p,-1,false);
+      else if(p.x>W+12) spawn(p,1,false);
+
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,6.2832);
+      ctx.fill();
+    }
+  }
+
+  function frame(now){
+    var dt=(now-lastFrame)/1000; lastFrame=now;
+    if(dt>0.05) dt=0.05;
+    if(running){
+      errT+=dt;
+      var targetTemp=38+(load/100)*(load/100)*62;
+      temp+=(targetTemp-temp)*Math.min(1,dt*0.7);
+    }
+    if(running) update(dt);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- readouts ---------- */
+  function setVal(el,text,cls){
+    el.innerHTML=text;
+    if(cls!==undefined){ el.classList.toggle('crit',cls==='crit'); el.classList.toggle('warn',cls==='warn'); }
+  }
+  function setBar(el,pct,crit){
+    el.style.width=clamp(pct,0,100)+'%';
+    el.classList.toggle('crit',!!crit);
+  }
+
+  function updateReadouts(){
+    var amps=load/100*MAXA;
+    var eff, flow=amps, flux=Math.round(amps*10), volt=1.23+load/100*0.8;
+    var effCls, tempCls, statusCls, statusText;
+
+    if(!running){
+      eff=0; statusText='IDLE'; statusCls='idle';
+    } else if(load>95){
+      eff=clamp(42-(load-95)*1.8,15,60); statusText='CRITICAL'; statusCls='crit';
+    } else {
+      eff=clamp(96-Math.pow(load/100,3)*18,70,99); statusText='NOMINAL'; statusCls='';
+    }
+    if(running && load>95) effCls='crit'; else effCls='';
+
+    setVal(effVal, fmt(eff,1)+'<span class="u">%</span>', effCls);
+    setBar(effBar, eff, effCls==='crit');
+
+    if(!running){
+      setVal(tempVal, fmt(lastTemp,1)+'<span class="u">°C</span>', '');
+      setBar(tempBar, lastTemp/MAXT*100, false);
+    } else {
+      tempCls = temp>95?'crit':(temp>80?'warn':'');
+      setVal(tempVal, fmt(temp,1)+'<span class="u">°C</span>', tempCls);
+      setBar(tempBar, temp/MAXT*100, temp>95);
+    }
+
+    setVal(flowVal, fmt(flow,1)+'<span class="u">L/s</span>', '');
+    setVal(fluxVal, flux+'<span class="u">/s</span>', '');
+    setVal(loadVal, load+'<span class="u">%</span>', load>95?'crit':'');
+
+    setVal(voltageEl, fmt(volt,2)+'<span class="u">V</span>', '');
+    setVal(currentEl, fmt(amps,1)+'<span class="u">A</span>', '');
+
+    statusEl.textContent=statusText;
+    statusEl.className='status-val'+(statusCls?' '+statusCls:'');
+
+    var err = running && load>95;
+    app.classList.toggle('is-error',err);
+    mastLed.classList.toggle('err',err);
+
+    loadPct.textContent=load+'%';
+    sliderWrap.classList.toggle('crit',load>95);
+    loadAria.textContent='Current load '+load+' percent, '+fmt(amps,1)+' amperes';
+    slider.setAttribute('aria-valuetext', load+' percent, '+fmt(amps,1)+' amperes');
+  }
+
+  function updateTooltip(){
+    var pct=load/100;
+    tip.style.left=(pct*100)+'%';
+    tip.textContent=fmt(load/100*MAXA,1)+' A';
+  }
+
+  /* ---------- events ---------- */
+  slider.addEventListener('input',function(){
+    var prev=load;
+    load=parseInt(slider.value,10);
+    if(load>95 && prev<=95 && running && !reduce){
+      app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake');
+    }
+    updateReadouts();
+    updateTooltip();
+  });
+  slider.addEventListener('mouseenter',function(){sliderWrap.classList.add('show-tip');});
+  slider.addEventListener('mouseleave',function(){sliderWrap.classList.remove('show-tip');});
+  slider.addEventListener('focus',function(){sliderWrap.classList.add('show-tip');});
+  slider.addEventListener('blur',function(){sliderWrap.classList.remove('show-tip');});
+
+  function setRun(on){
+    running=on;
+    runBtn.classList.toggle('on',on);
+    pauseBtn.classList.toggle('on',!on);
+    runBtn.setAttribute('aria-pressed',String(on));
+    pauseBtn.setAttribute('aria-pressed',String(!on));
+    wrap.classList.toggle('paused',!on);
+    wrap.classList.toggle('error',on && load>95);
+    updateReadouts();
+  }
+  runBtn.addEventListener('click',function(){setRun(true);});
+  pauseBtn.addEventListener('click',function(){setRun(false);});
+
+  /* ---------- clock / uptime ---------- */
+  var start=Date.now();
+  function tick(){
+    var d=new Date();
+    if(mastClock) mastClock.textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+    var s=Math.floor((Date.now()-start)/1000);
+    uptimeEl.textContent=pad(Math.floor(s/3600))+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60);
+  }
+  setInterval(tick,1000);
+
+  /* ---------- readout loop ---------- */
+  setInterval(function(){
+    if(running) lastTemp=temp;
+    updateReadouts();
+  },120);
+
+  /* ---------- boot ---------- */
+  resize();
+  initParticles();
+  updateReadouts();
+  updateTooltip();
+  tick();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
