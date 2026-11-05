@@ -1,0 +1,29 @@
+id: ledger-rule-justification
+title: "Ledger Rule Justification"
+category: editorial
+tags:
+  - ledger
+  - accounting
+  - balance
+  - tether
+  - structure
+  - editorial
+  - spine
+  - double-entry
+  - typography
+  - scroll-driven
+status: polished
+summary: "A vertical spine balances text columns like debit/credit entries. Scroll depth stretches the spine; blocks snap to horizontal rules with magnetic tension."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

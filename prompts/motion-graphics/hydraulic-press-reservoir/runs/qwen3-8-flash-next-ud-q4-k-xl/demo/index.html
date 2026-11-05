@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HydroForm — Pascal's Squeeze</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1A1A1A; --fluid:#00B4D8; --heat:#FF5722; --ink:#FFFFFF;
+    --mono:'Space Mono', ui-monospace, monospace;
+    --disp:'Archivo Black', system-ui, sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(130% 120% at 50% 38%, #242424 0%, #1A1A1A 55%, #101010 100%);
+    color:var(--ink); font-family:var(--mono); overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{
+    position:relative; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    padding:clamp(8px,2.4vw,28px);
+  }
+  .frame{
+    position:relative; width:100%; max-width:1280px;
+    aspect-ratio:16/9; border-radius:8px; overflow:hidden;
+    box-shadow:0 40px 120px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.06);
+    background:#1A1A1A;
+  }
+  canvas{display:block; width:100%; height:100%; object-fit:contain}
+  .brand{
+    position:absolute; top:clamp(12px,2.4%,22px); left:clamp(12px,2.4%,26px);
+    z-index:3; display:flex; flex-direction:column; gap:2px; pointer-events:none;
+  }
+  .brand .wm{font-family:var(--disp); font-size:clamp(15px,1.7vw,24px); letter-spacing:.02em; color:#fff}
+  .brand .wm b{color:var(--fluid)}
+  .brand .sub{font-size:clamp(8px,.85vw,11px); letter-spacing:.34em; color:rgba(255,255,255,.42)}
+  .replay{
+    position:absolute; bottom:clamp(10px,2.2%,18px); right:clamp(10px,2.2%,18px);
+    z-index:3; min-width:44px; min-height:44px; padding:0 16px;
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    font-family:var(--mono); font-size:12px; letter-spacing:.16em; color:#fff;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.18);
+    border-radius:6px; transition:background .2s, border-color .2s;
+  }
+  .replay:hover{background:rgba(0,180,216,.18); border-color:rgba(0,180,216,.6)}
+  .replay:focus-visible{outline:2px solid var(--fluid); outline-offset:2px}
+  .replay .ic{font-size:14px}
+  .hint{
+    position:absolute; bottom:clamp(10px,2.2%,18px); left:clamp(12px,2.4%,26px);
+    z-index:3; font-size:11px; letter-spacing:.14em; color:rgba(255,255,255,.35); pointer-events:none;
+  }
+  @media (max-width:640px){
+    .hint{display:none}
+    .replay{padding:0 12px}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .replay{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="frame" id="frame">
+    <canvas id="c" aria-label="Hydraulic press animation explaining Pascal's principle"></canvas>
+    <div class="brand">
+      <span class="wm">HYDRO<b>FORM</b></span>
+      <span class="sub">HYDRAULIC SYSTEMS · 01</span>
+    </div>
+    <button class="replay" id="replay" aria-label="Replay animation"><span class="ic">↺</span>REPLAY</button>
+    <div class="hint">SPACE / CLICK · REPLAY</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- Constants ----
+  const DUR = 6.0;               // seconds
+  const W = 1280, H = 720;       // design space
+  const CX = W/2, CY = H/2;      // 640, 360
+  const COL = 180;               // connecting-line column center
+  const LINE_Y = 486;            // connecting line center y
+  const LINE_H = 26;
+  const FLUID = '#00B4D8', HEAT = '#FF5722';
+
+  // Master (small, left)
+  const MX0 = 158, MX1 = 242, MYT = 268, MYB = 500;
+  const M_PISTON_TOP0 = 300, M_PISTON_TOP1 = 380, M_PISTON_H = 26;
+  // Slave (large, right)
+  const SX0 = 878, SX1 = 1042, SYT = 196, SYB = 500;
+  const S_PISTON_TOP0 = 424, S_PISTON_TOP1 = 328, S_PISTON_H = 34;
+  // Billet
+  const BILLET_W0 = 150, BILLET_H0 = 46, BILLET_Y = 540;
+  const BILLET_AREA = BILLET_W0 * BILLET_H0;
+
+  // ---- Easing ----
+  const clamp = (v,a,b)=> v<a?a:(v>b?b:v);
+  const lerp  = (a,b,t)=> a+(b-a)*t;
+  const invLerp = (a,b,v)=> (v-a)/(b-a);
+  const smooth = t => t*t*(3-2*t);
+  const easeIn = t => t*t*t;
+  const easeOut = t => 1-Math.pow(1-t,3);
+
+  // ---- State ----
+  const state = { master:0, slave:0, billet:0, gauge:0, sparks:[], shakeX:0, shakeY:0 };
+
+  // ---- Canvas setup ----
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const frame = document.getElementById('frame');
+  let dpr = 1, scale = 1;
+
+  function resize(){
+    const r = frame.getBoundingClientRect();
+    const w = Math.max(1, r.width), h = Math.max(1, r.height);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(w*dpr);
+    canvas.height = Math.round(h*dpr);
+    scale = Math.min(w/W, h/H);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  // ---- Noise texture (static, drawn once) ----
+  const noise = document.createElement('canvas');
+  noise.width = noise.height = 140;
+  (function(){
+    const nctx = noise.getContext('2d');
+    const id = nctx.createImageData(140,140);
+    for(let i=0;i<id.data.length;i+=4){
+      const v = 120 + Math.random()*135;
+      id.data[i]=id.data[i+1]=id.data[i+2]=v;
+      id.data[i+3]= (Math.random()*10)|0; // subtle alpha
+    }
+    nctx.putImageData(id,0,0);
+  })();
+
+  // ---- Helpers ----
+  function roundRect(c,x,y,w,h,r){
+    if(w<0){x+=w;w=-w;} if(h<0){y+=h;h=-h;}
+    r = Math.min(r, w/2, h/2);
+    c.beginPath();
+    c.moveTo(x+r,y);
+    c.arcTo(x+w,y,x+w,y+h,r);
+    c.arcTo(x+w,y+h,x,y+h,r);
+    c.arcTo(x,y+h,x,y,r);
+    c.arcTo(x,y,x+w,y,r);
+    c.closePath();
+  }
+  function fillRR(c,x,y,w,h,r){ roundRect(c,x,y,w,h,r); c.fill(); }
+  function strokeRR(c,x,y,w,h,r){ roundRect(c,x,y,w,h,r); c.stroke(); }
+  function line(c,x1,y1,x2,y2){ c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2,y2); c.stroke(); }
+
+  // ---- Fluid fill (clipped to chamber) ----
+  function fluidFill(x0,x1,top,bottom,fluidTop){
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0,top,x1-x0,bottom-top); ctx.clip();
+    const g = ctx.createLinearGradient(0,fluidTop,0,bottom);
+    g.addColorStop(0,'#4FD8F2'); g.addColorStop(1,'#0077A8');
+    ctx.fillStyle = g;
+    ctx.fillRect(x0,fluidTop,x1-x0,bottom-fluidTop);
+    // subtle meniscus highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillRect(x0,fluidTop,x1-x0,3);
+    ctx.restore();
+  }
+
+  // ---- Billet ----
+  function drawBillet(){
+    const s = state.billet;
+    const h = BILLET_H0 * (1 - 0.62*s);
+    const w = BILLET_AREA / h;
+    const x = CX - w/2, y = BILLET_Y - h;
+    // heat glow
+    if(s > 0.02){
+      const gg = ctx.createRadialGradient(CX,BILLET_Y-h/2,4,CX,BILLET_Y-h/2,w*0.75);
+      gg.addColorStop(0,'rgba(255,110,50,'+(0.5*s)+')');
+      gg.addColorStop(1,'rgba(255,87,34,0)');
+      ctx.fillStyle = gg;
+      ctx.fillRect(CX-w*0.8, BILLET_Y-h-40, w*1.6, h+80);
+    }
+    // body
+    const g = ctx.createLinearGradient(0,y,0,y+h);
+    g.addColorStop(0,'#FFB07A'); g.addColorStop(0.5,HEAT); g.addColorStop(1,'#B23A0F');
+    ctx.fillStyle = g;
+    roundRect(ctx,x,y,w,h,8); ctx.fill();
+    // hot core
+    ctx.fillStyle = 'rgba(255,235,200,'+(0.18+0.5*s)+')';
+    roundRect(ctx,x+8,y+h*0.32,w-16,h*0.36,6); ctx.fill();
+    // outline
+    ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    strokeRR(ctx,x,y,w,h,8);
+  }
+
+  // ---- Anvil / base ----
+  function drawBase(){
+    ctx.fillStyle = '#262626';
+    fillRR(ctx, 120, 500, W-240, 26, 4);
+    ctx.fillStyle = '#1f1f1f';
+    fillRR(ctx, 150, 526, W-300, 90, 6);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth=1;
+    strokeRR(ctx, 150, 526, W-300, 90, 6);
+  }
+
+  // ---- Master cylinder (left) ----
+  function drawMaster(){
+    const m = state.master;
+    const pistonTop = lerp(M_PISTON_TOP0, M_PISTON_TOP1, m);
+    const fluidTop = pistonTop + M_PISTON_H;
+    // cylinder body
+    ctx.fillStyle = '#2c2c2c';
+    fillRR(ctx, MX0, MYT, MX1-MX0, MYB-MYT, 6);
+    ctx.lineWidth = 2; ctx.strokeStyle = '#3a3a3a';
+    strokeRR(ctx, MX0, MYT, MX1-MX0, MYB-MYT, 6);
+    // fluid
+    fluidFill(MX0+2, MX1-2, MYT, MYB, fluidTop);
+    // piston head
+    const pg = ctx.createLinearGradient(0,pistonTop,0,pistonTop+M_PISTON_H);
+    pg.addColorStop(0,'#c9c9c9'); pg.addColorStop(0.5,'#8f8f8f'); pg.addColorStop(1,'#5a5a5a');
+    ctx.fillStyle = pg;
+    fillRR(ctx, MX0+3, pistonTop, (MX1-MX0)-6, M_PISTON_H, 3);
+    // rod
+    ctx.fillStyle = '#7a7a7a';
+    fillRR(ctx, CX-108, MYT-70, 16, 70+(pistonTop-MYT), 3);
+    // rod grip
+    ctx.fillStyle = '#9a9a9a';
+    fillRR(ctx, CX-124, MYT-84, 48, 18, 4);
+    // label
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '700 12px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('MASTER', CX-108, MYT-96);
+  }
+
+  // ---- Slave cylinder (right) ----
+  function drawSlave(){
+    const sl = state.slave;
+    const pistonTop = lerp(S_PISTON_TOP0, S_PISTON_TOP1, sl);
+    const fluidTop = pistonTop + S_PISTON_H;
+    ctx.fillStyle = '#2c2c2c';
+    fillRR(ctx, SX0, SYT, SX1-SX0, SYB-SYT, 6);
+    ctx.lineWidth = 2; ctx.strokeStyle = '#3a3a3a';
+    strokeRR(ctx, SX0, SYT, SX1-SX0, SYB-SYT, 6);
+    fluidFill(SX0+2, SX1-2, SYT, SYB, fluidTop);
+    const pg = ctx.createLinearGradient(0,pistonTop,0,pistonTop+S_PISTON_H);
+    pg.addColorStop(0,'#c9c9c9'); pg.addColorStop(0.5,'#8f8f8f'); pg.addColorStop(1,'#5a5a5a');
+    ctx.fillStyle = pg;
+    fillRR(ctx, SX0+4, pistonTop, (SX1-SX0)-8, S_PISTON_H, 3);
+    // ram (piston to billet)
+    ctx.fillStyle = '#6f6f6f';
+    fillRR(ctx, CX-14, pistonTop+S_PISTON_H, 28, BILLET_Y-(pistonTop+S_PISTON_H), 3);
+    // label
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '700 12px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('SLAVE', (SX0+SX1)/2, SYT-14);
+  }
+
+  // ---- Connecting line + fluid flow ----
+  function drawLine(){
+    const pulse = 1 + 0.04*Math.sin(t*11);
+    const lh = LINE_H*pulse;
+    // pipe casing
+    ctx.fillStyle = '#2c2c2c';
+    fillRR(ctx, MX1-2, LINE_Y-lh/2, (SX0-MX1)+4, lh, 6);
+    // fluid inside
+    ctx.save();
+    roundRect(ctx, MX1, LINE_Y-lh/2+2, (SX0-MX1), lh-4, 4); ctx.clip();
+    ctx.fillStyle = FLUID;
+    ctx.fillRect(MX1, LINE_Y-lh/2+2, (SX0-MX1), lh-4);
+    // flow streaks
+    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    const off = (t*260) % 70;
+    for(let x = MX1-70+off; x < SX0; x += 70){
+      ctx.fillRect(x, LINE_Y-2, 26, 4);
+    }
+    ctx.restore();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#3a3a3a';
+    strokeRR(ctx, MX1-2, LINE_Y-lh/2, (SX0-MX1)+4, lh, 6);
+  }
+
+  // ---- Pressure gauge (spring-damper needle) ----
+  function drawGauge(){
+    const gx = CX, gy = 205, R = 92;
+    const g = state.gauge; // 0..1
+    // dial
+    const dg = ctx.createRadialGradient(gx,gy,10,gx,gy,R);
+    dg.addColorStop(0,'#242424'); dg.addColorStop(1,'#161616');
+    ctx.fillStyle = dg;
+    ctx.beginPath(); ctx.arc(gx,gy,R,0,Math.PI*2); ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = '#3a3a3a';
+    ctx.beginPath(); ctx.arc(gx,gy,R,0,Math.PI*2); ctx.stroke();
+    // ticks
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    for(let i=0;i<=10;i++){
+      const a = Math.PI + (i/10)*Math.PI;
+      const r1 = R-8, r2 = (i%5===0)? R-20 : R-14;
+      ctx.lineWidth = (i%5===0)?2.5:1.2;
+      ctx.beginPath();
+      ctx.moveTo(gx+Math.cos(a)*r1, gy+Math.sin(a)*r1);
+      ctx.lineTo(gx+Math.cos(a)*r2, gy+Math.sin(a)*r2);
+      ctx.stroke();
+    }
+    // red zone
+    ctx.strokeStyle = HEAT; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(gx,gy,R-8, Math.PI + 0.85*Math.PI, Math.PI + Math.PI); ctx.stroke();
+    // needle
+    const na = Math.PI + g*Math.PI;
+    ctx.save();
+    ctx.translate(gx,gy); ctx.rotate(na);
+    ctx.fillStyle = HEAT;
+    ctx.beginPath();
+    ctx.moveTo(-6,0); ctx.lineTo(0,-R+22); ctx.lineTo(6,0); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#cfcfcf';
+    ctx.beginPath(); ctx.arc(gx,gy,7,0,Math.PI*2); ctx.fill();
+    // digital reading
+    const psi = Math.round(g*1000);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = g>0.85 ? HEAT : '#fff';
+    ctx.font = '700 30px "Space Mono", monospace';
+    ctx.fillText(psi, gx, gy+46);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '700 12px "Space Mono", monospace';
+    ctx.fillText('PSI', gx, gy+64);
+  }
+
+  // ---- Sparks ----
+  function spawnSparks(){
+    const n = 12 + (Math.random()*4|0);
+    for(let i=0;i<n;i++){
+      const a = -Math.PI/2 + (Math.random()-0.5)*Math.PI*1.1;
+      const sp = 180 + Math.random()*300;
+      state.sparks.push({
+        x: CX + (Math.random()-0.5)*40,
+        y: BILLET_Y - 6,
+        vx: Math.cos(a)*sp,
+        vy: Math.sin(a)*sp,
+        life: 0, max: 0.4 + Math.random()*0.4,
+        size: 1.6 + Math.random()*2.4
+      });
+    }
+  }
+  function drawSparks(dt){
+    const arr = state.sparks;
+    for(let i=arr.length-1;i>=0;i--){
+      const p = arr[i];
+      p.life += dt;
+      if(p.life >= p.max){ arr.splice(i,1); continue; }
+      p.vy += 900*dt;
+      p.x += p.vx*dt; p.y += p.vy*dt;
+      const k = 1 - p.life/p.max;
+      const col = k>0.6 ? '#FFF3E0' : (k>0.3 ? '#FFB27A' : HEAT);
+      ctx.globalAlpha = k;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.size*k+0.4,0,Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- Text overlays ----
+  function title(txt, x, y, a, align, size, color){
+    if(a<=0.01) return;
+    ctx.globalAlpha = a;
+    ctx.textAlign = align;
+    ctx.fillStyle = color || '#fff';
+    ctx.font = '400 '+size+'px "Archivo Black", sans-serif';
+    ctx.fillText(txt, x, y);
+    ctx.globalAlpha = 1;
+  }
+  function drawText(){
+    // persistent title (poster)
+    title("PASCAL'S SQUEEZE", 52, 118, 1, 'left', 46);
+    ctx.fillStyle = 'rgba(0,180,216,0.85)';
+    ctx.font = '700 13px "Space Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('HYDRAULIC PRESSURE MULTIPLICATION', 54, 140);
+
+    const a1 = smooth(clamp(t/0.4,0,1)) * smooth(clamp((DUR-t)/0.4,0,1));
+    title('INPUT FORCE', 52, 640, a1, 'left', 34);
+
+    const a2 = smooth(clamp((t-3.6)/0.3,0,1)) * smooth(clamp((DUR-t)/0.4,0,1));
+    title('OUTPUT FORCE', W-52, 640, a2, 'right', 34);
+
+    const a3 = smooth(clamp((t-1.5)/0.4,0,1)) * smooth(clamp((DUR-t)/0.4,0,1));
+    if(a3>0.01){
+      ctx.globalAlpha = a3;
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = '700 14px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PRESSURE MULTIPLICATION', CX, 100);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ---- Beat markers ----
+  function drawBeats(){
+    const bx = 52, bw = W-104, y = H-34;
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    fillRR(ctx, bx, y, bw, 4, 2);
+    const labels = [[0,'INPUT'],[1.5,'TRANSMISSION'],[3.5,'OUTPUT']];
+    for(const [bt,lb] of labels){
+      const x = bx + (bt/DUR)*bw;
+      ctx.fillStyle = (t>=bt) ? FLUID : 'rgba(255,255,255,0.3)';
+      ctx.fillRect(x, y-3, 2, 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.font = '700 10px "Space Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(lb, x+4, y+18);
+    }
+    // playhead
+    const px = bx + (t/DUR)*bw;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(px, y+2, 4, 0, Math.PI*2); ctx.fill();
+  }
+
+  // ---- Master update ----
+  function update(dt){
+    // master piston: 0->1 over 0..1.5
+    state.master = smooth(clamp(t/1.5,0,1));
+    // slave rise: 1.5->3.5
+    state.slave = smooth(clamp((t-1.5)/2.0,0,1));
+    // billet crush: 3.5->4.15
+    state.billet = easeOut(clamp((t-3.5)/0.65,0,1));
+    // gauge spring-damper
+    const target = clamp((t-1.5)/1.3,0,1);
+    const k = 150, c = 14, m = 1;
+    const acc = (k*(target-state.gauge) - c*state.gVel)/m;
+    state.gVel += acc*dt;
+    state.gauge += state.gVel*dt;
+    state.gauge = clamp(state.gauge,0,1.1);
+    // shake on impact
+    if(t>=3.5 && t<3.6){
+      state.shakeX = (Math.random()-0.5)*4;
+      state.shakeY = (Math.random()-0.5)*4;
+    } else {
+      state.shakeX *= 0.8; state.shakeY *= 0.8;
+    }
+  }
+
+  // ---- Render ----
+  function render(dt){
+    ctx.clearRect(0,0,W,H);
+    // background
+    ctx.fillStyle = '#1A1A1A'; ctx.fillRect(0,0,W,H);
+    const bg = ctx.createRadialGradient(CX,CY*0.9,60,CX,CY,W*0.7);
+    bg.addColorStop(0,'rgba(40,40,40,0.9)'); bg.addColorStop(1,'rgba(16,16,16,1)');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+    ctx.save();
+    ctx.translate(state.shakeX, state.shakeY);
+
+    drawBase();
+    drawLine();
+    drawMaster();
+    drawSlave();
+    drawBillet();
+    drawGauge();
+    drawSparks(dt);
+    drawText();
+    drawBeats();
+
+    ctx.restore();
+
+    // noise overlay
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = noisePattern;
+    ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha = 1;
+  }
+
+  let noisePattern = null;
+  function buildNoisePattern(){
+    noisePattern = ctx.createPattern(noise,'repeat');
+  }
+
+  // ---- Loop ----
+  let t = 0, last = 0, raf = 0;
+  let lastBeat = 3.5;
+  function loop(now){
+    const dt = Math.min((now-last)/1000 || 0, 0.05);
+    last = now;
+    t += dt;
+    if(t >= DUR){ t -= DUR; state.sparks.length = 0; lastBeat = 3.5; }
+    update(dt);
+    // spark trigger once per loop
+    if(t >= 3.5 && lastBeat < 3.5){ spawnSparks(); lastBeat = 3.5; }
+    if(t < 3.5) lastBeat = 0;
+    render(dt);
+    raf = requestAnimationFrame(loop);
+  }
+
+  // ---- Reduced motion ----
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function renderStatic(){
+    state.master = 1; state.slave = 0; state.billet = 1;
+    state.gauge = 1; state.gVel = 0; state.sparks.length = 0;
+    state.shakeX = 0; state.shakeY = 0;
+    render(0);
+  }
+
+  function start(){
+    t = 0; last = performance.now();
+    state.sparks.length = 0; lastBeat = 0;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(loop);
+  }
+
+  // ---- Init ----
+  function init(){
+    resize();
+    buildNoisePattern();
+    if(reduce){
+      renderStatic();
+    } else {
+      start();
+    }
+  }
+
+  // ---- Controls ----
+  document.getElementById('replay').addEventListener('click', function(){
+    if(!reduce) start();
+  });
+  window.addEventListener('keydown', function(e){
+    if(e.code === 'Space'){ e.preventDefault(); if(!reduce) start(); }
+  });
+  frame.addEventListener('click', function(){ if(!reduce) start(); });
+
+  // ensure fonts loaded then init (avoid FOUT layout jump)
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(init).catch(init);
+  } else {
+    window.addEventListener('load', init);
+  }
+})();
+</script>
+</body>
+</html>

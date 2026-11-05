@@ -1,0 +1,26 @@
+id: hydrostatic-lock-drag
+title: "Hydrostatic Lock Drag"
+category: games
+tags:
+  - physics
+  - fluid-sim
+  - canvas2d
+  - state-stack
+  - game
+  - toybox-physics
+  - drag-to-pour
+status: polished
+summary: "A tactile industrial simulation where players balance water pressure using three heavy valve handles. Manage inflow spikes and debris while keeping the tank within safe limits for 60 seconds."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

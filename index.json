@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-04T23:44:24.310Z",
+  "generated_at": "2026-11-05T01:25:22.585Z",
   "schema": "schema/entry.schema.json",
-  "count": 294,
+  "count": 299,
   "categories": [
     "landing-pages",
     "animations",
@@ -8861,10 +8861,10 @@
       "status": "polished",
       "summary": "6s loop 'Pascal's Squeeze' for HydroForm. Tactile hydraulic pressure multiplication. Desktop/Mobile responsive. Vanilla JS. Acceptance: 60fps, reduced motion support.",
       "path": "prompts/motion-graphics/hydraulic-press-reservoir",
-      "preview": null,
+      "preview": "prompts/motion-graphics/hydraulic-press-reservoir/preview.png",
       "prompt": "prompts/motion-graphics/hydraulic-press-reservoir/prompt.md",
       "extended": "prompts/motion-graphics/hydraulic-press-reservoir/prompt.full.md",
-      "demo": null,
+      "demo": "prompts/motion-graphics/hydraulic-press-reservoir/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
       "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
@@ -8890,20 +8890,20 @@
           "stream": true,
           "temperature": 0.65,
           "context_tokens": 262144,
-          "duration_ms": 136020,
-          "gen_ms": 136020,
-          "ttft_ms": 30456,
-          "queue_wait_ms": 60219,
-          "wall_ms": 286867,
+          "duration_ms": 161297,
+          "gen_ms": 161297,
+          "ttft_ms": 370,
+          "queue_wait_ms": 71,
+          "wall_ms": 161738,
           "prompt_tokens": null,
           "completion_tokens": null,
           "total_tokens": null,
           "demo": "prompts/motion-graphics/hydraulic-press-reservoir/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
-          "preview": null,
-          "has_demo": false,
-          "has_preview": false,
-          "review_score": null,
-          "review_summary": null
+          "preview": "prompts/motion-graphics/hydraulic-press-reservoir/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 6,
+          "review_summary": "Strong industrial composition and typography, but a critical 'NaN' error on the gauge and a broken layout overlap at the bottom ruin the poster frame."
         }
       ]
     },
@@ -9266,6 +9266,36 @@
           "review_summary": "Clean, on-brief scientific-minimalism frame at ~1.5s with correct palette, grid block, and temperature chart, but the brand name is absent and the amber heat bar isn't yet visible."
         }
       ]
+    },
+    {
+      "id": "platen-impact-lockup",
+      "title": "Platen Impact Lockup",
+      "category": "motion-graphics",
+      "tags": [
+        "hero-kinetic",
+        "press-mechanics",
+        "rigid-type",
+        "editorial-print",
+        "high-contrast"
+      ],
+      "status": "polished",
+      "summary": "A visceral 4s loop simulating a printing press platen striking paper. A massive 'A' falls, impacts with shake and ink bleed, settling into a static editorial poster. Vanilla JS/CSS, responsive, accessible.",
+      "path": "prompts/motion-graphics/platen-impact-lockup",
+      "preview": null,
+      "prompt": "prompts/motion-graphics/platen-impact-lockup/prompt.md",
+      "extended": "prompts/motion-graphics/platen-impact-lockup/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "saline-glass-caustics",
@@ -13313,6 +13343,38 @@
       ]
     },
     {
+      "id": "hydrostatic-lock-drag",
+      "title": "Hydrostatic Lock Drag",
+      "category": "games",
+      "tags": [
+        "physics",
+        "fluid-sim",
+        "canvas2d",
+        "state-stack",
+        "game",
+        "toybox-physics",
+        "drag-to-pour"
+      ],
+      "status": "polished",
+      "summary": "A tactile industrial simulation where players balance water pressure using three heavy valve handles. Manage inflow spikes and debris while keeping the tank within safe limits for 60 seconds.",
+      "path": "prompts/games/hydrostatic-lock-drag",
+      "preview": null,
+      "prompt": "prompts/games/hydrostatic-lock-drag/prompt.md",
+      "extended": "prompts/games/hydrostatic-lock-drag/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "laser-alignment-pulse-lock",
       "title": "Laser Alignment Pulse Lock",
       "category": "games",
@@ -13861,6 +13923,37 @@
           "review_summary": "Strong industrial start screen with excellent typography hierarchy and atmospheric depth, though the turbine visual is obscured by the overlay."
         }
       ]
+    },
+    {
+      "id": "baroque-gilded-framing-kit",
+      "title": "Baroque Gilded Framing Kit",
+      "category": "assets",
+      "tags": [
+        "game-kit",
+        "ui",
+        "vintage",
+        "luxury",
+        "decorative",
+        "assets"
+      ],
+      "status": "polished",
+      "summary": "Production-grade 2D game kit featuring 16 ornate UI frames with simulated tarnish-to-gold material states. Includes scrollwork, drop shadows, and interactive polish mechanics.",
+      "path": "prompts/assets/baroque-gilded-framing-kit",
+      "preview": null,
+      "prompt": "prompts/assets/baroque-gilded-framing-kit/prompt.md",
+      "extended": "prompts/assets/baroque-gilded-framing-kit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "brine-station-kit",
@@ -16281,6 +16374,41 @@
       ]
     },
     {
+      "id": "ledger-rule-justification",
+      "title": "Ledger Rule Justification",
+      "category": "editorial",
+      "tags": [
+        "ledger",
+        "accounting",
+        "balance",
+        "tether",
+        "structure",
+        "editorial",
+        "spine",
+        "double-entry",
+        "typography",
+        "scroll-driven"
+      ],
+      "status": "polished",
+      "summary": "A vertical spine balances text columns like debit/credit entries. Scroll depth stretches the spine; blocks snap to horizontal rules with magnetic tension.",
+      "path": "prompts/editorial/ledger-rule-justification",
+      "preview": null,
+      "prompt": "prompts/editorial/ledger-rule-justification/prompt.md",
+      "extended": "prompts/editorial/ledger-rule-justification/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "linen-fold-accordion",
       "title": "The Chef's Fold",
       "category": "editorial",
@@ -17015,6 +17143,38 @@
           "review_summary": "Strong industrial editorial concept with correct palette, type pairing, and die-stamp branding, but the first viewport is mostly empty grid with no hero headline."
         }
       ]
+    },
+    {
+      "id": "vellum-dust-settling",
+      "title": "Vellum Dust Settling",
+      "category": "editorial",
+      "tags": [
+        "manuscript",
+        "conservation",
+        "dust",
+        "particle-system",
+        "breath",
+        "archival",
+        "vellum"
+      ],
+      "status": "polished",
+      "summary": "An immersive editorial experience simulating manuscript conservation where scroll velocity acts as wind, blowing away dust particles to reveal text. Fast scrolling clears the view; slow scrolling lets dust settle and…",
+      "path": "prompts/editorial/vellum-dust-settling",
+      "preview": null,
+      "prompt": "prompts/editorial/vellum-dust-settling/prompt.md",
+      "extended": "prompts/editorial/vellum-dust-settling/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "acoustic-panel-attenuation",

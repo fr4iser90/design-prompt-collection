@@ -1,0 +1,25 @@
+id: baroque-gilded-framing-kit
+title: "Baroque Gilded Framing Kit"
+category: assets
+tags:
+  - game-kit
+  - ui
+  - vintage
+  - luxury
+  - decorative
+  - assets
+status: polished
+summary: "Production-grade 2D game kit featuring 16 ornate UI frames with simulated tarnish-to-gold material states. Includes scrollwork, drop shadows, and interactive polish mechanics."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

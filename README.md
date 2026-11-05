@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 294 | 294 | 253 | 41 |
+| 299 | 294 | 258 | 41 |
 
 ## Quick start
 
@@ -2327,7 +2327,7 @@ A single vertical bar grows physically from dark soil into a wheat stalk, hittin
 
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
-| — | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 30s | 136s | — | — |
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/hydraulic-press-reservoir/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 370ms | 161s | 6 | [open](prompts/motion-graphics/hydraulic-press-reservoir/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -2424,6 +2424,20 @@ An 8s broadcast loop visualizing Phase Change Material (PCM) buffering heat. A s
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 126k | — | — | 4.7s | 197s | 6 | [open](prompts/motion-graphics/phase-change-latent-heat/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Platen Impact Lockup
+
+A visceral 4s loop simulating a printing press platen striking paper. A massive 'A' falls, impacts with shake and ink bleed, settling into a static editorial poster. Vanilla JS/CSS, responsive, accessible.
+
+**Status:** polished · `hero-kinetic` `press-mechanics` `rigid-type` `editorial-print` `high-contrast` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/motion-graphics/platen-impact-lockup/prompt.md) · [extended](prompts/motion-graphics/platen-impact-lockup/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
@@ -3471,6 +3485,20 @@ Hold space to build hydraulic pressure against a spinning flywheel. Release at p
 
 ---
 
+### Hydrostatic Lock Drag
+
+A tactile industrial simulation where players balance water pressure using three heavy valve handles. Manage inflow spikes and debris while keeping the tank within safe limits for 60 seconds.
+
+**Status:** polished · `physics` `fluid-sim` `canvas2d` `state-stack` `game` `toybox-physics` `drag-to-pour` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/hydrostatic-lock-drag/prompt.md) · [extended](prompts/games/hydrostatic-lock-drag/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Laser Alignment Pulse Lock
 
 A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal.
@@ -3616,6 +3644,20 @@ High-precision rhythm game: trim spinning turbine blades with a laser at exact a
 ---
 
 ## Assets
+
+### Baroque Gilded Framing Kit
+
+Production-grade 2D game kit featuring 16 ornate UI frames with simulated tarnish-to-gold material states. Includes scrollwork, drop shadows, and interactive polish mechanics.
+
+**Status:** polished · `game-kit` `ui` `vintage` `luxury` `decorative` `assets` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/baroque-gilded-framing-kit/prompt.md) · [extended](prompts/assets/baroque-gilded-framing-kit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
 
 ### Brine Station Kit
 
@@ -4245,6 +4287,20 @@ A culinary manual where scroll velocity acts as friction. Text columns split by 
 
 ---
 
+### Ledger Rule Justification
+
+A vertical spine balances text columns like debit/credit entries. Scroll depth stretches the spine; blocks snap to horizontal rules with magnetic tension.
+
+**Status:** polished · `ledger` `accounting` `balance` `tether` `structure` `editorial` `spine` `double-entry` `typography` `scroll-driven` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/ledger-rule-justification/prompt.md) · [extended](prompts/editorial/ledger-rule-justification/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### The Chef's Fold
 
 A recipe journal where the layout behaves like a folded linen napkin. Scrolling unfolds the cloth to reveal nested chapters, with crisp creases acting as visual dividers and tactile interaction.
@@ -4434,6 +4490,20 @@ A long-form essay on pasta engineering where text strands stretch, thin, and vib
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/steel-pasta-extrusion/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 6.6s | 305s | 7 | [open](prompts/editorial/steel-pasta-extrusion/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Vellum Dust Settling
+
+An immersive editorial experience simulating manuscript conservation where scroll velocity acts as wind, blowing away dust particles to reveal text. Fast scrolling clears the view; slow scrolling lets dust settle and…
+
+**Status:** polished · `manuscript` `conservation` `dust` `particle-system` `breath` `archival` `vellum` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/editorial/vellum-dust-settling/prompt.md) · [extended](prompts/editorial/vellum-dust-settling/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 

@@ -8,18 +8,25 @@ engine_rev: "fee9d2a"
 built_at: "2026-11-04"
 updated: "2026-11-04"
 demo: demo/index.html
-preview: null
-status: rebuild
+preview: preview.png
+status: ok
 build_attempts: 1
 thinking_enabled: false
 stream: true
 temperature: 0.65
 context_tokens: 262144
-duration_ms: 136020
-gen_ms: 136020
-ttft_ms: 30456
-queue_wait_ms: 60219
-wall_ms: 286867
-reject_reason: "shot_broken:nearly_empty"
+duration_ms: 161297
+gen_ms: 161297
+ttft_ms: 370
+queue_wait_ms: 71
+wall_ms: 161738
 rejected_at: "2026-11-04T23:43:45.167Z"
 last_reject_reason: "shot_broken:nearly_empty"
+review_score: 6
+review_summary: "Strong industrial composition and typography, but a critical 'NaN' error on the gauge and a broken layout overlap at the bottom ruin the poster frame."
+reviewed_at: "2026-11-04T23:47:23.141Z"
+review_issues:
+  - "Critical bug: Gauge displays 'NaN' instead of a numeric value"
+  - "Layout collision: 'INPUT FORCE' text overlaps with UI controls at the bottom left"
+  - "Fluid physics: The connecting line is filled, but the slave cylinder (right) is empty, breaking the visual logic of transmission"
+  - "Missing atmosphere: Background is flat charcoal, lacking the requested noise texture"

@@ -1,0 +1,24 @@
+id: platen-impact-lockup
+title: "Platen Impact Lockup"
+category: motion-graphics
+tags:
+  - hero-kinetic
+  - press-mechanics
+  - rigid-type
+  - editorial-print
+  - high-contrast
+status: polished
+summary: "A visceral 4s loop simulating a printing press platen striking paper. A massive 'A' falls, impacts with shake and ink bleed, settling into a static editorial poster. Vanilla JS/CSS, responsive, accessible."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

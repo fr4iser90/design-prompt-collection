@@ -1,0 +1,26 @@
+id: vellum-dust-settling
+title: "Vellum Dust Settling"
+category: editorial
+tags:
+  - manuscript
+  - conservation
+  - dust
+  - particle-system
+  - breath
+  - archival
+  - vellum
+status: polished
+summary: "An immersive editorial experience simulating manuscript conservation where scroll velocity acts as wind, blowing away dust particles to reveal text. Fast scrolling clears the view; slow scrolling lets dust settle and…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
