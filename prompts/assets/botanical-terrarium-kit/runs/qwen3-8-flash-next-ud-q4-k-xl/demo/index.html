@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BIOSPHERE 09 — Botanical Terrarium Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#2e4d33; --sage:#8fbc8f; --mint:#e0f0d0; --charcoal:#1a1a1a; --white:#ffffff;
+    --ink:#0c110d; --panel:rgba(12,17,13,0.72); --line:rgba(224,240,208,0.14);
+    --line-strong:rgba(224,240,208,0.30);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink); color:var(--white);
+    font-family:'Lato',system-ui,sans-serif; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{position:fixed;inset:0}
+  canvas{display:block}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 45%, rgba(6,10,7,0.55) 100%);}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* ---- HUD frame ---- */
+  .hud{position:fixed;inset:0;z-index:5;pointer-events:none;display:grid;
+    grid-template-columns:320px 1fr 300px; grid-template-rows:auto 1fr auto;
+    gap:18px; padding:22px;}
+  .hud > *{pointer-events:auto}
+
+  /* Brand block */
+  .brand{grid-column:1;grid-row:1;align-self:start}
+  .kicker{font-size:10.5px;letter-spacing:.42em;text-transform:uppercase;color:var(--sage);
+    font-weight:700;margin-bottom:6px}
+  .brand h1{font-family:'Playfair Display',serif;font-weight:700;line-height:.86;
+    font-size:clamp(38px,4.4vw,64px);letter-spacing:-.01em;color:var(--white);
+    text-shadow:0 2px 30px rgba(0,0,0,.5)}
+  .brand h1 .zero{font-style:italic;font-weight:400;color:var(--mint)}
+  .brand .sub{font-size:12.5px;color:rgba(224,240,208,.72);margin-top:10px;max-width:290px;
+    line-height:1.5}
+  .rule{height:1px;background:linear-gradient(90deg,var(--line-strong),transparent);margin:14px 0 12px;max-width:280px}
+  .meta{font-family:'Courier New',monospace;font-size:10.5px;color:rgba(224,240,208,.5);
+    letter-spacing:.04em;line-height:1.7}
+  .meta b{color:var(--mint);font-weight:400}
+
+  /* Right stats */
+  .stats{grid-column:3;grid-row:1;align-self:start;justify-self:end;width:300px;
+    background:var(--panel);border:1px solid var(--line);border-radius:4px;
+    backdrop-filter:blur(14px);padding:16px 16px 14px}
+  .stats h2{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;letter-spacing:.02em;
+    display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  .stats h2 span{font-family:'Courier New',monospace;font-size:9.5px;color:var(--sage);letter-spacing:.1em}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;
+    font-family:'Courier New',monospace;font-size:11px;padding:6px 0;border-top:1px solid var(--line)}
+  .stat-row:first-of-type{border-top:none}
+  .stat-row .k{color:rgba(224,240,208,.55);letter-spacing:.03em}
+  .stat-row .v{color:var(--mint)}
+  .swatches{display:flex;gap:6px;margin-top:12px}
+  .sw{flex:1;height:26px;border-radius:2px;position:relative;border:1px solid rgba(255,255,255,.08)}
+  .sw i{position:absolute;left:4px;bottom:3px;font-family:'Courier New',monospace;font-size:8px;
+    font-style:normal;color:rgba(0,0,0,.55);text-shadow:0 0 4px rgba(255,255,255,.35)}
+
+  /* Left controls */
+  .controls{grid-column:1;grid-row:2;align-self:end;justify-self:start;width:320px;
+    background:var(--panel);border:1px solid var(--line);border-radius:4px;
+    backdrop-filter:blur(14px);padding:18px 18px 16px}
+  .controls h3{font-family:'Playfair Display',serif;font-size:13px;font-weight:600;
+    letter-spacing:.02em;margin-bottom:14px;color:var(--white);
+    display:flex;align-items:center;gap:8px}
+  .controls h3::before{content:"";width:14px;height:1px;background:var(--sage)}
+  .ctrl{margin-bottom:16px}
+  .ctrl:last-child{margin-bottom:0}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(224,240,208,.7);
+    margin-bottom:9px;font-weight:700}
+  .ctrl label .val{font-family:'Courier New',monospace;color:var(--mint);letter-spacing:0;font-weight:400}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;
+    background:linear-gradient(90deg,var(--sage) var(--p,0%),rgba(224,240,208,.16) var(--p,0%));
+    outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--mint);border:2px solid var(--forest);box-shadow:0 0 0 0 rgba(143,188,143,.45);
+    transition:box-shadow .25s ease, transform .15s ease}
+  input[type=range]:active::-webkit-slider-thumb{box-shadow:0 0 0 7px rgba(143,188,143,.22);transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--mint);
+    border:2px solid var(--forest);cursor:pointer}
+
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:rgba(0,0,0,.35);
+    border:1px solid var(--line);border-radius:3px;padding:3px}
+  .seg button{font-family:'Lato';font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    padding:8px 4px;border:none;background:transparent;color:rgba(224,240,208,.6);cursor:pointer;
+    border-radius:2px;transition:.2s;font-weight:700}
+  .seg button:hover{color:var(--white)}
+  .seg button.on{background:var(--sage);color:var(--ink)}
+
+  .btn{font-family:'Lato';font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    padding:12px 14px;border:1px solid var(--line-strong);background:transparent;color:var(--white);
+    cursor:pointer;border-radius:3px;transition:.22s cubic-bezier(.2,.7,.2,1);width:100%;
+    display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn:hover{transform:translateY(-1px) scale(1.015);background:rgba(143,188,143,.12);border-color:var(--sage)}
+  .btn:active{transform:scale(.99)}
+  .btn.solid{background:var(--mint);color:var(--ink);border-color:var(--mint)}
+  .btn.solid:hover{background:var(--white)}
+  .btn svg{width:14px;height:14px}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+  .hint{font-family:'Courier New',monospace;font-size:9.5px;color:rgba(224,240,208,.4);
+    letter-spacing:.03em;margin-top:14px;line-height:1.6}
+
+  /* Footer strip */
+  .footer{grid-column:2/4;grid-row:3;align-self:end;justify-self:end;display:flex;gap:20px;
+    font-family:'Courier New',monospace;font-size:10px;color:rgba(224,240,208,.4);letter-spacing:.06em}
+  .footer b{color:var(--sage);font-weight:400}
+
+  /* Toast */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:20;
+    background:var(--mint);color:var(--ink);font-family:'Lato';font-weight:700;font-size:12px;
+    letter-spacing:.06em;padding:12px 20px;border-radius:3px;opacity:0;pointer-events:none;
+    transition:.4s cubic-bezier(.2,.7,.2,1);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* Loader */
+  #loader{position:fixed;inset:0;z-index:50;background:var(--ink);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:20px;transition:opacity .8s ease}
+  #loader.hide{opacity:0;pointer-events:none}
+  #loader .lg{font-family:'Playfair Display',serif;font-size:34px;letter-spacing:.02em}
+  #loader .lg .zero{font-style:italic;color:var(--sage)}
+  #loader .bar{width:180px;height:2px;background:rgba(224,240,208,.15);overflow:hidden;border-radius:2px}
+  #loader .bar i{display:block;height:100%;width:40%;background:var(--sage);animation:load 1.1s infinite ease-in-out}
+  @keyframes load{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+  #loader small{font-family:'Courier New',monospace;font-size:10px;color:rgba(224,240,208,.45);letter-spacing:.15em;text-transform:uppercase}
+
+  /* Mobile bottom sheet */
+  .sheet{display:none}
+  @media (max-width:900px){
+    .hud{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;padding:14px;gap:10px}
+    .brand{grid-column:1;grid-row:1}
+    .brand h1{font-size:34px}
+    .brand .sub,.brand .rule,.brand .meta{display:none}
+    .stats{display:none}
+    .stats.open{display:block;position:fixed;top:64px;right:14px;width:calc(100% - 28px);z-index:8}
+    .controls{display:none}
+    .footer{display:none}
+    .sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:9;
+      background:var(--panel);backdrop-filter:blur(16px);border-top:1px solid var(--line-strong);
+      transform:translateY(calc(100% - 58px));transition:transform .45s cubic-bezier(.2,.7,.2,1);
+      padding:0 16px 16px}
+    .sheet.open{transform:translateY(0)}
+    .sheet .handle{height:58px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+    .sheet .handle .grip{display:flex;flex-direction:column;gap:3px}
+    .sheet .handle .grip i{width:26px;height:2px;background:var(--sage);border-radius:2px}
+    .sheet .handle .t{font-family:'Playfair Display',serif;font-size:14px}
+    .sheet .handle .t b{color:var(--mint);font-style:italic;font-weight:400}
+    .sheet .body{padding-top:6px}
+    .sheet .body .hint{display:none}
+    .sheet .btn-row{grid-template-columns:1fr 1fr}
+    .sheet .ctrl{margin-bottom:14px}
+    .stats-toggle{position:fixed;top:14px;right:14px;z-index:9;background:var(--panel);
+      border:1px solid var(--line);color:var(--sage);width:38px;height:38px;border-radius:3px;
+      font-family:'Courier New',monospace;font-size:15px;cursor:pointer;backdrop-filter:blur(14px)}
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="hud">
+  <div class="brand">
+    <div class="kicker">3D Environment Pack · Vol.09</div>
+    <h1>BIOSPHERE<br><span class="zero">09</span></h1>
+    <div class="sub">Botanical Terrarium Kit — morphing foliage, moss stone &amp; fog-filled blown glass.</div>
+    <div class="rule"></div>
+    <div class="meta">
+      FORMAT · <b>glTF 2.0 / .glb</b><br>
+      MATERIALS · <b>PBR Filmic</b><br>
+      MORPH · <b>Seed → Mature</b>
+    </div>
+  </div>
+
+  <aside class="controls" id="controls">
+    <h3>Scene Console</h3>
+    <div class="ctrl">
+      <label>Growth Stage <span class="val" id="growthVal">0%</span></label>
+      <input type="range" id="growth" min="0" max="100" value="0" style="--p:0%">
+    </div>
+    <div class="ctrl">
+      <label>Inspection View</label>
+      <div class="seg" id="viewSeg">
+        <button data-view="material" class="on">Material</button>
+        <button data-view="wireframe">Wireframe</button>
+        <button data-view="lighting">Lighting</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <label>Actions</label>
+      <div class="btn-row">
+        <button class="btn solid" id="btnGlb">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+          GLB
+        </button>
+        <button class="btn" id="btnPoster">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="12" cy="12" r="3"/></svg>
+          Poster
+        </button>
+      </div>
+    </div>
+    <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan. Growth drives vertex morph targets on all plant species.</div>
+  </aside>
+
+  <aside class="stats" id="stats">
+    <h2>Asset Inventory <span>5 SPECIES</span></h2>
+    <div class="stat-row"><span class="k">MESHES</span><span class="v" id="sMesh">—</span></div>
+    <div class="stat-row"><span class="k">TRIANGLES</span><span class="v" id="sTri">—</span></div>
+    <div class="stat-row"><span class="k">TEXTURES</span><span class="v">3 procedural</span></div>
+    <div class="stat-row"><span class="k">GLASS IOR</span><span class="v">1.50 · bevel</span></div>
+    <div class="stat-row"><span class="k">FOG SYSTEM</span><span class="v">instanced</span></div>
+    <div class="stat-row"><span class="k">FPS</span><span class="v" id="sFps">—</span></div>
+    <div class="swatches">
+      <div class="sw" style="background:#2e4d33"><i>#2E4D33</i></div>
+      <div class="sw" style="background:#8fbc8f"><i>#8FBC8F</i></div>
+      <div class="sw" style="background:#e0f0d0"><i>#E0F0D0</i></div>
+    </div>
+  </aside>
+
+  <div class="footer">
+    <span>STUDIO · <b>PROCEDURAL BUILD</b></span>
+    <span>ENGINE · <b>THREE r150</b></span>
+    <span>EXPORT · <b>GLTFExporter</b></span>
+  </div>
+</div>
+
+<button class="stats-toggle" id="statsToggle" style="display:none">i</button>
+
+<div class="sheet" id="sheet">
+  <div class="handle" id="sheetHandle">
+    <div class="grip"><i></i><i></i></div>
+    <div class="t">Growth <b id="growthValM">0%</b></div>
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--sage)">▲</div>
+  </div>
+  <div class="body">
+    <div class="ctrl">
+      <label>Growth Stage <span class="val" id="growthVal2">0%</span></label>
+      <input type="range" id="growthM" min="0" max="100" value="0" style="--p:0%">
+    </div>
+    <div class="ctrl">
+      <div class="seg" id="viewSegM">
+        <button data-view="material" class="on">Material</button>
+        <button data-view="wireframe">Wireframe</button>
+        <button data-view="lighting">Lighting</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn solid" id="btnGlbM">Download GLB</button>
+      <button class="btn" id="btnPosterM">Poster Frame</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="loader">
+  <div class="lg">BIOSPHERE <span class="zero">09</span></div>
+  <div class="bar"><i></i></div>
+  <small>Compositing ecosystem…</small>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================ RENDERER / SCENE ============================ */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0c110d, 0.055);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(3.1, 1.55, 3.4);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.target.set(0, 0.95, 0);
+controls.minDistance = 2.2;
+controls.maxDistance = 8;
+controls.maxPolarAngle = Math.PI * 0.52;
+controls.autoRotate = !REDUCED;
+controls.autoRotateSpeed = 0.5;
+
+/* ============================ STUDIO ENV (procedural) ============================ */
+function buildEnvTexture(){
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0,0,0,512);
+  g.addColorStop(0,'#c9d6c2'); g.addColorStop(0.42,'#6c7c6e');
+  g.addColorStop(0.62,'#2b3a2e'); g.addColorStop(1,'#0b100c');
+  ctx.fillStyle = g; ctx.fillRect(0,0,1024,512);
+  // soft key light
+  const k = ctx.createRadialGradient(300,140,10,300,140,300);
+  k.addColorStop(0,'rgba(255,255,244,0.95)'); k.addColorStop(1,'rgba(255,255,244,0)');
+  ctx.fillStyle = k; ctx.fillRect(0,0,1024,512);
+  // cool fill
+  const f = ctx.createRadialGradient(760,300,10,760,300,260);
+  f.addColorStop(0,'rgba(150,190,170,0.5)'); f.addColorStop(1,'rgba(150,190,170,0)');
+  ctx.fillStyle = f; ctx.fillRect(0,0,1024,512);
+  const tex = new THREE.CanvasTexture(c);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+const envTex = buildEnvTexture();
+const envMap = pmrem.fromEquirectangular(envTex).texture;
+scene.environment = envMap;
+
+/* ============================ LIGHTS ============================ */
+const keyLight = new THREE.DirectionalLight(0xfff4e6, 2.2);
+keyLight.position.set(-4, 6, 3); scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0x9fc0a8, 0.7);
+fillLight.position.set(4, 1.5, -3); scene.add(fillLight);
+const rimLight = new THREE.DirectionalLight(0xdff0d0, 1.6);
+rimLight.position.set(0, 3, -5); scene.add(rimLight);
+const hemi = new THREE.HemisphereLight(0x2e4d33, 0x0a0d0a, 0.5); scene.add(hemi);
+
+/* ============================ PROCEDURAL TEXTURES ============================ */
+function noiseCanvas(size, oct){
+  const c = document.createElement('canvas'); c.width=c.height=size;
+  const ctx = c.getContext('2d'); const img = ctx.createImageData(size,size);
+  const rnd = (x,y,s)=>{const n=Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453;return n-Math.floor(n);};
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    let v=0,amp=1,f=1,tot=0;
+    for(let o=0;o<oct;o++){
+      const fx=x*f/size, fy=y*f/size;
+      const x0=Math.floor(fx),y0=Math.floor(fy);
+      const tx=fx-x0,ty=fy-y0;
+      const a=rnd(x0,y0,o),b=rnd(x0+1,y0,o),cc=rnd(x0,y0+1,o),d=rnd(x0+1,y0+1,o);
+      const u=tx*tx*(3-2*tx),w=ty*ty*(3-2*ty);
+      v+=amp*(a*(1-u)*(1-w)+b*u*(1-w)+cc*(1-u)*w+d*u*w);
+      tot+=amp; amp*=0.5; f*=2;
+    }
+    v/=tot; const p=(y*size+x)*4;
+    img.data[p]=img.data[p+1]=img.data[p+2]=v*255; img.data[p+3]=255;
+  }
+  ctx.putImageData(img,0,0); return c;
+}
+function normalFromHeight(hc, strength){
+  const s = hc.width, ctx = hc.getContext('2d');
+  const src = ctx.getImageData(0,0,s,s).data;
+  const out = document.createElement('canvas'); out.width=out.height=s;
+  const octx = out.getContext('2d'); const oimg = octx.createImageData(s,s);
+  const H=(x,y)=>src[(((y+s)%s)*s+((x+s)%s))*4]/255;
+  for(let y=0;y<s;y++)for(let x=0;x<s;x++){
+    const dx=(H(x+1,y)-H(x-1,y))*strength, dy=(H(x,y+1)-H(x,y-1))*strength;
+    const nx=-dx, ny=-dy, nz=1; const l=Math.hypot(nx,ny,nz);
+    const p=(y*s+x)*4;
+    oimg.data[p]=(nx/l*0.5+0.5)*255; oimg.data[p+1]=(ny/l*0.5+0.5)*255;
+    oimg.data[p+2]=(nz/l*0.5+0.5)*255; oimg.data[p+3]=255;
+  }
+  octx.putImageData(oimg,0,0); return out;
+}
+function leafAtlas(){
+  const c=document.createElement('canvas'); c.width=c.height=512;
+  const ctx=c.getContext('2d'); ctx.clearRect(0,0,512,512);
+  const cell=256;
+  const drawLeaf=(ox,oy,base,mid,tip,vein)=>{
+    ctx.save(); ctx.translate(ox+cell/2, oy+cell/2);
+    const grd=ctx.createLinearGradient(0,-cell/2,0,cell/2);
+    grd.addColorStop(0,mid); grd.addColorStop(0.5,base); grd.addColorStop(1,tip);
+    ctx.fillStyle=grd;
+    ctx.beginPath();
+    ctx.moveTo(0,-cell*0.42);
+    ctx.bezierCurveTo(cell*0.34,-cell*0.16, cell*0.26,cell*0.30, 0,cell*0.42);
+    ctx.bezierCurveTo(-cell*0.26,cell*0.30, -cell*0.34,-cell*0.16, 0,-cell*0.42);
+    ctx.fill();
+    // central vein + side veins (darker = baked AO feel)
+    ctx.strokeStyle=vein; ctx.lineWidth=2; ctx.globalAlpha=0.5;
+    ctx.beginPath(); ctx.moveTo(0,-cell*0.4); ctx.lineTo(0,cell*0.4); ctx.stroke();
+    for(let i=-4;i<=4;i++){
+      const yy=i*cell*0.09; const w=Math.sqrt(Math.max(0,1-Math.pow(i/5,2)))*cell*0.28;
+      ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(w,yy+cell*0.05); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(-w,yy+cell*0.05); ctx.stroke();
+    }
+    ctx.globalAlpha=1; ctx.restore();
+  };
+  drawLeaf(0,0,'#2e4d33','#4f7a52','#1c3322','#16281a');
+  drawLeaf(cell,0,'#3a5f3f','#6f9a6c','#22402a','#1a3020');
+  drawLeaf(0,cell,'#456b46','#8fbc8f','#2c4a30','#233d28');
+  drawLeaf(cell,cell,'#557a4f','#a7cf9a','#35552f','#2a4622');
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t;
+}
+const heightCanvas = noiseCanvas(256, 5);
+const rockNormal = new THREE.CanvasTexture(normalFromHeight(heightCanvas, 3.0));
+const rockRough  = new THREE.CanvasTexture(noiseCanvas(256, 4));
+rockNormal.wrapS=rockNormal.wrapT=rockRough.wrapS=rockRough.wrapT=THREE.RepeatWrapping;
+const leafTex = leafAtlas();
+
+/* ============================ MATERIALS ============================ */
+const glassMat = new THREE.MeshPhysicalMaterial({
+  color:0xdfeee0, metalness:0, roughness:0.06, transmission:1, thickness:0.55,
+  ior:1.5, clearcoat:0.6, clearcoatRoughness:0.15, envMapIntensity:1.1,
+  attenuationColor:new THREE.Color(0xcfe6cf), attenuationDistance:3.5,
+  transparent:true, side:THREE.DoubleSide
+});
+const glassBaseOpacity = 1;
+const soilMat = new THREE.MeshStandardMaterial({ color:0x241a12, roughness:1, metalness:0 });
+const rockMossMat = new THREE.MeshStandardMaterial({
+  color:0x3c5a34, roughness:1, metalness:0, normalMap:rockNormal, roughnessMap:rockRough
+});
+rockNormal.repeat.set(2,2); rockRough.repeat.set(2,2);
+const rockBareMat = new THREE.MeshStandardMaterial({
+  color:0x5a5a55, roughness:0.95, metalness:0, normalMap:rockNormal, roughnessMap:rockRough
+});
+const pebbleMat = new THREE.MeshStandardMaterial({ color:0x6b6b62, roughness:0.85, metalness:0, normalMap:rockNormal });
+
+function leafMaterial(base, emissive){
+  return new THREE.MeshStandardMaterial({
+    map:leafTex, alphaTest:0.5, side:THREE.DoubleSide, roughness:0.72, metalness:0,
+    color:0xffffff, emissive:new THREE.Color(emissive||0x1a2e1c), emissiveIntensity:0.12,
+    envMapIntensity:0.6
+  });
+}
+const fernMat = leafMaterial('#2e4d33', 0x14261a);
+const mossMat = new THREE.MeshStandardMaterial({ color:0x5a8a4f, roughness:1, metalness:0, emissive:0x1c3320, emissiveIntensity:0.1 });
+const flowerMat = new THREE.MeshStandardMaterial({ color:0xe0f0d0, roughness:0.5, metalness:0, emissive:0x5a7a4a, emissiveIntensity:0.25 });
+const stemMat = new THREE.MeshStandardMaterial({ color:0x33522f, roughness:0.8, metalness:0 });
+
+/* ============================ TERRARIUM VESSEL (lathe, beveled) ============================ */
+const vessel = new THREE.Group();
+const profile = [
+  [0.00,0.00],[0.78,0.00],[0.80,0.06],[0.82,0.12],[0.86,0.30],[0.94,0.55],
+  [1.00,0.85],[1.02,1.15],[1.00,1.45],[0.94,1.70],[0.86,1.86],[0.80,1.92],
+  [0.80,1.98],[0.84,2.02],[0.86,2.06],[0.84,2.08],[0.78,2.06],[0.76,2.00],
+  [0.72,1.94],[0.66,1.88],[0.60,1.80],[0.56,1.70],[0.55,1.60],[0.55,1.55]
+];
+const lathePts = profile.map(p=>new THREE.Vector2(p[0], p[1]));
+const glassGeo = new THREE.LatheGeometry(lathePts, 64);
+glassGeo.computeVertexNormals();
+const glass = new THREE.Mesh(glassGeo, glassMat);
+vessel.add(glass);
+
+// Soil disc inside
+const soilGeo = new THREE.CylinderGeometry(0.55, 0.5, 0.14, 40);
+const soil = new THREE.Mesh(soilGeo, soilMat);
+soil.position.y = 0.16; vessel.add(soil);
+scene.add(vessel);
+
+/* ============================ ROCKS (icosahedron deformed) ============================ */
+function rockGeo(seed, detail){
+  const g = new THREE.IcosahedronGeometry(1, detail);
+  const pos = g.attributes.position; const v = new THREE.Vector3();
+  for(let i=0;i<pos.count;i++){
+    v.fromBufferAttribute(pos,i);
+    const n = Math.sin(v.x*4+seed)*0.12 + Math.cos(v.y*5+seed*1.7)*0.1 + Math.sin(v.z*3.3+seed)*0.08;
+    v.multiplyScalar(1+n); pos.setXYZ(i,v.x,v.y,v.z);
+  }
+  g.computeVertexNormals(); return g;
+}
+const rockGroup = new THREE.Group();
+const rockDefs = [
+  {m:rockMossMat,p:[-0.28,0.30,0.14],s:[0.34,0.24,0.30],r:[0.3,0.6,0.2],d:1},
+  {m:rockBareMat,p:[0.30,0.28,-0.16],s:[0.28,0.22,0.26],r:[0.1,1.2,0.4],d:1},
+  {m:rockMossMat,p:[0.05,0.26,0.30],s:[0.22,0.16,0.20],r:[0.7,0.2,0.5],d:0},
+  {m:pebbleMat,p:[-0.34,0.24,-0.20],s:[0.12,0.10,0.12],r:[0,0.4,0.1],d:0},
+  {m:pebbleMat,p:[0.40,0.24,0.20],s:[0.10,0.09,0.11],r:[0.2,0.9,0.3],d:0},
+  {m:rockBareMat,p:[-0.10,0.28,-0.32],s:[0.20,0.18,0.18],r:[0.4,0.1,0.6],d:1}
+];
+rockDefs.forEach((r,i)=>{
+  const mesh = new THREE.Mesh(rockGeo(i*3.1+1, r.d), r.m);
+  mesh.position.set(...r.p); mesh.scale.set(...r.s); mesh.rotation.set(...r.r);
+  rockGroup.add(mesh);
+});
+vessel.add(rockGroup);
+
+/* ============================ PLANT GEOMETRY (morph targets) ============================ */
+const plants = new THREE.Group();
+vessel.add(plants);
+const morphPlants = []; // {mesh, base, morph, mat, sway, phase}
+
+function applySway(mat, phase){
+  mat.onBeforeCompile = (shader)=>{
+    shader.uniforms.uTime = { value:0 };
+    shader.uniforms.uGrowth = { value:0 };
+    mat.userData.shader = shader;
+    shader.vertexShader = 'uniform float uTime;\nuniform float uGrowth;\n' + shader.vertexShader;
+    shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>',
+      `#include <begin_vertex>
+       float sw = sin(uTime*1.1 + uGrowth*2.0 + ${phase.toFixed(2)}) * 0.035;
+       transformed.x += sw * transformed.y;
+       transformed.z += sw * transformed.y * 0.6;`);
+  };
+  mat.customProgramCacheKey = ()=> 'sway'+phase.toFixed(2);
+}
+
+/* --- Fern: pinnate fronds, morph = unfurling + scaling --- */
+function makeFern(pos, scale, rot){
+  const base = new THREE.BufferGeometry();
+  const morph = new THREE.BufferGeometry();
+  const bPos=[], mPos=[];
+  const pinnae = 9;
+  for(let side=-1; side<=1; side+=2){
+    for(let i=0;i<pinnae;i++){
+      const t=i/(pinnae-1);
+      const y=0.15+t*0.85;
+      const len=(1-Math.pow(Math.abs(t-0.5)*2,1.4))*0.42+0.05;
+      const px=side*len*0.5;
+      // quad corners
+      const w=0.09*(1-t*0.5);
+      const corners=[[px-w,y],[px+w,y],[px+w,y+len*0.6],[px-w,y+len*0.6]];
+      corners.forEach((c,ci)=>{
+        const bx=0, by=0.02, bz=0; // seed: tiny bud at center
+        bPos.push(bx,by,bz);
+        mPos.push(c[0], y, 0);
+      });
+    }
+  }
+  base.setAttribute('position', new THREE.Float32BufferAttribute(bPos,3));
+  morph.setAttribute('position', new THREE.Float32BufferAttribute(mPos,3));
+  base.morphAttributes.position=[morph.attributes.position];
+  base.morphTargetsRelative=false;
+  const geo=base;
+  const mat=fernMat.clone();
+  applySway(mat, Math.random()*6.28);
+  const mesh=new THREE.Mesh(geo, mat);
+  mesh.morphTargetInfluences=[0];
+  mesh.position.set(...pos); mesh.scale.setScalar(scale); mesh.rotation.y=rot;
+  plants.add(mesh); morphPlants.push({mesh, mat});
+  return mesh;
+}
+/* --- Flower: stem + petals, morph = bloom --- */
+function makeFlower(pos, scale, rot){
+  const base=new THREE.BufferGeometry(), morph=new THREE.BufferGeometry();
+  const bPos=[], mPos=[];
+  const petals=6, h=0.55;
+  // stem as thin quad
+  const stem=[[ -0.02,0],[0.02,0],[0.02,h],[-0.02,h]];
+  stem.forEach(c=>{ bPos.push(0,0.02,0); mPos.push(c[0],c[1],0); });
+  // petal ring
+  for(let i=0;i<petals;i++){
+    const a=i/petals*Math.PI*2;
+    const cx=Math.cos(a)*0.16, cz=Math.sin(a)*0.16, cy=h;
+    const dir=[Math.cos(a),Math.sin(a)];
+    const quad=[[-0.05,0],[0.05,0],[0.05,0.18],[-0.05,0.18]];
+    quad.forEach(q=>{
+      bPos.push(0,0.02,0);
+      mPos.push(cx+q[0]*dir[1], cy+q[1]*0.6, cz-q[0]*dir[0]);
+    });
+  }
+  base.setAttribute('position', new THREE.Float32BufferAttribute(bPos,3));
+  morph.setAttribute('position', new THREE.Float32BufferAttribute(mPos,3));
+  base.morphAttributes.position=[morph.attributes.position];
+  base.morphTargetsRelative=false;
+  const mat=flowerMat.clone(); applySway(mat, Math.random()*6.28);
+  const mesh=new THREE.Mesh(base, mat); mesh.morphTargetInfluences=[0];
+  mesh.position.set(...pos); mesh.scale.setScalar(scale); mesh.rotation.y=rot;
+  plants.add(mesh); morphPlants.push({mesh, mat});
+  return mesh;
+}
+/* --- Vine: climbing curve, morph = extension --- */
+function makeVine(pos, scale, rot, dir){
+  const base=new THREE.BufferGeometry(), morph=new THREE.BufferGeometry();
+  const bPos=[], mPos=[]; const seg=14;
+  for(let i=0;i<seg;i++){
+    const t=i/seg; const y=0.1+t*1.1;
+    const r=0.05; const a=t*7;
+    const x=Math.cos(a)*r*dir, z=Math.sin(a)*r;
+    bPos.push(0,0.02,0); mPos.push(x,y,z);
+  }
+  base.setAttribute('position', new THREE.Float32BufferAttribute(bPos,3));
+  morph.setAttribute('position', new THREE.Float32BufferAttribute(mPos,3));
+  base.morphAttributes.position=[morph.attributes.position];
+  base.morphTargetsRelative=false;
+  const mat=stemMat.clone(); applySway(mat, Math.random()*6.28);
+  const mesh=new THREE.Mesh(base, mat); mesh.morphTargetInfluences=[0];
+  mesh.position.set(...pos); mesh.scale.setScalar(scale); mesh.rotation.y=rot;
+  plants.add(mesh); morphPlants.push({mesh, mat});
+  return mesh;
+}
+/* --- Moss: instanced tiny leaf blades --- */
+function makeMoss(){
+  const g=new THREE.BufferGeometry();
+  const bPos=[], mPos=[];
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2; const x=Math.cos(a)*0.06, z=Math.sin(a)*0.06;
+    g.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0, x,0,z, x*1.2,0.12,z*1.2],3));
+  }
+  const geo=new THREE.BufferGeometry();
+  const bP=[], mP=[];
+  for(let i=0;i<5;i++){
+    const a=i/5*Math.PI*2; const x=Math.cos(a)*0.05, z=Math.sin(a)*0.05;
+    bP.push(0,0,0, x*0.2,0,z*0.2, x*0.2,0.02,z*0.2);
+    mP.push(0,0,0, x,0.02,z, x*1.1,0.16,z*1.1);
+  }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(bP,3));
+  geo.morphAttributes.position=[new THREE.Float32BufferAttribute(mP,3)];
+  geo.morphTargetsRelative=false;
+  const mesh=new THREE.InstancedMesh(geo, mossMat, 26);
+  mesh.morphTargetInfluences=[0];
+  const m=new THREE.Matrix4(); const q=new THREE.Quaternion(); const s=new THREE.Vector3(); const p=new THREE.Vector3();
+  for(let i=0;i<26;i++){
+    const a=Math.random()*Math.PI*2; const rr=0.15+Math.random()*0.34;
+    p.set(Math.cos(a)*rr, 0.23+Math.random()*0.05, Math.sin(a)*rr);
+    q.setFromEuler(new THREE.Euler((Math.random()-0.5)*0.4, Math.random()*6.28, (Math.random()-0.5)*0.4));
+    s.setScalar(0.6+Math.random()*0.9);
+    m.compose(p,q,s); mesh.setMatrixAt(i,m);
+  }
+  mesh.instanceMatrix.needsUpdate=true;
+  plants.add(mesh); morphPlants.push({mesh, mat:mossMat, instanced:true});
+  return mesh;
+}
+
+makeFern([-0.15,0.24,0.10],0.9,0.4);
+makeFern([0.22,0.24,-0.05],1.1,2.1);
+makeFern([-0.02,0.24,-0.22],0.8,4.0);
+makeFlower([0.12,0.24,0.22],1.0,0.0);
+makeFlower([-0.26,0.24,-0.05],0.85,1.3);
+makeVine([0.0,0.24,0.0],1.0,0.5,1);
+makeVine([0.30,0.24,0.15],0.9,2.0,-1);
+makeMoss();
+
+/* ============================ FOG (instanced, respects glass) ============================ */
+function fogTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=128;
+  const ctx=c.getContext('2d'); const g=ctx.createRadialGradient(64,64,0,64,64,64);
+  g.addColorStop(0,'rgba(224,240,208,0.55)'); g.addColorStop(0.6,'rgba(200,224,200,0.18)');
+  g.addColorStop(1,'rgba(200,224,200,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+}
+const fogGeo=new THREE.PlaneGeometry(1,1);
+const fogMat=new THREE.MeshBasicMaterial({ map:fogTexture(), transparent:true, depthWrite:false, blending:THREE.NormalBlending, opacity:0 });
+const fogCount=40;
+const fog=new THREE.InstancedMesh(fogGeo, fogMat, fogCount);
+const fogData=[];
+{ const m=new THREE.Matrix4(); const q=new THREE.Quaternion(); const s=new THREE.Vector3(); const p=new THREE.Vector3();
+  for(let i=0;i<fogCount;i++){
+    const a=Math.random()*6.28, r=Math.random()*0.5;
+    const base={ a, r, y:0.35+Math.random()*1.15, sp:0.05+Math.random()*0.12, sc:0.35+Math.random()*0.55, ph:Math.random()*6.28 };
+    fogData.push(base);
+    p.set(Math.cos(a)*r, base.y, Math.sin(a)*r); s.setScalar(base.sc);
+    m.compose(p,q,s); fog.setMatrixAt(i,m);
+  }
+}
+scene.add(fog);
+
+/* ============================ DUST PARALLAX ============================ */
+const dustGeo=new THREE.BufferGeometry();
+const dustN=REDUCED?0:220; const dustPos=new Float32Array(dustN*3); const dustBase=new Float32Array(dustN*3);
+for(let i=0;i<dustN;i++){ dustBase[i*3]=(Math.random()-0.5)*10; dustBase[i*3+1]=Math.random()*5; dustBase[i*3+2]=(Math.random()-0.5)*10; }
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos,3));
+const dust=new THREE.Points(dustGeo, new THREE.PointsMaterial({ color:0x8fbc8f, size:0.02, transparent:true, opacity:0.4, depthWrite:false }));
+scene.add(dust);
+
+/* ============================ POSTER PLANE (in-scene for GLB) ============================ */
+const posterCanvas=document.createElement('canvas'); posterCanvas.width=1024; posterCanvas.height=512;
+const pctx=posterCanvas.getContext('2d');
+function drawPoster(){
+  pctx.fillStyle='#0c110d'; pctx.fillRect(0,0,1024,512);
+  const g=pctx.createRadialGradient(512,220,40,512,260,520);
+  g.addColorStop(0,'rgba(143,188,143,0.25)'); g.addColorStop(1,'rgba(12,17,13,0)');
+  pctx.fillStyle=g; pctx.fillRect(0,0,1024,512);
+  pctx.fillStyle='#e0f0d0'; pctx.font='700 92px "Playfair Display", serif'; pctx.fillText('BIOSPHERE',60,150);
+  pctx.font='italic 400 92px "Playfair Display", serif'; pctx.fillStyle='#8fbc8f'; pctx.fillText('09',600,150);
+  pctx.fillStyle='rgba(224,240,208,0.7)'; pctx.font='400 26px Lato, sans-serif';
+  pctx.fillText('BOTANICAL TERRARIUM KIT  ·  3D ENVIRONMENT PACK',62,196);
+  pctx.strokeStyle='rgba(143,188,143,0.4)'; pctx.lineWidth=1; pctx.strokeRect(40,40,944,432);
+}
+drawPoster();
+const posterTex=new THREE.CanvasTexture(posterCanvas); posterTex.colorSpace=THREE.SRGBColorSpace;
+const posterMesh=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.1), new THREE.MeshBasicMaterial({ map:posterTex }));
+posterMesh.position.set(0,3.4,-3.2); posterMesh.visible=false; scene.add(posterMesh);
+
+/* ============================ STATE / UI ============================ */
+let growthTarget=0, growthCur=0, viewMode='material';
+const growthSlider=document.getElementById('growth');
+const growthSliderM=document.getElementById('growthM');
+const growthVal=document.getElementById('growthVal');
+const growthValM=document.getElementById('growthValM');
+const growthVal2=document.getElementById('growthVal2');
+
+function setGrowth(v){
+  growthTarget=v/100;
+  [growthVal,growthValM,growthVal2].forEach(e=>e.textContent=v+'%');
+  [growthSlider,growthSliderM].forEach(s=>{ s.value=v; s.style.setProperty('--p',v+'%'); });
+}
+growthSlider.addEventListener('input',e=>setGrowth(+e.target.value));
+growthSliderM.addEventListener('input',e=>setGrowth(+e.target.value));
+
+function setView(mode){
+  viewMode=mode;
+  document.querySelectorAll('#viewSeg button, #viewSegM button').forEach(b=>b.classList.toggle('on', b.dataset.view===mode));
+  const wire = mode==='wireframe';
+  const lighting = mode==='lighting';
+  glassMat.wireframe=wire; glassMat.opacity = lighting?0.28:glassBaseOpacity; glassMat.transmission = lighting?0:1;
+  [fernMat,flowerMat,stemMat,mossMat].forEach(m=>m.wireframe=wire);
+  rockMossMat.wireframe=wire; rockBareMat.wireframe=wire; pebbleMat.wireframe=wire;
+  soilMat.wireframe=wire;
+  if(lighting){ scene.environment=null; } else { scene.environment=envMap; }
+  fogMat.visible = !wire;
+  keyLight.intensity = lighting?3.2:2.2;
+}
+document.querySelectorAll('#viewSeg button, #viewSegM button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view)));
+
+/* Toast */
+const toastEl=document.getElementById('toast');
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toastEl._t); toastEl._t=setTimeout(()=>toastEl.classList.remove('show'),2200); }
+
+/* GLB export */
+function downloadGLB(){
+  toast('Compositing .glb…');
+  const exporter=new GLTFExporter();
+  const exportScene=new THREE.Scene();
+  exportScene.add(vessel.clone(true));
+  exportScene.add(posterMesh.clone());
+  exporter.parse(exportScene, (buf)=>{
+    const blob=new Blob([buf],{type:'model/gltf-binary'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='biosphere-09-terrarium.glb'; a.click();
+    URL.revokeObjectURL(url); toast('biosphere-09-terrarium.glb downloaded');
+  }, (err)=>{ console.error(err); toast('Export failed'); }, { binary:true });
+}
+document.getElementById('btnGlb').addEventListener('click',downloadGLB);
+document.getElementById('btnGlbM').addEventListener('click',downloadGLB);
+
+/* Poster capture */
+function capturePoster(){
+  const w=1200,h=630; const oldW=innerWidth,oldH=innerHeight;
+  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  const savedGrowth=growthCur; growthCur=0.4; growthTarget=0.4; applyGrowth(0.4);
+  renderer.render(scene,camera);
+  renderer.domElement.toBlob((blob)=>{
+    const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='biosphere-09-poster.png'; a.click();
+    URL.revokeObjectURL(url); toast('Poster frame exported');
+    growthCur=savedGrowth; growthTarget=savedGrowth;
+    renderer.setSize(oldW,oldH,false); camera.aspect=oldW/oldH; camera.updateProjectionMatrix();
+  },'image/png');
+}
+document.getElementById('btnPoster').addEventListener('click',capturePoster);
+document.getElementById('btnPosterM').addEventListener('click',capturePoster);
+
+/* Mobile sheet + stats */
+const sheet=document.getElementById('sheet');
+document.getElementById('sheetHandle').addEventListener('click',()=>sheet.classList.toggle('open'));
+const statsToggle=document.getElementById('statsToggle');
+if(innerWidth<=900){ statsToggle.style.display='block'; }
+statsToggle.addEventListener('click',()=>document.getElementById('stats').classList.toggle('open'));
+
+/* Stats fill */
+(function(){
+  let tris=0, meshes=0;
+  scene.traverse(o=>{ if(o.isMesh){ meshes++; const g=o.geometry; tris += (g.index? g.index.count:g.attributes.position.count)/3; } });
+  document.getElementById('sMesh').textContent=meshes;
+  document.getElementById('sTri').textContent=Math.round(tris).toLocaleString();
+})();
+
+/* Parallax */
+let mx=0,my=0,tmx=0,tmy=0;
+addEventListener('pointermove',e=>{ tmx=(e.clientX/innerWidth-0.5); tmy=(e.clientY/innerHeight-0.5); });
+
+/* ============================ GROWTH APPLICATION ============================ */
+function applyGrowth(g){
+  morphPlants.forEach(p=>{ if(p.mesh.morphTargetInfluences) p.mesh.morphTargetInfluences[0]=g; });
+  fogMat.opacity = 0.12 + g*0.5;
+  glassMat.opacity = glassBaseOpacity;
+}
+
+/* ============================ LOOP ============================ */
+const clock=new THREE.Clock();
+let fpsAcc=0, fpsFrames=0, fpsTimer=0;
+let introT=0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=Math.min(clock.getDelta(),0.05); const t=clock.elapsedTime;
+
+  // intro
+  if(introT<1){ introT=Math.min(1,introT+dt/1.0); glassMat.opacity=glassBaseOpacity*introT; }
+
+  // growth easing
+  growthCur += (growthTarget-growthCur)*Math.min(1,dt*6);
+  applyGrowth(growthCur);
+
+  // sway uniforms
+  morphPlants.forEach(p=>{ if(p.mat.userData.shader){ p.mat.userData.shader.uniforms.uTime.value=t; p.mat.userData.shader.uniforms.uGrowth.value=growthCur; } });
+
+  // fog drift
+  if(!REDUCED){
+    const m=new THREE.Matrix4(); const q=new THREE.Quaternion(); const s=new THREE.Vector3(); const p=new THREE.Vector3();
+    for(let i=0;i<fogCount;i++){
+      const d=fogData[i]; const a=d.a+t*d.sp;
+      p.set(Math.cos(a)*d.r, d.y+Math.sin(t*0.3+d.ph)*0.05, Math.sin(a)*d.r);
+      q.setFromAxisAngle(new THREE.Vector3(0,1,0), -a);
+      s.setScalar(d.sc*(0.7+growthCur*0.6));
+      m.compose(p,q,s); fog.setMatrixAt(i,m);
+    }
+    fog.instanceMatrix.needsUpdate=true;
+    // dust parallax
+    const pos=dustGeo.attributes.position;
+    for(let i=0;i<dustN;i++){
+      pos.array[i*3]=dustBase[i*3]+Math.sin(t*0.2+i)*0.1 - mx*0.6;
+      pos.array[i*3+1]=dustBase[i*3+1]+Math.cos(t*0.15+i)*0.1 - my*0.4;
+      pos.array[i*3+2]=dustBase[i*3+2];
+    }
+    pos.needsUpdate=true;
+  }
+
+  // parallax camera micro-shift
+  mx+=(tmx-mx)*0.05; my+=(tmy-my)*0.05;
+  controls.update();
+  camera.position.x += (mx*0.15 - (camera.position.x-3.1))*0.0; // subtle handled by controls; keep orbit clean
+
+  renderer.render(scene,camera);
+
+  // fps
+  fpsFrames++; fpsTimer+=dt;
+  if(fpsTimer>=0.5){ document.getElementById('sFps').textContent=Math.round(fpsFrames/fpsTimer); fpsFrames=0; fpsTimer=0; }
+}
+animate();
+
+/* Auto growth animation to 100 over ~4s then settle to poster-friendly */
+if(!REDUCED){
+  let gt=0; const iv=setInterval(()=>{ gt+=2; setGrowth(Math.min(100,gt)); if(gt>=100) clearInterval(iv); },40);
+} else { setGrowth(60); }
+
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+  statsToggle.style.display = innerWidth<=900?'block':'none';
+});
+
+/* Hide loader */
+setTimeout(()=>{ document.getElementById('loader').classList.add('hide'); }, 700);
+</script>
+</body>
+</html>

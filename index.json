@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T05:00:22.611Z",
+  "generated_at": "2026-11-05T06:10:52.251Z",
   "schema": "schema/entry.schema.json",
   "count": 307,
   "categories": [
@@ -8438,11 +8438,11 @@
       "status": "polished",
       "summary": "A 6-second technical loop visualizing thermal expansion locking in aerospace joints. Minimalist CAD-style aesthetic with cyan heat accents, strict geometry, and precise typography.",
       "path": "prompts/motion-graphics/aerospace-thermo-structural-lock",
-      "preview": null,
+      "preview": "prompts/motion-graphics/aerospace-thermo-structural-lock/preview.png",
       "prompt": "prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.md",
       "extended": "prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/motion-graphics/aerospace-thermo-structural-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -8452,7 +8452,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 155946,
+          "gen_ms": 155946,
+          "ttft_ms": 2518,
+          "queue_wait_ms": 94,
+          "wall_ms": 158558,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/motion-graphics/aerospace-thermo-structural-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/motion-graphics/aerospace-thermo-structural-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 8,
+          "review_summary": "A highly polished, technical CAD-style visualization that perfectly captures the requested aesthetic and information density."
+        }
+      ]
     },
     {
       "id": "carbon-capture-scrubber-efficiency",
@@ -14153,11 +14183,11 @@
       "status": "polished",
       "summary": "High-fidelity 3D Botanical Terrarium Kit with morphing plants, realistic glass, and procedural textures in a single-file HTML studio.",
       "path": "prompts/assets/botanical-terrarium-kit",
-      "preview": null,
+      "preview": "prompts/assets/botanical-terrarium-kit/preview.png",
       "prompt": "prompts/assets/botanical-terrarium-kit/prompt.md",
       "extended": "prompts/assets/botanical-terrarium-kit/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/assets/botanical-terrarium-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -14167,7 +14197,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 307314,
+          "gen_ms": 307314,
+          "ttft_ms": 30233,
+          "queue_wait_ms": 60319,
+          "wall_ms": 458044,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/assets/botanical-terrarium-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/assets/botanical-terrarium-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 2,
+          "review_summary": "Screenshot captures a loading state with no 3D content, UI controls, or hero asset visible."
+        }
+      ]
     },
     {
       "id": "brine-station-kit",

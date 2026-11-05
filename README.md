@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 307 | 305 | 266 | 41 |
+| 307 | 307 | 266 | 41 |
 
 ## Quick start
 
@@ -2211,9 +2211,11 @@ A 6-second technical loop visualizing thermal expansion locking in aerospace joi
 
 [prompt](prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.md) · [extended](prompts/motion-graphics/aerospace-thermo-structural-lock/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/aerospace-thermo-structural-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.5s | 156s | 8 | [open](prompts/motion-graphics/aerospace-thermo-structural-lock/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3703,9 +3705,11 @@ High-fidelity 3D Botanical Terrarium Kit with morphing plants, realistic glass, 
 
 [prompt](prompts/assets/botanical-terrarium-kit/prompt.md) · [extended](prompts/assets/botanical-terrarium-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/botanical-terrarium-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 30s | 307s | 2 | [open](prompts/assets/botanical-terrarium-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
