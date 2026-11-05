@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Vellum Dust Settling — an editorial on manuscript conservation from Codex & Loom, where your breath-paced scroll clears the dust from the page." />
+<title>Vellum Dust Settling — Codex &amp; Loom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --vellum:#F5F2EB;
+    --ink:#3E362E;
+    --taupe:#8C7B6C;
+    --dust:#D4C5B3;
+    --measure:720px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:auto;}
+  body{
+    margin:0;
+    background:var(--vellum);
+    color:var(--ink);
+    font-family:'Lora',Georgia,'Times New Roman',serif;
+    font-size:1.125rem;
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* ---------- Vellum grain (static, high-frequency) ---------- */
+  .grain{
+    position:fixed;
+    inset:0;
+    z-index:1;
+    pointer-events:none;
+    opacity:.07;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Dust canvas overlay (above text, below any chrome) ---------- */
+  #dust{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:4;
+    pointer-events:none;
+    display:block;
+  }
+
+  /* ---------- Reading column ---------- */
+  .read{
+    position:relative;
+    z-index:2;
+    max-width:var(--measure);
+    margin:0 auto;
+    padding:0 1.5rem;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative;
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:16vh 0 20vh;
+  }
+
+  .kicker{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+    font-family:'Lora',serif;
+    font-size:.72rem;
+    font-weight:500;
+    letter-spacing:.32em;
+    text-transform:uppercase;
+    color:var(--taupe);
+    margin:0 0 1.5rem;
+  }
+  .kicker .rule{width:2.4rem;height:1px;background:var(--taupe);opacity:.6;}
+
+  .title{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:clamp(3.4rem,11vw,7.6rem);
+    line-height:.92;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    margin:0;
+    text-wrap:balance;
+  }
+  .title .line{display:block;}
+  .title .line.two{margin-left:.04em;}
+
+  .dek{
+    font-family:'Lora',serif;
+    font-style:italic;
+    font-size:1.18rem;
+    line-height:1.6;
+    color:var(--ink);
+    opacity:.85;
+    max-width:34ch;
+    margin:1.9rem 0 0;
+  }
+
+  .byline{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    gap:.4rem 1rem;
+    margin-top:2.2rem;
+    font-family:'Lora',serif;
+    font-size:.82rem;
+    letter-spacing:.02em;
+    color:var(--taupe);
+  }
+  .byline .name{color:var(--ink);font-weight:500;}
+  .byline .sep{opacity:.5;}
+
+  /* ---------- Breath cue ---------- */
+  .cue{
+    position:absolute;
+    left:0;
+    bottom:7vh;
+    display:flex;
+    align-items:center;
+    gap:.85rem;
+    font-family:'Lora',serif;
+    font-size:.78rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--taupe);
+    transition:opacity .5s ease;
+  }
+  .cue .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--taupe);
+    opacity:.55;
+    animation:breathe 4.2s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(.5);opacity:.25;}
+    50%{transform:scale(1.15);opacity:.7;}
+  }
+
+  /* ---------- Body prose ---------- */
+  .body{padding-bottom:22vh;}
+  .body p{margin:0 0 1.5em;}
+  .body p:last-child{margin-bottom:0;}
+
+  .lead::first-letter{
+    float:left;
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:4.6rem;
+    line-height:.72;
+    padding:.06em .12em 0 0;
+    color:var(--ink);
+  }
+
+  .chapter{
+    margin:6em 0 2.2em;
+    display:flex;
+    align-items:baseline;
+    gap:1.1rem;
+  }
+  .chapter .num{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:1.15rem;
+    color:var(--taupe);
+    white-space:nowrap;
+  }
+  .chapter .rule{flex:1;height:1px;background:var(--taupe);opacity:.35;transform:translateY(-.35em);}
+  .chapter .h{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:600;
+    font-size:2.5rem;
+    line-height:1.05;
+    letter-spacing:-.02em;
+    color:var(--ink);
+    margin:0;
+    white-space:nowrap;
+  }
+
+  .pull{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:clamp(1.9rem,5.2vw,3rem);
+    line-height:1.18;
+    letter-spacing:-.01em;
+    color:var(--ink);
+    max-width:800px;
+    margin:2.8em 0;
+    padding-left:1.4rem;
+    border-left:2px solid var(--taupe);
+  }
+  .pull .cite{
+    display:block;
+    margin-top:.9rem;
+    font-family:'Lora',serif;
+    font-style:normal;
+    font-size:.8rem;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--taupe);
+  }
+
+  .colophon{
+    margin-top:7em;
+    padding-top:1.8rem;
+    border-top:1px solid rgba(140,123,108,.35);
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:.6rem 1.5rem;
+    font-family:'Lora',serif;
+    font-size:.8rem;
+    letter-spacing:.04em;
+    color:var(--taupe);
+  }
+  .colophon .brand{font-family:'Cormorant Garamond',serif;font-size:1.05rem;letter-spacing:.06em;color:var(--ink);}
+
+  /* ---------- Reveal ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity 1s ease,transform 1s ease;}
+  .reveal.in{opacity:1;transform:none;}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:640px){
+    body{font-size:1rem;}
+    .read{max-width:90%;padding:0;}
+    .title{font-size:2.5rem;}
+    .chapter .h{font-size:2rem;white-space:normal;}
+    .chapter .num{font-size:1rem;}
+    .lead::first-letter{font-size:3.4rem;}
+    .cue{bottom:4vh;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .reveal{opacity:1;transform:none;transition:none;}
+    .cue .dot{animation:none;opacity:.5;}
+  }
+</style>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <canvas id="dust" aria-hidden="true"></canvas>
+
+  <main class="read">
+    <header class="hero">
+      <p class="kicker"><span class="rule"></span>Codex &amp; Loom · Conservation</p>
+      <h1 class="title" id="title" aria-label="Vellum Dust Settling">
+        <span class="line">Vellum</span>
+        <span class="line two">Dust Settling</span>
+      </h1>
+      <p class="dek">A field essay on the quiet physics of keeping the past legible — where your scroll becomes the breath that clears the page.</p>
+      <p class="byline">
+        <span class="name">The Conservator's Notebook</span>
+        <span class="sep">·</span>
+        <span>Essay No. 07</span>
+        <span class="sep">·</span>
+        <span>Winter Binding</span>
+      </p>
+      <div class="cue" id="cue" aria-hidden="true">
+        <span class="dot"></span>
+        <span>Scroll slowly to let the dust settle · breathe to read</span>
+      </div>
+    </header>
+
+    <section class="body">
+      <p class="lead reveal">In the conservation studio, the first thing you learn is not how to repair a page but how to wait. The vellum is old, and old things keep their own time. A leaf of calfskin, scraped thin and stretched over a frame, has spent centuries doing one thing very slowly: gathering dust. By the time a manuscript reaches your bench, that dust is no longer a nuisance. It is a record — of the rooms the book has slept in, of the hands that turned its pages, of the particular weather of four hundred winters.</p>
+
+      <p class="reveal">We do not brush it away at once. To clear a manuscript is to erase a small part of its biography. So the work is governed by a rhythm the older conservators called the breath: a slow, deliberate pace, neither rushed nor stalled. Too fast, and you lift the surface of the page along with the dust. Too slow, and the dust thickens until the words vanish beneath a haze of skin-flake and ash. The legible page lives in a narrow band between those two failures.</p>
+
+      <div class="chapter reveal">
+        <span class="num">I.</span>
+        <h2 class="h">The Physics of Forgetting</h2>
+        <span class="rule"></span>
+      </div>
+
+      <p class="reveal">Dust behaves like a crowd. Each grain is small enough to be carried by the faintest current of air, yet heavy enough to settle the moment that current dies. In a closed archive, the air is nearly still, and so the dust descends at the speed of thought — a few millimetres a day, a fine grey snow that no one ever sees falling. It is only disturbed by breath, by the sweep of a sleeve, by the opening of a door that has been shut for a generation.</p>
+
+      <p class="reveal">This is why a manuscript found in a sealed chest can read as if it were written yesterday, while one kept open on a lectern in a drafty chapel grows clouded within a decade. The difference is not the ink. It is the movement of air across the surface — the same principle that makes a window clear on a windy day and opaque in the calm. To conserve is, in part, to manage that movement. To decide how much breath the page may be given.</p>
+
+      <blockquote class="pull reveal">
+        The dust is not the enemy of the page. It is the page's memory of every hand that ever reached for it and did not touch.
+        <span class="cite">— Studio margin, attributed</span>
+      </blockquote>
+
+      <p class="reveal">When a manuscript is badly obscured, the conservator works by feel rather than by sight, because the sight is precisely what the dust has taken. You learn to read the texture under the haze — the raised grain of a hair follicle, the faint ridge where a ruling was scored with a blunt stylus. The eye is unreliable in the presence of so much settled air. Only patience survives.</p>
+
+      <div class="chapter reveal">
+        <span class="num">II.</span>
+        <h2 class="h">Breath as Instrument</h2>
+        <span class="rule"></span>
+      </div>
+
+      <p class="reveal">There is a moment in every treatment when the page begins to answer. You have been working for an hour, clearing a hand's width at a time, and the ink emerges not all at once but in patches, like a face surfacing under shallow water. The trick is to keep your own breathing steady, because a held breath makes the hand tremble, and a trembling hand is the one thing that can scar a vellum surface beyond repair.</p>
+
+      <p class="reveal">We are taught to treat the breath as an instrument — a metronome for the wrist. Fast breaths quicken the hand and risk the page; long, slow breaths slow the sweep and let the dust come up in a clean sheet. Somewhere in the middle is the tempo at which the words reappear whole, and finding it is less a matter of technique than of temperament. The nervous conservator rushes the reveal and loses a line of text. The careless one never arrives.</p>
+
+      <blockquote class="pull reveal">
+        A page is legible only in the narrow band between the dust that hides it and the breath that would take it with the dust.
+      </blockquote>
+
+      <p class="reveal">This is the paradox that governs the whole discipline: to preserve a thing you must keep disturbing it. Every act of conservation is a small violence, undertaken slowly enough to be forgiven. The vellum forgives because it is patient, and because it has already outlasted everyone who will ever read it. Your job is not to make it new. It is to let it be seen, once more, for exactly as long as it was meant to be seen.</p>
+
+      <div class="chapter reveal">
+        <span class="num">III.</span>
+        <h2 class="h">The Reader's Breath</h2>
+        <span class="rule"></span>
+      </div>
+
+      <p class="reveal">What follows, then, is not a page to be skimmed. It is a page to be breathed across. Scroll too quickly and the wind you raise will strip the dust clean off the surface — the text will snap into sharp, almost aggressive focus, and you will have read it the way one reads a sign: fast, and forgetting. Scroll too slowly and the dust will settle back over the words, softening them into a blur that resists the eye.</p>
+
+      <p class="reveal">Find the rhythm in between. It is not far from the pace of reading aloud to someone you love — unhurried, attentive, with room for the breath to fall and rise. In that tempo the dust hangs just above the surface, present but not obscuring, and the words stay legible without ever quite being clean. This is the conservation state we are always aiming for: not perfection, but presence.</p>
+
+      <p class="reveal">The manuscript will not thank you. It has no opinion about your pace. But somewhere in the archive, in a room that smells of linen and old glue, a page is being kept readable for the next reader by a hand that learned, long ago, to breathe before it touched. You are, for the length of this scroll, doing the same thing. The only difference is that here, the page is watching you back.</p>
+
+      <div class="colophon reveal">
+        <span class="brand">Codex &amp; Loom</span>
+        <span>Vellum Dust Settling · Conservation Series</span>
+        <span>Set in Cormorant Garamond &amp; Lora</span>
+      </div>
+    </section>
+  </main>
+
+<script>
+(function(){
+  "use strict";
+  var canvas = document.getElementById('dust');
+  var ctx = canvas.getContext('2d');
+  var cue = document.getElementById('cue');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var COLS = [
+    {r:140,g:123,b:108},  // warm taupe #8C7B6C
+    {r:212,g:197,b:179}   // light dust #D4C5B3
+  ];
+
+  var W = 0, H = 0, dpr = 1;
+  var particles = [];
+  var targets = [];
+  var targetIndex = 0;
+  var phase = 'assemble';
+  var startTime = 0;
+  var lastScroll = window.scrollY;
+  var scrollVel = 0;
+  var settle = 0;
+  var lastTime = performance.now();
+  var titleRect = {top:0,left:0,width:0,height:0};
+  var lastCueY = 0;
+  var lastCueT = 0;
+  var lastCue = 0;
+  var running = false;
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W*dpr);
+    canvas.height = Math.floor(H*dpr);
+    canvas.style.width = W+'px';
+    canvas.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function sampleTitle(){
+    var pts = [];
+    var off = document.createElement('canvas');
+    var octx = off.getContext('2d');
+    var rect = document.getElementById('title').getBoundingClientRect();
+    var pad = 24;
+    var ow = Math.max(1, Math.ceil(rect.width + pad*2));
+    var oh = Math.max(1, Math.ceil(rect.height + pad*2));
+    off.width = ow; off.height = oh;
+    octx.clearRect(0,0,ow,oh);
+    octx.fillStyle = '#000';
+    octx.textBaseline = 'top';
+    var lines = document.querySelectorAll('#title .line');
+    for (var i=0;i<lines.length;i++){
+      var lr = lines[i].getBoundingClientRect();
+      var fs = parseFloat(getComputedStyle(lines[i]).fontSize);
+      octx.font = '600 '+fs+'px "Cormorant Garamond", serif';
+      octx.fillText(lines[i].textContent, (lr.left-rect.left)+pad, (lr.top-rect.top)+pad);
+    }
+    var data = octx.getImageData(0,0,ow,oh).data;
+    var step = Math.max(3, Math.floor(ow/150));
+    for (var y=0;y<oh;y+=step){
+      for (var x=0;x<ow;x+=step){
+        if (data[(y*ow+x)*4+3] > 130){
+          pts.push({ x: rect.left - pad + x, y: rect.top - pad + y });
+        }
+      }
+    }
+    for (var k=pts.length-1;k>0;k--){
+      var j=(Math.random()*(k+1))|0; var t=pts[k]; pts[k]=pts[j]; pts[j]=t;
+    }
+    return pts;
+  }
+
+  function buildTargets(){
+    targets = sampleTitle();
+    targetIndex = 0;
+    titleRect = document.getElementById('title').getBoundingClientRect();
+  }
+
+  function createParticle(){
+    var c = COLS[(Math.random()*COLS.length)|0];
+    var col = 'rgba('+c.r+','+c.g+','+c.b+',';
+    var p = {
+      x: rand(0,W), y: rand(-H*0.3, H),
+      vx:0, vy: rand(0.15,0.55),
+      size: rand(0.6,2.6),
+      base: rand(0.12,0.34),
+      phase: rand(0,Math.PI*2),
+      col: col,
+      tx:0, ty:0,
+      state:'ambient',
+      alpha:0,
+      wob: rand(0.4,1.4)
+    };
+    return p;
+  }
+
+  function initParticles(){
+    var count = W < 700 ? 100 : 260;
+    particles = [];
+    for (var i=0;i<count;i++){
+      var p = createParticle();
+      if (phase === 'assemble'){
+        p.state = 'target';
+        p.alpha = 0;
+      }
+      particles.push(p);
+    }
+  }
+
+  function assignTarget(p){
+    if (targets.length === 0){ p.state='ambient'; p.alpha=0; return; }
+    var t = targets[targetIndex % targets.length];
+    targetIndex++;
+    p.tx = t.x; p.ty = t.y;
+    p.state = 'target';
+  }
+
+  function resetParticle(p){
+    var c = COLS[(Math.random()*COLS.length)|0];
+    p.col = 'rgba('+c.r+','+c.g+','+c.b+',';
+    p.x = rand(0,W);
+    p.y = -rand(5, H*0.3);
+    p.vx = 0;
+    p.vy = rand(0.15,0.55);
+    p.size = rand(0.6,2.6);
+    p.base = rand(0.12,0.34);
+    p.phase = rand(0,Math.PI*2);
+    p.wob = rand(0.4,1.4);
+    p.state = 'ambient';
+    p.alpha = 0;
+  }
+
+  function step(dt){
+    var now = performance.now();
+    var dtms = Math.min(now - lastTime, 50);
+    lastTime = now;
+    var dtf = dtms / 16.6667;
+
+    var cur = window.scrollY;
+    var inst = (cur - lastScroll) / Math.max(dtms, 1);
+    lastScroll = cur;
+    scrollVel += (inst - scrollVel) * 0.18;
+    var speed = Math.min(Math.abs(scrollVel), 4.5);
+    var dir = scrollVel > 0 ? -1 : 1; // scroll down -> wind pushes up
+    var settleTarget = 1 - Math.min(speed/1.4, 1);
+    settle += (settleTarget - settle) * 0.06;
+    var blur = Math.min(settle * 2.6, 2.6);
+    document.querySelector('.read').style.filter = blur > 0.05 ? 'blur('+blur.toFixed(2)+'px)' : 'none';
+
+    // cue visibility
+    if (cue){
+      var y = window.scrollY;
+      var t = now;
+      if (t - lastCueT > 120){
+        lastCue = (y - lastCueY) / (t - lastCueT);
+        lastCueY = y; lastCueT = t;
+      }
+      var show = y < 40 && Math.abs(lastCue) < 0.12;
+      cue.style.opacity = show ? '1' : '0';
+    }
+
+    var elapsed = (now - startTime) / 1000;
+
+    for (var i=0;i<particles.length;i++){
+      var p = particles[i];
+
+      if (p.state === 'target'){
+        p.x += (p.tx - p.x) * 0.12 * dtf;
+        p.y += (p.ty - p.y) * 0.12 * dtf;
+        p.alpha += (p.base - p.alpha) * 0.05 * dtf;
+      } else {
+        var turb = Math.sin(now*0.0006 + p.phase) * 0.22 * p.wob;
+        p.vx += turb * 0.02 * dtf;
+        p.vy += 0.012 * dtf; // gentle gravity
+        if (speed > 0.15){
+          p.vx += (dir*0.7 - 0.5) * speed * 0.045 * dtf;
+          p.vy += dir * speed * 0.075 * dtf;
+        }
+        p.vx *= 0.98;
+        p.vy *= 0.995;
+        p.x += p.vx * dtf;
+        p.y += p.vy * dtf;
+        var aTarget = p.base * (0.35 + 0.65*settle);
+        if (speed > 0.15) aTarget *= (1 - Math.min(speed/2.2, 1));
+        p.alpha += (aTarget - p.alpha) * 0.05 * dtf;
+      }
+
+      if (p.x < -40 || p.x > W+40 || p.y > H+40 || p.y < -H*0.6){
+        if (phase === 'assemble'){ assignTarget(p); }
+        else { resetParticle(p); }
+      }
+    }
+
+    if (phase === 'assemble' && elapsed > 1.7){
+      phase = 'ambient';
+      for (var j=0;j<particles.length;j++){
+        particles[j].state = 'ambient';
+        particles[j].alpha = particles[j].base * (0.35 + 0.65*settle);
+      }
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for (var i=0;i<particles.length;i++){
+      var p = particles[i];
+      if (p.alpha <= 0.004) continue;
+      ctx.fillStyle = p.col + p.alpha.toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, 6.2832);
+      ctx.fill();
+    }
+  }
+
+  function loop(){
+    if (!running) return;
+    step();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  function start(){
+    if (reduce) return;
+    resize();
+    buildTargets();
+    initParticles();
+    startTime = performance.now();
+    lastTime = startTime;
+    running = true;
+    requestAnimationFrame(loop);
+  }
+
+  // Reveal-on-scroll for body text
+  var revealEls = document.querySelectorAll('.reveal');
+  if (reduce || !('IntersectionObserver' in window)){
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    revealEls.forEach(function(el){ io.observe(el); });
+  }
+
+  window.addEventListener('resize', function(){
+    if (reduce) return;
+    resize();
+    if (phase === 'assemble') buildTargets();
+  });
+
+  function boot(){
+    if (document.fonts && document.fonts.ready){
+      document.fonts.ready.then(start).catch(start);
+    } else {
+      start();
+    }
+  }
+  if (document.readyState === 'complete') boot();
+  else window.addEventListener('load', boot);
+})();
+</script>
+</body>
+</html>

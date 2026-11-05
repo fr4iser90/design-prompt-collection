@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<meta name="description" content="Platen Impact Lockup — a letterpress motion study." />
+<title>Platen Impact Lockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;600;700&family=Bodoni+Moda:ital,wght@1,900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F5F5F5;
+    --ink:#1A1A1A;
+    --red:#E63946;
+    --red-soft:rgba(230,57,70,.08);
+    --ease-fall:cubic-bezier(.5,0,.75,0);
+    --ease-soft:cubic-bezier(.16,1,.3,1);
+    --ease-impact:cubic-bezier(.12,.8,.18,1);
+    --ease-inout:cubic-bezier(.65,0,.35,1);
+    --ease-linear:linear;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{height:100%;}
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Archivo Narrow',system-ui,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    cursor:crosshair;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---- Full-bleed stage ---- */
+  .stage{
+    position:fixed;
+    inset:0;
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* faint radial vignette to lift the paper off the screen */
+    background:radial-gradient(120% 90% at 50% 42%, #FFFFFF 0%, var(--paper) 55%, #EDEDED 100%);
+  }
+
+  /* ---- Static paper grain (SVG turbulence) ---- */
+  .grain{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:.05;
+    pointer-events:none;
+    mix-blend-mode:multiply;
+    z-index:5;
+  }
+
+  /* ---- Press registration marks (corner crop marks) ---- */
+  .reg{position:fixed;width:22px;height:22px;z-index:6;pointer-events:none;opacity:.85;}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink);}
+  .reg::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-.5px);}
+  .reg::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-.5px);}
+  .reg.tl{top:22px;left:22px;}
+  .reg.tr{top:22px;right:22px;}
+  .reg.bl{bottom:22px;left:22px;}
+  .reg.br{bottom:22px;right:22px;}
+
+  /* ---- Faint red ghost of the platen, held on the sheet ---- */
+  .ghost{
+    position:absolute;
+    left:50%;top:50%;
+    transform:translate(-50%,-50%);
+    font-family:'Bodoni Moda',Georgia,serif;
+    font-weight:900;
+    font-style:italic;
+    font-size:clamp(10rem,20vw,30rem);
+    line-height:1;
+    color:var(--red-soft);
+    letter-spacing:0;
+    pointer-events:none;
+    z-index:1;
+  }
+
+  /* ---- Shake container (camera recoil) ---- */
+  .shake{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    will-change:transform;
+  }
+
+  /* ---- The falling glyph ---- */
+  .glyph{
+    position:relative;
+    display:block;
+    font-family:'Bodoni Moda',Georgia,serif;
+    font-weight:900;
+    font-style:italic;
+    font-size:clamp(10rem,20vw,30rem);
+    line-height:.9;
+    color:var(--ink);
+    transform:rotate(-2deg);
+    will-change:transform;
+    user-select:none;
+  }
+
+  /* ---- Red ink smear on the right serif ---- */
+  .smear{
+    position:absolute;
+    right:-.02em;
+    top:50%;
+    width:.42em;
+    height:.42em;
+    transform:translate(0,-50%) scale(.8);
+    transform-origin:center;
+    opacity:0;
+    pointer-events:none;
+    will-change:transform,opacity;
+  }
+  .smear svg{display:block;width:100%;height:100%;overflow:visible;}
+
+  /* ---- Sub-headline ---- */
+  .impact{
+    margin-top:clamp(.9rem,2.4vw,1.7rem);
+    font-family:'Archivo Narrow',system-ui,sans-serif;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.42em;
+    padding-left:.42em; /* optical balance for wide tracking */
+    font-size:clamp(.85rem,2.6vw,1.6rem);
+    color:var(--ink);
+    opacity:0;
+    filter:blur(10px);
+    will-change:opacity,filter;
+  }
+
+  /* ---- Press caption (editorial corner text) ---- */
+  .cap{
+    position:fixed;
+    z-index:6;
+    font-family:'Archivo Narrow',system-ui,sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.18em;
+    font-size:.62rem;
+    line-height:1.5;
+    color:var(--ink);
+    opacity:.42;
+    pointer-events:none;
+  }
+  .cap .red{color:var(--red);}
+  .cap-l{left:22px;bottom:20px;}
+  .cap-r{right:22px;bottom:20px;text-align:right;}
+  .cap-tl{left:22px;top:20px;}
+  .cap-tr{right:22px;top:20px;text-align:right;}
+
+  /* ---- Click flash feedback ---- */
+  .flash{
+    position:fixed;
+    inset:0;
+    z-index:7;
+    pointer-events:none;
+    background:var(--paper);
+    opacity:0;
+  }
+
+  /* ---- Slow-mo cue ---- */
+  .slowcue{
+    position:fixed;
+    left:50%;bottom:clamp(18px,4vh,34px);
+    transform:translate(-50%,10px);
+    z-index:8;
+    font-family:'Archivo Narrow',system-ui,sans-serif;
+    text-transform:uppercase;
+    letter-spacing:.3em;
+    font-size:.6rem;
+    color:var(--paper);
+    background:var(--ink);
+    padding:.5em .9em .5em 1.2em;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease,transform .25s ease;
+  }
+  .slowcue.show{opacity:.9;transform:translate(-50%,0);}
+
+  body.slow{cursor:wait;}
+
+  /* ================= KEYFRAMES (time-scaled via JS) ================= */
+
+  /* Phase 1 — accelerating fall (gravity) */
+  @keyframes fall{
+    from{transform:translateY(-105vh) rotate(-2deg);}
+    to  {transform:translateY(0) rotate(-2deg);}
+  }
+
+  /* Phase 2 — violent, decaying camera recoil */
+  @keyframes shake{
+    0%  {transform:translate(0,0);}
+    8%  {transform:translate(-9px,6px);}
+    16% {transform:translate(8px,-7px);}
+    24% {transform:translate(-7px,5px);}
+    32% {transform:translate(6px,-5px);}
+    42% {transform:translate(-5px,4px);}
+    52% {transform:translate(4px,-3px);}
+    64% {transform:translate(-3px,2px);}
+    76% {transform:translate(2px,-2px);}
+    88% {transform:translate(-1px,1px);}
+    100%{transform:translate(0,0);}
+  }
+
+  /* Phase 2 — ink smear bursts in at impact */
+  @keyframes smearIn{
+    0%  {opacity:0;transform:translate(0,-50%) scale(.78);}
+    18% {opacity:1;transform:translate(0,-50%) scale(1.02);}
+    100%{opacity:1;transform:translate(0,-50%) scale(1);}
+  }
+
+  /* Phase 3 — smear settles, opacity 1 -> .85 */
+  @keyframes smearSettle{
+    0%  {opacity:1;transform:translate(0,-50%) scale(1);}
+    100%{opacity:.85;transform:translate(0,-50%) scale(1);}
+  }
+
+  /* Phase 3 — IMPACT: blur-to-sharp, fade in */
+  @keyframes impactIn{
+    0%  {opacity:0;filter:blur(10px);letter-spacing:.6em;}
+    100%{opacity:1;filter:blur(0);letter-spacing:.42em;}
+  }
+
+  /* Phase 4 — clean linear fade to reset */
+  @keyframes fadeOut{
+    0%  {opacity:1;}
+    100%{opacity:0;}
+  }
+
+  /* ---- Reduced motion: hold the poster frame, no animation ---- */
+  @media (prefers-reduced-motion:reduce){
+    .glyph{transform:translateY(0) rotate(-2deg);}
+    .smear{opacity:.85;transform:translate(0,-50%) scale(1);}
+    .impact{opacity:1;filter:none;}
+    .ghost{opacity:1;}
+    .shake{transform:none;}
+    .slowcue{display:none;}
+    body{cursor:default;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- Paper grain -->
+  <svg class="grain" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="none">
+    <filter id="grainFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#grainFilter)"/>
+  </svg>
+
+  <!-- Corner registration marks -->
+  <span class="reg tl" aria-hidden="true"></span>
+  <span class="reg tr" aria-hidden="true"></span>
+  <span class="reg bl" aria-hidden="true"></span>
+  <span class="reg br" aria-hidden="true"></span>
+
+  <!-- Editorial caption corners -->
+  <div class="cap cap-tl" aria-hidden="true">Letterpress Study<br>No. 01</div>
+  <div class="cap cap-tr" aria-hidden="true">Platen Press<br><span class="red">Impact&nbsp;Lockup</span></div>
+  <div class="cap cap-l" aria-hidden="true">Bodoni Moda · 900 Italic<br>Archivo Narrow · Wide Tracking</div>
+  <div class="cap cap-r" aria-hidden="true">Ink&nbsp;<span class="red">#E63946</span><br>Paper&nbsp;#F5F5F5</div>
+
+  <!-- The composition -->
+  <main class="stage" id="stage" role="img"
+        aria-label="Platen Impact Lockup: a large italic serif letter A drops from above and strikes the paper, shaking the frame, with a red ink smear appearing on its right serif and the word IMPACT settling into focus below.">
+    <div class="ghost" aria-hidden="true">A</div>
+    <div class="shake" id="shake">
+      <span class="glyph" id="glyph">A
+        <span class="smear" id="smear" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M52 16 C 68 12, 88 20, 90 38 C 92 54, 82 70, 64 74 C 50 77, 38 70, 36 56 C 34 42, 40 22, 52 16 Z" fill="#E63946"/>
+            <circle cx="72" cy="80" r="5" fill="#E63946"/>
+            <circle cx="58" cy="86" r="3" fill="#E63946"/>
+            <circle cx="84" cy="66" r="2.4" fill="#E63946"/>
+            <circle cx="46" cy="82" r="1.6" fill="#E63946"/>
+          </svg>
+        </span>
+      </span>
+      <span class="impact" id="impact">Impact</span>
+    </div>
+  </main>
+
+  <!-- Feedback layers -->
+  <div class="flash" id="flash" aria-hidden="true"></div>
+  <div class="slowcue" id="slowcue" aria-hidden="true">Slow-Mo · Inspect Frame</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var stage   = document.getElementById('stage');
+  var shake   = document.getElementById('shake');
+  var glyph   = document.getElementById('glyph');
+  var smear   = document.getElementById('smear');
+  var impact  = document.getElementById('impact');
+  var flash   = document.getElementById('flash');
+  var slowcue = document.getElementById('slowcue');
+
+  var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Timeline (seconds) — 4s master loop
+  var T = {
+    fall:     {dur:0.8, ease:'var(--ease-fall)',      key:'fall',     el:glyph},
+    shake:    {dur:0.4, ease:'var(--ease-linear)',    key:'shake',    el:shake},
+    smearIn:  {dur:0.2, ease:'var(--ease-impact)',    key:'smearIn',  el:smear},
+    settle:   {dur:1.3, ease:'var(--ease-soft)',      key:'smearSettle', el:smear},
+    impactIn: {dur:1.3, ease:'var(--ease-soft)',      key:'impactIn', el:impact},
+    fadeOut:  {dur:0.5, ease:'var(--ease-linear)',    key:'fadeOut',  el:stage}
+  };
+  T.fall.start     = 0.0;
+  T.shake.start    = 0.8;
+  T.smearIn.start  = 0.8;
+  T.settle.start   = 1.2;
+  T.impactIn.start = 1.2;
+  T.fadeOut.start  = 3.5;
+  var LOOP = 4.0;
+
+  // Time control
+  var master = 0;          // accumulated timeline position (seconds)
+  var lastTs = null;       // last rAF timestamp
+  var targetScale = 1;     // 1 = normal, 0.1 = slow-mo
+  var scale = 1;           // smoothed timeScale (prevents jumps)
+
+  function setAnim(el, name, dur, ease, delay, fill){
+    el.style.animation = name + ' ' + dur + 's ' + ease + ' ' + delay + 's ' + fill;
+  }
+
+  // (Re)build the timeline at the current master position.
+  // Negative delays place each element at its correct phase so the loop is
+  // seamless and a mid-loop restart is always coherent.
+  function build(){
+    var m = master;
+    // Falling glyph: runs the whole loop, restarts at the loop boundary.
+    setAnim(glyph,   'fall',     T.fall.dur,     T.fall.ease,     m - T.fall.start,     'both');
+    // Shake & smear burst: fire only after the impact has occurred this cycle.
+    if(m >= T.shake.start){
+      setAnim(shake,  'shake',    T.shake.dur,    T.shake.ease,    m - T.shake.start,    'both');
+      setAnim(smear,  'smearIn',  T.smearIn.dur,  T.smearIn.ease,  m - T.smearIn.start,  'both');
+    }else{
+      shake.style.animation = 'none';
+      smear.style.animation = 'none';
+    }
+    // Settle phase
+    if(m >= T.settle.start){
+      setAnim(smear,  'smearSettle', T.settle.dur, T.settle.ease, m - T.settle.start, 'both');
+    }
+    // IMPACT headline
+    if(m >= T.impactIn.start){
+      setAnim(impact, 'impactIn', T.impactIn.dur, T.impactIn.ease, m - T.impactIn.start, 'both');
+    }else{
+      impact.style.animation = 'none';
+    }
+    // Global fade-out / reset
+    if(m >= T.fadeOut.start){
+      setAnim(stage,  'fadeOut',  T.fadeOut.dur,  T.fadeOut.ease,  m - T.fadeOut.start,  'both');
+    }else{
+      stage.style.animation = 'none';
+    }
+  }
+
+  function frame(ts){
+    if(lastTs === null) lastTs = ts;
+    var dt = (ts - lastTs) / 1000;
+    lastTs = ts;
+
+    // Smoothly ease the timeScale toward its target (no speed jumps).
+    scale += (targetScale - scale) * 0.12;
+
+    master += dt * scale;
+    while(master >= LOOP) master -= LOOP;
+
+    build();
+    requestAnimationFrame(frame);
+  }
+
+  // ---- Reduced motion: hold the poster frame, no loop ----
+  if(prefersReduced){
+    glyph.style.transform   = 'translateY(0) rotate(-2deg)';
+    smear.style.opacity     = '.85';
+    smear.style.transform   = 'translate(0,-50%) scale(1)';
+    impact.style.opacity    = '1';
+    impact.style.filter     = 'none';
+    impact.style.letterSpacing = '.42em';
+    // Static, legible poster — nothing to interact with.
+    return;
+  }
+
+  // ---- Interaction ----
+  // Click => reset to 0s with a subtle paper flash.
+  stage.addEventListener('click', function(){
+    master = 0;
+    flash.style.transition = 'none';
+    flash.style.opacity = '0.5';
+    // force reflow then fade the flash out
+    void flash.offsetWidth;
+    flash.style.transition = 'opacity .3s ease';
+    flash.style.opacity = '0';
+  });
+
+  // Hold => slow-mo (timeScale -> 0.1). Release => resume.
+  function slowOn(){ targetScale = 0.1; slowcue.classList.add('show'); }
+  function slowOff(){ targetScale = 1;   slowcue.classList.remove('show'); }
+
+  stage.addEventListener('mousedown', function(e){ if(e.button === 0) slowOn(); });
+  window.addEventListener('mouseup', slowOff);
+  window.addEventListener('mouseleave', slowOff);
+  stage.addEventListener('touchstart', function(){ slowOn(); }, {passive:true});
+  window.addEventListener('touchend', slowOff);
+  window.addEventListener('touchcancel', slowOff);
+
+  // Kick off the loop.
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

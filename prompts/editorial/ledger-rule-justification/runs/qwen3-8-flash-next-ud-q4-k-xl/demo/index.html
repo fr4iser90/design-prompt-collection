@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Ledger Rule Justification — an editorial essay on double-entry accounting as typographic structure, by Balance & Line.">
+<title>Ledger Rule Justification — Balance &amp; Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,700;0,800;0,900;1,500;1,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0F1419;
+  --paper:#E8E6E1;
+  --credit:#00A86B;
+  --debit:#FF4B4B;
+  --paper-dim:rgba(232,230,225,0.72);
+  --paper-faint:rgba(232,230,225,0.42);
+  --rule:rgba(232,230,225,0.20);
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --spine:var(--debit);
+  --pulse:0.5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.75;
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+::selection{background:var(--credit);color:#04120c}
+
+/* ---------- ambient layers ---------- */
+.bg-grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right,rgba(232,230,225,0.045) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(232,230,225,0.045) 1px,transparent 1px);
+  background-size:34px 34px;
+  -webkit-mask-image:radial-gradient(120% 90% at 50% 38%,#000 55%,transparent 100%);
+          mask-image:radial-gradient(120% 90% at 50% 38%,#000 55%,transparent 100%);
+}
+.bg-vignette{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(130% 100% at 50% 0%,transparent 45%,rgba(0,0,0,0.6) 100%);
+}
+.grain{
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:0.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- spine ---------- */
+.spine{position:fixed;top:0;bottom:0;left:50%;width:2px;z-index:30;pointer-events:none;transform:translateX(-50%);transform-origin:top center;will-change:transform}
+.spine::before{content:"";position:absolute;inset:0;background:var(--spine);box-shadow:0 0 10px var(--spine),0 0 26px var(--spine);animation:pulse 3.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:calc(0.5 + var(--pulse)*0.4)}50%{opacity:calc(0.8 + var(--pulse)*0.2)}}
+.spine-marker{position:absolute;left:50%;top:0;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:var(--spine);box-shadow:0 0 24px 5px var(--spine);opacity:0}
+.spine-marker.flash{animation:markerFlash .55s ease-out}
+@keyframes markerFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.3)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+
+/* ---------- ledger rules (fixed) ---------- */
+.rules{position:fixed;inset:0;z-index:25;pointer-events:none}
+.hrule{position:absolute;left:0;right:0;height:1px;opacity:0;background:linear-gradient(to right,transparent,rgba(232,230,225,0.16) 20%,rgba(232,230,225,0.28) 50%,rgba(232,230,225,0.16) 80%,transparent);transition:opacity .45s ease}
+.hrule.show{opacity:1}
+.hrule .tick{position:absolute;left:50%;top:0;width:15px;height:15px;transform:translate(-50%,-50%) rotate(45deg);border:1px solid var(--paper);opacity:.4;transition:opacity .3s,box-shadow .3s}
+.hrule .tick.lit{opacity:1;box-shadow:0 0 12px 2px var(--spine)}
+
+/* ---------- HUD ---------- */
+.hud{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:16px clamp(16px,4vw,44px);background:linear-gradient(to bottom,rgba(15,20,25,0.94),rgba(15,20,25,0));pointer-events:none}
+.hud>*{pointer-events:auto}
+.brand{display:flex;align-items:baseline;gap:.55rem;text-decoration:none;color:var(--paper)}
+.brand-mark{font-family:var(--serif);font-weight:700;font-size:1.15rem;letter-spacing:.01em;line-height:1}
+.brand-sub{font-size:.6rem;letter-spacing:.34em;text-transform:uppercase;color:var(--paper-faint)}
+.hud-center{display:flex;flex-direction:column;gap:5px;min-width:150px}
+.hud-line{display:flex;align-items:center;gap:8px;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
+.hud-line .dot{width:7px;height:7px;border-radius:50%}
+.hud-line .dot.debit{background:var(--debit)}
+.hud-line .dot.credit{background:var(--credit)}
+.hud-line .val{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--paper-dim)}
+.hud-bar{height:3px;width:100%;background:rgba(232,230,225,0.14);position:relative;overflow:hidden}
+.hud-bar span{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--spine);box-shadow:0 0 8px var(--spine);transition:width .12s linear}
+.hud-right{display:flex;align-items:center;gap:1.2rem;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase}
+.hud-right .stat{display:flex;gap:6px}
+.hud-right .stat b{font-weight:600;color:var(--paper-dim)}
+.sound{appearance:none;background:transparent;border:1px solid var(--rule);color:var(--paper);font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;padding:7px 11px;cursor:pointer;transition:border-color .25s,color .25s,background .25s;display:inline-flex;align-items:center;gap:7px}
+.sound:hover{border-color:var(--paper)}
+.sound .led{width:7px;height:7px;border-radius:50%;background:var(--paper-faint);transition:background .25s,box-shadow .25s}
+.sound.on .led{background:var(--credit);box-shadow:0 0 8px var(--credit)}
+
+/* ---------- layout ---------- */
+main{position:relative;z-index:10}
+.col{display:flex;flex-direction:column;gap:clamp(56px,11vh,140px);padding:clamp(24px,6vw,60px) clamp(20px,5vw,48px)}
+.col-left{align-items:flex-end;text-align:right;padding-right:clamp(40px,5vw,64px)}
+.col-right{align-items:flex-start;text-align:left;padding-left:clamp(40px,5vw,64px)}
+
+.entry{position:relative;max-width:46ch;opacity:0;transform:translateY(20px);transition:opacity .85s ease,transform .85s cubic-bezier(.2,.7,.2,1);padding:0 0 2px 0}
+.col-left .entry{transform:translateY(20px) translateX(-22px)}
+.col-right .entry{transform:translateY(20px) translateX(22px)}
+.entry.in{opacity:1;transform:none}
+.entry.snapped{animation:snapBounce .42s ease}
+@keyframes snapBounce{0%{transform:scale(1)}42%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+.entry::after{content:"";position:absolute;top:1.15rem;width:0;height:1px;background:var(--spine);box-shadow:0 0 8px var(--spine);opacity:0;transition:width .5s cubic-bezier(.2,.7,.2,1),opacity .5s}
+.col-left .entry::after{right:0}
+.col-right .entry::after{left:0}
+.entry.snapped::after{width:clamp(40px,4vw,66px);opacity:.95}
+
+.entry .tag{display:inline-flex;align-items:center;gap:8px;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;margin-bottom:14px;color:var(--paper-faint)}
+.entry .tag .mk{width:8px;height:8px;border-radius:50%;display:inline-block}
+.col-left .entry .tag .mk{background:var(--debit);box-shadow:0 0 8px var(--debit)}
+.col-right .entry .tag .mk{background:var(--credit);box-shadow:0 0 8px var(--credit)}
+.entry .tag .no{color:var(--paper-dim);letter-spacing:.12em}
+
+.entry h2{font-family:var(--serif);font-weight:700;font-size:clamp(1.55rem,2.5vw,2.25rem);line-height:1.12;letter-spacing:-.01em;margin:0 0 .55em;color:var(--paper)}
+.entry p{margin:0 0 1.05em;color:var(--paper-dim)}
+.entry p:last-child{margin-bottom:0}
+.entry strong{color:var(--paper);font-weight:600}
+.col-left .entry strong{color:#ffb3b3}
+.col-right .entry strong{color:#8ff0c6}
+.entry .num{font-variant-numeric:tabular-nums;color:var(--paper)}
+
+.pullquote{font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(1.5rem,2.7vw,2.3rem);line-height:1.32;margin:0;color:var(--paper)}
+.pullquote::before{content:"“";display:block;font-size:2.6rem;line-height:.4;color:var(--credit);margin-bottom:.15em}
+.pullquote .attr{display:block;margin-top:.9em;font-family:var(--mono);font-style:normal;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--paper-faint)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(100px,16vh,160px) 24px clamp(60px,10vh,90px)}
+.hero .kicker{font-size:.7rem;letter-spacing:.5em;text-transform:uppercase;color:var(--paper-faint);margin-bottom:26px}
+.hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(2.7rem,8.4vw,7rem);line-height:.98;letter-spacing:-.025em;margin:0;color:var(--paper)}
+.hero h1 .amp{font-style:italic;font-weight:500;color:var(--credit)}
+.hero .lede{max-width:56ch;margin:30px auto 0;color:var(--paper-dim);font-size:clamp(.9rem,1.4vw,1.02rem);line-height:1.85}
+.hero .meta{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:center;margin-top:34px;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--paper-faint)}
+.hero .meta span{display:flex;align-items:center;gap:8px}
+.hero .meta .d{width:6px;height:6px;border-radius:50%}
+.scroll-hint{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:12px;font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--paper-faint)}
+.scroll-hint .track{width:1px;height:44px;background:linear-gradient(var(--paper-faint),transparent);position:relative;overflow:hidden}
+.scroll-hint .track::after{content:"";position:absolute;top:0;left:0;width:100%;height:14px;background:var(--paper);animation:drop 1.9s ease-in-out infinite}
+@keyframes drop{0%{transform:translateY(-14px);opacity:0}30%{opacity:1}100%{transform:translateY(44px);opacity:0}}
+
+/* ---------- closing ---------- */
+.closing{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:clamp(90px,14vh,140px) 24px}
+.closing .balance{font-family:var(--serif);font-weight:800;font-size:clamp(3rem,11vw,8.5rem);line-height:.9;letter-spacing:-.03em;color:var(--credit);text-shadow:0 0 40px rgba(0,168,107,.35)}
+.closing .balance .eq{color:var(--paper-faint);font-weight:500}
+.closing .cap{margin-top:24px;font-size:.68rem;letter-spacing:.34em;text-transform:uppercase;color:var(--paper-faint)}
+.closing .rule-line{width:min(520px,80vw);height:1px;background:linear-gradient(to right,transparent,var(--credit),transparent);margin:34px auto 0}
+.closing .foot{margin-top:44px;font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:var(--paper-faint);max-width:44ch;line-height:2}
+
+/* ---------- footer ---------- */
+footer{position:relative;z-index:10;border-top:1px solid var(--rule);padding:clamp(40px,7vw,80px) clamp(20px,6vw,80px);display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}
+footer h3{font-family:var(--serif);font-weight:700;font-size:1.5rem;margin:0 0 14px;color:var(--paper)}
+footer p{color:var(--paper-dim);font-size:.85rem;margin:0;max-width:42ch}
+footer .col-f h4{font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--paper-faint);margin:0 0 14px;font-weight:500}
+footer .col-f ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+footer .col-f a{color:var(--paper-dim);text-decoration:none;font-size:.82rem;transition:color .2s}
+footer .col-f a:hover{color:var(--credit)}
+footer .col-f a .arw{color:var(--paper-faint)}
+footer .col-f a:hover .arw{color:var(--credit)}
+
+/* ---------- mobile ---------- */
+@media (max-width:767px){
+  .spine{display:none}
+  .rules{display:none}
+  .hud-center,.hud-right .stat{display:none}
+  .layout{border-left:3px solid var(--spine);box-shadow:2px 0 18px -6px var(--spine)}
+  .col{align-items:stretch;text-align:left;padding:36px 22px 36px 26px}
+  .col-left{align-items:stretch;text-align:left;padding:36px 22px 36px 26px}
+  .col-left .entry,.col-right .entry{transform:translateY(20px);max-width:none}
+  .col-left .entry.in,.col-right .entry.in{transform:none}
+  .entry::after{display:none}
+  .entry{max-width:none}
+  footer{grid-template-columns:1fr;gap:30px}
+  .hero .meta{gap:8px 16px}
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .spine::before{animation:none;opacity:.7}
+  .scroll-hint .track::after{animation:none}
+  .entry{transition:none}
+  .entry.snapped{animation:none}
+  .entry.snapped::after{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="spine" aria-hidden="true">
+  <span class="spine-marker" id="spineMarker"></span>
+</div>
+<div class="rules" id="rules" aria-hidden="true"></div>
+
+<header class="hud">
+  <a class="brand" href="#top" aria-label="Balance and Line — home">
+    <span class="brand-mark">Balance <span class="amp" style="font-style:italic">&amp;</span> Line</span>
+    <span class="brand-sub">Ledger No.04</span>
+  </a>
+  <div class="hud-center" aria-hidden="true">
+    <div class="hud-line"><span class="dot debit"></span> Debit <span class="val" id="debitVal">0.00</span></div>
+    <div class="hud-bar"><span id="barFill"></span></div>
+    <div class="hud-line"><span class="dot credit"></span> Credit <span class="val" id="creditVal">0.00</span></div>
+  </div>
+  <div class="hud-right">
+    <div class="stat"><span>Progress</span><b id="progVal">0%</b></div>
+    <button class="sound" id="soundBtn" aria-pressed="false" aria-label="Toggle ledger tick sound"><span class="led"></span><span id="soundLabel">Sound off</span></button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <p class="kicker">Editorial · Double-Entry as Structure</p>
+    <h1>Ledger<br>Rule <span class="amp">&amp;</span><br>Justification</h1>
+    <p class="lede">Every argument is a balance sheet. This one is written the way a book is kept — two columns held against a single spine, and the reading itself is what brings the account to zero.</p>
+    <div class="meta">
+      <span><span class="d" style="background:var(--debit)"></span> Debit · the questions</span>
+      <span><span class="d" style="background:var(--credit)"></span> Credit · the resolution</span>
+      <span>Vol. 04 · MMXXV</span>
+    </div>
+    <div class="scroll-hint" aria-hidden="true"><span>Scroll to balance</span><span class="track"></span></div>
+  </section>
+
+  <div class="layout">
+    <div class="col col-left">
+      <article class="entry" data-side="debit">
+        <div class="tag"><span class="mk"></span> Debit <span class="no">— 01</span></div>
+        <h2>The Ledger Is Not a Book</h2>
+        <p>It is a <strong>system of belief</strong>. Before it was arithmetic, double-entry was a way of insisting that nothing happens alone — that every gain is shadowed by a loss, that value only exists because it is owed somewhere else.</p>
+      </article>
+
+      <article class="entry" data-side="debit">
+        <div class="tag"><span class="mk"></span> Debit <span class="no">— 03</span></div>
+        <h2>Two Sides, One Truth</h2>
+        <p>The left column never lies on its own. It can only be read against the right. A single entry is <strong>incomplete by design</strong>; the ledger refuses the single story, demanding that every claim carry its own counterweight.</p>
+      </article>
+
+      <article class="entry" data-side="debit">
+        <div class="tag"><span class="mk"></span> Debit <span class="no">— 05</span></div>
+        <h2>What We Owe the Past</h2>
+        <p>Every balance carries history in its margins — <strong>reversals, corrections, the small red ink of error</strong>. To justify a rule is to admit that the rule was once broken, and that the breaking is part of the account.</p>
+      </article>
+
+      <article class="entry" data-side="debit">
+        <div class="tag"><span class="mk"></span> Debit <span class="no">— 07</span></div>
+        <blockquote class="pullquote">A ledger is a machine for remembering what we would rather forget.<span class="attr">— Margin note, folio 12</span></blockquote>
+      </article>
+    </div>
+
+    <div class="col col-right">
+      <article class="entry" data-side="credit">
+        <div class="tag"><span class="mk"></span> Credit <span class="no">— 02</span></div>
+        <h2>Balance Is a Verb</h2>
+        <p>It is not a state you arrive at but a discipline you perform. The spine holds because <strong>both columns keep pulling</strong>. Remove one and the whole structure collapses into noise.</p>
+      </article>
+
+      <article class="entry" data-side="credit">
+        <div class="tag"><span class="mk"></span> Credit <span class="no">— 04</span></div>
+        <h2>Justification by Symmetry</h2>
+        <p>A rule is justified not because it is true, but because it <strong>holds the line between two claims</strong>. The proof is not in the number but in the fact that the number balances — that the spine does not bend.</p>
+      </article>
+
+      <article class="entry" data-side="credit">
+        <div class="tag"><span class="mk"></span> Credit <span class="no">— 06</span></div>
+        <h2>The Rule That Holds</h2>
+        <p>When debit equals credit, the account closes and the argument rests. Not because the questions were wrong, but because they were <strong>answered in kind</strong>, in the same ink, on the opposite page.</p>
+      </article>
+
+      <article class="entry" data-side="credit">
+        <div class="tag"><span class="mk"></span> Credit <span class="no">— 08</span></div>
+        <blockquote class="pullquote">To read to the end is to settle the debt the beginning left open.<span class="attr">— Closing entry, folio 88</span></blockquote>
+      </article>
+    </div>
+  </div>
+
+  <section class="closing">
+    <div class="balance">Debit <span class="eq">=</span> Credit</div>
+    <div class="rule-line" aria-hidden="true"></div>
+    <p class="cap">Account closed · Balance restored</p>
+    <p class="foot">The spine held. Every debit found its credit. The ledger rule is justified not by the answer, but by the symmetry of the asking.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="col-f">
+    <h3>Balance &amp; Line</h3>
+    <p>An editorial studio treating structure as argument. We keep the books of ideas — one spine, two columns, and the discipline of the balance.</p>
+  </div>
+  <div class="col-f">
+    <h4>Sections</h4>
+    <ul>
+      <li><a href="#top"><span class="arw">→</span> The Opening</a></li>
+      <li><a href="#top"><span class="arw">→</span> Debit · Questions</a></li>
+      <li><a href="#top"><span class="arw">→</span> Credit · Resolution</a></li>
+      <li><a href="#top"><span class="arw">→</span> Closing Entry</a></li>
+    </ul>
+  </div>
+  <div class="col-f">
+    <h4>Colophon</h4>
+    <ul>
+      <li><a href="#top"><span class="arw">→</span> Playfair Display</a></li>
+      <li><a href="#top"><span class="arw">→</span> IBM Plex Mono</a></li>
+      <li><a href="#top"><span class="arw">→</span> Ledger No. 04</a></li>
+      <li><a href="#top"><span class="arw">→</span> Set in tabular figures</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var spine = document.querySelector('.spine');
+  var marker = document.getElementById('spineMarker');
+  var rulesWrap = document.getElementById('rules');
+  var barFill = document.getElementById('barFill');
+  var progVal = document.getElementById('progVal');
+  var debitVal = document.getElementById('debitVal');
+  var creditVal = document.getElementById('creditVal');
+  var soundBtn = document.getElementById('soundBtn');
+  var soundLabel = document.getElementById('soundLabel');
+  var entries = Array.prototype.slice.call(document.querySelectorAll('.entry'));
+
+  var DEBIT = [255,75,75], CREDIT = [0,168,107];
+  function mix(a,b,t){ return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')'; }
+
+  /* ---- ledger rules ---- */
+  var rules = [];
+  (function buildRules(){
+    var n = 9;
+    for(var i=0;i<n;i++){
+      var el = document.createElement('div');
+      el.className = 'hrule';
+      el.style.top = ((i+0.5)/n*100)+'%';
+      var tick = document.createElement('span');
+      tick.className = 'tick';
+      el.appendChild(tick);
+      rulesWrap.appendChild(el);
+      rules.push({el:el, tick:tick, pct:(i+0.5)/n});
+    }
+  })();
+
+  /* ---- audio ---- */
+  var audioCtx=null, soundOn=false;
+  function ensureAudio(){
+    if(!audioCtx){ try{ var AC=window.AudioContext||window.webkitAudioContext; if(AC) audioCtx=new AC(); }catch(e){ audioCtx=null; } }
+    if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume(); }
+  }
+  function tick(side){
+    if(!soundOn || reduce || !audioCtx) return;
+    var t = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(side==='debit'?660:880, t);
+    osc.frequency.exponentialRampToValueAtTime(side==='debit'?330:440, t+0.05);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.05, t+0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.12);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t+0.14);
+  }
+  function toggleSound(){
+    soundOn = !soundOn;
+    soundBtn.classList.toggle('on', soundOn);
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundLabel.textContent = soundOn ? 'Sound on' : 'Sound off';
+    if(soundOn){ ensureAudio(); if(audioCtx) tick('credit'); }
+  }
+  soundBtn.addEventListener('click', toggleSound);
+  if(reduce){ soundBtn.disabled = true; soundLabel.textContent = 'Sound off'; }
+
+  /* ---- entrance ---- */
+  if(reduce){
+    spine.style.transform = 'none';
+    entries.forEach(function(e){ e.classList.add('in'); });
+  } else {
+    spine.style.transform = 'scaleY(0)';
+    requestAnimationFrame(function(){
+      spine.style.transition = 'transform 1.5s cubic-bezier(.2,.7,.2,1)';
+      spine.style.transform = 'scaleY(1)';
+    });
+  }
+
+  /* ---- reveal observer ---- */
+  var io = new IntersectionObserver(function(ents){
+    ents.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+  entries.forEach(function(e){ io.observe(e); });
+
+  /* ---- scroll loop ---- */
+  var lastY = window.scrollY, lastT = performance.now();
+  var progress = 0, velocity = 0;
+  var current = entries.map(function(){ return false; });
+  var rafId = null;
+
+  function flashMarker(side){
+    if(reduce) return;
+    marker.style.background = side==='debit' ? 'var(--debit)' : 'var(--credit)';
+    marker.style.boxShadow = '0 0 24px 5px ' + (side==='debit' ? 'var(--debit)' : 'var(--credit)');
+    marker.classList.remove('flash');
+    void marker.offsetWidth;
+    marker.classList.add('flash');
+  }
+
+  function update(){
+    var doc = document.documentElement;
+    var max = (doc.scrollHeight - window.innerHeight);
+    progress = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+
+    // spine color: red (debt) -> green (credit)
+    var col = mix(DEBIT, CREDIT, progress);
+    document.documentElement.style.setProperty('--spine', col);
+
+    // velocity for ambient pulse
+    var now = performance.now();
+    var dt = Math.max(1, now - lastT);
+    var dy = Math.abs(window.scrollY - lastY);
+    var v = dy / dt;
+    velocity += (Math.min(v, 3) - velocity) * 0.12;
+    lastY = window.scrollY; lastT = now;
+    document.documentElement.style.setProperty('--pulse', Math.min(1, velocity).toFixed(3));
+
+    // HUD
+    barFill.style.width = (progress*100).toFixed(1)+'%';
+    progVal.textContent = Math.round(progress*100)+'%';
+    debitVal.textContent = (100000*(1-progress)).toFixed(2);
+    creditVal.textContent = (100000*progress).toFixed(2);
+
+    // rules fade in
+    for(var i=0;i<rules.length;i++){
+      var r = rules[i];
+      if(progress >= r.pct - 0.015) r.el.classList.add('show');
+      else r.el.classList.remove('show');
+    }
+
+    // magnetic snap
+    var vh = window.innerHeight;
+    var mid = vh/2;
+    entries.forEach(function(e, idx){
+      var rect = e.getBoundingClientRect();
+      var ec = rect.top + rect.height/2;
+      var snapped = false;
+      for(var i=0;i<rules.length;i++){
+        var ry = rules[i].pct * vh;
+        if(Math.abs(ec - ry) < 24){ snapped = true; rules[i].tick.classList.add('lit'); }
+      }
+      if(snapped && !current[idx]){
+        e.classList.add('snapped');
+        var side = e.getAttribute('data-side');
+        tick(side);
+        flashMarker(side);
+      } else if(!snapped && current[idx]){
+        e.classList.remove('snapped');
+      }
+      current[idx] = snapped;
+    });
+
+    // tick lit reset each frame
+    for(var j=0;j<rules.length;j++){ rules[j].tick.classList.remove('lit'); }
+
+    rafId = requestAnimationFrame(update);
+  }
+
+  function schedule(){
+    if(rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(update);
+  }
+
+  window.addEventListener('scroll', schedule, {passive:true});
+  window.addEventListener('resize', function(){ current = entries.map(function(){return false;}); schedule(); });
+
+  // initial paint
+  update();
+})();
+</script>
+</body>
+</html>

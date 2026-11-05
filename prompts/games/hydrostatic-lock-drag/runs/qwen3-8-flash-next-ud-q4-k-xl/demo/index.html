@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hydrostatic Lock Drag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A192F; --water:#64FFDA; --gold:#FFD700;
+    --ink:#E6F1FF; --muted:#8FA9C4; --slate:#334155;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #stage{position:fixed;inset:0;display:grid;place-items:center;}
+  canvas{display:block;touch-action:none;cursor:default;}
+
+  /* ---------- Overlays ---------- */
+  .overlay{
+    position:fixed;inset:0;display:grid;place-items:center;
+    background:radial-gradient(120% 90% at 50% 30%, rgba(10,25,47,.55), rgba(4,10,22,.94));
+    opacity:0;visibility:hidden;transition:opacity .5s ease;z-index:20;
+    padding:24px;
+  }
+  .overlay.show{opacity:1;visibility:visible;}
+  .panel{
+    width:min(560px,92vw);
+    border:1px solid rgba(100,255,218,.28);
+    background:linear-gradient(180deg, rgba(15,32,60,.92), rgba(8,18,36,.92));
+    box-shadow:0 40px 120px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+    padding:clamp(22px,4vw,40px);
+    position:relative;
+  }
+  .panel::before{
+    content:"";position:absolute;left:0;right:0;top:0;height:3px;
+    background:linear-gradient(90deg,var(--water),var(--gold));
+  }
+  .kicker{
+    font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--water);
+    display:flex;align-items:center;gap:10px;
+  }
+  .kicker::before{content:"";width:26px;height:1px;background:var(--water);display:inline-block;}
+  .brand{
+    font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;
+    line-height:.92;letter-spacing:.01em;
+    font-size:clamp(46px,9vw,86px);margin:14px 0 6px;
+    color:var(--ink);
+  }
+  .brand span{color:var(--water);}
+  .sub{color:var(--muted);font-size:13px;line-height:1.7;max-width:46ch;margin-top:14px;}
+  .rules{list-style:none;margin:20px 0 4px;display:grid;gap:9px;}
+  .rules li{font-size:12.5px;color:var(--muted);display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+  .rules b{color:var(--ink);font-weight:600;}
+  .rules .dot{color:var(--water);flex:none;margin-top:1px;}
+  .rules .dot.g{color:var(--gold);}
+  .btn{
+    margin-top:26px;font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;
+    letter-spacing:.14em;font-size:15px;color:#04121F;background:var(--water);border:none;
+    padding:15px 30px;cursor:pointer;position:relative;
+    box-shadow:0 0 0 rgba(100,255,218,.5);animation:pulse 2.2s ease-in-out infinite;
+  }
+  .btn:hover{background:#8BFFE6;}
+  .btn:active{transform:translateY(1px);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(100,255,218,.5);}50%{box-shadow:0 0 26px 6px rgba(100,255,218,.32);}}
+  .scoreline{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(64px,13vw,120px);line-height:1;color:var(--water);margin:8px 0;}
+  .verdict{font-family:'Oswald',sans-serif;font-weight:700;text-transform:uppercase;font-size:clamp(34px,7vw,60px);line-height:1;}
+  .verdict.win{color:var(--water);} .verdict.fail{color:var(--gold);}
+  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px;border-top:1px solid rgba(255,255,255,.08);padding-top:18px;}
+  .statgrid .k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);}
+  .statgrid .v{font-size:22px;color:var(--ink);margin-top:4px;font-weight:600;}
+  .foot{margin-top:20px;font-size:11px;color:var(--muted);letter-spacing:.08em;}
+  .hint{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(143,169,196,.55);z-index:15;pointer-events:none;text-align:center;}
+
+  @media (prefers-reduced-motion: reduce){
+    .btn{animation:none;}
+    .overlay{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+
+<!-- START -->
+<div class="overlay show" id="startScreen">
+  <div class="panel">
+    <div class="kicker">Fluid Control System · Sector 7</div>
+    <h1 class="brand">Hydrostatic<br><span>Lock Drag</span></h1>
+    <p class="sub">You are the dam operator. Three manual valves stand between a surging reservoir and total breach. Balance inflow against outflow and hold the waterline steady for sixty seconds.</p>
+    <ul class="rules">
+      <li><span class="dot">▸</span><div><b>Drag</b> any valve handle to rotate it. Rotation sets the outflow rate — turning feels heavy.</div></li>
+      <li><span class="dot">▸</span><div>Keep the waterline inside the <b>green safe band</b>. Breach above <b>85%</b> or run dry below <b>15%</b> and the lock fails.</div></li>
+      <li><span class="dot g">▸</span><div>Watch for <b>turbulent spikes</b> (rising inflow) and <b>debris</b> jamming a valve — click debris to clear it.</div></li>
+      <li><span class="dot">▸</span><div><b>Hover + ↑ / ↓</b> fine-tunes a valve by 5%. <b>M</b> toggles sound.</div></li>
+    </ul>
+    <button class="btn" id="startBtn">Engage Lock</button>
+    <div class="foot">60 FPS · Pure Canvas · No dependencies</div>
+  </div>
+</div>
+
+<!-- END -->
+<div class="overlay" id="endScreen">
+  <div class="panel">
+    <div class="kicker" id="endKicker">Lock Status Report</div>
+    <div class="verdict win" id="endTitle">Lock Secured</div>
+    <div class="scoreline" id="endScore">0000</div>
+    <p class="sub" id="endMsg">The reservoir held. Your steady hand kept the waterline true.</p>
+    <div class="statgrid">
+      <div><div class="k">Avg Deviation</div><div class="v" id="endDev">0.0%</div></div>
+      <div><div class="k">Peak Level</div><div class="v" id="endPeak">0%</div></div>
+      <div><div class="k">Time Held</div><div class="v" id="endTime">0s</div></div>
+    </div>
+    <button class="btn" id="restartBtn">Restart Shift</button>
+    <div class="foot">Score = 1000 − (avg deviation × 10)</div>
+  </div>
+</div>
+
+<div class="hint" id="hint">Drag a valve to open · Hover + ↑↓ to nudge</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================================================
+   HYDROSTATIC LOCK DRAG — single-file canvas physics toy
+   ============================================================ */
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const startScreen = document.getElementById('startScreen');
+const endScreen   = document.getElementById('endScreen');
+const startBtn    = document.getElementById('startBtn');
+const restartBtn  = document.getElementById('restartBtn');
+const hintEl      = document.getElementById('hint');
+
+let W=0,H=0,dpr=1;
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp =(a,b,t)=>a+(b-a)*t;
+const rnd  =(a,b)=>a+Math.random()*(b-a);
+
+/* ---------- Layout ---------- */
+const L = {cx:0, tankW:0, tankTop:0, tankBottom:0, tankH:0, tankX:0, valveR:0, valves:[]};
+
+function computeLayout(){
+  const mobile = W < 760;
+  L.tankW = W * (mobile ? 0.58 : 0.40);
+  L.tankX = L.cx - L.tankW/2;
+  L.tankTop = H*0.155;
+  L.tankBottom = H*0.635;
+  L.tankH = L.tankBottom - L.tankTop;
+  L.valveR = clamp(Math.min(L.tankW*0.15, W*0.075, 52), 30, 52);
+  const vy = L.tankBottom + Math.max(L.valveR*1.4, H*0.115);
+  const spread = Math.min(L.tankW*0.30, L.valveR*2.7);
+  const defs = [
+    {name:'PRIMARY',   cap:0.34, resp:1.0},
+    {name:'SECONDARY', cap:0.24, resp:1.7},
+    {name:'EMERGENCY', cap:0.15, resp:3.2}
+  ];
+  L.valves = defs.map((d,i)=>({
+    ...d, x:L.cx+(i-1)*spread, y:vy, openness:0.35, target:0.35,
+    hovered:false, dragging:false, debris:false, active:false,
+    ripple:0, rippleX:0, rippleY:0, rippleLife:0
+  }));
+}
+
+/* ---------- State ---------- */
+const S = {
+  state:'start', waterLevel:0.5, inflow:0.18, inflowTarget:0.18,
+  turbulence:0, time:0, devSum:0, devN:0, peak:0.5,
+  shake:0, flash:0, flashColor:'#FF4D4D',
+  spike:{active:false, timer:0}, debrisTimer:0,
+  hoveredValve:-1, draggingValve:-1,
+  fade:0, fadeTarget:1, endFade:0,
+  score:0, won:false, result:null,
+  startRise:0, particles:[],
+  muted:false, audioReady:false
+};
+
+/* ---------- Audio (optional, gesture-gated) ---------- */
+let actx=null, hum=null, humGain=null, alarm=null, alarmGain=null;
+function initAudio(){
+  if(S.audioReady) return;
+  try{
+    actx = new (window.AudioContext||window.webkitAudioContext)();
+    hum = actx.createOscillator(); hum.type='sine'; hum.frequency.value=52;
+    humGain = actx.createGain(); humGain.gain.value=0;
+    const lp = actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=260;
+    hum.connect(lp); lp.connect(humGain); humGain.connect(actx.destination); hum.start();
+    alarm = actx.createOscillator(); alarm.type='square'; alarm.frequency.value=660;
+    alarmGain = actx.createGain(); alarmGain.gain.value=0;
+    alarm.connect(alarmGain); alarmGain.connect(actx.destination); alarm.start();
+    S.audioReady=true;
+  }catch(e){ S.audioReady=false; }
+}
+function blip(f){
+  if(!S.audioReady||S.muted) return;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type='triangle'; o.frequency.value=f;
+  g.gain.setValueAtTime(0.0001,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.06,actx.currentTime+0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.09);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.1);
+}
+
+/* ---------- Game control ---------- */
+function resetSim(){
+  S.waterLevel=0.5; S.inflow=0.18; S.inflowTarget=0.18; S.turbulence=0;
+  S.time=0; S.devSum=0; S.devN=0; S.peak=0.5; S.shake=0; S.flash=0;
+  S.spike={active:false,timer:0}; S.debrisTimer=rnd(4,7);
+  S.hoveredValve=-1; S.draggingValve=-1; S.particles=[]; S.result=null; S.won=false;
+  L.valves.forEach(v=>{v.openness=0.35;v.target=0.35;v.debris=false;v.active=false;});
+}
+function startGame(){
+  initAudio(); resetSim();
+  S.startRise=0; S.fade=0; S.fadeTarget=1; S.endFade=0;
+  S.state='playing';
+  startScreen.classList.remove('show');
+  endScreen.classList.remove('show');
+}
+function endGame(won){
+  if(S.state!=='playing') return;
+  S.won=won; S.state='ended'; S.endFade=0;
+  const dev = S.devN>0 ? S.devSum/S.devN : 0;
+  S.score = Math.max(0, Math.round(1000 - dev*10));
+  S.result = {dev, peak:S.peak, time:S.time};
+  S.flash = won?0.35:0.7; S.flashColor = won?'#64FFDA':'#FF4D4D';
+  if(won) blip(520);
+  showEnd();
+}
+function showEnd(){
+  document.getElementById('endTitle').textContent = S.won?'Lock Secured':'Lock Failure';
+  document.getElementById('endTitle').className = 'verdict '+(S.won?'win':'fail');
+  document.getElementById('endKicker').textContent = S.won?'Shift Complete · Lock Stable':'Incident Report · Lock Lost';
+  document.getElementById('endScore').textContent = String(S.score).padStart(4,'0');
+  document.getElementById('endMsg').textContent = S.won
+    ? 'The reservoir held. Your steady hand kept the waterline true for the full shift.'
+    : (S.waterLevel>0.85 ? 'The reservoir overtopped the wall. Breach — the lock is lost.'
+                          : 'The tank ran dry before the shift ended. Lock failure.');
+  document.getElementById('endDev').textContent = (S.result.dev*100).toFixed(1)+'%';
+  document.getElementById('endPeak').textContent = Math.round(S.result.peak*100)+'%';
+  document.getElementById('endTime').textContent = Math.round(S.result.time)+'s';
+  endScreen.classList.add('show');
+}
+
+/* ---------- Input ---------- */
+function pointer(e){
+  const r=cv.getBoundingClientRect();
+  return {x:e.clientX-r.left, y:e.clientY-r.top};
+}
+function hitValve(p){
+  for(let i=0;i<L.valves.length;i++){
+    const v=L.valves[i];
+    if(Math.hypot(p.x-v.x,p.y-v.y) <= L.valveR*1.3) return i;
+  }
+  return -1;
+}
+function hitDebris(p){
+  for(let i=0;i<L.valves.length;i++){
+    const v=L.valves[i];
+    if(v.debris && Math.hypot(p.x-v.x,p.y-v.y) <= L.valveR*1.05) return i;
+  }
+  return -1;
+}
+cv.addEventListener('pointerdown', e=>{
+  if(S.state!=='playing') return;
+  const p=pointer(e);
+  const d=hitDebris(p);
+  if(d>=0){ L.valves[d].debris=false; S.debrisTimer=rnd(5,9); blip(760); return; }
+  const v=hitValve(p);
+  if(v>=0){
+    S.draggingValve=v; L.valves[v].dragging=true; L.valves[v].active=true;
+    try{cv.setPointerCapture(e.pointerId);}catch(_){}
+    blip(430);
+  }
+});
+cv.addEventListener('pointermove', e=>{
+  const p=pointer(e);
+  const v=hitValve(p);
+  S.hoveredValve=v;
+  L.valves.forEach((val,i)=>val.hovered=(i===v));
+  if(S.draggingValve>=0){
+    const val=L.valves[S.draggingValve];
+    const ang=Math.atan2(p.y-val.y, p.x-val.x);
+    val.target = clamp(((ang+Math.PI/2)/(Math.PI*2))%1, 0, 1);
+  }
+  cv.style.cursor = (v>=0||hitDebris(p)>=0)?'grab':'default';
+});
+function release(){
+  if(S.draggingValve>=0){ L.valves[S.draggingValve].dragging=false; }
+  S.draggingValve=-1;
+}
+cv.addEventListener('pointerup', release);
+cv.addEventListener('pointercancel', release);
+cv.addEventListener('pointerleave', ()=>{ S.hoveredValve=-1; L.valves.forEach(v=>v.hovered=false); });
+
+window.addEventListener('keydown', e=>{
+  if(e.key==='m'||e.key==='M'){ S.muted=!S.muted; return; }
+  if(S.state!=='playing') return;
+  if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+    const i = S.hoveredValve>=0?S.hoveredValve:1;
+    const val=L.valves[i];
+    const cap = val.debris?0.2:1.0;
+    val.target = clamp(val.target + (e.key==='ArrowUp'?0.05:-0.05), 0, cap);
+    val.active=true;
+    e.preventDefault();
+  }
+});
+
+startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', startGame);
+
+/* ---------- Resize ---------- */
+function resize(){
+  const vw=window.innerWidth, vh=window.innerHeight;
+  const target=16/9;
+  let w=vw, h=vw/target;
+  if(h>vh){ h=vh; w=vh*target; }
+  cv.style.width=w+'px'; cv.style.height=h+'px';
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  W=w; H=h; L.cx=w/2;
+  computeLayout();
+}
+window.addEventListener('resize', resize);
+
+/* ---------- Update ---------- */
+function update(dt){
+  S.fade = lerp(S.fade, S.fadeTarget, Math.min(1,dt*6));
+  if(S.endFade<1) S.endFade=Math.min(1,S.endFade+dt*1.8);
+
+  if(S.state==='playing'){
+    S.time+=dt;
+    if(S.startRise<1) S.startRise=Math.min(1,S.startRise+dt/1.1);
+
+    // --- inflow / hazards ---
+    if(S.spike.active){
+      S.spike.timer-=dt;
+      S.inflowTarget=0.52;
+      if(S.spike.timer<=0) S.spike.active=false;
+    }else{
+      S.inflowTarget=rnd(0.14,0.22);
+      if(Math.random()<dt*0.055){ S.spike.active=true; S.spike.timer=rnd(2.6,4.2); blip(880); }
+    }
+    S.inflow=lerp(S.inflow,S.inflowTarget,Math.min(1,dt*1.6));
+
+    S.debrisTimer-=dt;
+    if(S.debrisTimer<=0){
+      const pool=L.valves.filter(v=>!v.debris);
+      if(pool.length){ pool[Math.floor(Math.random()*pool.length)].debris=true; }
+      S.debrisTimer=rnd(5,9);
+    }
+
+    // --- valves (viscous ease toward target, capped by debris) ---
+    let outflow=0;
+    L.valves.forEach(v=>{
+      const cap=v.debris?0.2:1.0;
+      v.target=clamp(v.target,0,cap);
+      const ease=clamp(dt*5.2,0,1);
+      v.openness=lerp(v.openness,v.target,ease);
+      outflow+=v.openness*v.cap;
+      if(!v.dragging && Math.abs(v.openness-v.target)<0.002) v.active=false;
+    });
+    outflow=clamp(outflow,0,1.2);
+
+    // --- water physics ---
+    const dL=(S.inflow-outflow)*0.15;
+    S.waterLevel=clamp(S.waterLevel+dL*dt,0,1);
+    if(S.waterLevel>S.peak) S.peak=S.waterLevel;
+
+    // --- turbulence ---
+    const dev=Math.abs(S.waterLevel-0.5);
+    const spike=S.spike.active?0.55:0;
+    S.turbulence=lerp(S.turbulence, clamp(0.12+dev*0.9+spike,0,1), Math.min(1,dt*3));
+
+    // --- feedback / scoring ---
+    if(S.waterLevel>0.80) S.shake=Math.max(S.shake, (S.waterLevel-0.80)/0.05);
+    S.shake=Math.max(0,S.shake-dt*1.2);
+    if(S.flash>0) S.flash=Math.max(0,S.flash-dt*1.6);
+
+    S.devSum+=dev*dt; S.devN+=dt;
+
+    if(S.waterLevel>0.85) endGame(false);
+    else if(S.waterLevel<0.15) endGame(false);
+    else if(S.time>=60) endGame(true);
+
+    // --- surface ripple particles ---
+    if(Math.random()<dt*10){
+      S.particles.push({x:L.tankX+Math.random()*L.tankW, life:0, max:rnd(0.5,1.1), r:rnd(1,2.4)});
+    }
+    S.particles.forEach(p=>p.life+=dt);
+    S.particles=S.particles.filter(p=>p.life<p.max);
+
+    // --- audio ---
+    if(S.audioReady){
+      const g=S.muted?0:0.012+outflow*0.02;
+      humGain.gain.setTargetAtTime(g,actx.currentTime,0.2);
+      hum.frequency.setTargetAtTime(44+outflow*40,actx.currentTime,0.2);
+      const ag=(S.waterLevel>0.82&&!S.muted)?0.05:0;
+      alarmGain.gain.setTargetAtTime(ag,actx.currentTime,0.15);
+    }
+  }else{
+    if(S.audioReady){ humGain.gain.setTargetAtTime(0,actx.currentTime,0.3); alarmGain.gain.setTargetAtTime(0,actx.currentTime,0.1); }
+  }
+}
+
+/* ---------- Draw helpers ---------- */
+function rr(x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function surfaceY(px){
+  const base=L.tankBottom-S.waterLevel*L.tankH;
+  const amp=6+S.turbulence*22;
+  const y=base
+    + Math.sin(px*0.02 + S.time*3.0)*amp*0.6
+    + Math.sin(px*0.05 - S.time*5.2)*amp*0.4;
+  return y;
+}
+function hexA(hex,a){
+  const n=parseInt(hex.slice(1),16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+/* ---------- Draw ---------- */
+function drawBackground(){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0C1F3A'); g.addColorStop(0.55,'#0A192F'); g.addColorStop(1,'#071120');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // atmospheric water glow behind tank
+  const gg=ctx.createRadialGradient(L.cx,L.tankBottom,10,L.cx,L.tankBottom,L.tankW*1.6);
+  gg.addColorStop(0,hexA('#64FFDA',0.10+S.turbulence*0.06));
+  gg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=gg; ctx.fillRect(0,0,W,H);
+
+  // faint grid
+  ctx.strokeStyle='rgba(100,255,218,0.035)'; ctx.lineWidth=1;
+  const step=48;
+  for(let x=(L.cx%step);x<W;x+=step){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=step){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  // rivets on frame edges
+  ctx.fillStyle='rgba(143,169,196,0.10)';
+  for(let y=step;y<H;y+=step){ ctx.beginPath();ctx.arc(14,y,1.6,0,7);ctx.fill(); ctx.beginPath();ctx.arc(W-14,y,1.6,0,7);ctx.fill(); }
+}
+
+function drawTank(){
+  const x=L.tankX,w=L.tankW,top=L.tankTop,bot=L.tankBottom,h=L.tankH;
+  const r=10;
+
+  // zone tinting (danger bands)
+  ctx.save(); rr(x,top,w,h,r); ctx.clip();
+  // dry zone (bottom 15%)
+  ctx.fillStyle=hexA('#4A90D9',0.10); ctx.fillRect(x,bot-h*0.15,w,h*0.15);
+  // safe band 40-60%
+  ctx.fillStyle=hexA('#64FFDA',0.09); ctx.fillRect(x,top+h*0.40,w,h*0.20);
+  // warn band 60-85%
+  ctx.fillStyle=hexA('#FFD700',0.07); ctx.fillRect(x,top+h*0.15,w,h*0.25);
+  // breach zone >85%
+  ctx.fillStyle=hexA('#FF4D4D',0.10); ctx.fillRect(x,top,w,h*0.15);
+
+  // WATER
+  const disp = S.startRise>0 ? lerp(0.02,S.waterLevel,S.startRise) : S.waterLevel;
+  const base=bot-disp*h;
+  ctx.beginPath();
+  ctx.moveTo(x,bot);
+  for(let px=x;px<=x+w;px+=3){
+    const y=base + Math.sin(px*0.02+S.time*3.0)*(6+S.turbulence*22)*0.6
+                  + Math.sin(px*0.05-S.time*5.2)*(6+S.turbulence*22)*0.4;
+    ctx.lineTo(px,y);
+  }
+  ctx.lineTo(x+w,bot); ctx.closePath();
+  const wg=ctx.createLinearGradient(0,base,0,bot);
+  wg.addColorStop(0,hexA('#64FFDA',0.95));
+  wg.addColorStop(1,hexA('#1FA9A0',0.85));
+  ctx.fillStyle=wg; ctx.fill();
+
+  // inner glow near surface
+  const sg=ctx.createLinearGradient(0,base,0,base+70);
+  sg.addColorStop(0,'rgba(255,255,255,0.28)'); sg.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=sg; ctx.fill();
+
+  // surface highlight line
+  ctx.beginPath();
+  for(let px=x;px<=x+w;px+=3){
+    const y=base + Math.sin(px*0.02+S.time*3.0)*(6+S.turbulence*22)*0.6
+                  + Math.sin(px*0.05-S.time*5.2)*(6+S.turbulence*22)*0.4;
+    px===x?ctx.moveTo(px,y):ctx.lineTo(px,y);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=2; ctx.stroke();
+
+  // ripple particles
+  S.particles.forEach(p=>{
+    const a=(1-p.life/p.max)*0.5;
+    ctx.fillStyle=hexA('#FFFFFF',a);
+    ctx.beginPath(); ctx.arc(p.x, base - (1-p.life/p.max)*10, p.r, 0, 7); ctx.fill();
+  });
+
+  // surface ripples propagating from valves
+  L.valves.forEach(v=>{
+    if(v.rippleLife>0){
+      const t=1-v.rippleLife/v.rippleMax;
+      const rad=t*L.tankW*0.7;
+      const a=(1-t)*0.5;
+      ctx.strokeStyle=hexA('#64FFDA',a); ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(v.rippleX,v.rippleY,rad,Math.PI,0); ctx.stroke();
+    }
+  });
+  ctx.restore();
+
+  // zone guide lines + labels
+  ctx.setLineDash([5,6]); ctx.lineWidth=1;
+  const marks=[[0.85,'#FF4D4D','BREACH'],[0.60,'#FFD700','SAFE MAX'],[0.40,'#64FFDA','SAFE MIN'],[0.15,'#4A90D9','DRY']];
+  ctx.font='500 9px "IBM Plex Mono"';
+  marks.forEach(m=>{
+    const y=bot-h*m[0];
+    ctx.strokeStyle=hexA(m[1],0.5);
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+w,y); ctx.stroke();
+    ctx.fillStyle=hexA(m[1],0.9); ctx.textAlign='left';
+    ctx.fillText(m[2], x+w+8, y+3);
+  });
+  ctx.setLineDash([]);
+
+  // live level marker on right
+  const ly=bot-disp*h;
+  ctx.fillStyle='#E6F1FF';
+  ctx.beginPath(); ctx.moveTo(x+w+2,ly); ctx.lineTo(x+w+12,ly-5); ctx.lineTo(x+w+12,ly+5); ctx.closePath(); ctx.fill();
+
+  // tank frame
+  rr(x,top,w,h,r);
+  ctx.strokeStyle='rgba(143,169,196,0.55)'; ctx.lineWidth=2; ctx.stroke();
+  // corner brackets
+  ctx.strokeStyle=hexA('#64FFDA',0.7); ctx.lineWidth=2;
+  const c=16;
+  [[x,top,1,1],[x+w,top,-1,1],[x,bot,1,-1],[x+w,bot,-1,-1]].forEach(b=>{
+    ctx.beginPath(); ctx.moveTo(b[0]+c*b[2],b[1]); ctx.lineTo(b[0],b[1]); ctx.lineTo(b[0],b[1]+c*b[3]); ctx.stroke();
+  });
+
+  // pipes from tank base to valves
+  ctx.strokeStyle='rgba(143,169,196,0.35)'; ctx.lineWidth=6; ctx.lineCap='round';
+  L.valves.forEach(v=>{
+    ctx.beginPath(); ctx.moveTo(v.x,bot); ctx.lineTo(v.x,v.y-L.valveR*0.8); ctx.stroke();
+  });
+  ctx.lineCap='butt';
+}
+
+function drawValve(v){
+  const R=L.valveR;
+  const rot=v.openness*Math.PI*2;
+  const glow = v.active || v.hovered;
+
+  // mount plate
+  ctx.fillStyle='#16283F';
+  rr(v.x-R*1.15,v.y-R*1.15,R*2.3,R*2.3,8); ctx.fill();
+  ctx.strokeStyle=glow?hexA('#64FFDA',0.6):'rgba(143,169,196,0.3)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // handle body
+  ctx.save(); ctx.translate(v.x,v.y);
+  const bg=ctx.createRadialGradient(-R*0.3,-R*0.3,R*0.2,0,0,R);
+  bg.addColorStop(0,'#42566E'); bg.addColorStop(1,'#22303F');
+  ctx.fillStyle=bg;
+  ctx.beginPath(); ctx.arc(0,0,R*0.86,0,7); ctx.fill();
+  ctx.strokeStyle=glow?hexA('#64FFDA',0.9):'rgba(143,169,196,0.4)'; ctx.lineWidth=2; ctx.stroke();
+
+  // grip spokes
+  ctx.rotate(rot);
+  ctx.strokeStyle=glow?hexA('#64FFDA',0.85):'rgba(230,241,255,0.5)'; ctx.lineWidth=4; ctx.lineCap='round';
+  for(let i=0;i<4;i++){
+    ctx.rotate(Math.PI/2);
+    ctx.beginPath(); ctx.moveTo(R*0.28,0); ctx.lineTo(R*0.72,0); ctx.stroke();
+  }
+  ctx.lineCap='butt';
+  // orientation pointer
+  ctx.fillStyle=glow?'#64FFDA':'#E6F1FF';
+  ctx.beginPath(); ctx.moveTo(0,-R*0.86); ctx.lineTo(-5,-R*0.62); ctx.lineTo(5,-R*0.62); ctx.closePath(); ctx.fill();
+  // hub
+  ctx.rotate(-rot);
+  ctx.fillStyle='#0A192F'; ctx.beginPath(); ctx.arc(0,0,R*0.22,0,7); ctx.fill();
+  ctx.strokeStyle=hexA('#64FFDA',0.6); ctx.lineWidth=1.5; ctx.stroke();
+  ctx.restore();
+
+  // openness arc ring
+  ctx.beginPath();
+  ctx.arc(v.x,v.y,R*0.98,-Math.PI/2,-Math.PI/2+v.openness*Math.PI*2);
+  ctx.strokeStyle=hexA('#64FFDA',0.85); ctx.lineWidth=3; ctx.stroke();
+
+  // debris block
+  if(v.debris){
+    ctx.save(); ctx.translate(v.x,v.y);
+    ctx.fillStyle='#8A6A2A'; ctx.strokeStyle='#FFD700'; ctx.lineWidth=2;
+    rr(-R*0.42,-R*0.42,R*0.84,R*0.84,4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#FFD700'; ctx.font='600 10px "IBM Plex Mono"'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('DEBRIS',0,0);
+    ctx.restore();
+    // pulse ring
+    const pr=(Math.sin(S.time*6)*0.5+0.5);
+    ctx.strokeStyle=hexA('#FFD700',0.3+pr*0.4); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(v.x,v.y,R*1.15,0,7); ctx.stroke();
+  }
+
+  // labels
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#E6F1FF'; ctx.font='600 11px "Oswald"';
+  ctx.fillText(v.name, v.x, v.y+R*1.45);
+  ctx.fillStyle=v.debris?'#FFD700':'#64FFDA'; ctx.font='500 12px "IBM Plex Mono"';
+  ctx.fillText(Math.round(v.openness*100)+'%', v.x, v.y+R*1.75);
+}
+
+function drawHUD(){
+  const pad=18;
+  // top-left: timer + score
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillStyle='#8FA9C4'; ctx.font='500 10px "IBM Plex Mono"';
+  ctx.fillText('TIME REMAINING', pad, pad);
+  const remain=Math.max(0,60-S.time);
+  ctx.fillStyle=remain<10?'#FFD700':'#E6F1FF'; ctx.font='600 34px "IBM Plex Mono"';
+  ctx.fillText(remain.toFixed(1)+'s', pad, pad+12);
+
+  // progress bar
+  const bw=140, bx=pad, by=pad+56;
+  ctx.fillStyle='rgba(143,169,196,0.18)'; ctx.fillRect(bx,by,bw,4);
+  ctx.fillStyle='#64FFDA'; ctx.fillRect(bx,by,bw*clamp(S.time/60,0,1),4);
+
+  ctx.fillStyle='#8FA9C4'; ctx.font='500 10px "IBM Plex Mono"';
+  ctx.fillText('SCORE', pad, by+14);
+  ctx.fillStyle='#E6F1FF'; ctx.font='600 20px "IBM Plex Mono"';
+  ctx.fillText(String(Math.max(0,Math.round(1000-(S.devN>0?S.devSum/S.devN:0)*10))).padStart(4,'0'), pad, by+26);
+
+  // top-right: status
+  ctx.textAlign='right';
+  let status='STABLE', sc='#64FFDA';
+  if(S.waterLevel>0.80){status='BREACH IMMINENT'; sc='#FF4D4D';}
+  else if(S.waterLevel>0.60){status='HIGH'; sc='#FFD700';}
+  else if(S.waterLevel<0.40){status='LOW'; sc='#4A90D9';}
+  if(S.spike.active){status='TURBULENT SPIKE'; sc='#FFD700';}
+  ctx.fillStyle='#8FA9C4'; ctx.font='500 10px "IBM Plex Mono"';
+  ctx.fillText('SYSTEM STATUS', W-pad, pad);
+  ctx.fillStyle=sc; ctx.font='600 16px "Oswald"';
+  ctx.fillText(status, W-pad, pad+12);
+
+  // water level readout
+  ctx.fillStyle='#8FA9C4'; ctx.font='500 10px "IBM Plex Mono"';
+  ctx.fillText('WATER LEVEL', W-pad, pad+38);
+  ctx.fillStyle='#E6F1FF'; ctx.font='600 24px "IBM Plex Mono"';
+  ctx.fillText(Math.round(S.waterLevel*100)+'%', W-pad, pad+50);
+
+  // spike warning icon
+  if(S.spike.active){
+    const blink=(Math.sin(S.time*10)>0);
+    ctx.fillStyle=blink?'#FFD700':hexA('#FFD700',0.3);
+    ctx.font='600 12px "Oswald"';
+    ctx.fillText('⚠ SPIKE', W-pad, pad+82);
+  }
+
+  // brand watermark bottom-left
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='rgba(143,169,196,0.35)'; ctx.font='600 11px "Oswald"';
+  ctx.fillText('HYDROSTATIC LOCK DRAG', pad, H-16);
+}
+
+function drawFlash(){
+  if(S.flash>0){
+    ctx.fillStyle=hexA(S.flashColor, S.flash*0.5);
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  if(S.shake>0){
+    const m=S.shake*7;
+    ctx.translate((Math.random()*2-1)*m,(Math.random()*2-1)*m);
+  }
+  drawBackground();
+  drawTank();
+  L.valves.forEach(drawValve);
+  ctx.restore();
+  drawHUD();
+  drawFlash();
+}
+
+/* ---------- Loop ---------- */
+let last=performance.now();
+function frame(now){
+  let dt=(now-last)/1000; last=now;
+  if(dt>0.05) dt=0.05;
+  // valve ripple decay
+  L.valves.forEach(v=>{
+    if(v.rippleLife>0) v.rippleLife=Math.max(0,v.rippleLife-dt);
+    if(v.dragging && Math.random()<dt*8){
+      v.rippleX=v.x; v.rippleY=L.tankBottom-2; v.rippleLife=0.8; v.rippleMax=0.8;
+    }
+  });
+  update(dt);
+  draw();
+  requestAnimationFrame(frame);
+}
+
+resize();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 299 | 294 | 258 | 41 |
+| 301 | 299 | 260 | 41 |
 
 ## Quick start
 
@@ -2435,9 +2435,11 @@ A visceral 4s loop simulating a printing press platen striking paper. A massive 
 
 [prompt](prompts/motion-graphics/platen-impact-lockup/prompt.md) · [extended](prompts/motion-graphics/platen-impact-lockup/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/motion-graphics/platen-impact-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 3.4s | 111s | 4 | [open](prompts/motion-graphics/platen-impact-lockup/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3493,9 +3495,11 @@ A tactile industrial simulation where players balance water pressure using three
 
 [prompt](prompts/games/hydrostatic-lock-drag/prompt.md) · [extended](prompts/games/hydrostatic-lock-drag/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/games/hydrostatic-lock-drag/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 32s | 215s | 8 | [open](prompts/games/hydrostatic-lock-drag/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3653,9 +3657,11 @@ Production-grade 2D game kit featuring 16 ornate UI frames with simulated tarnis
 
 [prompt](prompts/assets/baroque-gilded-framing-kit/prompt.md) · [extended](prompts/assets/baroque-gilded-framing-kit/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/assets/baroque-gilded-framing-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.7s | 343s | 6 | [open](prompts/assets/baroque-gilded-framing-kit/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -3965,6 +3971,20 @@ A raw WebGL parametric surface morphing between Mobius and hyperbolic paraboloid
 
 ---
 
+### Reef Acoustic
+
+An underwater voxel reef where low-frequency audio bands drive coral extrusion. Subsurface scattering and volumetric caustics create a living, breathing ecosystem from sound data.
+
+**Status:** polished · `r3f` `audio-reactive` `procedural-terrain` `volumetric-fog` `camera-orbit` `webgl` `lighting-study` `subsurface-scattering` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/coral-reef-voxel-symphony/prompt.md) · [extended](prompts/webgl/coral-reef-voxel-symphony/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Deltaic Fractal Erosion
 
 Real-time recursive heightmap shader carving river deltas. Slider controls viscosity, altering channel depth and flow dynamics in a navigable 3D landscape.
@@ -4157,6 +4177,20 @@ A PBR glass envelope containing ionized sodium vapor. Users scrub a 'warm-up' ti
 
 ---
 
+### Thermokarst Collapse
+
+Interactive permafrost simulation where a temperature slider drives terrain subsidence, revealing ice lenses and methane pockets through honest material shifts.
+
+**Status:** polished · `three-js` `procedural-terrain` `displacement-map` `climate-viz` `camera-orbit` `webgl` `material-transition` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/webgl/tundra-permafrost-thaw/prompt.md) · [extended](prompts/webgl/tundra-permafrost-thaw/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Obsidian Shear & Chill
 
 Raymarched SDF volcanic glass shard where a tensile stress slider drives Voronoi crack propagation and internal thermal glow, revealing molten core.
@@ -4295,9 +4329,11 @@ A vertical spine balances text columns like debit/credit entries. Scroll depth s
 
 [prompt](prompts/editorial/ledger-rule-justification/prompt.md) · [extended](prompts/editorial/ledger-rule-justification/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/ledger-rule-justification/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 21s | 174s | 8 | [open](prompts/editorial/ledger-rule-justification/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4501,9 +4537,11 @@ An immersive editorial experience simulating manuscript conservation where scrol
 
 [prompt](prompts/editorial/vellum-dust-settling/prompt.md) · [extended](prompts/editorial/vellum-dust-settling/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/editorial/vellum-dust-settling/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.8s | 158s | 4 | [open](prompts/editorial/vellum-dust-settling/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 

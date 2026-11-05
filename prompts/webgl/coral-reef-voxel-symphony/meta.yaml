@@ -1,0 +1,27 @@
+id: coral-reef-voxel-symphony
+title: "Reef Acoustic"
+category: webgl
+tags:
+  - r3f
+  - audio-reactive
+  - procedural-terrain
+  - volumetric-fog
+  - camera-orbit
+  - webgl
+  - lighting-study
+  - subsurface-scattering
+status: polished
+summary: "An underwater voxel reef where low-frequency audio bands drive coral extrusion. Subsurface scattering and volumetric caustics create a living, breathing ecosystem from sound data."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

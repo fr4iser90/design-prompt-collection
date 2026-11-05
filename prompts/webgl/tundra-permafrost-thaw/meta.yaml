@@ -1,0 +1,26 @@
+id: tundra-permafrost-thaw
+title: "Thermokarst Collapse"
+category: webgl
+tags:
+  - three-js
+  - procedural-terrain
+  - displacement-map
+  - climate-viz
+  - camera-orbit
+  - webgl
+  - material-transition
+status: polished
+summary: "Interactive permafrost simulation where a temperature slider drives terrain subsidence, revealing ice lenses and methane pockets through honest material shifts."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude
