@@ -1,0 +1,25 @@
+id: ink-bleed-maze-circuit
+title: "Ink Bleed Circuit"
+category: games
+tags:
+  - canvas2d
+  - fluid-sim
+  - puzzle
+  - logic
+  - state-stack
+  - game
+status: polished
+summary: "Ink Bleed Circuit: A Canvas 2D puzzle where wet ink bleeds into procedural paper. Draw paths, time your 'Dry' action to freeze ink before it hits waste zones. Industrial minimalism, single-file HTML/JS."
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

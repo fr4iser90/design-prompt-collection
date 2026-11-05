@@ -1,0 +1,25 @@
+id: tectonic-plate-fracture
+title: "Tectonic Plate Fracture"
+category: assets
+tags:
+  - game-kit
+  - geology
+  - 2d
+  - assets
+  - tileset
+  - procedural
+status: polished
+summary: "Build a single-file HTML asset studio for 'GEO-SHIFT: Tectonic Plate Fracture', a 2D game-kit pack. The interface must feel like a geological survey terminal. Use Oswald for headers and Source Code Pro for data. The…"
+preview: null
+prompt: prompt.md
+extended: prompt.full.md
+demo: null
+default_run: null
+source_model: "Qwen3.8-Flash-Next-UD-Q4_K_XL"
+source_provider: "custom"
+created: "2026-11-05"
+updated: "2026-11-05"
+model_hints:
+  - cursor
+  - chatgpt
+  - claude

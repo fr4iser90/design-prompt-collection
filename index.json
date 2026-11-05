@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-05T02:41:18.718Z",
+  "generated_at": "2026-11-05T03:52:39.155Z",
   "schema": "schema/entry.schema.json",
-  "count": 301,
+  "count": 305,
   "categories": [
     "landing-pages",
     "animations",
@@ -13435,6 +13435,37 @@
       ]
     },
     {
+      "id": "ink-bleed-maze-circuit",
+      "title": "Ink Bleed Circuit",
+      "category": "games",
+      "tags": [
+        "canvas2d",
+        "fluid-sim",
+        "puzzle",
+        "logic",
+        "state-stack",
+        "game"
+      ],
+      "status": "polished",
+      "summary": "Ink Bleed Circuit: A Canvas 2D puzzle where wet ink bleeds into procedural paper. Draw paths, time your 'Dry' action to freeze ink before it hits waste zones. Industrial minimalism, single-file HTML/JS.",
+      "path": "prompts/games/ink-bleed-maze-circuit",
+      "preview": null,
+      "prompt": "prompts/games/ink-bleed-maze-circuit/prompt.md",
+      "extended": "prompts/games/ink-bleed-maze-circuit/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "laser-alignment-pulse-lock",
       "title": "Laser Alignment Pulse Lock",
       "category": "games",
@@ -14844,6 +14875,37 @@
       ]
     },
     {
+      "id": "tectonic-plate-fracture",
+      "title": "Tectonic Plate Fracture",
+      "category": "assets",
+      "tags": [
+        "game-kit",
+        "geology",
+        "2d",
+        "assets",
+        "tileset",
+        "procedural"
+      ],
+      "status": "polished",
+      "summary": "Build a single-file HTML asset studio for 'GEO-SHIFT: Tectonic Plate Fracture', a 2D game-kit pack. The interface must feel like a geological survey terminal. Use Oswald for headers and Source Code Pro for data. The…",
+      "path": "prompts/assets/tectonic-plate-fracture",
+      "preview": null,
+      "prompt": "prompts/assets/tectonic-plate-fracture/prompt.md",
+      "extended": "prompts/assets/tectonic-plate-fracture/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "volcanic-geothermal-kit",
       "title": "Volcanic Geothermal Kit",
       "category": "assets",
@@ -15232,11 +15294,11 @@
       "status": "polished",
       "summary": "An underwater voxel reef where low-frequency audio bands drive coral extrusion. Subsurface scattering and volumetric caustics create a living, breathing ecosystem from sound data.",
       "path": "prompts/webgl/coral-reef-voxel-symphony",
-      "preview": null,
+      "preview": "prompts/webgl/coral-reef-voxel-symphony/preview.png",
       "prompt": "prompts/webgl/coral-reef-voxel-symphony/prompt.md",
       "extended": "prompts/webgl/coral-reef-voxel-symphony/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/webgl/coral-reef-voxel-symphony/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -15246,7 +15308,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 182174,
+          "gen_ms": 182174,
+          "ttft_ms": 2908,
+          "queue_wait_ms": 96,
+          "wall_ms": 185178,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/webgl/coral-reef-voxel-symphony/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/webgl/coral-reef-voxel-symphony/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 4,
+          "review_summary": "A static, text-heavy landing page that fails to display the required WebGL scene in the first viewport."
+        }
+      ]
     },
     {
       "id": "fractal-deltaic-erosion-mesh",
@@ -16015,11 +16107,11 @@
       "status": "polished",
       "summary": "Interactive permafrost simulation where a temperature slider drives terrain subsidence, revealing ice lenses and methane pockets through honest material shifts.",
       "path": "prompts/webgl/tundra-permafrost-thaw",
-      "preview": null,
+      "preview": "prompts/webgl/tundra-permafrost-thaw/preview.png",
       "prompt": "prompts/webgl/tundra-permafrost-thaw/prompt.md",
       "extended": "prompts/webgl/tundra-permafrost-thaw/prompt.full.md",
-      "demo": null,
-      "default_run": null,
+      "demo": "prompts/webgl/tundra-permafrost-thaw/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+      "default_run": "qwen3-8-flash-next-ud-q4-k-xl",
       "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
       "source_provider": "custom",
       "created": "2026-11-05",
@@ -16029,7 +16121,37 @@
         "chatgpt",
         "claude"
       ],
-      "runs": []
+      "runs": [
+        {
+          "slug": "qwen3-8-flash-next-ud-q4-k-xl",
+          "model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+          "model_api": "chat",
+          "provider": "custom",
+          "engine": "gufo",
+          "engine_link": "https://github.com/gufo-org/gufo/commit/fee9d2a",
+          "engine_rev": "fee9d2a",
+          "engine_version": null,
+          "built_at": "2026-11-05",
+          "thinking_enabled": false,
+          "stream": true,
+          "temperature": 0.65,
+          "context_tokens": 262144,
+          "duration_ms": 163443,
+          "gen_ms": 163443,
+          "ttft_ms": 2442,
+          "queue_wait_ms": 90289,
+          "wall_ms": 346451,
+          "prompt_tokens": null,
+          "completion_tokens": null,
+          "total_tokens": null,
+          "demo": "prompts/webgl/tundra-permafrost-thaw/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html",
+          "preview": "prompts/webgl/tundra-permafrost-thaw/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png",
+          "has_demo": true,
+          "has_preview": true,
+          "review_score": 2,
+          "review_summary": "The screenshot shows a loading state with no WebGL scene rendered, failing the primary requirement of a visible terrain simulation."
+        }
+      ]
     },
     {
       "id": "volcanic-glass-cooling-shear",
@@ -17649,6 +17771,38 @@
       ]
     },
     {
+      "id": "electrolysis-cell-balance",
+      "title": "Cell Split",
+      "category": "interfaces",
+      "tags": [
+        "chemistry",
+        "flow",
+        "balance",
+        "industrial",
+        "svg",
+        "utility",
+        "simulation"
+      ],
+      "status": "polished",
+      "summary": "High-fidelity industrial instrument panel for electrolysis simulation. Features canvas-based particle physics, strict brutalist UI, and real-time load balancing feedback.",
+      "path": "prompts/interfaces/electrolysis-cell-balance",
+      "preview": null,
+      "prompt": "prompts/interfaces/electrolysis-cell-balance/prompt.md",
+      "extended": "prompts/interfaces/electrolysis-cell-balance/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
+    },
+    {
       "id": "ferrous-oxide-bloom-filter",
       "title": "Verdigris OS: Oxidative Data Excavation",
       "category": "interfaces",
@@ -17895,6 +18049,38 @@
           "review_summary": "Strong industrial utility aesthetic with correct typography and layout, but missing the critical hazard stripe border and paper texture."
         }
       ]
+    },
+    {
+      "id": "hydraulic-brake-fluid-bleed",
+      "title": "Bleed Logic",
+      "category": "interfaces",
+      "tags": [
+        "schematic",
+        "diagram",
+        "displacement",
+        "automotive",
+        "drag-drop",
+        "utility",
+        "svg"
+      ],
+      "status": "polished",
+      "summary": "Interactive SVG schematic of a hydraulic brake line where users drag a bleed valve to displace air bubbles. Bubbles drift via physics simulation and pop into a catch cup upon reaching the outlet. Minimalist…",
+      "path": "prompts/interfaces/hydraulic-brake-fluid-bleed",
+      "preview": null,
+      "prompt": "prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.md",
+      "extended": "prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.full.md",
+      "demo": null,
+      "default_run": null,
+      "source_model": "Qwen3.8-Flash-Next-UD-Q4_K_XL",
+      "source_provider": "custom",
+      "created": "2026-11-05",
+      "updated": "2026-11-05",
+      "model_hints": [
+        "cursor",
+        "chatgpt",
+        "claude"
+      ],
+      "runs": []
     },
     {
       "id": "kintsugi-joinery-scheduler",

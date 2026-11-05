@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thermokarst Collapse — Permafrost Thaw Simulation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#2B2D42;
+    --ice:#8D99AE;
+    --accent:#EF233C;
+    --mud:#1A1B26;
+    --ink:#E8ECF2;
+    --dim:rgba(141,153,174,.55);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;width:100%;overflow:hidden;background:#2B2D42;}
+  body{
+    font-family:'Darker Grotesque',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  #scene{position:fixed;inset:0;z-index:0;display:block;}
+  #scene canvas{display:block;}
+
+  /* atmospheric overlays */
+  .vignette{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse 120% 90% at 50% 42%, rgba(0,0,0,0) 42%, rgba(9,10,16,.72) 100%);
+  }
+  .grain{
+    position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .ui{
+    position:fixed;inset:0;z-index:3;pointer-events:none;
+    padding:clamp(18px,3vw,42px);
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+
+  /* header */
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;}
+  .brand{max-width:min(60%,560px);}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-weight:500;
+    font-size:clamp(9px,1.05vw,11px);letter-spacing:.34em;text-transform:uppercase;
+    color:var(--dim);display:flex;align-items:center;gap:9px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block;}
+  .title{
+    font-weight:700;line-height:.86;letter-spacing:-.015em;
+    font-size:clamp(2.4rem,6.6vw,5.6rem);
+    color:var(--ink);margin-top:10px;text-transform:uppercase;
+  }
+  .title .l2{color:var(--ice);}
+  .subtitle{
+    margin-top:14px;font-size:clamp(12px,1.35vw,15px);font-weight:400;
+    line-height:1.55;color:var(--dim);max-width:44ch;
+  }
+  .subtitle b{color:var(--ice);font-weight:500;}
+
+  .legend{
+    display:flex;flex-direction:column;gap:10px;align-items:flex-end;
+    font-family:'JetBrains Mono',monospace;font-size:clamp(9px,1vw,11px);
+    letter-spacing:.08em;color:var(--dim);text-align:right;
+  }
+  .legend .row{display:flex;align-items:center;gap:8px;}
+  .legend .sw{width:10px;height:10px;border-radius:2px;}
+  .legend .sw.ice{background:var(--ice);}
+  .legend .sw.mud{background:var(--mud);border:1px solid rgba(141,153,174,.4);}
+  .legend .status{
+    margin-top:4px;color:var(--ink);font-weight:500;letter-spacing:.14em;
+    text-transform:uppercase;font-size:clamp(10px,1.1vw,12px);
+  }
+
+  /* footer / HUD */
+  footer{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;flex-wrap:wrap;}
+  .hud{
+    pointer-events:auto;background:rgba(20,21,32,.5);
+    border:1px solid rgba(141,153,174,.16);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    padding:16px 18px 15px;min-width:min(430px,90vw);
+    border-radius:3px;box-shadow:0 20px 50px -30px rgba(0,0,0,.9);
+  }
+  .readouts{
+    display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .ro{display:flex;flex-direction:column;gap:2px;}
+  .ro .k{font-size:9px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;}
+  .ro .v{font-size:clamp(17px,2.3vw,23px);font-weight:500;color:var(--ink);letter-spacing:.01em;}
+  .ro.temp .v{color:#B7C3D6;}
+  .ro.stab .v{color:var(--ice);transition:color .3s ease;}
+  .ro.stab .v.warn{color:var(--accent);}
+  .ro .unit{font-size:.6em;color:var(--dim);font-weight:400;}
+
+  .slider-wrap{margin-top:16px;}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:2px;
+    background:linear-gradient(90deg,var(--ice) 0%,var(--ice) var(--fill,50%),rgba(141,153,174,.28) var(--fill,50%),rgba(141,153,174,.28) 100%);
+    outline:none;cursor:pointer;border-radius:2px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;
+    background:var(--accent);border:2px solid #2B2D42;
+    box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(239,35,60,.55);
+    transition:transform .15s ease;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);}
+  input[type=range]::-moz-range-thumb{
+    width:13px;height:13px;border-radius:50%;background:var(--accent);
+    border:2px solid #2B2D42;box-shadow:0 0 0 1px var(--accent),0 0 14px rgba(239,35,60,.55);
+  }
+  .scale{
+    display:flex;justify-content:space-between;margin-top:9px;
+    font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:var(--dim);
+  }
+
+  .meta{
+    text-align:right;font-family:'JetBrains Mono',monospace;font-size:10px;
+    letter-spacing:.12em;color:var(--dim);line-height:1.7;max-width:220px;
+  }
+  .meta .k{color:var(--ice);}
+
+  /* loader */
+  #loader{
+    position:fixed;inset:0;z-index:10;background:#2B2D42;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+    transition:opacity .8s ease;
+  }
+  #loader.hide{opacity:0;pointer-events:none;}
+  #loader .lt{
+    font-family:'Darker Grotesque';font-weight:700;font-size:clamp(1.4rem,4vw,2.4rem);
+    letter-spacing:.02em;color:var(--ink);text-transform:uppercase;
+  }
+  #loader .lb{
+    width:min(220px,60vw);height:2px;background:rgba(141,153,174,.2);overflow:hidden;position:relative;
+  }
+  #loader .lb::after{
+    content:"";position:absolute;inset:0;width:40%;background:var(--accent);
+    animation:load 1.2s cubic-bezier(.7,0,.3,1) infinite;
+  }
+  #loader .lm{font-family:'JetBrains Mono';font-size:10px;letter-spacing:.28em;color:var(--dim);text-transform:uppercase;}
+  @keyframes load{0%{transform:translateX(-100%);}100%{transform:translateX(250%);}}
+
+  @media (max-width:640px){
+    .legend,.meta{display:none;}
+    .brand{max-width:100%;}
+    footer{align-items:flex-end;}
+    .hud{min-width:0;width:100%;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #loader .lb::after{animation:none;width:100%;}
+  }
+</style>
+</head>
+<body>
+  <div id="scene"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="ui">
+    <header>
+      <div class="brand">
+        <div class="eyebrow">Permafrost Thaw Simulation</div>
+        <h1 class="title">Thermokarst<br><span class="l2">Collapse</span></h1>
+        <p class="subtitle">Boreal tundra under thermal stress. Raise the temperature to melt subsurface <b>ice lenses</b> and watch the ground lose its load-bearing structure.</p>
+      </div>
+      <div class="legend">
+        <div class="row"><span>Frozen ice</span><span class="sw ice"></span></div>
+        <div class="row"><span>Thawed mud</span><span class="sw mud"></span></div>
+        <div class="status" id="status">STABLE</div>
+      </div>
+    </header>
+
+    <footer>
+      <div class="hud">
+        <div class="readouts">
+          <div class="ro temp"><span class="k">Temp</span><span class="v" id="tempVal">-10.0<span class="unit">°C</span></span></div>
+          <div class="ro stab"><span class="k">Stability</span><span class="v" id="stabVal">100<span class="unit">%</span></span></div>
+          <div class="ro"><span class="k">Subsidence</span><span class="v" id="depthVal">0.00<span class="unit">m</span></span></div>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" id="tempSlider" min="-10" max="10" step="0.1" value="-10">
+          <div class="scale"><span>-10°C</span><span>FREEZE POINT</span><span>+10°C</span></div>
+        </div>
+      </div>
+      <div class="meta">
+        <div><span class="k">GRID</span> 256 × 256 VERT</div>
+        <div><span class="k">RENDER</span> WEBGL2 · SHADER</div>
+        <div><span class="k">FPS</span> <span id="fps">—</span></div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="loader">
+    <div class="lt">Thermokarst Collapse</div>
+    <div class="lb"></div>
+    <div class="lm">Generating procedural tundra</div>
+  </div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- renderer / scene ---------- */
+const sceneEl = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setClearColor(0x2B2D42, 1);
+sceneEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x2B2D42, 0.0072);
+
+const camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 600);
+camera.position.set(0, 6, 130);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.enablePan = false;
+controls.minPolarAngle = 0.12;
+controls.maxPolarAngle = 1.2;
+controls.minDistance = 34;
+controls.maxDistance = 160;
+controls.target.set(0, -3, 0);
+
+/* ---------- lights ---------- */
+const hemi = new THREE.HemisphereLight(0x8D99AE, 0x2B2D42, 0.7);
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(0xE0F7FA, 1.15);
+sun.position.set(-46, 78, 34);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 320;
+const S = 100;
+sun.shadow.camera.left = -S; sun.shadow.camera.right = S;
+sun.shadow.camera.top = S; sun.shadow.camera.bottom = -S;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.6;
+scene.add(sun);
+
+/* ---------- sky dome ---------- */
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite:false, fog:false,
+  uniforms:{ uTemp:{value:0} },
+  vertexShader:`varying vec3 vDir; void main(){ vDir=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader:`
+    varying vec3 vDir; uniform float uTemp;
+    void main(){
+      float h = clamp(vDir.y*0.5+0.5, 0.0, 1.0);
+      vec3 top = vec3(0.105,0.117,0.176);
+      vec3 mid = vec3(0.169,0.180,0.259);
+      vec3 bot = vec3(0.220,0.231,0.290);
+      vec3 col = mix(bot, mid, smoothstep(0.0,0.5,h));
+      col = mix(col, top, smoothstep(0.5,1.0,h));
+      col = mix(col, vec3(0.155,0.140,0.150), uTemp*0.45);
+      gl_FragColor = vec4(col,1.0);
+    }`
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(400, 32, 16), skyMat);
+scene.add(sky);
+
+/* ---------- shared GLSL ---------- */
+const NOISE = `
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy; i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+float fbm(vec2 p){ float v=0.0; float a=0.5; for(int i=0;i<5;i++){ v+=a*snoise(vec3(p,0.0)); p=p*2.03; a*=0.5; } return v; }
+float fbm3(vec3 p){ float v=0.0; float a=0.5; for(int i=0;i<4;i++){ v+=a*snoise(p); p=p*2.03; a*=0.5; } return v; }
+`;
+
+const HEIGHT_FN = `
+float heightAt(vec2 p, float temp){
+  float base = fbm(p*0.014)*7.0;
+  base += fbm(p*0.05+13.0)*1.6;
+  float detail = fbm(p*0.13+5.0)*0.5;
+  float mask = smoothstep(0.05,0.75, fbm(p*0.028+7.0)*0.5+0.5);
+  float collapse = pow(temp,1.25)*mask*13.0;
+  float slump = temp*fbm(p*0.16+3.0)*0.9;
+  float h = base + detail - collapse - slump;
+  h += smoothstep(0.0,0.5,temp)*fbm(p*0.45)*0.35;
+  return h;
+}`;
+
+const TERRAIN_VERT = NOISE + `
+uniform float uTemp; uniform float uTime; varying vec3 vWorld; varying vec3 vView; varying float vMask;
+${HEIGHT_FN}
+void main(){
+  vec3 pos = position;
+  vec2 p = pos.xy;
+  float h = heightAt(p, uTemp);
+  pos.z = h;
+  vec2 e = vec2(0.55,0.0);
+  float hx = heightAt(p+vec2(e.x,0.0), uTemp);
+  float hy = heightAt(p+vec2(0.0,e.x), uTemp);
+  vec3 n = normalize(vec3(-(hx-h)/e.x, -(hy-h)/e.x, 1.0));
+  vec4 wp = modelMatrix * vec4(pos,1.0);
+  vWorld = wp.xyz;
+  vView = normalize(cameraPosition - wp.xyz);
+  vMask = smoothstep(0.05,0.75, fbm(p*0.028+7.0)*0.5+0.5);
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+
+const TERRAIN_FRAG = NOISE + `
+uniform float uTemp; uniform float uTime;
+uniform vec3 uSunDir; uniform vec3 uSunColor; uniform vec3 uSkyColor; uniform vec3 uGroundColor;
+varying vec3 vWorld; varying vec3 vView; varying float vMask;
+void main(){
+  vec2 p = vWorld.xz;
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(vView);
+  float frost = fbm3(vWorld*0.9)*0.5+0.5;
+  float frost2 = fbm3(vWorld*4.0+vec3(3.0))*0.5+0.5;
+  vec3 iceCol = mix(vec3(0.5529,0.6000,0.6824), vec3(0.7373,0.7843,0.8588), frost);
+  iceCol = mix(iceCol, vec3(0.87,0.90,0.95), frost2*0.22);
+  vec3 mudCol = mix(vec3(0.1020,0.1059,0.1490), vec3(0.1569,0.1765,0.2588), frost*0.35);
+  float thaw = smoothstep(0.30,0.68, uTemp);
+  float localThaw = smoothstep(0.02,0.62, vMask);
+  float wet = clamp(thaw*localThaw, 0.0, 1.0);
+  vec3 albedo = mix(iceCol, mudCol, wet);
+  float fres = pow(1.0 - max(dot(N,V),0.0), 3.0);
+  float shimmer = smoothstep(0.15,0.30,uTemp)*(1.0-smoothstep(0.30,0.45,uTemp));
+  float spec = mix(0.75, 0.06, wet);
+  vec3 L = normalize(uSunDir);
+  vec3 H = normalize(L+V);
+  float ndl = max(dot(N,L),0.0);
+  float nh = max(dot(N,H),0.0);
+  vec3 diffuse = albedo * (0.20 + 0.85*ndl);
+  vec3 specCol = mix(vec3(1.0), vec3(0.55,0.60,0.70), wet);
+  vec3 specular = specCol * pow(nh, mix(12.0, 80.0, wet)) * spec * ndl;
+  specular += specCol * shimmer * (frost*0.35+0.12) * pow(nh, 90.0);
+  vec3 fresCol = mix(vec3(0.62,0.68,0.78), vec3(0.20,0.24,0.32), wet);
+  vec3 fresnel = fresCol * fres * mix(0.55, 0.22, wet);
+  vec3 hemi = albedo * mix(uGroundColor, uSkyColor, N.y*0.5+0.5);
+  vec3 col = diffuse + specular + fresnel + hemi;
+  col = mix(col, vec3(0.05,0.055,0.085), wet*0.12);
+  gl_FragColor = vec4(col,1.0);
+}`;
+
+/* ---------- terrain ---------- */
+const terrainMat = new THREE.ShaderMaterial({
+  uniforms:{
+    uTemp:{value:0}, uTime:{value:0},
+    uSunDir:{value:new THREE.Vector3(-46,78,34).normalize()},
+    uSunColor:{value:new THREE.Color(0xE0F7FA)},
+    uSkyColor:{value:new THREE.Color(0x8D99AE)},
+    uGroundColor:{value:new THREE.Color(0x2B2D42)}
+  },
+  vertexShader:TERRAIN_VERT, fragmentShader:TERRAIN_FRAG,
+  side:THREE.DoubleSide
+});
+terrainMat.lights = true;
+const terrain = new THREE.Mesh(new THREE.PlaneGeometry(160,160,256,256), terrainMat);
+terrain.rotation.x = -Math.PI/2;
+terrain.castShadow = true;
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+/* ---------- snow particles ---------- */
+const COUNT = 5000;
+const pos = new Float32Array(COUNT*3);
+const seed = new Float32Array(COUNT);
+for(let i=0;i<COUNT;i++){
+  pos[i*3]   = (Math.random()-0.5)*170;
+  pos[i*3+1] = Math.random()*34;
+  pos[i*3+2] = (Math.random()-0.5)*170;
+  seed[i] = Math.random();
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+pGeo.setAttribute('aSeed', new THREE.BufferAttribute(seed,1));
+
+const snowMat = new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, blending:THREE.NormalBlending,
+  uniforms:{ uTemp:{value:0}, uTime:{value:0}, uSize:{value:2.4} },
+  vertexShader:`
+    attribute float aSeed; uniform float uTime; uniform float uTemp; uniform float uSize;
+    varying float vFade;
+    ${NOISE}${HEIGHT_FN}
+    void main(){
+      vec3 p = position;
+      float t = uTime*1.7 + aSeed*30.0;
+      p.x = mod(position.x + t, 170.0) - 85.0;
+      p.y = mod(position.y - uTime*(0.5+aSeed*0.7), 34.0);
+      p.z = position.z + sin(uTime*0.4 + aSeed*10.0)*2.0;
+      float h = heightAt(p.xz, uTemp);
+      float above = clamp((p.y - h)/3.0, 0.0, 1.0);
+      float thaw = smoothstep(0.30,0.68,uTemp);
+      float mask = smoothstep(0.05,0.75, fbm(p.xz*0.028+7.0)*0.5+0.5);
+      float absorb = thaw*mask;
+      vFade = above * (1.0 - absorb*0.9);
+      vec4 mv = modelViewMatrix * vec4(p,1.0);
+      gl_Position = projectionMatrix * mv;
+      gl_PointSize = uSize*(300.0/-mv.z)*(0.6+aSeed*0.8);
+    }`,
+  fragmentShader:`
+    varying float vFade;
+    void main(){
+      vec2 uv = gl_PointCoord-0.5;
+      float d = length(uv);
+      if(d>0.5) discard;
+      float a = smoothstep(0.5,0.0,d)*vFade*0.5;
+      gl_FragColor = vec4(vec3(0.93,0.95,1.0), a);
+    }`
+});
+const snow = new THREE.Points(pGeo, snowMat);
+snow.frustumCulled = false;
+scene.add(snow);
+
+/* ---------- interaction ---------- */
+const slider = document.getElementById('tempSlider');
+const tempVal = document.getElementById('tempVal');
+const stabVal = document.getElementById('stabVal');
+const depthVal = document.getElementById('depthVal');
+const statusEl = document.getElementById('status');
+const fpsEl = document.getElementById('fps');
+
+let targetTemp = 0;
+let currentTemp = 0;
+function tempFromSlider(v){ return (v+10)/20; }
+function updateSliderFill(){ slider.style.setProperty('--fill', ((slider.value+10)/20*100)+'%'); }
+slider.addEventListener('input', ()=>{ targetTemp = tempFromSlider(parseFloat(slider.value)); updateSliderFill(); });
+updateSliderFill();
+
+function updateHUD(t){
+  const c = -10 + t*20;
+  tempVal.innerHTML = c.toFixed(1)+'<span class="unit">°C</span>';
+  const stab = Math.round((1 - Math.pow(t,1.1))*100);
+  stabVal.innerHTML = stab+'<span class="unit">%</span>';
+  stabVal.classList.toggle('warn', stab < 50);
+  const depth = Math.pow(t,1.25)*13.0;
+  depthVal.innerHTML = depth.toFixed(2)+'<span class="unit">m</span>';
+  statusEl.textContent = t < 0.12 ? 'STABLE' : (t < 0.4 ? 'THAWING' : 'COLLAPSING');
+  statusEl.style.color = t < 0.12 ? '#8D99AE' : (t < 0.4 ? '#EFB33C' : '#EF233C');
+}
+updateHUD(0);
+
+/* ---------- camera entrance ---------- */
+let intro = 0;
+const introDur = reduced ? 0.001 : 5.0;
+const from = { r:66, phi:1.06, theta:0.42, y:5 };
+const to   = { r:112, phi:0.86, theta:-0.28, y:-2 };
+function camFromSph(r,phi,theta,y){
+  camera.position.set(
+    r*Math.sin(phi)*Math.sin(theta),
+    y + r*Math.cos(phi),
+    r*Math.sin(phi)*Math.cos(theta)
+  );
+}
+camFromSph(from.r, from.phi, from.theta, from.y);
+
+/* ---------- loop ---------- */
+const clock = new THREE.Clock();
+let frames=0, acc=0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const time = clock.elapsedTime;
+
+  currentTemp += (targetTemp - currentTemp) * (1 - Math.exp(-dt*4.5));
+  terrainMat.uniforms.uTemp.value = currentTemp;
+  terrainMat.uniforms.uTime.value = time;
+  snowMat.uniforms.uTemp.value = currentTemp;
+  snowMat.uniforms.uTime.value = time;
+  skyMat.uniforms.uTemp.value = currentTemp;
+
+  if(intro < 1){
+    intro = Math.min(1, intro + dt/introDur);
+    const e = 1 - Math.pow(1-intro, 3);
+    camFromSph(
+      from.r + (to.r-from.r)*e,
+      from.phi + (to.phi-from.phi)*e,
+      from.theta + (to.theta-from.theta)*e,
+      from.y + (to.y-from.y)*e
+    );
+  }
+  controls.update();
+  renderer.render(scene, camera);
+
+  updateHUD(currentTemp);
+  frames++; acc += dt;
+  if(acc >= 0.5){ fpsEl.textContent = Math.round(frames/acc); frames=0; acc=0; }
+}
+animate();
+
+/* ---------- resize ---------- */
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ---------- loader ---------- */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('hide'), 400);
+});
+</script>
+</body>
+</html>

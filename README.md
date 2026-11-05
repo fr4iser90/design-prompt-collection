@@ -6,7 +6,7 @@ Each entry has a shared prompt brief; **model runs** live under `runs/<model-slu
 
 | Entries | Model runs | Polished | Draft |
 |--------:|-----------:|---------:|------:|
-| 301 | 299 | 260 | 41 |
+| 305 | 301 | 264 | 41 |
 
 ## Quick start
 
@@ -3503,6 +3503,20 @@ A tactile industrial simulation where players balance water pressure using three
 
 ---
 
+### Ink Bleed Circuit
+
+Ink Bleed Circuit: A Canvas 2D puzzle where wet ink bleeds into procedural paper. Draw paths, time your 'Dry' action to freeze ink before it hits waste zones. Industrial minimalism, single-file HTML/JS.
+
+**Status:** polished · `canvas2d` `fluid-sim` `puzzle` `logic` `state-stack` `game` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/games/ink-bleed-maze-circuit/prompt.md) · [extended](prompts/games/ink-bleed-maze-circuit/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Laser Alignment Pulse Lock
 
 A precision timing game where you fire laser pulses into a vibrating crystal lattice. Hit the exact resonance phase to pass light; miss to shatter the crystal.
@@ -3873,6 +3887,20 @@ Build a single-file HTML asset studio for 'PIXEL PULSE', a retro-futuristic 2D g
 
 ---
 
+### Tectonic Plate Fracture
+
+Build a single-file HTML asset studio for 'GEO-SHIFT: Tectonic Plate Fracture', a 2D game-kit pack. The interface must feel like a geological survey terminal. Use Oswald for headers and Source Code Pro for data. The…
+
+**Status:** polished · `game-kit` `geology` `2d` `assets` `tileset` `procedural` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/assets/tectonic-plate-fracture/prompt.md) · [extended](prompts/assets/tectonic-plate-fracture/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Volcanic Geothermal Kit
 
 Build a single-file HTML asset studio for the 'Volcanic Geothermal Kit' (MAGMA CORE). This is a 2D game kit, not a landing page. The interface must display a cohesive production set: 3 animated lava flow tiles…
@@ -3979,9 +4007,11 @@ An underwater voxel reef where low-frequency audio bands drive coral extrusion. 
 
 [prompt](prompts/webgl/coral-reef-voxel-symphony/prompt.md) · [extended](prompts/webgl/coral-reef-voxel-symphony/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/coral-reef-voxel-symphony/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.9s | 182s | 4 | [open](prompts/webgl/coral-reef-voxel-symphony/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4185,9 +4215,11 @@ Interactive permafrost simulation where a temperature slider drives terrain subs
 
 [prompt](prompts/webgl/tundra-permafrost-thaw/prompt.md) · [extended](prompts/webgl/tundra-permafrost-thaw/prompt.full.md)
 
-_No shot preview yet._
+#### Model runs
 
-_No model runs yet — `npm run ai:build` then `npm run shots`._
+| Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
+|:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
+| ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/webgl/tundra-permafrost-thaw/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | 262k | — | — | 2.4s | 163s | 2 | [open](prompts/webgl/tundra-permafrost-thaw/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
 
 ---
 
@@ -4611,6 +4643,20 @@ A textile revision tool interface for 'Cinnabar & Co.' featuring a vertical spli
 
 ---
 
+### Cell Split
+
+High-fidelity industrial instrument panel for electrolysis simulation. Features canvas-based particle physics, strict brutalist UI, and real-time load balancing feedback.
+
+**Status:** polished · `chemistry` `flow` `balance` `industrial` `svg` `utility` `simulation` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/electrolysis-cell-balance/prompt.md) · [extended](prompts/interfaces/electrolysis-cell-balance/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
+
+---
+
 ### Verdigris OS: Oxidative Data Excavation
 
 Copper-oxidation simulation where timeline scrubbing acts as a polishing agent, clearing green bloom to reveal crisp white data lines beneath.
@@ -4672,6 +4718,20 @@ Industrial HazMat manifest verifier with dynamic hazard stripes, stamp verificat
 | Preview | Model | Engine | Think | Ctx | In | Out | TTFT | Gen | Score | Demo |
 |:-------:|-------|--------|:-----:|----:|---:|----:|-----:|----:|------:|------|
 | ![Qwen3.8-Flash-Next-UD-Q4_K_XL](prompts/interfaces/hazmat-cargo-manifest-verify/runs/qwen3-8-flash-next-ud-q4-k-xl/preview.png) | `Qwen3.8-Flash-Next-UD-Q4_K_XL` | [gufo@fee9d2a](https://github.com/gufo-org/gufo/commit/fee9d2a) | off | — | — | — | 12s | 297s | 7 | [open](prompts/interfaces/hazmat-cargo-manifest-verify/runs/qwen3-8-flash-next-ud-q4-k-xl/demo/index.html) · default |
+
+---
+
+### Bleed Logic
+
+Interactive SVG schematic of a hydraulic brake line where users drag a bleed valve to displace air bubbles. Bubbles drift via physics simulation and pop into a catch cup upon reaching the outlet. Minimalist…
+
+**Status:** polished · `schematic` `diagram` `displacement` `automotive` `drag-drop` `utility` `svg` · brief by `Qwen3.8-Flash-Next-UD-Q4_K_XL`
+
+[prompt](prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.md) · [extended](prompts/interfaces/hydraulic-brake-fluid-bleed/prompt.full.md)
+
+_No shot preview yet._
+
+_No model runs yet — `npm run ai:build` then `npm run shots`._
 
 ---
 
